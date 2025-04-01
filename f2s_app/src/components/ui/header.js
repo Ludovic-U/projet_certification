@@ -1,17 +1,79 @@
 "use client";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Button } from "../ui/button"
+import { Button } from "../ui/button";
+
+import { Card } from "@/components/ui/card";
+import { Bell, ArrowLeft } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
   const [userRole, setUserRole] = useState("guest"); // "guest" par défaut
+  const [headerTitle, setHeaderTitle] = useState('');
+
+  const superadmin_is_connected = true // TODO: à CHANGER
+
+  //Redirection du button retour en fonction de la page actuelle
+  const handleBackButtonClick = (pathname) => {
+    switch (pathname){
+      case "/admin": 
+        if (superadmin_is_connected){
+          router.push("/super_admin");
+        }        
+        break;
+      case "/rh_page": 
+        router.push("/admin");     
+        break;
+      case "/user": 
+        router.push("/rh_page");
+        break;
+      case "/rh_page": 
+        router.push("/admin");     
+        break;
+      case "/rh_page": 
+        router.push("/admin");     
+        break;
+      case "/rh_page": 
+        router.push("/admin");     
+        break;
+      case "/rh_page": 
+        router.push("/admin");     
+        break;
+      case "/rh_page": 
+        router.push("/admin");     
+        break;
+      case "/rh_page": 
+        router.push("/admin");     
+        break;
+      case "/rh_page": 
+        router.push("/admin");     
+        break;
+      default: router.push("/")
+    }
+  };
 
   // Simule une récupération du rôle utilisateur depuis le stockage local
   useEffect(() => {
     const storedRole = localStorage.getItem("userRole") || "guest";
     setUserRole(storedRole);
-  }, []);
+
+    if (pathname !== "/") {
+      let title = "";
+      switch (pathname) {
+        case "/super_admin": title = "Super-admin FIGURE DE SKILLS"; break;
+        case "/admin": title = "LAMBDA-SARL"; break;
+        case "/rh_page":title = "Mes Ressources Humaines";break;
+        case "/new_project":title = "Créer un nouveau projet";break;
+        case "/project_overview":title = "PROJET LAMBDA";break;
+        case "/user":title = "Utilisateur";break;
+        default:
+          title = "";
+      }
+      setHeaderTitle(title);
+    } else {
+        setHeaderTitle('');
+    }
+  }, [pathname]);
 
   // Génère les boutons dynamiquement selon le rôle et la page
   const getButtons = () => {
@@ -34,22 +96,29 @@ export default function Header() {
         </>
       );
     }
-
-    // return ( // guest
-    //   <>
-    //     <button className="px-4 py-2 bg-green-500 text-white rounded">Connexion</button>
-    //     <button className="px-4 py-2 bg-yellow-500 text-white rounded">Inscription</button>
-    //   </>
-    // );
   };
 
-  if (pathname != "/") {
+  if (pathname === "/") {
+    return ("");
+  }
+
     return (
-      <header className="flex justify-between items-center p-4 bg-gray-800 text-white">
-        <Button variant="secondary">Back</Button>
-        {/* <h1 className="text-xl font-bold">Current page</h1> */}
-        <div className="flex gap-2">{getButtons()}</div>
+      <header className="flex justify-between items-center p-4 bg-gray-800 shadow-md">
+        <div className="flex items-center">
+          <Button variant="ghost" className="text-xl">
+            <ArrowLeft className="text-purple-600" size={24} />
+          </Button>
+          <span className="text-lg font-semibold text-white">{headerTitle}</span>
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="outline" className="flex items-center space-x-2">
+            <Bell size={18} />
+          </Button>
+          <Button variant="outline" className="bg-purple-400 text-white">Ressources Humaines</Button>
+          <Button variant="outline" className="bg-purple-400 text-white">Finances</Button>
+          <Button variant="destructive">Se déconnecter</Button>
+        </div>
       </header>
     );
   }
-}
+

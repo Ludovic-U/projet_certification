@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -5,16 +6,6 @@ import { ArrowLeft } from "lucide-react";
 const HRPage = () => {
   return (
     <div className="w-full h-screen bg-gray-100">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-gray-200 p-4 shadow-md">
-        <div className="flex items-center">
-          <Button variant="ghost" className="text-xl">
-            <ArrowLeft className="text-purple-600" size={24} />
-          </Button>
-          <span className="text-lg font-semibold">Ressources humaines</span>
-        </div>
-        <Button variant="destructive">Se déconnecter</Button>
-      </div>
       
       {/* Team Sections */}
       <div className="p-4">

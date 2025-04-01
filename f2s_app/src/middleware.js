@@ -1,23 +1,12 @@
-import { NextResponse } from "next/server";
+import { clerkMiddleware } from '@clerk/nextjs/server'
 
-export function middleware(req) {
-  const isLoggedIn = false; // Simule un utilisateur non connecté
-  const url = req.nextUrl;
+export default clerkMiddleware()
 
-  // alert("redirect")
-  console.log(req.nextUrl);
-
-  // if (!isLoggedIn && url.pathname.startsWith("/test")) {
-
-  //   return NextResponse.redirect(new URL("/", req.url));
-  // }
-
-  return NextResponse.next();
-}
-
-// Appliquer le middleware à certaines pages seulement
 export const config = {
-  // matcher: ["/dashboard/:path*"], // Bloque toutes les sous-pages de /dashboard
-  // matcher: ["/test"],
-  // matcher: ["/"], 
-};
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+}

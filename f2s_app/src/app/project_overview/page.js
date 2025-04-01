@@ -5,9 +5,6 @@ import { Button } from "@/components/ui/button"
 import {
     ArrowLeft,
     LogOut,
-    AlertTriangle,
-    CheckCircle,
-    GripVertical,
     ChevronRight
 } from 'lucide-react';
 import { cn } from "@/lib/utils"
@@ -31,47 +28,7 @@ const ProjetLambda = () => {
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 md:p-8">
             <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8 border border-gray-200 dark:border-gray-700">
-                {/* En-tête de la page */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                            onClick={() => { /* Retour à la page précédente (simulé) */ alert('Retour à la page précédente (simulé)'); }}
-                        >
-                            <ArrowLeft className="h-5 w-5" />
-                        </Button>
-                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Projet Lambda</h1>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 dark:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-300"
-                            onClick={() => { /* Ressources Humaines (simulé) */ alert('Accès aux Ressources Humaines (simulé)'); }}
-                        >
-                            Ressources Humaines
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 dark:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-300"
-                            onClick={() => { /* Finances (simulé) */ alert('Accès aux Finances (simulé)'); }}
-                        >
-                            Finances
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-gray-600 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 flex items-center gap-2"
-                            onClick={() => { /* Déconnexion (simulé) */ alert('Déconnexion (simulé)'); }}
-                        >
-                            <LogOut className="h-4 w-4" />
-                            Se déconnecter
-                        </Button>
-                    </div>
-                </div>
+                
 
                 {/* Étapes de réalisation du projet */}
                 <div className="mb-8">
