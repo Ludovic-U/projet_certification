@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, User, Mail, Lock, Briefcase, Users, ListChecks } from 'lucide-react';
 import { cn } from "@/lib/utils"
 
-const roles = ['Administrateur', 'Chef de projet', 'Contributeur', 'Trésorier', 'RH'];
+const roles = ['Directeur', 'Chef de projet', 'Contributeur', 'Trésorier', 'RH'];
 const projetsDisponibles = ['Projet Alpha', 'Projet Beta', 'Projet Gamma', 'Projet Delta'];
+
 
 const ModifierUtilisateur = () => {
   // État pour les données du formulaire
@@ -44,11 +45,12 @@ const ModifierUtilisateur = () => {
   };
 
   // Fonction pour gérer la soumission du formulaire
-  const handleSubmit = () => {
+  async function handleSubmit(params){
     // Ici, tu ajouterais la logique pour enregistrer les données de l'utilisateur
     console.log('Données utilisateur:', userData);
     console.log('Projets sélectionnés:', selectedProjects);
     alert(`Utilisateur ${isCreating ? 'créé' : 'modifié'} ! (Ceci est une démo)`);
+
   };
 
   useEffect(() => {

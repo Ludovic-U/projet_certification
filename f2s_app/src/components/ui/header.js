@@ -1,54 +1,53 @@
 "use client";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useRouter } from 'next/navigation';
 import { Button } from "../ui/button";
 
 import { Card } from "@/components/ui/card";
 import { Bell, ArrowLeft } from "lucide-react";
 
+
 export default function Header() {
   const pathname = usePathname();
   const [userRole, setUserRole] = useState("guest"); // "guest" par défaut
+  const router = useRouter();
   const [headerTitle, setHeaderTitle] = useState('');
 
   const superadmin_is_connected = true // TODO: à CHANGER
 
+  const goToRHpage= () => {
+    router.push("/rh_page")
+  }
+
+  const signOut= () => {
+    router.push("/")
+  }
+
+  const goToFinancepage = () => {
+    alert("PAGE EN TRAVAUX")
+  }
+
   //Redirection du button retour en fonction de la page actuelle
-  const handleBackButtonClick = (pathname) => {
-    switch (pathname){
-      case "/admin": 
-        if (superadmin_is_connected){
+  const handleBackButtonClick = () => {
+    switch (pathname) {
+      case "/admin":
+        if (superadmin_is_connected) {
           router.push("/super_admin");
-        }        
+        } else {
+          router.push("/"); 
+        }
         break;
-      case "/rh_page": 
-        router.push("/admin");     
+      case "/rh_page":
+      case "/new_project":
+      case "/project_overview":
+        router.push("/admin");
         break;
-      case "/user": 
+      case "/user":
         router.push("/rh_page");
         break;
-      case "/rh_page": 
-        router.push("/admin");     
-        break;
-      case "/rh_page": 
-        router.push("/admin");     
-        break;
-      case "/rh_page": 
-        router.push("/admin");     
-        break;
-      case "/rh_page": 
-        router.push("/admin");     
-        break;
-      case "/rh_page": 
-        router.push("/admin");     
-        break;
-      case "/rh_page": 
-        router.push("/admin");     
-        break;
-      case "/rh_page": 
-        router.push("/admin");     
-        break;
-      default: router.push("/")
+      default:
+        router.push("/"); 
     }
   };
 
@@ -65,7 +64,7 @@ export default function Header() {
         case "/rh_page":title = "Mes Ressources Humaines";break;
         case "/new_project":title = "Créer un nouveau projet";break;
         case "/project_overview":title = "PROJET LAMBDA";break;
-        case "/user":title = "Utilisateur";break;
+        case "/user":title = "Utilisateurs";break;
         default:
           title = "";
       }
@@ -103,9 +102,9 @@ export default function Header() {
   }
 
     return (
-      <header className="flex justify-between items-center p-4 bg-gray-800 shadow-md">
+        <header className="flex justify-between items-center p-4 bg-gray-800 shadow-md">
         <div className="flex items-center">
-          <Button variant="ghost" className="text-xl">
+          <Button variant="ghost" className="text-xl" onClick={handleBackButtonClick}>
             <ArrowLeft className="text-purple-600" size={24} />
           </Button>
           <span className="text-lg font-semibold text-white">{headerTitle}</span>
@@ -114,11 +113,13 @@ export default function Header() {
           <Button variant="outline" className="flex items-center space-x-2">
             <Bell size={18} />
           </Button>
-          <Button variant="outline" className="bg-purple-400 text-white">Ressources Humaines</Button>
-          <Button variant="outline" className="bg-purple-400 text-white">Finances</Button>
-          <Button variant="destructive">Se déconnecter</Button>
+          <Button variant="outline" className="bg-purple-400 text-white" onClick={goToRHpage}>Ressources Humaines</Button>
+          <Button variant="outline" className="bg-purple-400 text-white" onClick={goToFinancepage}>Finances</Button>
+          <Button variant="outline" className="bg-red-400 text-white" onClick={signOut}>Se déconnecter</Button>
+          
         </div>
       </header>
+      
     );
   }
 

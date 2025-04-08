@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { CreateUserButton } from "@/components/ui/createUser";
 import { ArrowLeft } from "lucide-react";
 
 const HRPage = () => {
@@ -18,9 +19,9 @@ const HRPage = () => {
               <span className="mt-2 text-sm">Dominique Lambda</span>
               <span className="text-xs bg-gray-500 text-white px-2 py-1 rounded">Administrateur</span>
             </div>
-            <Button className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md">
+            <CreateUserButton className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md" >
               Ajouter
-            </Button>
+            </CreateUserButton>
           </div>
         </div>
 
@@ -28,9 +29,9 @@ const HRPage = () => {
         <div className="mt-4 bg-yellow-100 p-4 rounded-lg">
           <h2 className="font-semibold text-center">Collaborateurs</h2>
           <div className="mt-4">
-            <Button className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md">
+            <CreateUserButton className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md">
               Ajouter
-            </Button>
+            </CreateUserButton>
           </div>
         </div>
       </div>
