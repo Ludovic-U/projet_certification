@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId    Int    @id @default(autoincrement())
+  username  String @unique
+  firstname String
+  lastname  String
+  password  String
+  email     String @unique
+  createdAt DateTime @default(now())
+
+  roles               UserRole[]        // Existing relation
+  taskAssignments     TaskAssignment[]  // Existing relation
+  clientUserRoles     ClientUserRole[]  // Existing relation
+  projects            Project[]         @relation("ProjectManager")  // Existing relation
+  subActionsPiloteGrt SubAction[]       @relation("PiloteGrt")  // Fixed relation
+}
+
+model Client {
+  clientId   Int      @id @default(autoincrement())
+  clientName String   @unique
+  clientType String   
+  description String?
+  createdAt  DateTime @default(now())
+
+  userRoles ClientUserRole[]
+}
+
+model ClientUserRole {
+  clientId Int 
+  userId   Int 
+  isManager Boolean @default(false)
+  position String?
+
+  client   Client @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@id([clientId, userId]) // Composite primary key
+}
+
+model Role {
+  roleId   Int    @id @default(autoincrement())
+  roleName String 
+  roleDesc String?
+
+  userRoles UserRole[]
+  rolePermissions RolePermission[]
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+
+  user User @relation(fields: [userId], references: [userId])
+  role Role @relation(fields: [roleId], references: [roleId])
+
+  @@id([userId, roleId])  // Composite primary key
+}
+
+model Permission {
+  permId   Int    @id @default(autoincrement())
+  permName String
+  permDesc String?
+
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  roleId   Int
+  permId   Int
+
+  role     Role     @relation(fields: [roleId], references: [roleId])
+  permission Permission @relation(fields: [permId], references: [permId])
+
+  @@id([roleId, permId]) // Composite primary key
+}
+
+model Project {
+  projectId      Int      @id @default(autoincrement())
+  projectName    String   @unique
+  projectType    String   
+  startDate      DateTime? 
+  endDate        DateTime? 
+  projectManager Int      
+  projectStage   String?  
+  projectStatus  String?  
+  projectDesc    String?  
+  createdAt      DateTime @default(now())
+
+  manager        User     @relation("ProjectManager", fields: [projectManager], references: [userId])
+  actions        Action[]
+}
+
+model Action {
+  actionId    Int      @id @default(autoincrement())
+  actionName  String   
+  actionObj   String?  
+  projectId   Int      
+
+  project     Project  @relation(fields: [projectId], references: [projectId])
+  subActions  SubAction[]
+}
+
+model SubAction {
+  subActionId  Int     @id @default(autoincrement())
+  actionId     Int     
+  description  String? 
+  piloteGrtId  Int?    
+
+  action       Action  @relation(fields: [actionId], references: [actionId])
+  piloteGrt    User?   @relation("PiloteGrt", fields: [piloteGrtId], references: [userId])  // Fixed relation
+  deliverables Deliverable[]
+  budgets      Budget[]
+  tasks        Task[]
+}
+
+model Deliverable {
+  deliverableId Int    @id @default(autoincrement())
+  subActionId   Int    
+  file          String 
+
+  subAction     SubAction @relation(fields: [subActionId], references: [subActionId])
+}
+
+model Budget {
+  budgetId      Int       @id @default(autoincrement())
+  subActionId   Int       
+  category      BudgetCategory
+  nature        String?   
+  quantity      Int?
+  unit          String?   
+  avgUnitCostTtc Decimal?  
+  total         Decimal?  
+
+  subAction     SubAction @relation(fields: [subActionId], references: [subActionId])
+}
+
+model Task {
+  taskId      Int     @id @default(autoincrement())
+  subActionId Int     @map("sub_action_id")
+  name        String  
+  description String? 
+
+  subAction   SubAction @relation(fields: [subActionId], references: [subActionId])
+  taskAssignments TaskAssignment[]
+}
+
+model TaskAssignment {
+  userId Int 
+  taskId Int 
+
+  user   User   @relation(fields: [userId], references: [userId])
+  task   Task   @relation(fields: [taskId], references: [taskId])
+
+  @@id([userId, taskId]) // Composite primary key
+}
+
+enum BudgetCategory {
+  MOYENS_HUMAINS_INTERNES
+  AMENAGEMENTS_MOBILIER
+  EQUIPEMENTS_PEDAGOGIQUES
+  PRESTATIONS
+  COMMUNICATION_EVENEMENTIEL
+}
