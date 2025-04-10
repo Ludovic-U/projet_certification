@@ -9,106 +9,6 @@ __turbopack_context__.s({
     "default": (()=>LoginPage)
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
-// export default function Home() {
-//   return (
-//     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-//       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-//         <Image
-//           className="dark:invert"
-//           src="/next.svg"
-//           alt="Next.js logo"
-//           width={180}
-//           height={38}
-//           priority
-//         />
-//         <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-//           <li className="mb-2 tracking-[-.01em]">
-//             Get started by editing{" "}
-//             <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-//               src/app/page.tsx
-//             </code>
-//             .
-//           </li>
-//           <li className="tracking-[-.01em]">
-//             Save and see your changes instantly.
-//           </li>
-//         </ol>
-//         <div className="flex gap-4 items-center flex-col sm:flex-row">
-//           <a
-//             className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-//             href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//             target="_blank"
-//             rel="noopener noreferrer"
-//           >
-//             <Image
-//               className="dark:invert"
-//               src="/vercel.svg"
-//               alt="Vercel logomark"
-//               width={20}
-//               height={20}
-//             />
-//             Deploy now
-//           </a>
-//           <a
-//             className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-//             href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//             target="_blank"
-//             rel="noopener noreferrer"
-//           >
-//             Read our docs
-//           </a>
-//         </div>
-//       </main>
-//       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-//         <a
-//           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-//           href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           <Image
-//             aria-hidden
-//             src="/file.svg"
-//             alt="File icon"
-//             width={16}
-//             height={16}
-//           />
-//           Learn
-//         </a>
-//         <a
-//           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-//           href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           <Image
-//             aria-hidden
-//             src="/window.svg"
-//             alt="Window icon"
-//             width={16}
-//             height={16}
-//           />
-//           Examples
-//         </a>
-//         <a
-//           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-//           href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           <Image
-//             aria-hidden
-//             src="/globe.svg"
-//             alt="Globe icon"
-//             width={16}
-//             height={16}
-//           />
-//           Go to nextjs.org →
-//         </a>
-//       </footer>
-//     </div>
-//   );
-// }
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-hook-form/dist/index.esm.mjs [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/button.tsx [app-ssr] (ecmascript)");
 "use client";
@@ -116,10 +16,21 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$b
 ;
 ;
 function LoginPage() {
-    const { register, handleSubmit, formState: { errors } } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useForm"])();
-    const onSubmit = (data)=>{
-        console.log("Login Data:", data);
-    };
+    const api = axios.create({
+        baseURL: "http://localhost:4000/api/"
+    });
+    const { register, handleSubmit, watch, formState: { errors } } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useForm"])();
+    const onSubmit = (data)=>console.log("login data: ", data);
+    console.log(watch("example"));
+    //   const {
+    //     register,
+    //     handleSubmit,
+    //     formState: { errors },
+    //   } = useForm<LoginFormInputs>();
+    //  const onSubmit = (data: LoginFormInputs) => {
+    //    console.log("Login Data:", data);
+    //    // api.post('/login', data)
+    //  }  
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex min-h-screen items-center justify-center bg-gray-100",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -130,8 +41,8 @@ function LoginPage() {
                     children: "Connexion à F2S App"
                 }, void 0, false, {
                     fileName: "[project]/src/app/page.tsx",
-                    lineNumber: 129,
-                    columnNumber: 9
+                    lineNumber: 37,
+                    columnNumber: 10
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
                     onSubmit: handleSubmit(onSubmit),
@@ -144,33 +55,32 @@ function LoginPage() {
                                     children: "Email"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/page.tsx",
-                                    lineNumber: 132,
-                                    columnNumber: 13
+                                    lineNumber: 40,
+                                    columnNumber: 14
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    type: "email",
                                     ...register("email", {
-                                        required: "L'email est requis"
+                                        required: true
                                     }),
                                     className: "w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/page.tsx",
-                                    lineNumber: 133,
-                                    columnNumber: 13
+                                    lineNumber: 41,
+                                    columnNumber: 14
                                 }, this),
                                 errors.email && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-red-500 text-sm",
-                                    children: errors.email.message
+                                    children: " REQUIRED "
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/page.tsx",
-                                    lineNumber: 138,
-                                    columnNumber: 30
+                                    lineNumber: 46,
+                                    columnNumber: 31
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/page.tsx",
-                            lineNumber: 131,
-                            columnNumber: 11
+                            lineNumber: 39,
+                            columnNumber: 12
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             children: [
@@ -179,33 +89,39 @@ function LoginPage() {
                                     children: "Mot de passe"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/page.tsx",
-                                    lineNumber: 142,
-                                    columnNumber: 13
+                                    lineNumber: 50,
+                                    columnNumber: 14
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    type: "password",
                                     ...register("password", {
-                                        required: "Le mot de passe est requis"
+                                        required: true
                                     }),
                                     className: "w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/page.tsx",
-                                    lineNumber: 143,
-                                    columnNumber: 13
+                                    lineNumber: 51,
+                                    columnNumber: 14
                                 }, this),
                                 errors.password && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-red-500 text-sm",
-                                    children: errors.password.message
+                                    children: "REQUIRED "
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/page.tsx",
-                                    lineNumber: 148,
-                                    columnNumber: 33
+                                    lineNumber: 56,
+                                    columnNumber: 34
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/page.tsx",
-                            lineNumber: 141,
-                            columnNumber: 11
+                            lineNumber: 49,
+                            columnNumber: 12
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            type: "submit"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/page.tsx",
+                            lineNumber: 59,
+                            columnNumber: 12
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                             variant: "outline",
@@ -214,27 +130,44 @@ function LoginPage() {
                             children: " Se connecter "
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.tsx",
-                            lineNumber: 151,
-                            columnNumber: 11
+                            lineNumber: 60,
+                            columnNumber: 12
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/page.tsx",
-                    lineNumber: 130,
-                    columnNumber: 9
+                    lineNumber: 38,
+                    columnNumber: 10
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/page.tsx",
-            lineNumber: 128,
-            columnNumber: 7
+            lineNumber: 36,
+            columnNumber: 8
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/app/page.tsx",
-        lineNumber: 127,
-        columnNumber: 5
+        lineNumber: 35,
+        columnNumber: 6
     }, this);
-}
+} // import { useForm } from "react-hook-form";
+ // export default function LoginPage() {
+ //   const { register, handleSubmit, watch, formState: { errors } } = useForm();
+ //   const onSubmit = (data: any) => console.log(data);
+ //   console.log(watch("example")); // watch input value by passing the name of it
+ //   return (
+ //     /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
+ //     <form onSubmit={handleSubmit(onSubmit)}>
+ //       {/* register your input into the hook by invoking the "register" function */}
+ //       <input defaultValue="test" {...register("example")} />
+ //       {/* include validation with required or other standard HTML validation rules */}
+ //       <input {...register("exampleRequired", { required: true })} />
+ //       {/* errors will return when field validation fails  */}
+ //       {errors.exampleRequired && <span>This field is required</span>}
+ //       <input type="submit" />
+ //     </form>
+ //   );
+ // }
 }}),
 "[project]/node_modules/react-hook-form/dist/index.esm.mjs [app-ssr] (ecmascript)": ((__turbopack_context__) => {
 "use strict";
@@ -246,6 +179,7 @@ __turbopack_context__.s({
     "Form": (()=>Form),
     "FormProvider": (()=>FormProvider),
     "appendErrors": (()=>appendErrors),
+    "createFormControl": (()=>createFormControl),
     "get": (()=>get),
     "set": (()=>set),
     "useController": (()=>useController),
@@ -326,7 +260,6 @@ var set = (object, path, value1)=>{
         object[key] = newValue;
         object = object[key];
     }
-    return object;
 };
 const EVENTS = {
     BLUR: 'blur',
@@ -433,30 +366,6 @@ var getProxyFormState = (formState, control, localProxyFormState, isRoot = true)
     }
     return result;
 };
-var isEmptyObject = (value1)=>isObject(value1) && !Object.keys(value1).length;
-var shouldRenderFormState = (formStateData, _proxyFormState, updateFormState, isRoot)=>{
-    updateFormState(formStateData);
-    const { name, ...formState } = formStateData;
-    return isEmptyObject(formState) || Object.keys(formState).length >= Object.keys(_proxyFormState).length || Object.keys(formState).find((key)=>_proxyFormState[key] === (!isRoot || VALIDATION_MODE.all));
-};
-var convertToArrayPayload = (value1)=>Array.isArray(value1) ? value1 : [
-        value1
-    ];
-var shouldSubscribeByName = (name, signalName, exact)=>!name || !signalName || name === signalName || convertToArrayPayload(name).some((currentName)=>currentName && (exact ? currentName === signalName : currentName.startsWith(signalName) || signalName.startsWith(currentName)));
-function useSubscribe(props) {
-    const _props = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(props);
-    _props.current = props;
-    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
-        const subscription = !props.disabled && _props.current.subject && _props.current.subject.subscribe({
-            next: _props.current.next
-        });
-        return ()=>{
-            subscription && subscription.unsubscribe();
-        };
-    }, [
-        props.disabled
-    ]);
-}
 /**
  * This custom hook allows you to subscribe to each form state, and isolate the re-render at the custom hook level. It has its scope in terms of form state subscription, so it would not affect other useFormState and useForm. Using this hook can reduce the re-render impact on large and complex form application.
  *
@@ -490,7 +399,6 @@ function useSubscribe(props) {
     const methods = useFormContext();
     const { control = methods.control, disabled, name, exact } = props || {};
     const [formState, updateFormState] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useState(control._formState);
-    const _mounted = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(true);
     const _localProxyFormState = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef({
         isDirty: false,
         isLoading: false,
@@ -503,20 +411,23 @@ function useSubscribe(props) {
     });
     const _name = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(name);
     _name.current = name;
-    useSubscribe({
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>control._subscribe({
+            name: _name.current,
+            formState: _localProxyFormState.current,
+            exact,
+            callback: (formState)=>{
+                !disabled && updateFormState({
+                    ...control._formState,
+                    ...formState
+                });
+            }
+        }), [
+        control,
         disabled,
-        next: (value1)=>_mounted.current && shouldSubscribeByName(_name.current, value1.name, exact) && shouldRenderFormState(value1, _localProxyFormState.current, control._updateFormState) && updateFormState({
-                ...control._formState,
-                ...value1
-            }),
-        subject: control._subjects.state
-    });
+        exact
+    ]);
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
-        _mounted.current = true;
-        _localProxyFormState.current.isValid && control._updateValid(true);
-        return ()=>{
-            _mounted.current = false;
-        };
+        _localProxyFormState.current.isValid && control._setValid(true);
     }, [
         control
     ]);
@@ -556,16 +467,20 @@ var generateWatchOutput = (names, _names, formValues, isGlobal, defaultValue)=>{
     const methods = useFormContext();
     const { control = methods.control, name, defaultValue, disabled, exact } = props || {};
     const _name = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(name);
+    const _defaultValue = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(defaultValue);
     _name.current = name;
-    useSubscribe({
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>control._subscribe({
+            name: _name.current,
+            formState: {
+                values: true
+            },
+            exact,
+            callback: (formState)=>!disabled && updateValue(generateWatchOutput(_name.current, control._names, formState.values || control._formValues, false, _defaultValue.current))
+        }), [
+        control,
         disabled,
-        subject: control._subjects.values,
-        next: (formState)=>{
-            if (shouldSubscribeByName(_name.current, formState.name, exact)) {
-                updateValue(cloneObject(generateWatchOutput(_name.current, control._names, formState.values || control._formValues, false, defaultValue)));
-            }
-        }
-    });
+        exact
+    ]);
     const [value1, updateValue] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useState(control._getWatch(name, defaultValue));
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>control._removeUnmounted());
     return value1;
@@ -608,6 +523,7 @@ var generateWatchOutput = (names, _names, formValues, isGlobal, defaultValue)=>{
         name,
         exact: true
     });
+    const _props = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(props);
     const _registerProps = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(control.register(name, {
         ...props.rules,
         value: value1,
@@ -640,47 +556,65 @@ var generateWatchOutput = (names, _names, formValues, isGlobal, defaultValue)=>{
         formState,
         name
     ]);
+    const onChange = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback((event)=>_registerProps.current.onChange({
+            target: {
+                value: getEventValue(event),
+                name: name
+            },
+            type: EVENTS.CHANGE
+        }), [
+        name
+    ]);
+    const onBlur = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(()=>_registerProps.current.onBlur({
+            target: {
+                value: get(control._formValues, name),
+                name: name
+            },
+            type: EVENTS.BLUR
+        }), [
+        name,
+        control._formValues
+    ]);
+    const ref = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback((elm)=>{
+        const field = get(control._fields, name);
+        if (field && elm) {
+            field._f.ref = {
+                focus: ()=>elm.focus(),
+                select: ()=>elm.select(),
+                setCustomValidity: (message)=>elm.setCustomValidity(message),
+                reportValidity: ()=>elm.reportValidity()
+            };
+        }
+    }, [
+        control._fields,
+        name
+    ]);
     const field = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useMemo(()=>({
             name,
             value: value1,
             ...isBoolean(disabled) || formState.disabled ? {
                 disabled: formState.disabled || disabled
             } : {},
-            onChange: (event)=>_registerProps.current.onChange({
-                    target: {
-                        value: getEventValue(event),
-                        name: name
-                    },
-                    type: EVENTS.CHANGE
-                }),
-            onBlur: ()=>_registerProps.current.onBlur({
-                    target: {
-                        value: get(control._formValues, name),
-                        name: name
-                    },
-                    type: EVENTS.BLUR
-                }),
-            ref: (elm)=>{
-                const field = get(control._fields, name);
-                if (field && elm) {
-                    field._f.ref = {
-                        focus: ()=>elm.focus(),
-                        select: ()=>elm.select(),
-                        setCustomValidity: (message)=>elm.setCustomValidity(message),
-                        reportValidity: ()=>elm.reportValidity()
-                    };
-                }
-            }
+            onChange,
+            onBlur,
+            ref
         }), [
         name,
-        control._formValues,
         disabled,
         formState.disabled,
-        value1,
-        control._fields
+        onChange,
+        onBlur,
+        ref,
+        value1
     ]);
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
         const _shouldUnregisterField = control._options.shouldUnregister || shouldUnregister;
+        control.register(name, {
+            ..._props.current.rules,
+            ...isBoolean(_props.current.disabled) ? {
+                disabled: _props.current.disabled
+            } : {}
+        });
         const updateMounted = (name, value1)=>{
             const field = get(control._fields, name);
             if (field && field._f) {
@@ -706,9 +640,8 @@ var generateWatchOutput = (names, _names, formValues, isGlobal, defaultValue)=>{
         shouldUnregister
     ]);
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
-        control._updateDisabledField({
+        control._setDisabledField({
             disabled,
-            fields: control._fields,
             name
         });
     }, [
@@ -895,14 +828,218 @@ var appendErrors = (name, validateAllFieldCriteria, errors, type, message)=>vali
             [type]: message || true
         }
     } : {};
-var generateId = ()=>{
-    const d = typeof performance === 'undefined' ? Date.now() : performance.now() * 1000;
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c)=>{
-        const r = (Math.random() * 16 + d) % 16 | 0;
-        return (c == 'x' ? r : r & 0x3 | 0x8).toString(16);
-    });
+var convertToArrayPayload = (value1)=>Array.isArray(value1) ? value1 : [
+        value1
+    ];
+var createSubject = ()=>{
+    let _observers = [];
+    const next = (value1)=>{
+        for (const observer of _observers){
+            observer.next && observer.next(value1);
+        }
+    };
+    const subscribe = (observer)=>{
+        _observers.push(observer);
+        return {
+            unsubscribe: ()=>{
+                _observers = _observers.filter((o)=>o !== observer);
+            }
+        };
+    };
+    const unsubscribe = ()=>{
+        _observers = [];
+    };
+    return {
+        get observers () {
+            return _observers;
+        },
+        next,
+        subscribe,
+        unsubscribe
+    };
 };
-var getFocusFieldName = (name, index, options = {})=>options.shouldFocus || isUndefined(options.shouldFocus) ? options.focusName || `${name}.${isUndefined(options.focusIndex) ? index : options.focusIndex}.` : '';
+var isPrimitive = (value1)=>isNullOrUndefined(value1) || !isObjectType(value1);
+function deepEqual(object1, object2) {
+    if (isPrimitive(object1) || isPrimitive(object2)) {
+        return object1 === object2;
+    }
+    if (isDateObject(object1) && isDateObject(object2)) {
+        return object1.getTime() === object2.getTime();
+    }
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
+    for (const key of keys1){
+        const val1 = object1[key];
+        if (!keys2.includes(key)) {
+            return false;
+        }
+        if (key !== 'ref') {
+            const val2 = object2[key];
+            if (isDateObject(val1) && isDateObject(val2) || isObject(val1) && isObject(val2) || Array.isArray(val1) && Array.isArray(val2) ? !deepEqual(val1, val2) : val1 !== val2) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+var isEmptyObject = (value1)=>isObject(value1) && !Object.keys(value1).length;
+var isFileInput = (element)=>element.type === 'file';
+var isFunction = (value1)=>typeof value1 === 'function';
+var isHTMLElement = (value1)=>{
+    if (!isWeb) {
+        return false;
+    }
+    const owner = value1 ? value1.ownerDocument : 0;
+    return value1 instanceof (owner && owner.defaultView ? owner.defaultView.HTMLElement : HTMLElement);
+};
+var isMultipleSelect = (element)=>element.type === `select-multiple`;
+var isRadioInput = (element)=>element.type === 'radio';
+var isRadioOrCheckbox = (ref)=>isRadioInput(ref) || isCheckBoxInput(ref);
+var live = (ref)=>isHTMLElement(ref) && ref.isConnected;
+function baseGet(object, updatePath) {
+    const length = updatePath.slice(0, -1).length;
+    let index = 0;
+    while(index < length){
+        object = isUndefined(object) ? index++ : object[updatePath[index++]];
+    }
+    return object;
+}
+function isEmptyArray(obj) {
+    for(const key in obj){
+        if (obj.hasOwnProperty(key) && !isUndefined(obj[key])) {
+            return false;
+        }
+    }
+    return true;
+}
+function unset(object, path) {
+    const paths = Array.isArray(path) ? path : isKey(path) ? [
+        path
+    ] : stringToPath(path);
+    const childObject = paths.length === 1 ? object : baseGet(object, paths);
+    const index = paths.length - 1;
+    const key = paths[index];
+    if (childObject) {
+        delete childObject[key];
+    }
+    if (index !== 0 && (isObject(childObject) && isEmptyObject(childObject) || Array.isArray(childObject) && isEmptyArray(childObject))) {
+        unset(object, paths.slice(0, -1));
+    }
+    return object;
+}
+var objectHasFunction = (data)=>{
+    for(const key in data){
+        if (isFunction(data[key])) {
+            return true;
+        }
+    }
+    return false;
+};
+function markFieldsDirty(data, fields = {}) {
+    const isParentNodeArray = Array.isArray(data);
+    if (isObject(data) || isParentNodeArray) {
+        for(const key in data){
+            if (Array.isArray(data[key]) || isObject(data[key]) && !objectHasFunction(data[key])) {
+                fields[key] = Array.isArray(data[key]) ? [] : {};
+                markFieldsDirty(data[key], fields[key]);
+            } else if (!isNullOrUndefined(data[key])) {
+                fields[key] = true;
+            }
+        }
+    }
+    return fields;
+}
+function getDirtyFieldsFromDefaultValues(data, formValues, dirtyFieldsFromValues) {
+    const isParentNodeArray = Array.isArray(data);
+    if (isObject(data) || isParentNodeArray) {
+        for(const key in data){
+            if (Array.isArray(data[key]) || isObject(data[key]) && !objectHasFunction(data[key])) {
+                if (isUndefined(formValues) || isPrimitive(dirtyFieldsFromValues[key])) {
+                    dirtyFieldsFromValues[key] = Array.isArray(data[key]) ? markFieldsDirty(data[key], []) : {
+                        ...markFieldsDirty(data[key])
+                    };
+                } else {
+                    getDirtyFieldsFromDefaultValues(data[key], isNullOrUndefined(formValues) ? {} : formValues[key], dirtyFieldsFromValues[key]);
+                }
+            } else {
+                dirtyFieldsFromValues[key] = !deepEqual(data[key], formValues[key]);
+            }
+        }
+    }
+    return dirtyFieldsFromValues;
+}
+var getDirtyFields = (defaultValues, formValues)=>getDirtyFieldsFromDefaultValues(defaultValues, formValues, markFieldsDirty(formValues));
+const defaultResult = {
+    value: false,
+    isValid: false
+};
+const validResult = {
+    value: true,
+    isValid: true
+};
+var getCheckboxValue = (options)=>{
+    if (Array.isArray(options)) {
+        if (options.length > 1) {
+            const values = options.filter((option)=>option && option.checked && !option.disabled).map((option)=>option.value);
+            return {
+                value: values,
+                isValid: !!values.length
+            };
+        }
+        return options[0].checked && !options[0].disabled ? options[0].attributes && !isUndefined(options[0].attributes.value) ? isUndefined(options[0].value) || options[0].value === '' ? validResult : {
+            value: options[0].value,
+            isValid: true
+        } : validResult : defaultResult;
+    }
+    return defaultResult;
+};
+var getFieldValueAs = (value1, { valueAsNumber, valueAsDate, setValueAs })=>isUndefined(value1) ? value1 : valueAsNumber ? value1 === '' ? NaN : value1 ? +value1 : value1 : valueAsDate && isString(value1) ? new Date(value1) : setValueAs ? setValueAs(value1) : value1;
+const defaultReturn = {
+    isValid: false,
+    value: null
+};
+var getRadioValue = (options)=>Array.isArray(options) ? options.reduce((previous, option)=>option && option.checked && !option.disabled ? {
+            isValid: true,
+            value: option.value
+        } : previous, defaultReturn) : defaultReturn;
+function getFieldValue(_f) {
+    const ref = _f.ref;
+    if (isFileInput(ref)) {
+        return ref.files;
+    }
+    if (isRadioInput(ref)) {
+        return getRadioValue(_f.refs).value;
+    }
+    if (isMultipleSelect(ref)) {
+        return [
+            ...ref.selectedOptions
+        ].map(({ value: value1 })=>value1);
+    }
+    if (isCheckBoxInput(ref)) {
+        return getCheckboxValue(_f.refs).value;
+    }
+    return getFieldValueAs(isUndefined(ref.value) ? _f.ref.value : ref.value, _f);
+}
+var getResolverOptions = (fieldsNames, _fields, criteriaMode, shouldUseNativeValidation)=>{
+    const fields = {};
+    for (const name of fieldsNames){
+        const field = get(_fields, name);
+        field && set(fields, name, field._f);
+    }
+    return {
+        criteriaMode,
+        names: [
+            ...fieldsNames
+        ],
+        fields,
+        shouldUseNativeValidation
+    };
+};
+var isRegex = (value1)=>value1 instanceof RegExp;
+var getRuleValue = (rule)=>isUndefined(rule) ? rule : isRegex(rule) ? rule.source : isObject(rule) ? isRegex(rule.value) ? rule.value.source : rule.value : rule;
 var getValidationModes = (mode)=>({
         isOnSubmit: !mode || mode === VALIDATION_MODE.onSubmit,
         isOnBlur: mode === VALIDATION_MODE.onBlur,
@@ -910,6 +1047,9 @@ var getValidationModes = (mode)=>({
         isOnAll: mode === VALIDATION_MODE.all,
         isOnTouch: mode === VALIDATION_MODE.onTouched
     });
+const ASYNC_FUNCTION = 'AsyncFunction';
+var hasPromiseValidation = (fieldReference)=>!!fieldReference && !!fieldReference.validate && !!(isFunction(fieldReference.validate) && fieldReference.validate.constructor.name === ASYNC_FUNCTION || isObject(fieldReference.validate) && Object.values(fieldReference.validate).find((validateFunction)=>validateFunction.constructor.name === ASYNC_FUNCTION));
+var hasValidation = (options)=>options.mount && (options.required || options.min || options.max || options.maxLength || options.minLength || options.pattern || options.validate);
 var isWatched = (name, _names, isBlurEvent)=>!isBlurEvent && (_names.watchAll || _names.watch.has(name) || [
         ..._names.watch
     ].some((watchName)=>name.startsWith(watchName) && /^\.\w+/.test(name.slice(watchName.length))));
@@ -937,56 +1077,62 @@ const iterateFieldsByAction = (fields, action, fieldsNames, abortEarly)=>{
     }
     return;
 };
+function schemaErrorLookup(errors, _fields, name) {
+    const error = get(errors, name);
+    if (error || isKey(name)) {
+        return {
+            error,
+            name
+        };
+    }
+    const names = name.split('.');
+    while(names.length){
+        const fieldName = names.join('.');
+        const field = get(_fields, fieldName);
+        const foundError = get(errors, fieldName);
+        if (field && !Array.isArray(field) && name !== fieldName) {
+            return {
+                name
+            };
+        }
+        if (foundError && foundError.type) {
+            return {
+                name: fieldName,
+                error: foundError
+            };
+        }
+        names.pop();
+    }
+    return {
+        name
+    };
+}
+var shouldRenderFormState = (formStateData, _proxyFormState, updateFormState, isRoot)=>{
+    updateFormState(formStateData);
+    const { name, ...formState } = formStateData;
+    return isEmptyObject(formState) || Object.keys(formState).length >= Object.keys(_proxyFormState).length || Object.keys(formState).find((key)=>_proxyFormState[key] === (!isRoot || VALIDATION_MODE.all));
+};
+var shouldSubscribeByName = (name, signalName, exact)=>!name || !signalName || name === signalName || convertToArrayPayload(name).some((currentName)=>currentName && (exact ? currentName === signalName : currentName.startsWith(signalName) || signalName.startsWith(currentName)));
+var skipValidation = (isBlurEvent, isTouched, isSubmitted, reValidateMode, mode)=>{
+    if (mode.isOnAll) {
+        return false;
+    } else if (!isSubmitted && mode.isOnTouch) {
+        return !(isTouched || isBlurEvent);
+    } else if (isSubmitted ? reValidateMode.isOnBlur : mode.isOnBlur) {
+        return !isBlurEvent;
+    } else if (isSubmitted ? reValidateMode.isOnChange : mode.isOnChange) {
+        return isBlurEvent;
+    }
+    return true;
+};
+var unsetEmptyArray = (ref, name)=>!compact(get(ref, name)).length && unset(ref, name);
 var updateFieldArrayRootError = (errors, error, name)=>{
     const fieldArrayErrors = convertToArrayPayload(get(errors, name));
     set(fieldArrayErrors, 'root', error[name]);
     set(errors, name, fieldArrayErrors);
     return errors;
 };
-var isFileInput = (element)=>element.type === 'file';
-var isFunction = (value1)=>typeof value1 === 'function';
-var isHTMLElement = (value1)=>{
-    if (!isWeb) {
-        return false;
-    }
-    const owner = value1 ? value1.ownerDocument : 0;
-    return value1 instanceof (owner && owner.defaultView ? owner.defaultView.HTMLElement : HTMLElement);
-};
 var isMessage = (value1)=>isString(value1);
-var isRadioInput = (element)=>element.type === 'radio';
-var isRegex = (value1)=>value1 instanceof RegExp;
-const defaultResult = {
-    value: false,
-    isValid: false
-};
-const validResult = {
-    value: true,
-    isValid: true
-};
-var getCheckboxValue = (options)=>{
-    if (Array.isArray(options)) {
-        if (options.length > 1) {
-            const values = options.filter((option)=>option && option.checked && !option.disabled).map((option)=>option.value);
-            return {
-                value: values,
-                isValid: !!values.length
-            };
-        }
-        return options[0].checked && !options[0].disabled ? options[0].attributes && !isUndefined(options[0].attributes.value) ? isUndefined(options[0].value) || options[0].value === '' ? validResult : {
-            value: options[0].value,
-            isValid: true
-        } : validResult : defaultResult;
-    }
-    return defaultResult;
-};
-const defaultReturn = {
-    isValid: false,
-    value: null
-};
-var getRadioValue = (options)=>Array.isArray(options) ? options.reduce((previous, option)=>option && option.checked && !option.disabled ? {
-            isValid: true,
-            value: option.value
-        } : previous, defaultReturn) : defaultReturn;
 function getValidateError(result, ref, type = 'validate') {
     if (isMessage(result) || Array.isArray(result) && result.every(isMessage) || isBoolean(result) && !result) {
         return {
@@ -1153,536 +1299,6 @@ var validateField = async (field, disabledFieldNames, formValues, validateAllFie
     setCustomValidity(true);
     return error;
 };
-var appendAt = (data, value1)=>[
-        ...data,
-        ...convertToArrayPayload(value1)
-    ];
-var fillEmptyArray = (value1)=>Array.isArray(value1) ? value1.map(()=>undefined) : undefined;
-function insert(data, index, value1) {
-    return [
-        ...data.slice(0, index),
-        ...convertToArrayPayload(value1),
-        ...data.slice(index)
-    ];
-}
-var moveArrayAt = (data, from, to)=>{
-    if (!Array.isArray(data)) {
-        return [];
-    }
-    if (isUndefined(data[to])) {
-        data[to] = undefined;
-    }
-    data.splice(to, 0, data.splice(from, 1)[0]);
-    return data;
-};
-var prependAt = (data, value1)=>[
-        ...convertToArrayPayload(value1),
-        ...convertToArrayPayload(data)
-    ];
-function removeAtIndexes(data, indexes) {
-    let i = 0;
-    const temp = [
-        ...data
-    ];
-    for (const index of indexes){
-        temp.splice(index - i, 1);
-        i++;
-    }
-    return compact(temp).length ? temp : [];
-}
-var removeArrayAt = (data, index)=>isUndefined(index) ? [] : removeAtIndexes(data, convertToArrayPayload(index).sort((a, b)=>a - b));
-var swapArrayAt = (data, indexA, indexB)=>{
-    [data[indexA], data[indexB]] = [
-        data[indexB],
-        data[indexA]
-    ];
-};
-function baseGet(object, updatePath) {
-    const length = updatePath.slice(0, -1).length;
-    let index = 0;
-    while(index < length){
-        object = isUndefined(object) ? index++ : object[updatePath[index++]];
-    }
-    return object;
-}
-function isEmptyArray(obj) {
-    for(const key in obj){
-        if (obj.hasOwnProperty(key) && !isUndefined(obj[key])) {
-            return false;
-        }
-    }
-    return true;
-}
-function unset(object, path) {
-    const paths = Array.isArray(path) ? path : isKey(path) ? [
-        path
-    ] : stringToPath(path);
-    const childObject = paths.length === 1 ? object : baseGet(object, paths);
-    const index = paths.length - 1;
-    const key = paths[index];
-    if (childObject) {
-        delete childObject[key];
-    }
-    if (index !== 0 && (isObject(childObject) && isEmptyObject(childObject) || Array.isArray(childObject) && isEmptyArray(childObject))) {
-        unset(object, paths.slice(0, -1));
-    }
-    return object;
-}
-var updateAt = (fieldValues, index, value1)=>{
-    fieldValues[index] = value1;
-    return fieldValues;
-};
-/**
- * A custom hook that exposes convenient methods to perform operations with a list of dynamic inputs that need to be appended, updated, removed etc. • [Demo](https://codesandbox.io/s/react-hook-form-usefieldarray-ssugn) • [Video](https://youtu.be/4MrbfGSFY2A)
- *
- * @remarks
- * [API](https://react-hook-form.com/docs/usefieldarray) • [Demo](https://codesandbox.io/s/react-hook-form-usefieldarray-ssugn)
- *
- * @param props - useFieldArray props
- *
- * @returns methods - functions to manipulate with the Field Arrays (dynamic inputs) {@link UseFieldArrayReturn}
- *
- * @example
- * ```tsx
- * function App() {
- *   const { register, control, handleSubmit, reset, trigger, setError } = useForm({
- *     defaultValues: {
- *       test: []
- *     }
- *   });
- *   const { fields, append } = useFieldArray({
- *     control,
- *     name: "test"
- *   });
- *
- *   return (
- *     <form onSubmit={handleSubmit(data => console.log(data))}>
- *       {fields.map((item, index) => (
- *          <input key={item.id} {...register(`test.${index}.firstName`)}  />
- *       ))}
- *       <button type="button" onClick={() => append({ firstName: "bill" })}>
- *         append
- *       </button>
- *       <input type="submit" />
- *     </form>
- *   );
- * }
- * ```
- */ function useFieldArray(props) {
-    const methods = useFormContext();
-    const { control = methods.control, name, keyName = 'id', shouldUnregister, rules } = props;
-    const [fields, setFields] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useState(control._getFieldArray(name));
-    const ids = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(control._getFieldArray(name).map(generateId));
-    const _fieldIds = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(fields);
-    const _name = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(name);
-    const _actioned = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(false);
-    _name.current = name;
-    _fieldIds.current = fields;
-    control._names.array.add(name);
-    rules && control.register(name, rules);
-    useSubscribe({
-        next: ({ values, name: fieldArrayName })=>{
-            if (fieldArrayName === _name.current || !fieldArrayName) {
-                const fieldValues = get(values, _name.current);
-                if (Array.isArray(fieldValues)) {
-                    setFields(fieldValues);
-                    ids.current = fieldValues.map(generateId);
-                }
-            }
-        },
-        subject: control._subjects.array
-    });
-    const updateValues = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback((updatedFieldArrayValues)=>{
-        _actioned.current = true;
-        control._updateFieldArray(name, updatedFieldArrayValues);
-    }, [
-        control,
-        name
-    ]);
-    const append = (value1, options)=>{
-        const appendValue = convertToArrayPayload(cloneObject(value1));
-        const updatedFieldArrayValues = appendAt(control._getFieldArray(name), appendValue);
-        control._names.focus = getFocusFieldName(name, updatedFieldArrayValues.length - 1, options);
-        ids.current = appendAt(ids.current, appendValue.map(generateId));
-        updateValues(updatedFieldArrayValues);
-        setFields(updatedFieldArrayValues);
-        control._updateFieldArray(name, updatedFieldArrayValues, appendAt, {
-            argA: fillEmptyArray(value1)
-        });
-    };
-    const prepend = (value1, options)=>{
-        const prependValue = convertToArrayPayload(cloneObject(value1));
-        const updatedFieldArrayValues = prependAt(control._getFieldArray(name), prependValue);
-        control._names.focus = getFocusFieldName(name, 0, options);
-        ids.current = prependAt(ids.current, prependValue.map(generateId));
-        updateValues(updatedFieldArrayValues);
-        setFields(updatedFieldArrayValues);
-        control._updateFieldArray(name, updatedFieldArrayValues, prependAt, {
-            argA: fillEmptyArray(value1)
-        });
-    };
-    const remove = (index)=>{
-        const updatedFieldArrayValues = removeArrayAt(control._getFieldArray(name), index);
-        ids.current = removeArrayAt(ids.current, index);
-        updateValues(updatedFieldArrayValues);
-        setFields(updatedFieldArrayValues);
-        !Array.isArray(get(control._fields, name)) && set(control._fields, name, undefined);
-        control._updateFieldArray(name, updatedFieldArrayValues, removeArrayAt, {
-            argA: index
-        });
-    };
-    const insert$1 = (index, value1, options)=>{
-        const insertValue = convertToArrayPayload(cloneObject(value1));
-        const updatedFieldArrayValues = insert(control._getFieldArray(name), index, insertValue);
-        control._names.focus = getFocusFieldName(name, index, options);
-        ids.current = insert(ids.current, index, insertValue.map(generateId));
-        updateValues(updatedFieldArrayValues);
-        setFields(updatedFieldArrayValues);
-        control._updateFieldArray(name, updatedFieldArrayValues, insert, {
-            argA: index,
-            argB: fillEmptyArray(value1)
-        });
-    };
-    const swap = (indexA, indexB)=>{
-        const updatedFieldArrayValues = control._getFieldArray(name);
-        swapArrayAt(updatedFieldArrayValues, indexA, indexB);
-        swapArrayAt(ids.current, indexA, indexB);
-        updateValues(updatedFieldArrayValues);
-        setFields(updatedFieldArrayValues);
-        control._updateFieldArray(name, updatedFieldArrayValues, swapArrayAt, {
-            argA: indexA,
-            argB: indexB
-        }, false);
-    };
-    const move = (from, to)=>{
-        const updatedFieldArrayValues = control._getFieldArray(name);
-        moveArrayAt(updatedFieldArrayValues, from, to);
-        moveArrayAt(ids.current, from, to);
-        updateValues(updatedFieldArrayValues);
-        setFields(updatedFieldArrayValues);
-        control._updateFieldArray(name, updatedFieldArrayValues, moveArrayAt, {
-            argA: from,
-            argB: to
-        }, false);
-    };
-    const update = (index, value1)=>{
-        const updateValue = cloneObject(value1);
-        const updatedFieldArrayValues = updateAt(control._getFieldArray(name), index, updateValue);
-        ids.current = [
-            ...updatedFieldArrayValues
-        ].map((item, i)=>!item || i === index ? generateId() : ids.current[i]);
-        updateValues(updatedFieldArrayValues);
-        setFields([
-            ...updatedFieldArrayValues
-        ]);
-        control._updateFieldArray(name, updatedFieldArrayValues, updateAt, {
-            argA: index,
-            argB: updateValue
-        }, true, false);
-    };
-    const replace = (value1)=>{
-        const updatedFieldArrayValues = convertToArrayPayload(cloneObject(value1));
-        ids.current = updatedFieldArrayValues.map(generateId);
-        updateValues([
-            ...updatedFieldArrayValues
-        ]);
-        setFields([
-            ...updatedFieldArrayValues
-        ]);
-        control._updateFieldArray(name, [
-            ...updatedFieldArrayValues
-        ], (data)=>data, {}, true, false);
-    };
-    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
-        control._state.action = false;
-        isWatched(name, control._names) && control._subjects.state.next({
-            ...control._formState
-        });
-        if (_actioned.current && (!getValidationModes(control._options.mode).isOnSubmit || control._formState.isSubmitted)) {
-            if (control._options.resolver) {
-                control._executeSchema([
-                    name
-                ]).then((result)=>{
-                    const error = get(result.errors, name);
-                    const existingError = get(control._formState.errors, name);
-                    if (existingError ? !error && existingError.type || error && (existingError.type !== error.type || existingError.message !== error.message) : error && error.type) {
-                        error ? set(control._formState.errors, name, error) : unset(control._formState.errors, name);
-                        control._subjects.state.next({
-                            errors: control._formState.errors
-                        });
-                    }
-                });
-            } else {
-                const field = get(control._fields, name);
-                if (field && field._f && !(getValidationModes(control._options.reValidateMode).isOnSubmit && getValidationModes(control._options.mode).isOnSubmit)) {
-                    validateField(field, control._names.disabled, control._formValues, control._options.criteriaMode === VALIDATION_MODE.all, control._options.shouldUseNativeValidation, true).then((error)=>!isEmptyObject(error) && control._subjects.state.next({
-                            errors: updateFieldArrayRootError(control._formState.errors, error, name)
-                        }));
-                }
-            }
-        }
-        control._subjects.values.next({
-            name,
-            values: {
-                ...control._formValues
-            }
-        });
-        control._names.focus && iterateFieldsByAction(control._fields, (ref, key)=>{
-            if (control._names.focus && key.startsWith(control._names.focus) && ref.focus) {
-                ref.focus();
-                return 1;
-            }
-            return;
-        });
-        control._names.focus = '';
-        control._updateValid();
-        _actioned.current = false;
-    }, [
-        fields,
-        name,
-        control
-    ]);
-    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
-        !get(control._formValues, name) && control._updateFieldArray(name);
-        return ()=>{
-            (control._options.shouldUnregister || shouldUnregister) && control.unregister(name);
-        };
-    }, [
-        name,
-        control,
-        keyName,
-        shouldUnregister
-    ]);
-    return {
-        swap: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(swap, [
-            updateValues,
-            name,
-            control
-        ]),
-        move: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(move, [
-            updateValues,
-            name,
-            control
-        ]),
-        prepend: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(prepend, [
-            updateValues,
-            name,
-            control
-        ]),
-        append: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(append, [
-            updateValues,
-            name,
-            control
-        ]),
-        remove: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(remove, [
-            updateValues,
-            name,
-            control
-        ]),
-        insert: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(insert$1, [
-            updateValues,
-            name,
-            control
-        ]),
-        update: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(update, [
-            updateValues,
-            name,
-            control
-        ]),
-        replace: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(replace, [
-            updateValues,
-            name,
-            control
-        ]),
-        fields: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useMemo(()=>fields.map((field, index)=>({
-                    ...field,
-                    [keyName]: ids.current[index] || generateId()
-                })), [
-            fields,
-            keyName
-        ])
-    };
-}
-var createSubject = ()=>{
-    let _observers = [];
-    const next = (value1)=>{
-        for (const observer of _observers){
-            observer.next && observer.next(value1);
-        }
-    };
-    const subscribe = (observer)=>{
-        _observers.push(observer);
-        return {
-            unsubscribe: ()=>{
-                _observers = _observers.filter((o)=>o !== observer);
-            }
-        };
-    };
-    const unsubscribe = ()=>{
-        _observers = [];
-    };
-    return {
-        get observers () {
-            return _observers;
-        },
-        next,
-        subscribe,
-        unsubscribe
-    };
-};
-var isPrimitive = (value1)=>isNullOrUndefined(value1) || !isObjectType(value1);
-function deepEqual(object1, object2) {
-    if (isPrimitive(object1) || isPrimitive(object2)) {
-        return object1 === object2;
-    }
-    if (isDateObject(object1) && isDateObject(object2)) {
-        return object1.getTime() === object2.getTime();
-    }
-    const keys1 = Object.keys(object1);
-    const keys2 = Object.keys(object2);
-    if (keys1.length !== keys2.length) {
-        return false;
-    }
-    for (const key of keys1){
-        const val1 = object1[key];
-        if (!keys2.includes(key)) {
-            return false;
-        }
-        if (key !== 'ref') {
-            const val2 = object2[key];
-            if (isDateObject(val1) && isDateObject(val2) || isObject(val1) && isObject(val2) || Array.isArray(val1) && Array.isArray(val2) ? !deepEqual(val1, val2) : val1 !== val2) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-var isMultipleSelect = (element)=>element.type === `select-multiple`;
-var isRadioOrCheckbox = (ref)=>isRadioInput(ref) || isCheckBoxInput(ref);
-var live = (ref)=>isHTMLElement(ref) && ref.isConnected;
-var objectHasFunction = (data)=>{
-    for(const key in data){
-        if (isFunction(data[key])) {
-            return true;
-        }
-    }
-    return false;
-};
-function markFieldsDirty(data, fields = {}) {
-    const isParentNodeArray = Array.isArray(data);
-    if (isObject(data) || isParentNodeArray) {
-        for(const key in data){
-            if (Array.isArray(data[key]) || isObject(data[key]) && !objectHasFunction(data[key])) {
-                fields[key] = Array.isArray(data[key]) ? [] : {};
-                markFieldsDirty(data[key], fields[key]);
-            } else if (!isNullOrUndefined(data[key])) {
-                fields[key] = true;
-            }
-        }
-    }
-    return fields;
-}
-function getDirtyFieldsFromDefaultValues(data, formValues, dirtyFieldsFromValues) {
-    const isParentNodeArray = Array.isArray(data);
-    if (isObject(data) || isParentNodeArray) {
-        for(const key in data){
-            if (Array.isArray(data[key]) || isObject(data[key]) && !objectHasFunction(data[key])) {
-                if (isUndefined(formValues) || isPrimitive(dirtyFieldsFromValues[key])) {
-                    dirtyFieldsFromValues[key] = Array.isArray(data[key]) ? markFieldsDirty(data[key], []) : {
-                        ...markFieldsDirty(data[key])
-                    };
-                } else {
-                    getDirtyFieldsFromDefaultValues(data[key], isNullOrUndefined(formValues) ? {} : formValues[key], dirtyFieldsFromValues[key]);
-                }
-            } else {
-                dirtyFieldsFromValues[key] = !deepEqual(data[key], formValues[key]);
-            }
-        }
-    }
-    return dirtyFieldsFromValues;
-}
-var getDirtyFields = (defaultValues, formValues)=>getDirtyFieldsFromDefaultValues(defaultValues, formValues, markFieldsDirty(formValues));
-var getFieldValueAs = (value1, { valueAsNumber, valueAsDate, setValueAs })=>isUndefined(value1) ? value1 : valueAsNumber ? value1 === '' ? NaN : value1 ? +value1 : value1 : valueAsDate && isString(value1) ? new Date(value1) : setValueAs ? setValueAs(value1) : value1;
-function getFieldValue(_f) {
-    const ref = _f.ref;
-    if (isFileInput(ref)) {
-        return ref.files;
-    }
-    if (isRadioInput(ref)) {
-        return getRadioValue(_f.refs).value;
-    }
-    if (isMultipleSelect(ref)) {
-        return [
-            ...ref.selectedOptions
-        ].map(({ value: value1 })=>value1);
-    }
-    if (isCheckBoxInput(ref)) {
-        return getCheckboxValue(_f.refs).value;
-    }
-    return getFieldValueAs(isUndefined(ref.value) ? _f.ref.value : ref.value, _f);
-}
-var getResolverOptions = (fieldsNames, _fields, criteriaMode, shouldUseNativeValidation)=>{
-    const fields = {};
-    for (const name of fieldsNames){
-        const field = get(_fields, name);
-        field && set(fields, name, field._f);
-    }
-    return {
-        criteriaMode,
-        names: [
-            ...fieldsNames
-        ],
-        fields,
-        shouldUseNativeValidation
-    };
-};
-var getRuleValue = (rule)=>isUndefined(rule) ? rule : isRegex(rule) ? rule.source : isObject(rule) ? isRegex(rule.value) ? rule.value.source : rule.value : rule;
-const ASYNC_FUNCTION = 'AsyncFunction';
-var hasPromiseValidation = (fieldReference)=>!!fieldReference && !!fieldReference.validate && !!(isFunction(fieldReference.validate) && fieldReference.validate.constructor.name === ASYNC_FUNCTION || isObject(fieldReference.validate) && Object.values(fieldReference.validate).find((validateFunction)=>validateFunction.constructor.name === ASYNC_FUNCTION));
-var hasValidation = (options)=>options.mount && (options.required || options.min || options.max || options.maxLength || options.minLength || options.pattern || options.validate);
-function schemaErrorLookup(errors, _fields, name) {
-    const error = get(errors, name);
-    if (error || isKey(name)) {
-        return {
-            error,
-            name
-        };
-    }
-    const names = name.split('.');
-    while(names.length){
-        const fieldName = names.join('.');
-        const field = get(_fields, fieldName);
-        const foundError = get(errors, fieldName);
-        if (field && !Array.isArray(field) && name !== fieldName) {
-            return {
-                name
-            };
-        }
-        if (foundError && foundError.type) {
-            return {
-                name: fieldName,
-                error: foundError
-            };
-        }
-        names.pop();
-    }
-    return {
-        name
-    };
-}
-var skipValidation = (isBlurEvent, isTouched, isSubmitted, reValidateMode, mode)=>{
-    if (mode.isOnAll) {
-        return false;
-    } else if (!isSubmitted && mode.isOnTouch) {
-        return !(isTouched || isBlurEvent);
-    } else if (isSubmitted ? reValidateMode.isOnBlur : mode.isOnBlur) {
-        return !isBlurEvent;
-    } else if (isSubmitted ? reValidateMode.isOnChange : mode.isOnChange) {
-        return isBlurEvent;
-    }
-    return true;
-};
-var unsetEmptyArray = (ref, name)=>!compact(get(ref, name)).length && unset(ref, name);
 const defaultOptions = {
     mode: VALIDATION_MODE.onSubmit,
     reValidateMode: VALIDATION_MODE.onChange,
@@ -1708,8 +1324,8 @@ function createFormControl(props = {}) {
         errors: _options.errors || {},
         disabled: _options.disabled || false
     };
-    let _fields = {};
-    let _defaultValues = isObject(_options.defaultValues) || isObject(_options.values) ? cloneObject(_options.defaultValues || _options.values) || {} : {};
+    const _fields = {};
+    let _defaultValues = isObject(_options.defaultValues) || isObject(_options.values) ? cloneObject(_options.values || _options.defaultValues) || {} : {};
     let _formValues = _options.shouldUnregister ? {} : cloneObject(_defaultValues);
     let _state = {
         action: false,
@@ -1734,8 +1350,10 @@ function createFormControl(props = {}) {
         isValid: false,
         errors: false
     };
+    let _proxySubscribeFormState = {
+        ..._proxyFormState
+    };
     const _subjects = {
-        values: createSubject(),
         array: createSubject(),
         state: createSubject()
     };
@@ -1746,9 +1364,9 @@ function createFormControl(props = {}) {
             clearTimeout(timer);
             timer = setTimeout(callback, wait);
         };
-    const _updateValid = async (shouldUpdateValid)=>{
-        if (!_options.disabled && (_proxyFormState.isValid || shouldUpdateValid)) {
-            const isValid = _options.resolver ? isEmptyObject((await _executeSchema()).errors) : await executeBuiltInValidation(_fields, true);
+    const _setValid = async (shouldUpdateValid)=>{
+        if (!_options.disabled && (_proxyFormState.isValid || _proxySubscribeFormState.isValid || shouldUpdateValid)) {
+            const isValid = _options.resolver ? isEmptyObject((await _runSchema()).errors) : await executeBuiltInValidation(_fields, true);
             if (isValid !== _formState.isValid) {
                 _subjects.state.next({
                     isValid
@@ -1757,7 +1375,7 @@ function createFormControl(props = {}) {
         }
     };
     const _updateIsValidating = (names, isValidating)=>{
-        if (!_options.disabled && (_proxyFormState.isValidating || _proxyFormState.validatingFields)) {
+        if (!_options.disabled && (_proxyFormState.isValidating || _proxyFormState.validatingFields || _proxySubscribeFormState.isValidating || _proxySubscribeFormState.validatingFields)) {
             (names || Array.from(_names.mount)).forEach((name)=>{
                 if (name) {
                     isValidating ? set(_formState.validatingFields, name, isValidating) : unset(_formState.validatingFields, name);
@@ -1769,7 +1387,7 @@ function createFormControl(props = {}) {
             });
         }
     };
-    const _updateFieldArray = (name, values = [], method, args, shouldSetValues = true, shouldUpdateFieldsAndState = true)=>{
+    const _setFieldArray = (name, values = [], method, args, shouldSetValues = true, shouldUpdateFieldsAndState = true)=>{
         if (args && method && !_options.disabled) {
             _state.action = true;
             if (shouldUpdateFieldsAndState && Array.isArray(get(_fields, name))) {
@@ -1781,11 +1399,11 @@ function createFormControl(props = {}) {
                 shouldSetValues && set(_formState.errors, name, errors);
                 unsetEmptyArray(_formState.errors, name);
             }
-            if (_proxyFormState.touchedFields && shouldUpdateFieldsAndState && Array.isArray(get(_formState.touchedFields, name))) {
+            if ((_proxyFormState.touchedFields || _proxySubscribeFormState.touchedFields) && shouldUpdateFieldsAndState && Array.isArray(get(_formState.touchedFields, name))) {
                 const touchedFields = method(get(_formState.touchedFields, name), args.argA, args.argB);
                 shouldSetValues && set(_formState.touchedFields, name, touchedFields);
             }
-            if (_proxyFormState.dirtyFields) {
+            if (_proxyFormState.dirtyFields || _proxySubscribeFormState.dirtyFields) {
                 _formState.dirtyFields = getDirtyFields(_defaultValues, _formValues);
             }
             _subjects.state.next({
@@ -1817,7 +1435,7 @@ function createFormControl(props = {}) {
         if (field) {
             const defaultValue = get(_formValues, name, isUndefined(value1) ? get(_defaultValues, name) : value1);
             isUndefined(defaultValue) || ref && ref.defaultChecked || shouldSkipSetValueAs ? set(_formValues, name, shouldSkipSetValueAs ? defaultValue : getFieldValue(field._f)) : setFieldValue(name, defaultValue);
-            _state.mount && _updateValid();
+            _state.mount && _setValid();
         }
     };
     const updateTouchAndDirty = (name, fieldValue, isBlurEvent, shouldDirty, shouldRender)=>{
@@ -1827,25 +1445,24 @@ function createFormControl(props = {}) {
             name
         };
         if (!_options.disabled) {
-            const disabledField = !!(get(_fields, name) && get(_fields, name)._f && get(_fields, name)._f.disabled);
             if (!isBlurEvent || shouldDirty) {
-                if (_proxyFormState.isDirty) {
+                if (_proxyFormState.isDirty || _proxySubscribeFormState.isDirty) {
                     isPreviousDirty = _formState.isDirty;
                     _formState.isDirty = output.isDirty = _getDirty();
                     shouldUpdateField = isPreviousDirty !== output.isDirty;
                 }
-                const isCurrentFieldPristine = disabledField || deepEqual(get(_defaultValues, name), fieldValue);
-                isPreviousDirty = !!(!disabledField && get(_formState.dirtyFields, name));
-                isCurrentFieldPristine || disabledField ? unset(_formState.dirtyFields, name) : set(_formState.dirtyFields, name, true);
+                const isCurrentFieldPristine = deepEqual(get(_defaultValues, name), fieldValue);
+                isPreviousDirty = !!get(_formState.dirtyFields, name);
+                isCurrentFieldPristine ? unset(_formState.dirtyFields, name) : set(_formState.dirtyFields, name, true);
                 output.dirtyFields = _formState.dirtyFields;
-                shouldUpdateField = shouldUpdateField || _proxyFormState.dirtyFields && isPreviousDirty !== !isCurrentFieldPristine;
+                shouldUpdateField = shouldUpdateField || (_proxyFormState.dirtyFields || _proxySubscribeFormState.dirtyFields) && isPreviousDirty !== !isCurrentFieldPristine;
             }
             if (isBlurEvent) {
                 const isPreviousFieldTouched = get(_formState.touchedFields, name);
                 if (!isPreviousFieldTouched) {
                     set(_formState.touchedFields, name, isBlurEvent);
                     output.touchedFields = _formState.touchedFields;
-                    shouldUpdateField = shouldUpdateField || _proxyFormState.touchedFields && isPreviousFieldTouched !== isBlurEvent;
+                    shouldUpdateField = shouldUpdateField || (_proxyFormState.touchedFields || _proxySubscribeFormState.touchedFields) && isPreviousFieldTouched !== isBlurEvent;
                 }
             }
             shouldUpdateField && shouldRender && _subjects.state.next(output);
@@ -1854,7 +1471,7 @@ function createFormControl(props = {}) {
     };
     const shouldRenderByError = (name, isValid, error, fieldState)=>{
         const previousFieldError = get(_formState.errors, name);
-        const shouldUpdateValid = _proxyFormState.isValid && isBoolean(isValid) && _formState.isValid !== isValid;
+        const shouldUpdateValid = (_proxyFormState.isValid || _proxySubscribeFormState.isValid) && isBoolean(isValid) && _formState.isValid !== isValid;
         if (_options.delayError && error) {
             delayErrorCallback = debounce(()=>updateErrors(name, error));
             delayErrorCallback(_options.delayError);
@@ -1879,14 +1496,14 @@ function createFormControl(props = {}) {
             _subjects.state.next(updatedFormState);
         }
     };
-    const _executeSchema = async (name)=>{
+    const _runSchema = async (name)=>{
         _updateIsValidating(name, true);
         const result = await _options.resolver(_formValues, _options.context, getResolverOptions(name || _names.mount, _fields, _options.criteriaMode, _options.shouldUseNativeValidation));
         _updateIsValidating(name);
         return result;
     };
     const executeSchemaAndUpdateState = async (names)=>{
-        const { errors } = await _executeSchema(names);
+        const { errors } = await _runSchema(names);
         if (names) {
             for (const name of names){
                 const error = get(errors, name);
@@ -1968,11 +1585,9 @@ function createFormControl(props = {}) {
                 } else {
                     fieldReference.ref.value = fieldValue;
                     if (!fieldReference.ref.type) {
-                        _subjects.values.next({
+                        _subjects.state.next({
                             name,
-                            values: {
-                                ..._formValues
-                            }
+                            values: cloneObject(_formValues)
                         });
                     }
                 }
@@ -1997,11 +1612,9 @@ function createFormControl(props = {}) {
         if (isFieldArray) {
             _subjects.array.next({
                 name,
-                values: {
-                    ..._formValues
-                }
+                values: cloneObject(_formValues)
             });
-            if ((_proxyFormState.isDirty || _proxyFormState.dirtyFields) && options.shouldDirty) {
+            if ((_proxyFormState.isDirty || _proxyFormState.dirtyFields || _proxySubscribeFormState.isDirty || _proxySubscribeFormState.dirtyFields) && options.shouldDirty) {
                 _subjects.state.next({
                     name,
                     dirtyFields: getDirtyFields(_defaultValues, _formValues),
@@ -2014,11 +1627,9 @@ function createFormControl(props = {}) {
         isWatched(name, _names) && _subjects.state.next({
             ..._formState
         });
-        _subjects.values.next({
+        _subjects.state.next({
             name: _state.mount ? name : undefined,
-            values: {
-                ..._formValues
-            }
+            values: cloneObject(_formValues)
         });
     };
     const onChange = async (event)=>{
@@ -2027,14 +1638,13 @@ function createFormControl(props = {}) {
         let name = target.name;
         let isFieldValueUpdated = true;
         const field = get(_fields, name);
-        const getCurrentFieldValue = ()=>target.type ? getFieldValue(field._f) : getEventValue(event);
         const _updateIsFieldValueUpdated = (fieldValue)=>{
             isFieldValueUpdated = Number.isNaN(fieldValue) || isDateObject(fieldValue) && isNaN(fieldValue.getTime()) || deepEqual(fieldValue, get(_formValues, name, fieldValue));
         };
         if (field) {
             let error;
             let isValid;
-            const fieldValue = getCurrentFieldValue();
+            const fieldValue = target.type ? getFieldValue(field._f) : getEventValue(event);
             const isBlurEvent = event.type === EVENTS.BLUR || event.type === EVENTS.FOCUS_OUT;
             const shouldSkipValidation = !hasValidation(field._f) && !_options.resolver && !get(_formState.errors, name) && !field._f.deps || skipValidation(isBlurEvent, get(_formState.touchedFields, name), _formState.isSubmitted, validationModeAfterSubmit, validationModeBeforeSubmit);
             const watched = isWatched(name, _names, isBlurEvent);
@@ -2045,21 +1655,21 @@ function createFormControl(props = {}) {
             } else if (field._f.onChange) {
                 field._f.onChange(event);
             }
-            const fieldState = updateTouchAndDirty(name, fieldValue, isBlurEvent, false);
+            const fieldState = updateTouchAndDirty(name, fieldValue, isBlurEvent);
             const shouldRender = !isEmptyObject(fieldState) || watched;
-            !isBlurEvent && _subjects.values.next({
+            !isBlurEvent && _subjects.state.next({
                 name,
                 type: event.type,
-                values: {
-                    ..._formValues
-                }
+                values: cloneObject(_formValues)
             });
             if (shouldSkipValidation) {
-                if (_proxyFormState.isValid) {
-                    if (_options.mode === 'onBlur' && isBlurEvent) {
-                        _updateValid();
+                if (_proxyFormState.isValid || _proxySubscribeFormState.isValid) {
+                    if (_options.mode === 'onBlur') {
+                        if (isBlurEvent) {
+                            _setValid();
+                        }
                     } else if (!isBlurEvent) {
-                        _updateValid();
+                        _setValid();
                     }
                 }
                 return shouldRender && _subjects.state.next({
@@ -2071,7 +1681,7 @@ function createFormControl(props = {}) {
                 ..._formState
             });
             if (_options.resolver) {
-                const { errors } = await _executeSchema([
+                const { errors } = await _runSchema([
                     name
                 ]);
                 _updateIsFieldValueUpdated(fieldValue);
@@ -2094,7 +1704,7 @@ function createFormControl(props = {}) {
                 if (isFieldValueUpdated) {
                     if (error) {
                         isValid = false;
-                    } else if (_proxyFormState.isValid) {
+                    } else if (_proxyFormState.isValid || _proxySubscribeFormState.isValid) {
                         isValid = await executeBuiltInValidation(_fields, true);
                     }
                 }
@@ -2127,12 +1737,12 @@ function createFormControl(props = {}) {
                     [fieldName]: field
                 } : field);
             }))).every(Boolean);
-            !(!validationResult && !_formState.isValid) && _updateValid();
+            !(!validationResult && !_formState.isValid) && _setValid();
         } else {
             validationResult = isValid = await executeBuiltInValidation(_fields);
         }
         _subjects.state.next({
-            ...!isString(name) || _proxyFormState.isValid && isValid !== _formState.isValid ? {} : {
+            ...!isString(name) || (_proxyFormState.isValid || _proxySubscribeFormState.isValid) && isValid !== _formState.isValid ? {} : {
                 name
             },
             ..._options.resolver || !name ? {
@@ -2181,9 +1791,33 @@ function createFormControl(props = {}) {
         });
         options && options.shouldFocus && ref && ref.focus && ref.focus();
     };
-    const watch = (name, defaultValue)=>isFunction(name) ? _subjects.values.subscribe({
+    const watch = (name, defaultValue)=>isFunction(name) ? _subjects.state.subscribe({
             next: (payload)=>name(_getWatch(undefined, defaultValue), payload)
         }) : _getWatch(name, defaultValue, true);
+    const _subscribe = (props)=>_subjects.state.subscribe({
+            next: (formState)=>{
+                if (shouldSubscribeByName(props.name, formState.name, props.exact) && shouldRenderFormState(formState, props.formState || _proxyFormState, _setFormState, props.reRenderRoot)) {
+                    props.callback({
+                        values: {
+                            ..._formValues
+                        },
+                        ..._formState,
+                        ...formState
+                    });
+                }
+            }
+        }).unsubscribe;
+    const subscribe = (props)=>{
+        _state.mount = true;
+        _proxySubscribeFormState = {
+            ..._proxySubscribeFormState,
+            ...props.formState
+        };
+        return _subscribe({
+            ...props,
+            formState: _proxySubscribeFormState
+        });
+    };
     const unregister = (name, options = {})=>{
         for (const fieldName of name ? convertToArrayPayload(name) : _names.mount){
             _names.mount.delete(fieldName);
@@ -2198,10 +1832,8 @@ function createFormControl(props = {}) {
             !options.keepIsValidating && unset(_formState.validatingFields, fieldName);
             !_options.shouldUnregister && !options.keepDefaultValue && unset(_defaultValues, fieldName);
         }
-        _subjects.values.next({
-            values: {
-                ..._formValues
-            }
+        _subjects.state.next({
+            values: cloneObject(_formValues)
         });
         _subjects.state.next({
             ..._formState,
@@ -2209,12 +1841,11 @@ function createFormControl(props = {}) {
                 isDirty: _getDirty()
             }
         });
-        !options.keepIsValid && _updateValid();
+        !options.keepIsValid && _setValid();
     };
-    const _updateDisabledField = ({ disabled, name, field, fields })=>{
+    const _setDisabledField = ({ disabled, name })=>{
         if (isBoolean(disabled) && _state.mount || !!disabled || _names.disabled.has(name)) {
             disabled ? _names.disabled.add(name) : _names.disabled.delete(name);
-            updateTouchAndDirty(name, getFieldValue(field ? field._f : get(fields, name)._f), false, false, true);
         }
     };
     const register = (name, options = {})=>{
@@ -2235,8 +1866,7 @@ function createFormControl(props = {}) {
         });
         _names.mount.add(name);
         if (field) {
-            _updateDisabledField({
-                field,
+            _setDisabledField({
                 disabled: isBoolean(options.disabled) ? options.disabled : _options.disabled,
                 name
             });
@@ -2325,20 +1955,20 @@ function createFormControl(props = {}) {
                 e.persist && e.persist();
             }
             let fieldValues = cloneObject(_formValues);
-            if (_names.disabled.size) {
-                for (const name of _names.disabled){
-                    set(fieldValues, name, undefined);
-                }
-            }
             _subjects.state.next({
                 isSubmitting: true
             });
             if (_options.resolver) {
-                const { errors, values } = await _executeSchema();
+                const { errors, values } = await _runSchema();
                 _formState.errors = errors;
                 fieldValues = values;
             } else {
                 await executeBuiltInValidation(_fields);
+            }
+            if (_names.disabled.size) {
+                for (const name of _names.disabled){
+                    set(fieldValues, name, undefined);
+                }
             }
             unset(_formState.errors, 'root');
             if (isEmptyObject(_formState.errors)) {
@@ -2387,7 +2017,7 @@ function createFormControl(props = {}) {
             }
             if (!options.keepError) {
                 unset(_formState.errors, name);
-                _proxyFormState.isValid && _updateValid();
+                _proxyFormState.isValid && _setValid();
             }
             _subjects.state.next({
                 ..._formState
@@ -2427,15 +2057,17 @@ function createFormControl(props = {}) {
                         }
                     }
                 }
-                _fields = {};
+                for (const fieldName of _names.mount){
+                    setValue(fieldName, get(values, fieldName));
+                }
             }
-            _formValues = _options.shouldUnregister ? keepStateOptions.keepDefaultValues ? cloneObject(_defaultValues) : {} : cloneObject(values);
+            _formValues = cloneObject(values);
             _subjects.array.next({
                 values: {
                     ...values
                 }
             });
-            _subjects.values.next({
+            _subjects.state.next({
                 values: {
                     ...values
                 }
@@ -2475,7 +2107,7 @@ function createFormControl(props = {}) {
             }
         }
     };
-    const _updateFormState = (updatedFormState)=>{
+    const _setFormState = (updatedFormState)=>{
         _formState = {
             ..._formState,
             ...updatedFormState
@@ -2487,28 +2119,28 @@ function createFormControl(props = {}) {
                 isLoading: false
             });
         });
-    return {
+    const methods = {
         control: {
             register,
             unregister,
             getFieldState,
             handleSubmit,
             setError,
-            _executeSchema,
+            _subscribe,
+            _runSchema,
             _getWatch,
             _getDirty,
-            _updateValid,
-            _removeUnmounted,
-            _updateFieldArray,
-            _updateDisabledField,
+            _setValid,
+            _setFieldArray,
+            _setDisabledField,
+            _setErrors,
             _getFieldArray,
             _reset,
             _resetDefaultValues,
-            _updateFormState,
+            _removeUnmounted,
             _disableForm,
             _subjects,
             _proxyFormState,
-            _setErrors,
             get _fields () {
                 return _fields;
             },
@@ -2533,9 +2165,6 @@ function createFormControl(props = {}) {
             get _formState () {
                 return _formState;
             },
-            set _formState (value){
-                _formState = value;
-            },
             get _options () {
                 return _options;
             },
@@ -2546,6 +2175,7 @@ function createFormControl(props = {}) {
                 };
             }
         },
+        subscribe,
         trigger,
         register,
         handleSubmit,
@@ -2559,6 +2189,342 @@ function createFormControl(props = {}) {
         setError,
         setFocus,
         getFieldState
+    };
+    return {
+        ...methods,
+        formControl: methods
+    };
+}
+var generateId = ()=>{
+    const d = typeof performance === 'undefined' ? Date.now() : performance.now() * 1000;
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c)=>{
+        const r = (Math.random() * 16 + d) % 16 | 0;
+        return (c == 'x' ? r : r & 0x3 | 0x8).toString(16);
+    });
+};
+var getFocusFieldName = (name, index, options = {})=>options.shouldFocus || isUndefined(options.shouldFocus) ? options.focusName || `${name}.${isUndefined(options.focusIndex) ? index : options.focusIndex}.` : '';
+var appendAt = (data, value1)=>[
+        ...data,
+        ...convertToArrayPayload(value1)
+    ];
+var fillEmptyArray = (value1)=>Array.isArray(value1) ? value1.map(()=>undefined) : undefined;
+function insert(data, index, value1) {
+    return [
+        ...data.slice(0, index),
+        ...convertToArrayPayload(value1),
+        ...data.slice(index)
+    ];
+}
+var moveArrayAt = (data, from, to)=>{
+    if (!Array.isArray(data)) {
+        return [];
+    }
+    if (isUndefined(data[to])) {
+        data[to] = undefined;
+    }
+    data.splice(to, 0, data.splice(from, 1)[0]);
+    return data;
+};
+var prependAt = (data, value1)=>[
+        ...convertToArrayPayload(value1),
+        ...convertToArrayPayload(data)
+    ];
+function removeAtIndexes(data, indexes) {
+    let i = 0;
+    const temp = [
+        ...data
+    ];
+    for (const index of indexes){
+        temp.splice(index - i, 1);
+        i++;
+    }
+    return compact(temp).length ? temp : [];
+}
+var removeArrayAt = (data, index)=>isUndefined(index) ? [] : removeAtIndexes(data, convertToArrayPayload(index).sort((a, b)=>a - b));
+var swapArrayAt = (data, indexA, indexB)=>{
+    [data[indexA], data[indexB]] = [
+        data[indexB],
+        data[indexA]
+    ];
+};
+var updateAt = (fieldValues, index, value1)=>{
+    fieldValues[index] = value1;
+    return fieldValues;
+};
+/**
+ * A custom hook that exposes convenient methods to perform operations with a list of dynamic inputs that need to be appended, updated, removed etc. • [Demo](https://codesandbox.io/s/react-hook-form-usefieldarray-ssugn) • [Video](https://youtu.be/4MrbfGSFY2A)
+ *
+ * @remarks
+ * [API](https://react-hook-form.com/docs/usefieldarray) • [Demo](https://codesandbox.io/s/react-hook-form-usefieldarray-ssugn)
+ *
+ * @param props - useFieldArray props
+ *
+ * @returns methods - functions to manipulate with the Field Arrays (dynamic inputs) {@link UseFieldArrayReturn}
+ *
+ * @example
+ * ```tsx
+ * function App() {
+ *   const { register, control, handleSubmit, reset, trigger, setError } = useForm({
+ *     defaultValues: {
+ *       test: []
+ *     }
+ *   });
+ *   const { fields, append } = useFieldArray({
+ *     control,
+ *     name: "test"
+ *   });
+ *
+ *   return (
+ *     <form onSubmit={handleSubmit(data => console.log(data))}>
+ *       {fields.map((item, index) => (
+ *          <input key={item.id} {...register(`test.${index}.firstName`)}  />
+ *       ))}
+ *       <button type="button" onClick={() => append({ firstName: "bill" })}>
+ *         append
+ *       </button>
+ *       <input type="submit" />
+ *     </form>
+ *   );
+ * }
+ * ```
+ */ function useFieldArray(props) {
+    const methods = useFormContext();
+    const { control = methods.control, name, keyName = 'id', shouldUnregister, rules } = props;
+    const [fields, setFields] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useState(control._getFieldArray(name));
+    const ids = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(control._getFieldArray(name).map(generateId));
+    const _fieldIds = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(fields);
+    const _name = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(name);
+    const _actioned = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(false);
+    _name.current = name;
+    _fieldIds.current = fields;
+    control._names.array.add(name);
+    rules && control.register(name, rules);
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>control._subjects.array.subscribe({
+            next: ({ values, name: fieldArrayName })=>{
+                if (fieldArrayName === _name.current || !fieldArrayName) {
+                    const fieldValues = get(values, _name.current);
+                    if (Array.isArray(fieldValues)) {
+                        setFields(fieldValues);
+                        ids.current = fieldValues.map(generateId);
+                    }
+                }
+            }
+        }).unsubscribe, [
+        control
+    ]);
+    const updateValues = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback((updatedFieldArrayValues)=>{
+        _actioned.current = true;
+        control._setFieldArray(name, updatedFieldArrayValues);
+    }, [
+        control,
+        name
+    ]);
+    const append = (value1, options)=>{
+        const appendValue = convertToArrayPayload(cloneObject(value1));
+        const updatedFieldArrayValues = appendAt(control._getFieldArray(name), appendValue);
+        control._names.focus = getFocusFieldName(name, updatedFieldArrayValues.length - 1, options);
+        ids.current = appendAt(ids.current, appendValue.map(generateId));
+        updateValues(updatedFieldArrayValues);
+        setFields(updatedFieldArrayValues);
+        control._setFieldArray(name, updatedFieldArrayValues, appendAt, {
+            argA: fillEmptyArray(value1)
+        });
+    };
+    const prepend = (value1, options)=>{
+        const prependValue = convertToArrayPayload(cloneObject(value1));
+        const updatedFieldArrayValues = prependAt(control._getFieldArray(name), prependValue);
+        control._names.focus = getFocusFieldName(name, 0, options);
+        ids.current = prependAt(ids.current, prependValue.map(generateId));
+        updateValues(updatedFieldArrayValues);
+        setFields(updatedFieldArrayValues);
+        control._setFieldArray(name, updatedFieldArrayValues, prependAt, {
+            argA: fillEmptyArray(value1)
+        });
+    };
+    const remove = (index)=>{
+        const updatedFieldArrayValues = removeArrayAt(control._getFieldArray(name), index);
+        ids.current = removeArrayAt(ids.current, index);
+        updateValues(updatedFieldArrayValues);
+        setFields(updatedFieldArrayValues);
+        !Array.isArray(get(control._fields, name)) && set(control._fields, name, undefined);
+        control._setFieldArray(name, updatedFieldArrayValues, removeArrayAt, {
+            argA: index
+        });
+    };
+    const insert$1 = (index, value1, options)=>{
+        const insertValue = convertToArrayPayload(cloneObject(value1));
+        const updatedFieldArrayValues = insert(control._getFieldArray(name), index, insertValue);
+        control._names.focus = getFocusFieldName(name, index, options);
+        ids.current = insert(ids.current, index, insertValue.map(generateId));
+        updateValues(updatedFieldArrayValues);
+        setFields(updatedFieldArrayValues);
+        control._setFieldArray(name, updatedFieldArrayValues, insert, {
+            argA: index,
+            argB: fillEmptyArray(value1)
+        });
+    };
+    const swap = (indexA, indexB)=>{
+        const updatedFieldArrayValues = control._getFieldArray(name);
+        swapArrayAt(updatedFieldArrayValues, indexA, indexB);
+        swapArrayAt(ids.current, indexA, indexB);
+        updateValues(updatedFieldArrayValues);
+        setFields(updatedFieldArrayValues);
+        control._setFieldArray(name, updatedFieldArrayValues, swapArrayAt, {
+            argA: indexA,
+            argB: indexB
+        }, false);
+    };
+    const move = (from, to)=>{
+        const updatedFieldArrayValues = control._getFieldArray(name);
+        moveArrayAt(updatedFieldArrayValues, from, to);
+        moveArrayAt(ids.current, from, to);
+        updateValues(updatedFieldArrayValues);
+        setFields(updatedFieldArrayValues);
+        control._setFieldArray(name, updatedFieldArrayValues, moveArrayAt, {
+            argA: from,
+            argB: to
+        }, false);
+    };
+    const update = (index, value1)=>{
+        const updateValue = cloneObject(value1);
+        const updatedFieldArrayValues = updateAt(control._getFieldArray(name), index, updateValue);
+        ids.current = [
+            ...updatedFieldArrayValues
+        ].map((item, i)=>!item || i === index ? generateId() : ids.current[i]);
+        updateValues(updatedFieldArrayValues);
+        setFields([
+            ...updatedFieldArrayValues
+        ]);
+        control._setFieldArray(name, updatedFieldArrayValues, updateAt, {
+            argA: index,
+            argB: updateValue
+        }, true, false);
+    };
+    const replace = (value1)=>{
+        const updatedFieldArrayValues = convertToArrayPayload(cloneObject(value1));
+        ids.current = updatedFieldArrayValues.map(generateId);
+        updateValues([
+            ...updatedFieldArrayValues
+        ]);
+        setFields([
+            ...updatedFieldArrayValues
+        ]);
+        control._setFieldArray(name, [
+            ...updatedFieldArrayValues
+        ], (data)=>data, {}, true, false);
+    };
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
+        control._state.action = false;
+        isWatched(name, control._names) && control._subjects.state.next({
+            ...control._formState
+        });
+        if (_actioned.current && (!getValidationModes(control._options.mode).isOnSubmit || control._formState.isSubmitted) && !getValidationModes(control._options.reValidateMode).isOnSubmit) {
+            if (control._options.resolver) {
+                control._runSchema([
+                    name
+                ]).then((result)=>{
+                    const error = get(result.errors, name);
+                    const existingError = get(control._formState.errors, name);
+                    if (existingError ? !error && existingError.type || error && (existingError.type !== error.type || existingError.message !== error.message) : error && error.type) {
+                        error ? set(control._formState.errors, name, error) : unset(control._formState.errors, name);
+                        control._subjects.state.next({
+                            errors: control._formState.errors
+                        });
+                    }
+                });
+            } else {
+                const field = get(control._fields, name);
+                if (field && field._f && !(getValidationModes(control._options.reValidateMode).isOnSubmit && getValidationModes(control._options.mode).isOnSubmit)) {
+                    validateField(field, control._names.disabled, control._formValues, control._options.criteriaMode === VALIDATION_MODE.all, control._options.shouldUseNativeValidation, true).then((error)=>!isEmptyObject(error) && control._subjects.state.next({
+                            errors: updateFieldArrayRootError(control._formState.errors, error, name)
+                        }));
+                }
+            }
+        }
+        control._subjects.state.next({
+            name,
+            values: cloneObject(control._formValues)
+        });
+        control._names.focus && iterateFieldsByAction(control._fields, (ref, key)=>{
+            if (control._names.focus && key.startsWith(control._names.focus) && ref.focus) {
+                ref.focus();
+                return 1;
+            }
+            return;
+        });
+        control._names.focus = '';
+        control._setValid();
+        _actioned.current = false;
+    }, [
+        fields,
+        name,
+        control
+    ]);
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
+        !get(control._formValues, name) && control._setFieldArray(name);
+        return ()=>{
+            const updateMounted = (name, value1)=>{
+                const field = get(control._fields, name);
+                if (field && field._f) {
+                    field._f.mount = value1;
+                }
+            };
+            control._options.shouldUnregister || shouldUnregister ? control.unregister(name) : updateMounted(name, false);
+        };
+    }, [
+        name,
+        control,
+        keyName,
+        shouldUnregister
+    ]);
+    return {
+        swap: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(swap, [
+            updateValues,
+            name,
+            control
+        ]),
+        move: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(move, [
+            updateValues,
+            name,
+            control
+        ]),
+        prepend: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(prepend, [
+            updateValues,
+            name,
+            control
+        ]),
+        append: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(append, [
+            updateValues,
+            name,
+            control
+        ]),
+        remove: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(remove, [
+            updateValues,
+            name,
+            control
+        ]),
+        insert: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(insert$1, [
+            updateValues,
+            name,
+            control
+        ]),
+        update: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(update, [
+            updateValues,
+            name,
+            control
+        ]),
+        replace: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useCallback(replace, [
+            updateValues,
+            name,
+            control
+        ]),
+        fields: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useMemo(()=>fields.map((field, index)=>({
+                    ...field,
+                    [keyName]: ids.current[index] || generateId()
+                })), [
+            fields,
+            keyName
+        ])
     };
 }
 /**
@@ -2610,22 +2576,24 @@ function createFormControl(props = {}) {
     });
     if (!_formControl.current) {
         _formControl.current = {
-            ...createFormControl(props),
+            ...props.formControl ? props.formControl : createFormControl(props),
             formState
         };
+        if (props.formControl && props.defaultValues && !isFunction(props.defaultValues)) {
+            props.formControl.reset(props.defaultValues, props.resetOptions);
+        }
     }
     const control = _formControl.current.control;
     control._options = props;
-    useSubscribe({
-        subject: control._subjects.state,
-        next: (value1)=>{
-            if (shouldRenderFormState(value1, control._proxyFormState, control._updateFormState, true)) {
-                updateFormState({
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useLayoutEffect(()=>control._subscribe({
+            formState: control._proxyFormState,
+            callback: ()=>updateFormState({
                     ...control._formState
-                });
-            }
-        }
-    });
+                }),
+            reRenderRoot: true
+        }), [
+        control
+    ]);
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>control._disableForm(props.disabled), [
         control,
         props.disabled
@@ -2658,7 +2626,7 @@ function createFormControl(props = {}) {
         control
     ]);
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
-        if (props.errors) {
+        if (props.errors && !isEmptyObject(props.errors)) {
             control._setErrors(props.errors);
         }
     }, [
@@ -2667,7 +2635,7 @@ function createFormControl(props = {}) {
     ]);
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
         if (!control._state.mount) {
-            control._updateValid();
+            control._setValid();
             control._state.mount = true;
         }
         if (control._state.watch) {
@@ -2679,7 +2647,7 @@ function createFormControl(props = {}) {
         control._removeUnmounted();
     });
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useEffect(()=>{
-        props.shouldUnregister && control._subjects.values.next({
+        props.shouldUnregister && control._subjects.state.next({
             values: control._getWatch()
         });
     }, [

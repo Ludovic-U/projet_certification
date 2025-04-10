@@ -71,6 +71,7 @@ module.exports.loginPost = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: 1 * 24 * 60 * 60 * 1000, // 1 days
+                //  D / H / Min / Sec / Ms
         });
 
         res.json({ message: 'Login successful' });
