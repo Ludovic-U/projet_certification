@@ -29,7 +29,7 @@ model Client {
   clientType String   
   description String?
   createdAt  DateTime @default(now())
-
+  projects     Project[]
   userRoles ClientUserRole[]
 }
 
@@ -93,7 +93,8 @@ model Project {
   projectStatus  String?  
   projectDesc    String?  
   createdAt      DateTime @default(now())
-
+  clientId      Int
+  client        Client   @relation(fields: [clientId], references: [clientId])
   manager        User     @relation("ProjectManager", fields: [projectManager], references: [userId])
   actions        Action[]
 }
