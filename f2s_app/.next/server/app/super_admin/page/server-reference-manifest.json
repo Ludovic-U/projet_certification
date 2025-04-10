@@ -1,0 +1,49 @@
+{
+  "node": {
+    "7f5b23a593ab062dc63e9d2e3d8ec1f6156d977b9b": {
+      "workers": {
+        "app/super_admin/page": {
+          "moduleId": "[project]/.next-internal/server/app/super_admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/node_modules/@clerk/nextjs/dist/esm/app-router/server-actions.js [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/super_admin/page": "action-browser"
+      }
+    },
+    "7f045009c0c1a9d42147ef2149e04409b869c8783e": {
+      "workers": {
+        "app/super_admin/page": {
+          "moduleId": "[project]/.next-internal/server/app/super_admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/node_modules/@clerk/nextjs/dist/esm/app-router/server-actions.js [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/super_admin/page": "action-browser"
+      }
+    },
+    "7f0b718e64d6654c8d873341c235ff80bca499e074": {
+      "workers": {
+        "app/super_admin/page": {
+          "moduleId": "[project]/.next-internal/server/app/super_admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/node_modules/@clerk/nextjs/dist/esm/app-router/server-actions.js [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/super_admin/page": "action-browser"
+      }
+    },
+    "7f93958e01ae8a9ab392685dd9f862428cd544993a": {
+      "workers": {
+        "app/super_admin/page": {
+          "moduleId": "[project]/.next-internal/server/app/super_admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/node_modules/@clerk/nextjs/dist/esm/app-router/server-actions.js [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/super_admin/page": "action-browser"
+      }
+    }
+  },
+  "edge": {}
+}
