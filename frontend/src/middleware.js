@@ -22,12 +22,13 @@ export function middleware(request) {
 
   // Vérifie si l'utilisateur est authentifié
   const isAuthenticated = request.cookies.get('next-auth.session-token') // Exemple pour next-auth
+  console.log(request.cookies)
 
-  // if (isProtectedRoute && !isAuthenticated) {
-  //   const url = new URL('/', request.url);
-  //   // url.searchParams.set('callbackUrl', pathname);
-  //   return NextResponse.redirect(url);
-  // }
+  if (isProtectedRoute && !isAuthenticated) {
+    const url = new URL('/', request.url);
+    // url.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(url);
+  }
   // return NextResponse.next();
 }
 
