@@ -1,4 +1,5 @@
 "use client";
+import axios from "axios";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useRouter } from 'next/navigation';
@@ -16,13 +17,21 @@ export default function Header() {
 
   const superadmin_is_connected = true // TODO: à CHANGER
 
+  const api = axios.create({
+    baseURL: "http://localhost:4000/api/",
+    withCredentials: true
+  });
+
   const goToRHpage= () => {
     router.push("/rh_page")
   }
 
-  const signOut= () => {
-    router.push("/")
-  }
+  const signOut = () => {
+    api.get('/user/logout');
+      console.log("Déconnexion réussie");
+      // Optionnel : redirection vers la page de login ou d’accueil
+      router.push("/")
+  };
 
   const goToFinancepage = () => {
     alert("PAGE EN TRAVAUX")

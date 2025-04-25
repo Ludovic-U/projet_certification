@@ -18,7 +18,18 @@
    const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginFormInputs>();
    const onSubmit = (data: LoginFormInputs) => {
     console.log("login data: ", data)
-    api.post('user/login', data)
+    api.post('user/login', {
+      "email": data.email,
+      "password": data.password
+    })
+    .then(function (response) {
+      console.log( "biiii");
+      console.log( response);
+    })
+    .catch(function (error) {
+      console.log( "baaaaa");
+      console.log( error);
+    });
   };
 
   //   const {
@@ -54,7 +65,7 @@
                {...register("password", { required: true })}
                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
              />
-             {errors.password && <p className="text-red-500 text-sm">REQUIRED </p>}
+             {errors.password && <p className="text-red-500 text-sm">REQUIREEEEED </p>}
            </div>
 
            <input type="submit" />

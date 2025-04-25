@@ -1,5 +1,5 @@
 
-
+import axios from "axios";
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
@@ -12,25 +12,42 @@ const protectedRoutes = [
                         '/user',
                         ];
 
-export function middleware(request) {
+export async function middleware(request)  {
   const { pathname } = request.nextUrl;
+
+  const api = axios.create({
+    baseURL: "http://localhost:4000/api/",
+    withCredentials: true, 
+  });
 
   // Vérifie si la route est protégée
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
 
-  // Vérifie si l'utilisateur est authentifié
-  const isAuthenticated = request.cookies.get('next-auth.session-token') // Exemple pour next-auth
-  console.log(request.cookies)
-  console.log(isAuthenticated)
+  const checkAuth = async () => {
+    try {
+      const response = await api.get('/authenticateUser'); // ou une route protégée quelconque
+      console.log("User connecté:", response.data);
+      return true;
+    } catch (err) {
+      console.warn("Utilisateur non authentifié");
+      return false;
+    }
+  };  
 
-  if (isProtectedRoute && !isAuthenticated) {
-    // const url = new URL('/', request.url);
+  if (isProtectedRoute && !checkAuth) {
+    const url = new URL('/', request.url);
     // url.searchParams.set('callbackUrl', pathname);
-    // return NextResponse.redirect(url);
+    return NextResponse.redirect(url);
   }
-  // return NextResponse.next();
+
+  //redirect si l'utilisateur est déjà connecté
+  if (checkAuth && !isProtectedRoute ) { 
+    const newurl = new URL(protectedRoutes[0] // à changer en fonction du niveau d'authorisation
+      , request.url);
+    return NextResponse.redirect(newurl);
+  }
 }
 
 export const config = {
