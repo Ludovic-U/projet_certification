@@ -15,7 +15,7 @@ export default function Header() {
   const router = useRouter();
   const [headerTitle, setHeaderTitle] = useState('');
 
-  const superadmin_is_connected = true // TODO: à CHANGER
+  var superadmin_is_connected = false // TODO: à CHANGER
 
   const api = axios.create({
     baseURL: "http://localhost:4000/api/",
@@ -43,7 +43,7 @@ export default function Header() {
       case "/admin":
         if (superadmin_is_connected) {
           router.push("/super_admin");
-        } else {
+        } else {      
           router.push("/"); 
         }
         break;
@@ -64,6 +64,7 @@ export default function Header() {
   useEffect(() => {
     const storedRole = localStorage.getItem("userRole") || "guest";
     setUserRole(storedRole);
+    console.log(storedRole)
 
     if (pathname !== "/") {
       let title = "";

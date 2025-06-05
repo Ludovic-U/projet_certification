@@ -23,11 +23,11 @@
       "password": data.password
     })
     .then(function (response) {
-      console.log( "biiii");
+      console.log( "Login successful");
       console.log( response);
     })
     .catch(function (error) {
-      console.log( "baaaaa");
+      console.log( "Login failed");
       console.log( error);
     });
   };

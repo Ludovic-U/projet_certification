@@ -1,0 +1,35 @@
+{
+  "/": { "previous": null, "role": null },
+  "/super_admin": {
+    "previous": null,
+    "permission": "super_admin_permission"
+  },
+  "/super_admin/settings": {
+    "previous": "/super_admin",
+    "permission": "super_admin_permission"
+  },
+  "/admin": {
+    "previous": "/super_admin",
+    "permission": "view_projects_list"
+  },
+  "/admin/settings": {
+    "previous": "/admin",
+    "permission": "admin_permission"
+  },
+  "/admin/new_project": {
+    "previous": "/admin",
+    "permission": "admin_permission"
+  },
+  "/project_overview": {
+    "previous": "/admin",
+    "permission": "view_project"
+  },
+  "/rh_page": {
+    "previous": "/admin",
+    "permission": "view_users"
+  },
+  "/user": {
+    "previous": "/admin",
+    "permission": "modify_user"
+  }
+}

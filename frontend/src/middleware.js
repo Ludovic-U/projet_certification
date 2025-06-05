@@ -3,6 +3,8 @@ import axios from "axios";
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
+import navigationGraph from "../src/arborescence.json"
+
 const protectedRoutes = [
                         '/super_admin',
                         '/admin',
@@ -13,6 +15,8 @@ const protectedRoutes = [
                         ];
 
 export async function middleware(request)  {
+  console.log(navigationGraph)
+  
   const { pathname } = request.nextUrl;
 
   const api = axios.create({
@@ -27,27 +31,28 @@ export async function middleware(request)  {
 
   const checkAuth = async () => {
     try {
-      const response = await api.get('/authenticateUser'); // ou une route protégée quelconque
+      const response = await api.get('/authenticateUser'); 
       console.log("User connecté:", response.data);
       return true;
     } catch (err) {
       console.warn("Utilisateur non authentifié");
       return false;
     }
-  };  
+  };
+  var isAuth = (await checkAuth()).valueOf() 
 
-  if (isProtectedRoute && !checkAuth) {
+  if (isProtectedRoute && !isAuth) { // redirige vers la page de connexion si l'utilisateur n'est pas connecté
     const url = new URL('/', request.url);
-    // url.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(url);
   }
 
   //redirect si l'utilisateur est déjà connecté
-  if (checkAuth && !isProtectedRoute ) { 
-    const newurl = new URL(protectedRoutes[0] // à changer en fonction du niveau d'authorisation
+  if (isAuth && !isProtectedRoute ) { 
+    const newurl = new URL(protectedRoutes[0] // TODO: à changer en fonction du niveau d'authorisation
       , request.url);
     return NextResponse.redirect(newurl);
   }
+
 }
 
 export const config = {

@@ -230,7 +230,7 @@ function Header() {
     const [userRole, setUserRole] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("guest"); // "guest" par défaut
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const [headerTitle, setHeaderTitle] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
-    const superadmin_is_connected = true // TODO: à CHANGER
+    var superadmin_is_connected = false // TODO: à CHANGER
     ;
     const api = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].create({
         baseURL: "http://localhost:4000/api/",
@@ -252,10 +252,10 @@ function Header() {
     const handleBackButtonClick = ()=>{
         switch(pathname){
             case "/admin":
-                if ("TURBOPACK compile-time truthy", 1) {
-                    router.push("/super_admin");
-                } else {
+                if ("TURBOPACK compile-time falsy", 0) {
                     "TURBOPACK unreachable";
+                } else {
+                    router.push("/");
                 }
                 break;
             case "/rh_page":
@@ -275,6 +275,7 @@ function Header() {
         "Header.useEffect": ()=>{
             const storedRole = localStorage.getItem("userRole") || "guest";
             setUserRole(storedRole);
+            console.log(storedRole);
             if (pathname !== "/") {
                 let title = "";
                 switch(pathname){
@@ -317,7 +318,7 @@ function Header() {
                         children: "Admin Panel"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 91,
+                        lineNumber: 92,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -325,7 +326,7 @@ function Header() {
                         children: "Déconnexion"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 92,
+                        lineNumber: 93,
                         columnNumber: 11
                     }, this)
                 ]
@@ -339,7 +340,7 @@ function Header() {
                         children: "Tableau de bord"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 101,
+                        lineNumber: 102,
                         columnNumber: 13
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -347,7 +348,7 @@ function Header() {
                         children: "Déconnexion"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 103,
+                        lineNumber: 104,
                         columnNumber: 11
                     }, this)
                 ]
@@ -372,12 +373,12 @@ function Header() {
                             size: 24
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/header.js",
-                            lineNumber: 117,
+                            lineNumber: 118,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 116,
+                        lineNumber: 117,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -385,13 +386,13 @@ function Header() {
                         children: headerTitle
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 119,
+                        lineNumber: 120,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/header.js",
-                lineNumber: 115,
+                lineNumber: 116,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -404,12 +405,12 @@ function Header() {
                             size: 18
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/header.js",
-                            lineNumber: 123,
+                            lineNumber: 124,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 122,
+                        lineNumber: 123,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -419,7 +420,7 @@ function Header() {
                         children: "Ressources Humaines"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 125,
+                        lineNumber: 126,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -429,7 +430,7 @@ function Header() {
                         children: "Finances"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 126,
+                        lineNumber: 127,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -439,19 +440,19 @@ function Header() {
                         children: "Se déconnecter"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/header.js",
-                        lineNumber: 127,
+                        lineNumber: 128,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/header.js",
-                lineNumber: 121,
+                lineNumber: 122,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/ui/header.js",
-        lineNumber: 114,
+        lineNumber: 115,
         columnNumber: 9
     }, this);
 }
