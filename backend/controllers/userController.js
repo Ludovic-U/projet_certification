@@ -1,4 +1,5 @@
 const { createJWT } = require('../utils/jwt');
+const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
@@ -48,30 +49,43 @@ module.exports.loginPost = async (req, res) => {
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
-        const roles = user.roles.map((ur) => ur.role.roleName);
-        const permissions = user.roles.flatMap((ur) =>
-            ur.role.rolePermissions.map((rp) => rp.permission.permName)
+        const roles = user.roles.map((userRole) => userRole.role.roleName);
+        const permissions = user.roles.flatMap((userRole) =>
+            userRole.role.rolePermissions.map((rolePerm) => rolePerm.permission.permName)
         );
 
         const clientData = user.clientUserRoles[0] || null;
 
+
+         // token is sent to a cookie AND saved in the db.
         const tokenPayload = {
-            userId: user.userId,
-            roles,
-            permissions,
-            clientId: clientData?.clientId || null,
-            isManager: clientData?.isManager || false,
-            position: clientData?.position || null,
-        };
+             userId: user.userId,
+             clientId: clientData?.clientId || null,
+             permissions: permissions,
+             createdAT: Date.now
+         };
 
         const token = createJWT(tokenPayload);
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
+        await prisma.userSession.create({
+        data: {
+            userId: user.userId,
+            tokenHash: tokenHash,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 jour
+            ip: req.ip, 
+            userAgent: req.headers['user-agent'],
+        },
+        });
+
+        // Set the token in a cookie
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: 1 * 24 * 60 * 60 * 1000, // 1 days
                 //  D / H / Min / Sec / Ms
+            path: '/',
         });
 
         res.json({ message: 'Login successful' });
@@ -139,7 +153,13 @@ module.exports.registerPost = async (req, res) => {
 };
 
 
-module.exports.logout = (req, res) => {
+module.exports.logout = async (req, res) => { //TODO: clear the session in the db
+    const crypto = require('crypto');
+    const token = req.cookies.token;
+    if (token) {
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        await prisma.userSession.deleteMany({ where: { tokenHash } });
+    }
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

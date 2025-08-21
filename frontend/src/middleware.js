@@ -1,56 +1,58 @@
 
 import axios from "axios";
 import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
+// import { NextRequest } from 'next/server';
 
-import navigationGraph from "../src/arborescence.json"
-
-const protectedRoutes = [
-                        '/super_admin',
-                        '/admin',
-                        '/new_project',
-                        '/project_overview',
-                        '/rh_page',
-                        '/user',
-                        ];
+import {routePermissions} from "../src/routePermissions.js"
 
 export async function middleware(request)  {
-  console.log(navigationGraph)
   
   const { pathname } = request.nextUrl;
 
   const api = axios.create({
-    baseURL: "http://localhost:4000/api/",
-    withCredentials: true, 
+    baseURL: "http://localhost:4000/api/me",
+    withCredentials: true,    
+    headers: {
+        'cookie': request.headers.get('cookie')
+    }
   });
 
-  // Vérifie si la route est protégée
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
+  
+  var userPermissions = [];
   const checkAuth = async () => {
+    console.log("Vérification de l'authentification...");
     try {
       const response = await api.get('/authenticateUser'); 
       console.log("User connecté:", response.data);
+      userPermissions = response.data.permissions;
       return true;
     } catch (err) {
       console.warn("Utilisateur non authentifié");
       return false;
     }
   };
-  var isAuth = (await checkAuth()).valueOf() 
+  var isAuth = (await checkAuth()).valueOf()
 
-  if (isProtectedRoute && !isAuth) { // redirige vers la page de connexion si l'utilisateur n'est pas connecté
+  
+
+  // redirige vers la page de connexion si l'utilisateur n'est pas connecté
+  if (!isAuth && pathname !== '/') { 
+    console.log("Utilisateur non authentifié, redirection vers la page de connexion...", pathname);
     const url = new URL('/', request.url);
     return NextResponse.redirect(url);
   }
 
+  // Vérifie si la route est protégée
+  const requiredPerms = routePermissions[request.path];
+  if (requiredPerms && !requiredPerms.length) {
+    console.log(`No permissions defined for route: ${request.path}`);
+    return NextResponse.next();
+  }
+
   //redirect si l'utilisateur est déjà connecté
-  if (isAuth && !isProtectedRoute ) { 
-    const newurl = new URL(protectedRoutes[0] // TODO: à changer en fonction du niveau d'authorisation
-      , request.url);
-    return NextResponse.redirect(newurl);
+  if (isAuth && pathname === '/') {
+    const url = new URL('/admin', request.url); //TODO: change to the desired default page
+    return NextResponse.redirect(url);
   }
 
 }

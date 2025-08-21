@@ -1,7 +1,5 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
   "/admin/page": "app/admin/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/page": "app/page.js",
-  "/super_admin/page": "app/super_admin/page.js"
+  "/project_overview/page": "app/project_overview/page.js",
+  "/test/page": "app/test/page.js"
 }

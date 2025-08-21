@@ -1,3 +1,5 @@
+# command to run the application using Docker Compose
+# docker compose up --build -d
 services:
   frontend:
     container_name: frontend

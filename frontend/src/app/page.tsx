@@ -3,6 +3,7 @@
  import { useForm } from "react-hook-form";
  import { Button } from "../components/ui/button";
  import axios from "axios";
+ import { useRouter } from "next/navigation";
 
   type LoginFormInputs = {
     email: string;
@@ -10,10 +11,13 @@
   };
 
  export default function LoginPage() {
-
+   const router = useRouter();
    const api = axios.create({
-     baseURL: "http://localhost:4000/api/"
+     baseURL: "http://localhost:4000/api/",
+     withCredentials: true
    })
+
+   
 
    const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginFormInputs>();
    const onSubmit = (data: LoginFormInputs) => {
@@ -23,12 +27,17 @@
       "password": data.password
     })
     .then(function (response) {
-      console.log( "Login successful");
+      console.log( "Login successful, routerpush");
       console.log( response);
+      // Redirect to the home page after successful login
+      router.push("/admin"); // TODO: check user role and redirect accordingly
+
     })
     .catch(function (error) {
       console.log( "Login failed");
       console.log( error);
+      // TODO: Handle error, show message to user
+      alert("Échec de la connexion. Veuillez vérifier vos identifiants. Erreur " + error.status);
     });
   };
 
@@ -65,7 +74,7 @@
                {...register("password", { required: true })}
                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
              />
-             {errors.password && <p className="text-red-500 text-sm">REQUIREEEEED </p>}
+             {errors.password && <p className="text-red-500 text-sm">REQUIRED </p>}
            </div>
 
            <input type="submit" />

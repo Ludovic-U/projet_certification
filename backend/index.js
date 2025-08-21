@@ -14,11 +14,20 @@ app.use(express.json());
 app.use(cookieParser());
 
 //cors
-app.use((req,res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000'); // TODO: change to front url
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
+});
+
+// Prevent TRACE method to avoid security issues (XST attacks)
+app.use((req, res, next) => {
+  if (req.method === 'TRACE') {
+    return res.sendStatus(405);
+  }
+  next();
 });
 
 
