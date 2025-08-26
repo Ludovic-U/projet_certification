@@ -5,7 +5,15 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Button } from "../components/ui/Button"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft, faChevronRight, faXmark, faGear, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "../components/ui/Button";
+
+const CirclePlus = () => (
+  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary group-hover:bg-primaryhover transition-colors duration-200 ease-in-out">
+    <FontAwesomeIcon icon={faPlus} className="text-light group-hover:text-lighthover" size="xl"/>
+  </div>
+)
 
 type LoginFormInputs = {
   email: string;
@@ -61,17 +69,8 @@ export default function LoginPage() {
   //  }  
 
   return (
-    <main className="flex flex-col min-h-screen min-w-screen items-center justify-center bg-[#F4F4F4]">
-      <Button size="sm" variant="purple">
-        Bouton
-      </Button>
-      <Button variant="purple" loading>En chargement</Button>
-      <Button variant="blue" disabled>Désactivé</Button>
-      <hr className="pt-8"></hr>
-
-      
-      <section className="bg-red-500 flex flex-col text-center text-[#272727] w-[25vw] h-[50vh] rounded-xl">
-
+    <main className="h-[calc(100vh-60px)] flex items-center justify-center bg-light overflow-y-scroll">
+      <section className="bg-white items-center flex flex-col text-center text-[#272727] w-[25vw] h-[50vh] rounded-xl">
         <h1
          className="">
           BIENVENUE
@@ -80,7 +79,7 @@ export default function LoginPage() {
         
         <form
          onSubmit={handleSubmit(onSubmit)}
-         className="bg-pink-500 flex flex-col">
+         className="bg-pink-500 flex flex-col items-center">
           <input
            {...register("email", {required: true})}
            className="bg-orange-500"
@@ -97,7 +96,7 @@ export default function LoginPage() {
           />
           {errors.password && <p>Entrez votre mot de passe pour vous connecter</p>}
         
-          <Button size="md" variant="blue">
+          <Button size="md">
             Se connecter
           </Button>
         </form>

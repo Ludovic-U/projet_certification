@@ -38,6 +38,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             loading = false,
             children,
             disabled,
+            icon,
             type = "button",
             ...props
         },
@@ -62,6 +63,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     <span className="sr-only">Chargement ...</span>
                     </>
                 )}
+                {icon && <span className="size=4">{icon}</span>}
                 {children}
             </Comp>
         )

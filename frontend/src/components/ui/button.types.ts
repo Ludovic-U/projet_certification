@@ -6,7 +6,8 @@ export type ButtonVariantProps = CVAButtonVariantProps;
 export interface ButtonProps
     extends ButtonHTMLAttributes<HTMLButtonElement>,
         ButtonVariantProps {
-            children: ReactNode
-            asChild?: boolean
-            loading?: boolean
+            children?: ReactNode;
+            asChild?: boolean;
+            loading?: boolean;
+            icon?: ReactNode;
         }

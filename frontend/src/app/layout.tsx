@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "../components/ui/header"
 import { oswald, notoSans, didactGothic } from "./fonts";
+
+import Header from "../components/layout/Header"
+import SideNav from "../components/layout/Sidenav"
 
 export const metadata: Metadata = {
   title: "F2S_APP",
@@ -15,9 +17,10 @@ export default function RootLayout({
 }>) {
   return (
       <html lang="fr">
-        <body className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>          
-          <Header></Header>
-          {children}
+        <body className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>
+          <Header/>
+          <SideNav/>
+            {children}
         </body>
       </html>
   );
