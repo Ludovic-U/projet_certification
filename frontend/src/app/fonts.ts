@@ -1,6 +1,6 @@
 import { Oswald, Noto_Sans, Didact_Gothic } from "next/font/google";
 
-export const oswald = Oswald ({
+export const oswald = Oswald({
     subsets: ["latin"],
     weight: ["400", "700"],
     variable: "--font-oswald",

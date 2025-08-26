@@ -16,10 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="fr">
-        <body className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>
-          <Header/>
-          <SideNav/>
+      <html lang="fr" className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>
+        <body>
+          {/* <Header/> */}
+          {/* <SideNav/> */}
             {children}
         </body>
       </html>
