@@ -85,7 +85,6 @@ model RolePermission {
 model Project {
   projectId      Int       @id @default(autoincrement())
   projectName    String    @unique
-  projectType    Type      @relation(fields: [typeId], references: [typeId])
   startDate      DateTime?
   endDate        DateTime?
   projectManager Int
@@ -99,7 +98,11 @@ model Project {
   manager        User      @relation("ProjectManager", fields: [projectManager], references: [userId])
   actions        Action[]
 
-  responses Response[]
+  types           Type[]
+  responses       Response[]
+  ProjectType     ProjectType[]
+  ProjectQuestion ProjectQuestion[]
+  questions       Question[]
 }
 
 model Action {
@@ -174,17 +177,31 @@ enum BudgetCategory {
   COMMUNICATION_EVENEMENTIEL
 }
 
+// ==========================
+// Type Models
+// ==========================
 model Type {
   typeId Int    @id @default(autoincrement())
   label  String
 
-  questions TypeQuestion[]
-  projects  Project[]
+  questions   TypeQuestion[]
+  projects    Project[]
+  ProjectType ProjectType[]
+}
+
+model ProjectType {
+  projectId Int
+  typeId    Int
+
+  project Project @relation(fields: [projectId], references: [projectId])
+  type    Type    @relation(fields: [typeId], references: [typeId])
+
+  @@id([projectId, typeId]) // Composite primary key
 }
 
 model TypeQuestion {
-  questionId Int
   typeId     Int
+  questionId Int
 
   question Question @relation(fields: [questionId], references: [questionId])
   type     Type     @relation(fields: [typeId], references: [typeId])
@@ -207,10 +224,12 @@ model Question {
   types     TypeQuestion[]
   options   Option[]
   responses Response[]
+  projects  Project[]
 
   // Self relations
-  parent   Question?  @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
-  children Question[] @relation("QuestionHierarchy")
+  parent          Question?         @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
+  children        Question[]        @relation("QuestionHierarchy")
+  ProjectQuestion ProjectQuestion[]
 }
 
 model Option {
@@ -238,4 +257,14 @@ model Response {
   // Self relations
   parent   Response?  @relation("ResponseHierarchy", fields: [responseIdParent], references: [responseId])
   children Response[] @relation("ResponseHierarchy")
+}
+
+model ProjectQuestion {
+  projectId  Int
+  questionId Int
+
+  project  Project  @relation(fields: [projectId], references: [projectId])
+  question Question @relation(fields: [questionId], references: [questionId])
+
+  @@id([projectId, questionId]) // Composite primary key
 }
