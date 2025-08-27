@@ -93,16 +93,13 @@ model Project {
   projectDesc    String?
   createdAt      DateTime  @default(now())
   clientId       Int
-  typeId         Int
   client         Client    @relation(fields: [clientId], references: [clientId])
   manager        User      @relation("ProjectManager", fields: [projectManager], references: [userId])
   actions        Action[]
 
-  types           Type[]
-  responses       Response[]
-  ProjectType     ProjectType[]
-  ProjectQuestion ProjectQuestion[]
-  questions       Question[]
+  types     ProjectType[]
+  questions ProjectQuestion[]
+  responses Response[]
 }
 
 model Action {
@@ -184,9 +181,8 @@ model Type {
   typeId Int    @id @default(autoincrement())
   label  String
 
-  questions   TypeQuestion[]
-  projects    Project[]
-  ProjectType ProjectType[]
+  questions TypeQuestion[]
+  projects  ProjectType[]
 }
 
 model ProjectType {
@@ -224,12 +220,11 @@ model Question {
   types     TypeQuestion[]
   options   Option[]
   responses Response[]
-  projects  Project[]
+  projects  ProjectQuestion[]
 
   // Self relations
-  parent          Question?         @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
-  children        Question[]        @relation("QuestionHierarchy")
-  ProjectQuestion ProjectQuestion[]
+  parent   Question?  @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
+  children Question[] @relation("QuestionHierarchy")
 }
 
 model Option {
