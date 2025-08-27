@@ -7,27 +7,14 @@ import { useState } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faChevronLeft,
-    faChevronRight,
-    faXmark,
-    faGear,
-    faPlus,
-    faSearch,
     faLock,
+    faEnvelope,
     faEye,
+    faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "../components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const CirclePlus = () => (
-  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary group-hover:bg-primaryhover transition-colors duration-200 ease-in-out">
-    <FontAwesomeIcon
-     icon={faPlus}
-     className="text-light group-hover:text-lighthover"
-     size="xl"/>
-  </div>
-);
 
 type LoginFormInputs = {
   email: string;
@@ -36,6 +23,8 @@ type LoginFormInputs = {
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [apiError, setApiError] = useState<string>("");
   
   const handleClick = () => {
     setIsLoading(true);
@@ -57,9 +46,15 @@ export default function LoginPage() {
     watch,
     formState: { errors },
   } = useForm<LoginFormInputs>();
+
+  const passwordValue = watch("password");
   
   const onSubmit = (data: LoginFormInputs) => {
+    setIsLoading(true);
+    setApiError("");
+
     console.log("login data: ", data);
+
     api.post("user/login", {
       email: data.email,
       password: data.password,
@@ -73,104 +68,104 @@ export default function LoginPage() {
     .catch(function (error) {
       console.log("Login failed");
       console.log(error);
-      // TODO: Handle error, show message to user
-      alert(
-        "Échec de la connexion. Veuillez vérifier vos identifiants. Erreur " +
-        error.status
-      );
+      setIsLoading(false);
+
+      let errorMessage = "Echec de la connexion. Veuillez véridier vos identifiants.";
+
+      if (error.response?.status == 401) {
+        errorMessage = "Email ou mot de passe incorrect.";
+      } else if (error.response?.status == 429) {
+        errorMessage = "Trop de tentatives. Veuillez réessayer plus tard.";
+      } else if (error.response?.status == 500) {
+        errorMessage = "Erreur du serveur. Veuillez réessayer plus tard";
+      } else if (!error.response) {
+        errorMessage = "Erreur de connexion. Vérifiez votre connexion internet.";
+      }
+
+      setApiError(errorMessage);
     });
   };
 
-    //   const {
-    //     register,
-    //     handleSubmit,
-    //     formState: { errors },
-    //   } = useForm<LoginFormInputs>();
-
-    //  const onSubmit = (data: LoginFormInputs) => {
-    //    console.log("Login Data:", data);
-    //    // api.post('/login', data)
-    //  }
-
   return (
-    // h-[calc(100vh-60px)]
-    <main className="h-screen flex flex-col items-center bg-light overflow-y-scroll">
-      <p className="my-5">test input</p>
-      <div className="flex flex-col gap-10">
-        <Input
-         label="Email"
-         required
-         placeholder="Placeholder"/>
+    <main className="h-[calc(100vh-60px)] bg-light flex flex-col items-center justify-center overflow-y-scroll">
+      <section className="w-[25vw] min-w-[350px] bg-white flex flex-col items-center text-dark rounded-xl shadow-500base p-8">
+        
+        <img src="/logo-sm.jpeg" className="rounded-full w-12 h-12" alt="logo"/>
+        <h1 className="font-oswald font-medium text-2xl my-3">BIENVENUE</h1>
+        <p className="font-didact text-greydarker text-lg mb-8">Entrez vos identifiants pour vous connecter.</p>
 
-        <Input
-         label="Input error + helperText"
-         placeholder="Placeholder"
-         error="Ceci est un message d'erreur"/>
-
-        <Input
-         label="Input success + helperText"
-         placeholder="Placeholder"
-         variant="success"
-         helperText="Validation réussie"/>
-
-        <Input
-         label="Input default loading"
-         placeholder="Placeholder"
-         loading/>
-
-        <Input
-         label="leftIcon"
-         placeholder="Placeholder"
-         leftIcon={
-            <span>
-              <FontAwesomeIcon icon={faSearch}/>
-            </span>}/>
-
-        <Input
-         label="rightIcon"
-         placeholder="Placeholder"
-         rightIcon={
-          <span className="cursor-pointer">
-            <FontAwesomeIcon icon={faEye}/>
-          </span>}/>
-      </div>
-
-      <hr className="m-5" />
-
-      <section className="bg-white items-center flex flex-col text-center text-[#272727] w-[25vw] h-[50vh] rounded-xl">
-        <h1 className="">BIENVENUE</h1>
-        <p>Entrez vos identifiants pour vous connecter.</p>
+        {apiError && (
+          <div className="w-[70%] mb-4 cursor-default">
+            <p className="text-alertdanger text-center text-sm">{apiError}</p>
+          </div>
+        )}
 
         <form
          onSubmit={handleSubmit(onSubmit)}
-         className="bg-pink-500 flex flex-col items-center">
-                    <input
-                        {...register("email", { required: true })}
-                        type="email"
-                        placeholder="bonjour@figuredeskills.fr"
-                    />
-                    {errors.email && (
-                        <p>Entrez votre email pour vous connecter</p>
-                    )}
+         className="flex flex-col gap-8 w-[70%]">
+          
+          <Input
+            {...register("email", {
+              required: "L'email est requis",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "Adresse email invalide"
+              }
+            })}
+            label="Email :"
+            type="email"
+            placeholder="bonjour@figuredeskills.fr"
+            error={errors.email?.message}
+            leftIcon={
+              <span className="text-grey">
+                <FontAwesomeIcon icon={faEnvelope}/>
+              </span>
+            }
+          />
 
-                    <input
-                        {...register("password", { required: true })}
-                        type="password"
-                        placeholder="*********"
-                    />
-                    {errors.password && (
-                        <p>Entrez votre mot de passe pour vous connecter</p>
-                    )}
+          <Input
+            {...register("password", {
+              required: "Le mot de passe est requis",
+              minLength: {
+                value: 3,
+                message: "Le mot de passe doit contenir au moins 3 caractères"
+              }
+            })}
+            label="Mot de passe :"
+            type={showPassword ? "text" : "password"}
+            placeholder="•••••••"
+            error={errors.password?.message}
+            rightIcon={
+              passwordValue && passwordValue.length > 0 ? (
+                <span
+                 className="cursor-pointer"
+                 onClick={() => setShowPassword(!showPassword)}>
+                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye}/>
+                </span>
+              ) : (
+                <span
+                 className="cursor-default opacity-50">
+                  <FontAwesomeIcon icon={faEye}/>
+                </span>
+              )
+            }
 
-          <Button size="md">Se connecter</Button>
+            leftIcon={
+              <span className="text-grey">
+                <FontAwesomeIcon icon={faLock}/>
+              </span>
+            }
+          />
+
+          <Button
+           size="md"
+           type="submit"
+           disabled={isLoading}
+           className="mt-6 self-center">
+            {isLoading ? "Connexion..." : "Se connecter"}
+          </Button>
         </form>
       </section>
     </main>
   );
 }
-
-//  <input type="submit" />
-//  <Button variant="outline"
-//  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
-//  type="submit"
-//  > Se connecter </Button>
