@@ -45,7 +45,7 @@ describe("Create Question Controller", () => {
   });
 
   it("should create a question successfully", async () => {
-    const mockQuestion = { id: 1, ...req.body };
+    const mockQuestion = { questionId: 1, ...req.body };
     prisma.question.create.mockResolvedValue(mockQuestion);
 
     await createQuestion(req, res);
@@ -90,8 +90,8 @@ describe("Get All Questions Controller", () => {
 
   it("should fetch all questions successfully", async () => {
     const mockQuestions = [
-      { id: 1, label: "Question 1" },
-      { id: 2, label: "Question 2" },
+      { questionId: 1, label: "Question 1" },
+      { questionId: 2, label: "Question 2" },
     ];
     prisma.question.findMany.mockResolvedValue(mockQuestions);
 
