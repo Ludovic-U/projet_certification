@@ -1,4 +1,7 @@
-const { createResponse } = require("../../controllers/responseController");
+const {
+  createResponse,
+  getAllResponse,
+} = require("../../controllers/responseController");
 const { prisma } = require("../../prisma/prismaClient");
 const { mockResponse } = require("../helpers/responseHelper");
 const { expectError } = require("../helpers/errorHelper");
@@ -66,5 +69,62 @@ describe("Create Response Controller", () => {
       "Internal Server Error"
     );
     expect(prisma.response.create).toHaveBeenCalled();
+  });
+});
+
+describe("Get all Responses Controller", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
+
+    req = {};
+    res = mockResponse();
+  });
+
+  it("should retrieve all responses successfully", async () => {
+    const mockResponses = [
+      {
+        responseId: 1,
+        label: "Sample answer",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        questionIdParent: null,
+      },
+      {
+        responseId: 2,
+        label: "Another answer",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        questionIdParent: null,
+      },
+    ];
+    prisma.response.findMany.mockResolvedValue(mockResponses);
+
+    await getAllResponse(req, res);
+
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: {
+        projectId: 1,
+        questionId: 1,
+      },
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockResponses);
+  });
+
+  it("should handle errors during response retrieval", async () => {
+    await expectError(
+      getAllResponse,
+      req,
+      res,
+      () => prisma.response.findMany.mockRejectedValue(new Error("DB error")),
+      500,
+      "Internal Server Error"
+    );
+    expect(prisma.response.findMany).toHaveBeenCalled();
   });
 });
