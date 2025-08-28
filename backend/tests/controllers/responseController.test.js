@@ -1,10 +1,11 @@
 const {
   createResponse,
-  getAllResponse,
+  getAllResponseByProject,
 } = require("../../controllers/responseController");
 const { prisma } = require("../../prisma/prismaClient");
 const { mockResponse } = require("../helpers/responseHelper");
 const { expectError } = require("../helpers/errorHelper");
+const { Param } = require("@prisma/client/runtime/library");
 
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
@@ -72,14 +73,16 @@ describe("Create Response Controller", () => {
   });
 });
 
-describe("Get all Responses Controller", () => {
+describe("Get all response by project Controller", () => {
   let req, res;
 
   beforeEach(() => {
     jest.clearAllMocks();
     console.error = jest.fn();
 
-    req = {};
+    req = {
+      params: { projectId: 1 },
+    };
     res = mockResponse();
   });
 
@@ -97,19 +100,18 @@ describe("Get all Responses Controller", () => {
         responseId: 2,
         label: "Another answer",
         projectId: 1,
-        questionId: 1,
+        questionId: 2,
         optionId: null,
         questionIdParent: null,
       },
     ];
     prisma.response.findMany.mockResolvedValue(mockResponses);
 
-    await getAllResponse(req, res);
+    await getAllResponseByProject(req, res);
 
     expect(prisma.response.findMany).toHaveBeenCalledWith({
       where: {
         projectId: 1,
-        questionId: 1,
       },
     });
     expect(res.status).toHaveBeenCalledWith(200);
@@ -118,7 +120,7 @@ describe("Get all Responses Controller", () => {
 
   it("should handle errors during response retrieval", async () => {
     await expectError(
-      getAllResponse,
+      getAllResponseByProject,
       req,
       res,
       () => prisma.response.findMany.mockRejectedValue(new Error("DB error")),
