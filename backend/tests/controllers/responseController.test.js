@@ -36,7 +36,9 @@ describe("Create Response Controller", () => {
       ...req.body,
     };
     prisma.response.create.mockResolvedValue(mockResponse);
+
     await createResponse(req, res);
+
     expect(prisma.response.create).toHaveBeenCalledWith({
       data: {
         label: req.body.label,
@@ -48,5 +50,15 @@ describe("Create Response Controller", () => {
     expect(res.json).toHaveBeenCalledWith(mockResponse);
   });
 
-  it("should handle errors during response creation", async () => {});
+  it("should handle errors during response creation", async () => {
+    await expectError(
+      createResponse,
+      req,
+      res,
+      () => prisma.question.create.mockRejectedValue(new Error("DB error")),
+      500,
+      "Internal Server Error"
+    );
+    expect(prisma.response.create).toHaveBeenCalled();
+  });
 });
