@@ -1,5 +1,6 @@
 const {
   createResponse,
+  updateResponse,
   getAllResponseByProject,
 } = require("../../controllers/responseController");
 const { prisma } = require("../../prisma/prismaClient");
@@ -72,6 +73,91 @@ describe("Create Response Controller", () => {
   });
 });
 
+describe("update Response Controller", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
+
+    req = {
+      params: { responseId: 1 },
+      body: {
+        label: "Updated answer",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        questionIdParent: null,
+      },
+    };
+    res = mockResponse();
+  });
+
+  it("should update a response successfully", async () => {
+    prisma.response.findUnique.mockResolvedValue({ responseId: 1 });
+    const mockResponse = {
+      responseId: 1,
+      ...req.body,
+    };
+    prisma.response.update.mockResolvedValue(mockResponse);
+
+    await updateResponse(req, res);
+
+    expect(prisma.response.update).toHaveBeenCalledWith({
+      where: { responseId: 1 },
+      data: {
+        label: req.body.label,
+        projectId: req.body.projectId,
+        questionId: req.body.questionId,
+        optionId: req.body.optionId,
+        questionIdParent: req.body.questionIdParent,
+      },
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockResponse);
+  });
+
+  it("should return 400 for invalid responseId", async () => {
+    req.params.responseId = "invalid";
+    await expectError(
+      updateResponse,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad Request: Invalid responseId"
+    );
+    expect(prisma.response.update).not.toHaveBeenCalled();
+  });
+
+  it("should return 404 if response to update does not exist", async () => {
+    await expectError(
+      updateResponse,
+      req,
+      res,
+      () => prisma.response.findUnique.mockResolvedValue(null),
+      404,
+      "Response not found"
+    );
+    expect(prisma.response.update).not.toHaveBeenCalled();
+  });
+
+  it("should handle errors during response update and return 500", async () => {
+    await expectError(
+      updateResponse,
+      req,
+      res,
+      () => {
+        prisma.response.findUnique.mockResolvedValue({ responseId: 1 });
+        prisma.response.update.mockRejectedValue(new Error("DB error"));
+      },
+      500,
+      "Internal Server Error"
+    );
+    expect(prisma.response.update).toHaveBeenCalled();
+  });
+});
+
 describe("Get all response by project Controller", () => {
   let req, res;
 
@@ -125,7 +211,7 @@ describe("Get all response by project Controller", () => {
       res,
       () => {},
       400,
-      "Invalid projectId"
+      "Bad Request: Invalid projectId"
     );
     expect(prisma.response.findMany).not.toHaveBeenCalled();
   });
