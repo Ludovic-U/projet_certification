@@ -59,7 +59,7 @@ describe("Create Response Controller", () => {
     expect(res.json).toHaveBeenCalledWith(mockResponse);
   });
 
-  it("should handle errors during response creation", async () => {
+  it("should handle errors during response creation and return 500", async () => {
     await expectError(
       createResponse,
       req,
@@ -117,7 +117,20 @@ describe("Get all response by project Controller", () => {
     expect(res.json).toHaveBeenCalledWith(mockResponses);
   });
 
-  it("should handle errors during response retrieval", async () => {
+  it("should return 400 for invalid projectId", async () => {
+    req.params.projectId = "invalid";
+    await expectError(
+      getAllResponseByProject,
+      req,
+      res,
+      () => {},
+      400,
+      "Invalid projectId"
+    );
+    expect(prisma.response.findMany).not.toHaveBeenCalled();
+  });
+
+  it("should handle errors during response retrieval and return 500", async () => {
     await expectError(
       getAllResponseByProject,
       req,
