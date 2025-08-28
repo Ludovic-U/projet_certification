@@ -5,7 +5,6 @@ const {
 const { prisma } = require("../../prisma/prismaClient");
 const { mockResponse } = require("../helpers/responseHelper");
 const { expectError } = require("../helpers/errorHelper");
-const { Param } = require("@prisma/client/runtime/library");
 
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
