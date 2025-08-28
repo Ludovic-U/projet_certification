@@ -5,7 +5,7 @@ const { expectError } = require("../helpers/errorHelper");
 
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
-    question: {
+    response: {
       create: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
@@ -19,15 +19,19 @@ describe("Create Response Controller", () => {
   let req, res;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
+
     req = {
       body: {
         label: "Sample answer",
         projectId: 1,
         questionId: 1,
+        optionId: null,
+        questionIdParent: null,
       },
     };
     res = mockResponse();
-    jest.clearAllMocks();
   });
 
   it("should create a response successfully", async () => {
@@ -44,6 +48,8 @@ describe("Create Response Controller", () => {
         label: req.body.label,
         projectId: req.body.projectId,
         questionId: req.body.questionId,
+        optionId: req.body.optionId,
+        questionIdParent: req.body.questionIdParent,
       },
     });
     expect(res.status).toHaveBeenCalledWith(201);
@@ -55,7 +61,7 @@ describe("Create Response Controller", () => {
       createResponse,
       req,
       res,
-      () => prisma.question.create.mockRejectedValue(new Error("DB error")),
+      () => prisma.response.create.mockRejectedValue(new Error("DB error")),
       500,
       "Internal Server Error"
     );
