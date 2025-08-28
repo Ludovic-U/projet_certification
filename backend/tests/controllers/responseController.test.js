@@ -1,6 +1,7 @@
 const {
   createResponse,
   updateResponse,
+  deleteResponse,
   getAllResponseByProject,
 } = require("../../controllers/responseController");
 const { prisma } = require("../../prisma/prismaClient");
@@ -39,11 +40,11 @@ describe("Create Response Controller", () => {
   });
 
   it("should create a response successfully", async () => {
-    const mockResponse = {
+    const mockedResponse = {
       responseId: 1,
       ...req.body,
     };
-    prisma.response.create.mockResolvedValue(mockResponse);
+    prisma.response.create.mockResolvedValue(mockedResponse);
 
     await createResponse(req, res);
 
@@ -57,7 +58,7 @@ describe("Create Response Controller", () => {
       },
     });
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith(mockResponse);
+    expect(res.json).toHaveBeenCalledWith(mockedResponse);
   });
 
   it("should handle errors during response creation and return 500", async () => {
@@ -95,16 +96,16 @@ describe("update Response Controller", () => {
 
   it("should update a response successfully", async () => {
     prisma.response.findUnique.mockResolvedValue({ responseId: 1 });
-    const mockResponse = {
+    const mockedResponse = {
       responseId: 1,
       ...req.body,
     };
-    prisma.response.update.mockResolvedValue(mockResponse);
+    prisma.response.update.mockResolvedValue(mockedResponse);
 
     await updateResponse(req, res);
 
     expect(prisma.response.update).toHaveBeenCalledWith({
-      where: { responseId: 1 },
+      where: { responseId: parseInt(req.params.responseId) },
       data: {
         label: req.body.label,
         projectId: req.body.projectId,
@@ -114,7 +115,7 @@ describe("update Response Controller", () => {
       },
     });
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockResponse);
+    expect(res.json).toHaveBeenCalledWith(mockedResponse);
   });
 
   it("should return 400 for invalid responseId", async () => {
@@ -158,6 +159,71 @@ describe("update Response Controller", () => {
   });
 });
 
+describe("Delete Response Controller", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
+
+    req = { params: { responseId: 1 } };
+    res = mockResponse();
+  });
+
+  it("should delete a response successfully", async () => {
+    prisma.response.findUnique.mockResolvedValue({ responseId: 1 });
+    prisma.response.delete.mockResolvedValue({ responseId: 1 });
+
+    await deleteResponse(req, res);
+
+    expect(prisma.response.delete).toHaveBeenCalledWith({
+      where: { responseId: parseInt(req.params.responseId) },
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalled();
+  });
+
+  it("should return 400 for invalid responseId", async () => {
+    req.params.responseId = "invalid";
+    await expectError(
+      deleteResponse,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad Request: Invalid responseId"
+    );
+    expect(prisma.response.delete).not.toHaveBeenCalled();
+  });
+
+  it("should return 404 if response to delete does not exist", async () => {
+    await expectError(
+      deleteResponse,
+      req,
+      res,
+      () => prisma.response.findUnique.mockResolvedValue(null),
+      404,
+      "Response not found"
+    );
+    expect(prisma.response.delete).not.toHaveBeenCalled();
+  });
+
+  it("should handle errors during response deletion and return 500", async () => {
+    await expectError(
+      deleteResponse,
+      req,
+      res,
+      () => {
+        prisma.response.findUnique.mockResolvedValue({ responseId: 1 });
+        prisma.response.delete.mockRejectedValue(new Error("DB error"));
+      },
+      500,
+      "Internal Server Error"
+    );
+    expect(prisma.response.delete).toHaveBeenCalled();
+  });
+});
+
 describe("Get all response by project Controller", () => {
   let req, res;
 
@@ -172,7 +238,7 @@ describe("Get all response by project Controller", () => {
   });
 
   it("should retrieve all responses successfully", async () => {
-    const mockResponses = [
+    const mockedResponse = [
       {
         responseId: 1,
         label: "Sample answer",
@@ -190,7 +256,7 @@ describe("Get all response by project Controller", () => {
         questionIdParent: null,
       },
     ];
-    prisma.response.findMany.mockResolvedValue(mockResponses);
+    prisma.response.findMany.mockResolvedValue(mockedResponse);
 
     await getAllResponseByProject(req, res);
 
@@ -200,7 +266,7 @@ describe("Get all response by project Controller", () => {
       },
     });
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockResponses);
+    expect(res.json).toHaveBeenCalledWith(mockedResponse);
   });
 
   it("should return 400 for invalid projectId", async () => {
