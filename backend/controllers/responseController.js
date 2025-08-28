@@ -21,12 +21,48 @@ module.exports.createResponse = async (req, res) => {
   }
 };
 
+// Update an existing response
+module.exports.updateResponse = async (req, res) => {
+  const { responseId } = req.params;
+  // check if id is a valid number
+  if (isNaN(responseId)) {
+    return res.status(400).json({ error: "Bad Request: Invalid responseId" });
+  }
+
+  const { label, projectId, questionId, optionId, questionIdParent } = req.body;
+
+  try {
+    // check if response exists
+    const existingResponse = await prisma.response.findUnique({
+      where: { responseId: parseInt(responseId) },
+    });
+    if (!existingResponse) {
+      return res.status(404).json({ error: "Response not found" });
+    }
+
+    const response = await prisma.response.update({
+      where: { responseId: parseInt(responseId) },
+      data: {
+        label: label || null,
+        projectId: projectId,
+        questionId: questionId,
+        optionId: optionId || null,
+        questionIdParent: questionIdParent || null,
+      },
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error updating response:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 // Get all responses for a project
 module.exports.getAllResponseByProject = async (req, res) => {
   const { projectId } = req.params;
   // check if projectId is a valid number
   if (isNaN(projectId)) {
-    return res.status(400).json({ error: "Invalid projectId" });
+    return res.status(400).json({ error: "Bad Request: Invalid projectId" });
   }
 
   try {
