@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "../styles/globals.css";
 import { oswald, notoSans, didactGothic } from "./fonts";
 
 import Header from "../components/layout/Header"

@@ -2,10 +2,10 @@
 
 import { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import { buttonVariants } from "./button.variants";
 import { ButtonProps } from "./button.types";
-import LoadingSpinner from "./loadingSpinner";
+import LoadingSpinner from "./LoadingSpinner";
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     (
