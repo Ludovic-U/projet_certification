@@ -13,8 +13,9 @@ import {
     faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox"
 
 type LoginFormInputs = {
   email: string;
@@ -25,7 +26,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string>("");
-  
+  const [checked, setChecked] = useState(false);
+
   const handleClick = () => {
     setIsLoading(true);
     setTimeout(() => {
@@ -88,6 +90,16 @@ export default function LoginPage() {
 
   return (
     <main className="h-[calc(100vh-60px)] bg-light flex flex-col items-center justify-center overflow-y-scroll">
+      
+      <div className="flex flex-col gap-5 mb-5">
+      <Checkbox
+       label="Test"/>
+
+      <Checkbox
+       label="Test"/>        
+      </div>
+
+
       <section className="w-[25vw] min-w-[350px] bg-white flex flex-col items-center text-dark rounded-xl shadow-500base p-8">
         
         <img src="/logo-sm.jpeg" className="rounded-full w-12 h-12" alt="logo"/>

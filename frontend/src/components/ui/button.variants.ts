@@ -4,7 +4,7 @@ export const buttonVariants = cva(
     [
         "cursor-pointer",
         "inline-flex items-center justify-center gap-2 rounded-lg w-fit",
-        "text-light hover:text-lighthover",
+        "font-noto text-light hover:text-lighthover",
         "bg-dark hover:bg-darkhover",
         "whitespace-nowrap",
         "transition-colors duration-200 ease-in-out",
