@@ -1,13 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
-const { isAdmin } = require("../utils/roles");
-const prisma = new PrismaClient();
+const { prisma } = require("../prisma/prismaClient");
 
 // Create a new question
 module.exports.createQuestion = async (req, res) => {
-  user = req.user;
-  if (!isAdmin(user)) {
-    return res.status(403).json({ error: "Forbidden ADMIN ONLY!!!" });
-  }
   const {
     label,
     category,
@@ -16,6 +10,7 @@ module.exports.createQuestion = async (req, res) => {
     hasMultipleResponse,
     questionIdParent,
   } = req.body;
+
   try {
     const question = await prisma.question.create({
       data: {
@@ -35,11 +30,7 @@ module.exports.createQuestion = async (req, res) => {
 };
 
 // Get all questions
-module.exports.getAllQuestions = async (req, res) => {
-  user = req.user;
-  if (!isAdmin(user)) {
-    return res.status(403).json({ error: "Forbidden ADMIN ONLY!!!" });
-  }
+module.exports.getAllQuestions = async (_, res) => {
   try {
     const questions = await prisma.question.findMany();
     res.status(200).json(questions);
@@ -51,11 +42,12 @@ module.exports.getAllQuestions = async (req, res) => {
 
 // Update a question by ID
 module.exports.updateQuestion = async (req, res) => {
-  user = req.user;
-  if (!isAdmin(user)) {
-    return res.status(403).json({ error: "Forbidden ADMIN ONLY!!!" });
+  const { questionId } = req.params;
+  // check if id is a number
+  if (isNaN(questionId)) {
+    return res.status(400).json({ error: "Bad request" });
   }
-  const { id } = req.params;
+
   const {
     label,
     category,
@@ -64,9 +56,18 @@ module.exports.updateQuestion = async (req, res) => {
     hasMultipleResponse,
     questionIdParent,
   } = req.body;
+
   try {
+    // check if question exists
+    const existingQuestion = await prisma.question.findUnique({
+      where: { questionId: questionId },
+    });
+    if (!existingQuestion) {
+      return res.status(404).json({ error: "Question not found" });
+    }
+
     const question = await prisma.question.update({
-      where: { id: parseInt(id) },
+      where: { questionId: questionId },
       data: {
         label: label,
         category: category,
@@ -85,14 +86,23 @@ module.exports.updateQuestion = async (req, res) => {
 
 // Delete a question by ID
 module.exports.deleteQuestion = async (req, res) => {
-  user = req.user;
-  if (!isAdmin(user)) {
-    return res.status(403).json({ error: "Forbidden ADMIN ONLY!!!" });
+  const { questionId } = req.params;
+  // check if id is a number
+  if (isNaN(questionId)) {
+    return res.status(400).json({ error: "Bad request" });
   }
-  const { id } = req.params;
+
   try {
+    // check if question exists
+    const existingQuestion = await prisma.question.findUnique({
+      where: { questionId: questionId },
+    });
+    if (!existingQuestion) {
+      return res.status(404).json({ error: "Question not found" });
+    }
+
     await prisma.question.delete({
-      where: { id: parseInt(id) },
+      where: { questionId: questionId },
     });
     res.status(204).send();
   } catch (error) {
@@ -103,14 +113,16 @@ module.exports.deleteQuestion = async (req, res) => {
 
 // Get a question by ID
 module.exports.getQuestionById = async (req, res) => {
-  user = req.user;
-  if (!isAdmin(user)) {
-    return res.status(403).json({ error: "Forbidden ADMIN ONLY!!!" });
+  const { questionId } = req.params;
+  // check if id is a number
+  if (isNaN(questionId)) {
+    return res.status(400).json({ error: "Bad request" });
   }
-  const { id } = req.params;
+
   try {
+    // Retrieve question if exists
     const question = await prisma.question.findUnique({
-      where: { id: parseInt(id) },
+      where: { questionId: parseInt(questionId) },
     });
     if (!question) {
       return res.status(404).json({ error: "Question not found" });
@@ -122,12 +134,31 @@ module.exports.getQuestionById = async (req, res) => {
   }
 };
 
+// Get questions by project
+module.exports.getQuestionsByProject = async (req, res) => {
+  const { projectId } = req.params;
+  // check if projectId is a number
+  if (isNaN(parseInt(projectId))) {
+    return res.status(400).json({ error: "Bad request" });
+  }
+
+  try {
+    // Retrieve questions specific to a project
+    const questions = await prisma.question.findMany({
+      where: { projects: { some: { projectId: projectId } } },
+    });
+
+    //TODO: Retrieve questions linked to types associated with the project
+
+    res.status(200).json(questions);
+  } catch (error) {
+    console.error("Error fetching questions by project:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 // Get questions by category
 module.exports.getQuestionsByCategory = async (req, res) => {
-  user = req.user;
-  if (!isAdmin(user)) {
-    return res.status(403).json({ error: "Forbidden ADMIN ONLY!!!" });
-  }
   const { category } = req.params;
   try {
     const questions = await prisma.question.findMany({
@@ -142,11 +173,12 @@ module.exports.getQuestionsByCategory = async (req, res) => {
 
 // Get questions by Type
 module.exports.getQuestionsByType = async (req, res) => {
-  user = req.user;
-  if (!isAdmin(user)) {
-    return res.status(403).json({ error: "Forbidden ADMIN ONLY!!!" });
-  }
   const { typeId } = req.params;
+  // check if typeId is a number
+  if (isNaN(parseInt(typeId))) {
+    return res.status(400).json({ error: "Bad request" });
+  }
+
   try {
     const questions = await prisma.question.findMany({
       where: { types: { some: { typeId: typeId } } },
@@ -160,11 +192,12 @@ module.exports.getQuestionsByType = async (req, res) => {
 
 // Get sub-questions of a parent question
 module.exports.getSubQuestions = async (req, res) => {
-  user = req.user;
-  if (!isAdmin(user)) {
-    return res.status(403).json({ error: "Forbidden ADMIN ONLY!!!" });
-  }
   const { parentId } = req.params;
+  // check if parentId is a number
+  if (isNaN(parseInt(parentId))) {
+    return res.status(400).json({ error: "Bad request" });
+  }
+
   try {
     const subQuestions = await prisma.question.findMany({
       where: { questionIdParent: parseInt(parentId) },
