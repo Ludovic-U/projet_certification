@@ -179,7 +179,7 @@ describe("Delete Response Controller", () => {
     expect(prisma.response.delete).toHaveBeenCalledWith({
       where: { responseId: parseInt(req.params.responseId) },
     });
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(204);
     expect(res.send).toHaveBeenCalled();
   });
 
