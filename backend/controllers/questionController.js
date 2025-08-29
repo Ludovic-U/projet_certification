@@ -74,32 +74,25 @@ module.exports.updateQuestion = async (req, res) => {
   }
 };
 
-// // Delete a question by ID
-// module.exports.deleteQuestion = async (req, res) => {
-//   const { questionId } = req.params;
-//   // check if id is a number
-//   if (isNaN(questionId)) {
-//     return res.status(400).json({ error: "Bad request" });
-//   }
+// Delete a question by ID
+module.exports.deleteQuestion = async (req, res) => {
+  const { questionId } = req.params;
+  // check if id is a number
+  if (isNaN(questionId)) {
+    return res.status(400).json({ error: "Bad request: Invalid questionId" });
+  }
 
-//   try {
-//     // check if question exists
-//     const existingQuestion = await prisma.question.findUnique({
-//       where: { questionId: questionId },
-//     });
-//     if (!existingQuestion) {
-//       return res.status(404).json({ error: "Question not found" });
-//     }
-
-//     await prisma.question.delete({
-//       where: { questionId: questionId },
-//     });
-//     res.status(204).send();
-//   } catch (error) {
-//     console.error("Error deleting question:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
+  try {
+    await questionService.deleteQuestion(questionId);
+    res.status(204).send();
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(404).json({ error: "Question not found" });
+    }
+    console.error("Error deleting question:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // // Get a question by ID
 // module.exports.getQuestionById = async (req, res) => {

@@ -19,3 +19,11 @@ module.exports.updateQuestion = async (questionId, data) => {
     data,
   });
 };
+
+// Delete a question by ID
+module.exports.deleteQuestion = async (questionId) => {
+  await checkIdExistence(prisma.question, questionId, "Question not found");
+  return await prisma.question.delete({
+    where: { questionId: questionId },
+  });
+};

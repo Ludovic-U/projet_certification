@@ -108,6 +108,7 @@ describe("Question Controller - UpdateQuestion", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     console.error = jest.fn();
+
     req = {
       params: { questionId: 1 },
       body: {
@@ -185,65 +186,72 @@ describe("Question Controller - UpdateQuestion", () => {
   });
 });
 
-// describe("Delete Question Controller", () => {
-//   let req, res;
+describe("Question Controller - DeleteQuestion", () => {
+  let req, res, next;
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
 
-//     req = {
-//       params: { questionId: 1 },
-//     };
-//     res = mockResponse();
-//   });
+    req = {
+      params: { questionId: 1 },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
 
-//   it("should delete a question successfully", async () => {
-//     prisma.question.findUnique.mockResolvedValue({ questionId: 1 });
-//     prisma.question.delete.mockResolvedValue({ questionId: 1 });
+  it("should delete a question and return 204 status", async () => {
+    questionService.deleteQuestion.mockResolvedValue();
 
-//     await deleteQuestion(req, res);
+    await questionController.deleteQuestion(req, res, next);
 
-//     expect(prisma.question.delete).toHaveBeenCalledWith({
-//       where: { questionId: parseInt(req.params.questionId) },
-//     });
-//     expect(res.status).toHaveBeenCalledWith(204);
-//     expect(res.send).toHaveBeenCalled();
-//   });
+    expect(questionService.deleteQuestion).toHaveBeenCalledWith(
+      parseInt(req.params.questionId)
+    );
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.send).toHaveBeenCalled();
+  });
 
-//   it("should return 400 for invalid ID", async () => {
-//     req.params.questionId = "invalid";
-//     await expectError(deleteQuestion, req, res, () => {}, 400, "Bad request");
-//     expect(prisma.question.delete).not.toHaveBeenCalled();
-//   });
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      questionController.deleteQuestion,
+      req,
+      res,
+      () =>
+        questionService.deleteQuestion.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(questionService.deleteQuestion).toHaveBeenCalled();
+  });
 
-//   it("should return 404 if question does not exist", async () => {
-//     await expectError(
-//       deleteQuestion,
-//       req,
-//       res,
-//       () => prisma.question.findUnique.mockResolvedValue(null),
-//       404,
-//       "Question not found"
-//     );
-//     expect(prisma.question.findUnique).toHaveBeenCalled();
-//   });
+  it("should return 400 for invalid questionId", async () => {
+    req.params.questionId = "invalid";
+    await expectError(
+      questionController.deleteQuestion,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid questionId"
+    );
+    expect(questionService.deleteQuestion).not.toHaveBeenCalled();
+  });
 
-//   it("should handle prisma errors and return 500", async () => {
-//     await expectError(
-//       deleteQuestion,
-//       req,
-//       res,
-//       () => {
-//         prisma.question.findUnique.mockResolvedValue({ questionId: 1 });
-//         prisma.question.delete.mockRejectedValue(new Error("DB error"));
-//       },
-//       500,
-//       "Internal server error"
-//     );
-//     expect(prisma.question.delete).toHaveBeenCalled();
-//   });
-// });
+  it("should return 404 if question not found", async () => {
+    await expectError(
+      questionController.deleteQuestion,
+      req,
+      res,
+      () => questionService.deleteQuestion.mockRejectedValue({ status: 404 }),
+      404,
+      "Question not found"
+    );
+    expect(questionService.deleteQuestion).toHaveBeenCalled();
+  });
+});
 
 // describe("Get Question By ID Controller", () => {
 //   let req, res;

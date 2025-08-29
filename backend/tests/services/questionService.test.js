@@ -232,3 +232,73 @@ describe("Question Service - updateQuestion", () => {
     });
   });
 });
+
+describe("Question Service - deleteQuestion", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should delete the question", async () => {
+    const questionId = 1;
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    prisma.question.delete.mockResolvedValue({ id: questionId });
+
+    const result = await questionService.deleteQuestion(questionId);
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.question,
+      questionId,
+      "Question not found"
+    );
+    expect(prisma.question.delete).toHaveBeenCalledWith({
+      where: { questionId: questionId },
+    });
+    expect(result).toEqual({ id: questionId });
+  });
+
+  it("should throw an error if the question does not exist", async () => {
+    const questionId = 999;
+
+    // Mock the existence check to fail
+    const mockError = new Error("Question not found");
+    mockError.status = 404;
+    checkIdExistence.mockRejectedValue(mockError);
+
+    await expect(questionService.deleteQuestion(questionId)).rejects.toThrow(
+      "Question not found"
+    );
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.question,
+      questionId,
+      "Question not found"
+    );
+    expect(prisma.question.delete).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error if deletion fails", async () => {
+    const questionId = 1;
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    const mockError = new Error("Database error");
+    prisma.question.delete.mockRejectedValue(mockError);
+
+    await expect(questionService.deleteQuestion(questionId)).rejects.toThrow(
+      "Database error"
+    );
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.question,
+      questionId,
+      "Question not found"
+    );
+    expect(prisma.question.delete).toHaveBeenCalledWith({
+      where: { questionId: questionId },
+    });
+  });
+});
