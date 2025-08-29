@@ -1,0 +1,70 @@
+const [selectedColor, setSelectedColor] = useState<string | undefined>();
+const [selectedSize, setSelectedSize] = useState<string>("medium");
+const [errorExample, setErrorExample] = useState(false);
+
+
+      {/* ---------- RadioGroup couleur simple ---------- */}
+<div>
+    <h2 className="font-bold mb-2">Choisir une couleur :</h2>
+    <RadioGroup
+     name="colors"
+     value={selectedColor}
+     onValueChange={setSelectedColor}
+     className="flex flex-col gap-2"
+    >
+        <Radio value="red" label="Rouge" />
+        <Radio value="blue" label="Bleu" />
+        <Radio value="green" label="Vert" />
+    </RadioGroup>
+    <p className="mt-1 text-sm text-gray-600">
+        Couleur sélectionnée : {selectedColor || "aucune"}
+    </p>
+</div>
+
+      {/* ---------- RadioGroup avec helperText ---------- */}
+<div>
+    <h2 className="font-bold mb-2">Taille :</h2>
+    <RadioGroup
+     name="sizes"
+     value={selectedSize}
+     onValueChange={setSelectedSize}
+     className="flex flex-col gap-2"
+    >
+        <Radio value="small" label="Petit" helperText="Pour les petits articles" />
+        <Radio value="medium" label="Moyen" helperText="Taille standard" />
+        <Radio value="large" label="Grand" helperText="Pour les grands articles" />
+    </RadioGroup>
+    <p className="mt-1 text-sm text-gray-600">
+        Taille sélectionnée : {selectedSize}
+    </p>
+</div>
+
+      {/* ---------- RadioGroup avec état disabled ---------- */}
+<div>
+    <h2 className="font-bold mb-2">Options désactivées :</h2>
+    <RadioGroup name="disabled" defaultValue="1" className="flex flex-col gap-2">
+        <Radio value="1" label="Option 1" disabled />
+        <Radio value="2" label="Option 2" disabled />
+        <Radio value="3" label="Option 3" disabled />
+    </RadioGroup>
+</div>
+
+      {/* ---------- RadioGroup avec erreur ---------- */}
+<div>
+    <h2 className="font-bold mb-2">Exemple erreur :</h2>
+    <button
+     className="mb-2 px-3 py-1 bg-blue-500 text-white rounded"
+     onClick={() => setErrorExample(!errorExample)}
+    >
+        Toggle Erreur
+    </button>
+    <RadioGroup
+     name="error-example"
+     value={selectedColor}
+     onValueChange={setSelectedColor}
+     className="flex flex-col gap-2"
+    >
+        <Radio value="a" label="Option A" error={errorExample ? "Erreur : choix invalide" : undefined} />
+        <Radio value="b" label="Option B" error={errorExample ? "Erreur : choix invalide" : undefined} />
+    </RadioGroup>
+</div>

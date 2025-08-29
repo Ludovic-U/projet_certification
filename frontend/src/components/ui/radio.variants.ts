@@ -27,4 +27,4 @@ export const radioVariants = cva(
     }
 );
 
-export type RadioVariants = VariantProps<typeof radioVariants>;
+export type RadioVariantsProps = VariantProps<typeof radioVariants>;

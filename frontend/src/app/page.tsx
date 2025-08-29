@@ -6,9 +6,7 @@ import axios from "axios";
 
 import LoginForm from "@/components/forms/LoginForm";
 
-import { Radio } from "@/components/ui/Radio";
-import { RadioGroup } from "@/components/ui/RadioGroup";
-import { Checkbox } from "@/components/ui";
+import { Toggle } from "@/components/ui/Toggle";
 
 type LoginFormInputs = {
     email: string;
@@ -18,6 +16,8 @@ type LoginFormInputs = {
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState<string>("");
+
+    const [darkMode, setDarkMode] = useState(false)
 
     const router = useRouter();
     const api = axios.create({
@@ -67,7 +67,7 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="h-[calc(100vh-60px)] justify-center bg-light flex flex-col items-center  overflow-y-scroll">
+        <main className="h-[calc(100vh-60px)] justify-center bg-light flex flex-col items-center  overflow-y-scroll">   
             <section className="w-[25vw] min-w-[350px] bg-white flex flex-col items-center text-dark rounded-xl shadow-500base p-8">
                 <img
                     src="/logo-sm.jpeg"

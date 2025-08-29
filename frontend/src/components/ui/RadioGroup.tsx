@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState } from 'react'
-import { RadioGroupProps } from './radio_types';
+import React, { createContext, useContext, useState } from "react";
+import { RadioGroupProps } from "./radio.types";
 
 const RadioGroupContext = createContext<{
     name: string;
@@ -28,7 +28,7 @@ export const RadioGroup = ({
     };
 
     return (
-        <RadioGroupContext.Provider value={{ name, value, setValue}}>
+        <RadioGroupContext.Provider value={{ name, value, setValue }}>
             <div className={className}>{children}</div>
         </RadioGroupContext.Provider>
     );
