@@ -62,43 +62,45 @@ describe("Question Controller - CreateQuestion", () => {
   });
 });
 
-// describe("Get All Questions Controller", () => {
-//   let req, res;
+describe("Question Controller - GetAllQuestions", () => {
+  let req, res, next;
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
 
-//     req = {};
-//     res = mockResponse();
-//   });
+    req = {};
+    res = createMockResponse();
+    next = jest.fn();
+  });
 
-//   it("should fetch all questions successfully", async () => {
-//     const mockQuestions = [
-//       { questionId: 1, label: "Question 1" },
-//       { questionId: 2, label: "Question 2" },
-//     ];
-//     prisma.question.findMany.mockResolvedValue(mockQuestions);
+  it("should fetch all questions and return 200 status", async () => {
+    const mockQuestions = [
+      { questionId: 1, label: "Question 1" },
+      { questionId: 2, label: "Question 2" },
+    ];
+    prisma.question.findMany.mockResolvedValue(mockQuestions);
 
-//     await getAllQuestions(req, res);
+    await questionController.getAllQuestions(req, res, next);
 
-//     expect(prisma.question.findMany).toHaveBeenCalled();
-//     expect(res.status).toHaveBeenCalledWith(200);
-//     expect(res.json).toHaveBeenCalledWith(mockQuestions);
-//   });
+    expect(prisma.question.findMany).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockQuestions);
+  });
 
-//   it("should handle prisma errors and return 500", async () => {
-//     await expectError(
-//       getAllQuestions,
-//       req,
-//       res,
-//       () => prisma.question.findMany.mockRejectedValue(new Error("DB error")),
-//       500,
-//       "Internal server error"
-//     );
-//     expect(prisma.question.findMany).toHaveBeenCalled();
-//   });
-// });
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      questionController.getAllQuestions,
+      req,
+      res,
+      () =>
+        prisma.question.findMany.mockRejectedValue(new Error("Database error")),
+      500,
+      "Internal server error"
+    );
+    expect(prisma.question.findMany).toHaveBeenCalled();
+  });
+});
 
 // describe("Update Question Controller", () => {
 //   let req, res;
