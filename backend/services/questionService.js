@@ -4,3 +4,8 @@ const { prisma } = require("../prisma/prismaClient");
 module.exports.createQuestion = async (data) => {
   return await prisma.question.create(data);
 };
+
+// Get all questions
+module.exports.getAllQuestions = async () => {
+  return await prisma.question.findMany();
+};

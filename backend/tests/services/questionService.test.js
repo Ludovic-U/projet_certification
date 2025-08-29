@@ -77,3 +77,50 @@ describe("Question Service - createQuestion", () => {
     expect(prisma.question.create).toHaveBeenCalledWith({ data: {} });
   });
 });
+
+describe("Question Service - getAllQuestions", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return a list of questions", async () => {
+    const mockQuestions = [
+      {
+        id: 1,
+        label: "Question 1?",
+        category: "General",
+        numberOfSelectionableOpt: 0,
+        isRelevant: true,
+        hasMultipleResponse: false,
+        questionIdParent: null,
+      },
+      {
+        id: 2,
+        label: "Question 2?",
+        category: "Specific",
+        numberOfSelectionableOpt: 2,
+        isRelevant: false,
+        hasMultipleResponse: true,
+        questionIdParent: null,
+      },
+    ];
+
+    prisma.question.findMany.mockResolvedValue(mockQuestions);
+
+    const result = await questionService.getAllQuestions();
+
+    expect(prisma.question.findMany).toHaveBeenCalled();
+    expect(result).toEqual(mockQuestions);
+  });
+
+  it("should throw an error if fetching fails", async () => {
+    const mockError = new Error("Database error");
+    prisma.question.findMany.mockRejectedValue(mockError);
+
+    await expect(questionService.getAllQuestions()).rejects.toThrow(
+      "Database error"
+    );
+
+    expect(prisma.question.findMany).toHaveBeenCalled();
+  });
+});

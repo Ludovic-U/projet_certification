@@ -79,11 +79,11 @@ describe("Question Controller - GetAllQuestions", () => {
       { questionId: 1, label: "Question 1" },
       { questionId: 2, label: "Question 2" },
     ];
-    prisma.question.findMany.mockResolvedValue(mockQuestions);
+    questionService.getAllQuestions.mockResolvedValue(mockQuestions);
 
     await questionController.getAllQuestions(req, res, next);
 
-    expect(prisma.question.findMany).toHaveBeenCalled();
+    expect(questionService.getAllQuestions).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(mockQuestions);
   });
@@ -94,11 +94,13 @@ describe("Question Controller - GetAllQuestions", () => {
       req,
       res,
       () =>
-        prisma.question.findMany.mockRejectedValue(new Error("Database error")),
+        questionService.getAllQuestions.mockRejectedValue(
+          new Error("Database error")
+        ),
       500,
       "Internal server error"
     );
-    expect(prisma.question.findMany).toHaveBeenCalled();
+    expect(questionService.getAllQuestions).toHaveBeenCalled();
   });
 });
 

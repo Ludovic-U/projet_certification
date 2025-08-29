@@ -30,15 +30,15 @@ module.exports.createQuestion = async (req, res) => {
 };
 
 // Get all questions
-// module.exports.getAllQuestions = async (_, res) => {
-//   try {
-//     const questions = await prisma.question.findMany();
-//     res.status(200).json(questions);
-//   } catch (error) {
-//     console.error("Error fetching questions:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
+module.exports.getAllQuestions = async (_, res) => {
+  try {
+    const questions = await questionService.getAllQuestions();
+    res.status(200).json(questions);
+  } catch (error) {
+    console.error("Error fetching questions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // // Update a question by ID
 // module.exports.updateQuestion = async (req, res) => {
