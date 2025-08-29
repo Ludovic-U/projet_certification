@@ -36,6 +36,12 @@ export const buttonVariants = cva(
                 nav: [
                     "hover:bg-lighthover hover:text-primaryhover",
                 ],
+                pagination: [
+                    "rounded-full bg-transparent hover:-bg-transparent hover:text-dark text-dark hover:border hover:border-primarylight"
+                ],
+                paginationActive: [
+                    "rounded-full text-light bg-primary hover:bg-primary"
+                ]
             },
             collapsed: {
                 true: "", // navbar fermée
@@ -46,6 +52,7 @@ export const buttonVariants = cva(
                 inactive: "", // pas sur la page
             },
             size: {
+                pagination: "h-6 w-6",
                 smRound: "h-7 w-7",
                 xs: "px-2 py-1.5",
                 sm: "px-4 py-2",

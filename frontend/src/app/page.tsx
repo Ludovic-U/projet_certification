@@ -6,14 +6,7 @@ import axios from "axios";
 
 import LoginForm from "@/components/forms/LoginForm";
 
-import { Tooltip } from "@/components/ui/Tooltip";
-import { Input } from "@/components/ui/Input";
-import { Button, Checkbox } from "@/components/ui";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft, faEye, faGear, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { RadioGroup } from "@/components/ui/RadioGroup";
-import { Radio } from "@/components/ui/Radio";
-import { Toggle } from "@/components/ui/Toggle";
+import { Pagination } from "@/components/ui/Pagination";
 
 type LoginFormInputs = {
     email: string;
@@ -23,6 +16,14 @@ type LoginFormInputs = {
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState<string>("");
+
+const items = Array.from({ length: 20 }, (_, i) => `Élément ${i + 1}`);
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 5;
+const startIndex = (currentPage - 1) * itemsPerPage;
+const endIndex = startIndex + itemsPerPage;
+const visibleItems = items.slice(startIndex, endIndex);
+const totalPages = Math.ceil(items.length / itemsPerPage);
 
     const router = useRouter();
     const api = axios.create({
@@ -73,6 +74,22 @@ export default function LoginPage() {
 
     return (
         <main className="h-[calc(100vh-60px)] justify-center bg-light flex flex-col items-center  overflow-y-scroll">   
+            <div className="p-4">
+      <ul className="mb-4 space-y-2">
+        {visibleItems.map((item) => (
+          <li key={item} className="p-2 border rounded">
+            {item}
+          </li>
+        ))}
+      </ul>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
+    </div>
+            
             <section className="w-[25vw] min-w-[350px] bg-white flex flex-col items-center text-dark rounded-xl shadow-500base p-8">
                 <img
                     src="/logo-sm.jpeg"
@@ -91,7 +108,6 @@ export default function LoginPage() {
                  isLoading={isLoading}
                  apiError={apiError}
                 />
-
             </section>
         </main>
     );
