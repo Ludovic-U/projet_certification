@@ -8,4 +8,5 @@ export interface ToggleProps
             onCheckedChange?: (checked: boolean) => void;
             label?: string;
             helperText?: string;
+            disabled?: boolean;
         }

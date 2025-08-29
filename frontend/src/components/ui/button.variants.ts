@@ -9,7 +9,7 @@ export const buttonVariants = cva(
         "whitespace-nowrap",
         "transition-colors duration-200 ease-in-out",
         "focus:outline-none focus:ring-2 focus:ring-primarylighter",
-        "disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed",
+        "disabled:pointer-events-not-allowed disabled:opacity-50 disabled:cursor-not-allowed",
         "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     ],
     {
@@ -50,7 +50,7 @@ export const buttonVariants = cva(
                 xs: "px-2 py-1.5",
                 sm: "px-4 py-2",
                 md: "px-6 py-2",
-                lg: "pl-3 pr-10 py-2",
+                lg: "pl-3 pr-10 py-2 text-sm",
             },
         },
         defaultVariants: {

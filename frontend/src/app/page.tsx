@@ -8,9 +8,12 @@ import LoginForm from "@/components/forms/LoginForm";
 
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui";
+import { Button, Checkbox } from "@/components/ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faEye, faGear, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { RadioGroup } from "@/components/ui/RadioGroup";
+import { Radio } from "@/components/ui/Radio";
+import { Toggle } from "@/components/ui/Toggle";
 
 type LoginFormInputs = {
     email: string;
@@ -20,8 +23,6 @@ type LoginFormInputs = {
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState<string>("");
-
-    const [darkMode, setDarkMode] = useState(false)
 
     const router = useRouter();
     const api = axios.create({
@@ -81,7 +82,7 @@ export default function LoginPage() {
                 <h1 className="cursor-default font-oswald font-medium text-2xl my-3">
                     BIENVENUE
                 </h1>
-                <p className="cursor-default font-didact text-greydarker text-lg mb-8">
+                <p className="cursor-default font-didact text-center text-greydarker text-lg mb-8">
                     Entrez vos identifiants pour vous connecter.
                 </p>
 
