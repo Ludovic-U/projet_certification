@@ -6,7 +6,11 @@ import axios from "axios";
 
 import LoginForm from "@/components/forms/LoginForm";
 
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
 
 type LoginFormInputs = {
     email: string;
@@ -74,10 +78,10 @@ export default function LoginPage() {
                     className="rounded-full w-12 h-12"
                     alt="logo"
                 />
-                <h1 className="font-oswald font-medium text-2xl my-3">
+                <h1 className="cursor-default font-oswald font-medium text-2xl my-3">
                     BIENVENUE
                 </h1>
-                <p className="font-didact text-greydarker text-lg mb-8">
+                <p className="cursor-default font-didact text-greydarker text-lg mb-8">
                     Entrez vos identifiants pour vous connecter.
                 </p>
 

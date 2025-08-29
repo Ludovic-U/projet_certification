@@ -1,0 +1,21 @@
+<Tooltip content="Ceci est un tooltip" position="bottom">
+    <p>Voici un exemple bas.</p>
+</Tooltip>
+
+ <Tooltip content="Ceci est un tooltip" position="left">
+    <Button size="md" variant="secondary">Bouton</Button>
+</Tooltip>
+
+<Tooltip content="Ceci est un tooltip" position="right">
+    <Input
+    label="Label"
+    placeholder="Placeholder"
+    rightIcon={
+        <span className="cursor-pointer">
+            <FontAwesomeIcon icon={faEye}/>
+        </span>}/>
+</Tooltip>
+
+<Tooltip content="Ceci est un tooltip super long pour voir ce qu'il se passe s'il y a une plutôt grande question blabla ?" position="top">
+    <p>Voici un exemple haut.</p>
+</Tooltip>
