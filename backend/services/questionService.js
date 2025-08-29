@@ -27,3 +27,16 @@ module.exports.deleteQuestion = async (questionId) => {
     where: { questionId: questionId },
   });
 };
+
+// Get a question by ID
+module.exports.getQuestionById = async (questionId) => {
+  const question = await prisma.question.findUnique({
+    where: { questionId: questionId },
+  });
+  if (!question) {
+    const error = new Error("Question not found");
+    error.status = 404;
+    throw error;
+  }
+  return question;
+};

@@ -5,7 +5,7 @@ const { expectError } = require("../helpers/errorHelper");
 
 jest.mock("../../services/questionService");
 
-describe("Question Controller - CreateQuestion", () => {
+describe("Question Controller - createQuestion", () => {
   let req, res, next;
 
   beforeEach(() => {
@@ -60,7 +60,7 @@ describe("Question Controller - CreateQuestion", () => {
   });
 });
 
-describe("Question Controller - GetAllQuestions", () => {
+describe("Question Controller - getAllQuestions", () => {
   let req, res, next;
 
   beforeEach(() => {
@@ -102,7 +102,7 @@ describe("Question Controller - GetAllQuestions", () => {
   });
 });
 
-describe("Question Controller - UpdateQuestion", () => {
+describe("Question Controller - updateQuestion", () => {
   let req, res, next;
 
   beforeEach(() => {
@@ -186,7 +186,7 @@ describe("Question Controller - UpdateQuestion", () => {
   });
 });
 
-describe("Question Controller - DeleteQuestion", () => {
+describe("Question Controller - deleteQuestion", () => {
   let req, res, next;
 
   beforeEach(() => {
@@ -250,6 +250,77 @@ describe("Question Controller - DeleteQuestion", () => {
       "Question not found"
     );
     expect(questionService.deleteQuestion).toHaveBeenCalled();
+  });
+});
+
+describe("Question Contoller - getQuestionById", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
+
+    req = {
+      params: { questionId: 1 },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
+
+  it("should fetch a question by ID and return 200 status", async () => {
+    const mockQuestion = { questionId: 1, label: "Sample Question" };
+    questionService.getQuestionById.mockResolvedValue(mockQuestion);
+
+    await questionController.getQuestionById(req, res, next);
+
+    expect(questionService.getQuestionById).toHaveBeenCalledWith(
+      parseInt(req.params.questionId)
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockQuestion);
+  });
+
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      questionController.getQuestionById,
+      req,
+      res,
+      () =>
+        questionService.getQuestionById.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(questionService.getQuestionById).toHaveBeenCalled();
+  });
+
+  it("should return 400 for invalid questionId", async () => {
+    req.params.questionId = "invalid";
+    await expectError(
+      questionController.getQuestionById,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid questionId"
+    );
+    expect(questionService.getQuestionById).not.toHaveBeenCalled();
+  });
+
+  it("should return 404 if question not found", async () => {
+    await expectError(
+      questionController.getQuestionById,
+      req,
+      res,
+      () =>
+        questionService.getQuestionById.mockRejectedValue({
+          status: 404,
+        }),
+      404,
+      "Question not found"
+    );
+    expect(questionService.getQuestionById).toHaveBeenCalled();
   });
 });
 

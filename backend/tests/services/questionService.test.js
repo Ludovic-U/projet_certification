@@ -302,3 +302,60 @@ describe("Question Service - deleteQuestion", () => {
     });
   });
 });
+
+describe("Question Service - getQuestionById", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return the question if found", async () => {
+    const questionId = 1;
+    const mockQuestion = {
+      id: questionId,
+      label: "Sample Question?",
+      category: "General",
+      numberOfSelectionableOpt: 0,
+      isRelevant: true,
+      hasMultipleResponse: false,
+      questionIdParent: null,
+    };
+
+    prisma.question.findUnique.mockResolvedValue(mockQuestion);
+
+    const result = await questionService.getQuestionById(questionId);
+
+    expect(prisma.question.findUnique).toHaveBeenCalledWith({
+      where: { questionId: questionId },
+    });
+    expect(result).toEqual(mockQuestion);
+  });
+
+  it("should throw an error if the question is not found", async () => {
+    const questionId = 999;
+
+    prisma.question.findUnique.mockResolvedValue(null);
+
+    await expect(questionService.getQuestionById(questionId)).rejects.toThrow(
+      "Question not found"
+    );
+
+    expect(prisma.question.findUnique).toHaveBeenCalledWith({
+      where: { questionId: questionId },
+    });
+  });
+
+  it("should throw an error if fetching fails", async () => {
+    const questionId = 1;
+
+    const mockError = new Error("Database error");
+    prisma.question.findUnique.mockRejectedValue(mockError);
+
+    await expect(questionService.getQuestionById(questionId)).rejects.toThrow(
+      "Database error"
+    );
+
+    expect(prisma.question.findUnique).toHaveBeenCalledWith({
+      where: { questionId: questionId },
+    });
+  });
+});
