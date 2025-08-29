@@ -1,5 +1,6 @@
 const questionService = require("../../services/questionService");
 const { prisma } = require("../../prisma/prismaClient");
+const { checkIdExistence } = require("../../utils/checkIdExistence");
 
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
@@ -8,8 +9,13 @@ jest.mock("../../prisma/prismaClient", () => ({
       findMany: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      findUnique: jest.fn(),
     },
   },
+}));
+
+jest.mock("../../utils/checkIdExistence", () => ({
+  checkIdExistence: jest.fn(),
 }));
 
 describe("Question Service - createQuestion", () => {
@@ -34,9 +40,7 @@ describe("Question Service - createQuestion", () => {
 
     prisma.question.create.mockResolvedValue(mockCreatedQuestion);
 
-    const result = await questionService.createQuestion({
-      data: mockQuestionData,
-    });
+    const result = await questionService.createQuestion(mockQuestionData);
 
     expect(prisma.question.create).toHaveBeenCalledWith({
       data: mockQuestionData,
@@ -58,7 +62,7 @@ describe("Question Service - createQuestion", () => {
     prisma.question.create.mockRejectedValue(mockError);
 
     await expect(
-      questionService.createQuestion({ data: mockQuestionData })
+      questionService.createQuestion(mockQuestionData)
     ).rejects.toThrow("Database error");
 
     expect(prisma.question.create).toHaveBeenCalledWith({
@@ -70,7 +74,7 @@ describe("Question Service - createQuestion", () => {
     const mockError = new Error("Invalid data");
     prisma.question.create.mockRejectedValue(mockError);
 
-    await expect(questionService.createQuestion({ data: {} })).rejects.toThrow(
+    await expect(questionService.createQuestion({})).rejects.toThrow(
       "Invalid data"
     );
 
@@ -122,5 +126,109 @@ describe("Question Service - getAllQuestions", () => {
     );
 
     expect(prisma.question.findMany).toHaveBeenCalled();
+  });
+});
+
+describe("Question Service - updateQuestion", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should update and return the updated question", async () => {
+    const questionId = 1;
+    const mockUpdateData = {
+      label: "Updated Question?",
+      category: "Updated Category",
+      numberOfSelectionableOpt: 1,
+      isRelevant: false,
+      hasMultipleResponse: true,
+      questionIdParent: null,
+    };
+
+    const mockUpdatedQuestion = {
+      id: questionId,
+      ...mockUpdateData,
+    };
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    prisma.question.update.mockResolvedValue(mockUpdatedQuestion);
+
+    const result = await questionService.updateQuestion(
+      questionId,
+      mockUpdateData
+    );
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.question,
+      questionId,
+      "Question not found"
+    );
+    expect(prisma.question.update).toHaveBeenCalledWith({
+      where: { questionId: questionId },
+      data: mockUpdateData,
+    });
+    expect(result).toEqual(mockUpdatedQuestion);
+  });
+
+  it("should throw an error if the question does not exist", async () => {
+    const questionId = 999;
+    const mockUpdateData = {
+      label: "Non-existent Question?",
+      category: "None",
+      numberOfSelectionableOpt: 0,
+      isRelevant: false,
+      hasMultipleResponse: false,
+      questionIdParent: null,
+    };
+
+    // Mock the existence check to fail
+    const mockError = new Error("Question not found");
+    mockError.status = 404;
+    checkIdExistence.mockRejectedValue(mockError);
+
+    await expect(
+      questionService.updateQuestion(questionId, mockUpdateData)
+    ).rejects.toThrow("Question not found");
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.question,
+      questionId,
+      "Question not found"
+    );
+    expect(prisma.question.update).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error if update fails", async () => {
+    const questionId = 1;
+    const mockUpdateData = {
+      label: "Failed Update?",
+      category: "Error",
+      numberOfSelectionableOpt: 0,
+      isRelevant: false,
+      hasMultipleResponse: false,
+      questionIdParent: null,
+    };
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    const mockError = new Error("Database error");
+    prisma.question.update.mockRejectedValue(mockError);
+
+    await expect(
+      questionService.updateQuestion(questionId, mockUpdateData)
+    ).rejects.toThrow("Database error");
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.question,
+      questionId,
+      "Question not found"
+    );
+    expect(prisma.question.update).toHaveBeenCalledWith({
+      where: { questionId: questionId },
+      data: mockUpdateData,
+    });
   });
 });

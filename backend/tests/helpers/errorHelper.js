@@ -2,11 +2,11 @@ async function expectError(
   controller,
   req,
   res,
-  prismaMocks,
+  mockFunctions,
   expectedStatus,
   expectedMessage
 ) {
-  if (prismaMocks) prismaMocks();
+  if (mockFunctions) mockFunctions();
 
   await controller(req, res);
 

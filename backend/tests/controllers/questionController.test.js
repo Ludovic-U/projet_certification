@@ -33,14 +33,12 @@ describe("Question Controller - CreateQuestion", () => {
     await questionController.createQuestion(req, res, next);
 
     expect(questionService.createQuestion).toHaveBeenCalledWith({
-      data: {
-        label: req.body.label,
-        category: req.body.category,
-        numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
-        isRelevant: req.body.isRelevant,
-        hasMultipleResponse: req.body.hasMultipleResponse,
-        questionIdParent: req.body.questionIdParent,
-      },
+      label: req.body.label,
+      category: req.body.category,
+      numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
+      isRelevant: req.body.isRelevant,
+      hasMultipleResponse: req.body.hasMultipleResponse,
+      questionIdParent: req.body.questionIdParent,
     });
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(mockQuestion);
@@ -104,82 +102,88 @@ describe("Question Controller - GetAllQuestions", () => {
   });
 });
 
-// describe("Update Question Controller", () => {
-//   let req, res;
+describe("Question Controller - UpdateQuestion", () => {
+  let req, res, next;
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
+    req = {
+      params: { questionId: 1 },
+      body: {
+        label: "Updated Question",
+        category: "Updated Category",
+        numberOfSelectionableOpt: 3,
+        isRelevant: false,
+        hasMultipleResponse: true,
+        questionIdParent: null,
+      },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
 
-//     req = {
-//       params: { questionId: 1 },
-//       body: {
-//         label: "Updated Question",
-//         category: "Updated Category",
-//         numberOfSelectionableOpt: 3,
-//         isRelevant: false,
-//         hasMultipleResponse: true,
-//         questionIdParent: null,
-//       },
-//     };
-//     res = mockResponse();
-//   });
+  it("should udate a question and return 200 status", async () => {
+    const mockUpdatedQuestion = { questionId: 1, ...req.body };
+    questionService.updateQuestion.mockResolvedValue(mockUpdatedQuestion);
 
-//   it("should update a question successfully", async () => {
-//     prisma.question.findUnique.mockResolvedValue({ questionId: 1 });
-//     const mockUpdatedQuestion = { questionId: 1, ...req.body };
-//     prisma.question.update.mockResolvedValue(mockUpdatedQuestion);
+    await questionController.updateQuestion(req, res, next);
 
-//     await updateQuestion(req, res);
+    expect(questionService.updateQuestion).toHaveBeenCalledWith(
+      parseInt(req.params.questionId),
+      {
+        label: req.body.label,
+        category: req.body.category,
+        numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
+        isRelevant: req.body.isRelevant,
+        hasMultipleResponse: req.body.hasMultipleResponse,
+        questionIdParent: req.body.questionIdParent,
+      }
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockUpdatedQuestion);
+  });
 
-//     expect(prisma.question.update).toHaveBeenCalledWith({
-//       where: { questionId: parseInt(req.params.questionId) },
-//       data: {
-//         label: req.body.label,
-//         category: req.body.category,
-//         numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
-//         isRelevant: req.body.isRelevant,
-//         hasMultipleResponse: req.body.hasMultipleResponse,
-//         questionIdParent: req.body.questionIdParent,
-//       },
-//     });
-//     expect(res.status).toHaveBeenCalledWith(200);
-//     expect(res.json).toHaveBeenCalledWith(mockUpdatedQuestion);
-//   });
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      questionController.updateQuestion,
+      req,
+      res,
+      () =>
+        questionService.updateQuestion.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(questionService.updateQuestion).toHaveBeenCalled();
+  });
 
-//   it("should return 400 for invalid ID", async () => {
-//     req.params.questionId = "invalid";
-//     await expectError(updateQuestion, req, res, () => {}, 400, "Bad request");
-//     expect(prisma.question.update).not.toHaveBeenCalled();
-//   });
+  it("should return 400 for invalid questionId", async () => {
+    req.params.questionId = "invalid";
+    await expectError(
+      questionController.updateQuestion,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid questionId"
+    );
+    expect(questionService.updateQuestion).not.toHaveBeenCalled();
+  });
 
-//   it("should return 404 if question does not exist", async () => {
-//     await expectError(
-//       updateQuestion,
-//       req,
-//       res,
-//       () => prisma.question.findUnique.mockResolvedValue(null),
-//       404,
-//       "Question not found"
-//     );
-//     expect(prisma.question.findUnique).toHaveBeenCalled();
-//   });
-
-//   it("should handle prisma errors and return 500", async () => {
-//     await expectError(
-//       updateQuestion,
-//       req,
-//       res,
-//       () => {
-//         prisma.question.findUnique.mockResolvedValue({ questionId: 1 });
-//         prisma.question.update.mockRejectedValue(new Error("DB error"));
-//       },
-//       500,
-//       "Internal server error"
-//     );
-//     expect(prisma.question.update).toHaveBeenCalled();
-//   });
-// });
+  it("should return 404 if question not found", async () => {
+    await expectError(
+      questionController.updateQuestion,
+      req,
+      res,
+      () => questionService.updateQuestion.mockRejectedValue({ status: 404 }),
+      404,
+      "Question not found"
+    );
+    expect(questionService.updateQuestion).toHaveBeenCalled();
+  });
+});
 
 // describe("Delete Question Controller", () => {
 //   let req, res;

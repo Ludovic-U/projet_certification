@@ -13,14 +13,12 @@ module.exports.createQuestion = async (req, res) => {
 
   try {
     const question = await questionService.createQuestion({
-      data: {
-        label: label,
-        category: category,
-        numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
-        isRelevant: isRelevant ?? false,
-        hasMultipleResponse: hasMultipleResponse ?? false,
-        questionIdParent: questionIdParent ?? null,
-      },
+      label: label,
+      category: category,
+      numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
+      isRelevant: isRelevant ?? false,
+      hasMultipleResponse: hasMultipleResponse ?? false,
+      questionIdParent: questionIdParent ?? null,
     });
     res.status(201).json(question);
   } catch (error) {
@@ -40,49 +38,41 @@ module.exports.getAllQuestions = async (_, res) => {
   }
 };
 
-// // Update a question by ID
-// module.exports.updateQuestion = async (req, res) => {
-//   const { questionId } = req.params;
-//   // check if id is a number
-//   if (isNaN(questionId)) {
-//     return res.status(400).json({ error: "Bad request" });
-//   }
+// Update a question by ID
+module.exports.updateQuestion = async (req, res) => {
+  const { questionId } = req.params;
+  // check if id is a number
+  if (isNaN(questionId)) {
+    return res.status(400).json({ error: "Bad request: Invalid questionId" });
+  }
 
-//   const {
-//     label,
-//     category,
-//     numberOfSelectionableOpt,
-//     isRelevant,
-//     hasMultipleResponse,
-//     questionIdParent,
-//   } = req.body;
+  const {
+    label,
+    category,
+    numberOfSelectionableOpt,
+    isRelevant,
+    hasMultipleResponse,
+    questionIdParent,
+  } = req.body;
 
-//   try {
-//     // check if question exists
-//     const existingQuestion = await prisma.question.findUnique({
-//       where: { questionId: questionId },
-//     });
-//     if (!existingQuestion) {
-//       return res.status(404).json({ error: "Question not found" });
-//     }
-
-//     const question = await prisma.question.update({
-//       where: { questionId: questionId },
-//       data: {
-//         label: label,
-//         category: category,
-//         numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
-//         isRelevant: isRelevant ?? false,
-//         hasMultipleResponse: hasMultipleResponse ?? false,
-//         questionIdParent: questionIdParent ?? null,
-//       },
-//     });
-//     res.status(200).json(question);
-//   } catch (error) {
-//     console.error("Error updating question:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
+  try {
+    const question = await questionService.updateQuestion(questionId, {
+      label: label,
+      category: category,
+      numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
+      isRelevant: isRelevant ?? false,
+      hasMultipleResponse: hasMultipleResponse ?? false,
+      questionIdParent: questionIdParent ?? null,
+    });
+    res.status(200).json(question);
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(404).json({ error: "Question not found" });
+    }
+    console.error("Error updating question:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // // Delete a question by ID
 // module.exports.deleteQuestion = async (req, res) => {
