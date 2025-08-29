@@ -56,3 +56,10 @@ module.exports.getQuestionsByType = async (typeId) => {
     where: { types: { some: { typeId: typeId } } },
   });
 };
+
+// Get subquestions by parent question ID
+module.exports.getSubQuestions = async (questionIdParent) => {
+  return await prisma.question.findMany({
+    where: { questionIdParent: questionIdParent },
+  });
+};

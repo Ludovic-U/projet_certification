@@ -431,50 +431,61 @@ describe("Question Controller - getQuestionsByType", () => {
   });
 });
 
-// describe("Get Sub Questions Controller", () => {
-//   let req, res;
+describe("Question Controller - getSubQuestions", () => {
+  let req, res, next;
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
 
-//     req = {
-//       params: { parentId: 1 },
-//     };
-//     res = mockResponse();
-//   });
+    req = {
+      params: { questionIdParent: 1 },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
 
-//   it("should fetch sub-questions successfully", async () => {
-//     const mockSubQuestions = [
-//       { questionId: 2, label: "Sub Question 1", questionIdParent: 1 },
-//       { questionId: 3, label: "Sub Question 2", questionIdParent: 1 },
-//     ];
-//     prisma.question.findMany.mockResolvedValue(mockSubQuestions);
+  it("should fetch sub-questions and return 200 status", async () => {
+    const mockSubQuestions = [
+      { questionId: 2, label: "Sub Question 1", questionIdParent: 1 },
+      { questionId: 3, label: "Sub Question 2", questionIdParent: 1 },
+    ];
+    questionService.getSubQuestions.mockResolvedValue(mockSubQuestions);
 
-//     await getSubQuestions(req, res);
+    await questionController.getSubQuestions(req, res, next);
 
-//     expect(prisma.question.findMany).toHaveBeenCalledWith({
-//       where: { questionIdParent: parseInt(req.params.parentId) },
-//     });
-//     expect(res.status).toHaveBeenCalledWith(200);
-//     expect(res.json).toHaveBeenCalledWith(mockSubQuestions);
-//   });
+    expect(questionService.getSubQuestions).toHaveBeenCalledWith(
+      parseInt(req.params.questionIdParent)
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockSubQuestions);
+  });
 
-//   it("should return 400 for invalid parentId", async () => {
-//     req.params.parentId = "invalid";
-//     await expectError(getSubQuestions, req, res, () => {}, 400, "Bad request");
-//     expect(prisma.question.findMany).not.toHaveBeenCalled();
-//   });
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      questionController.getSubQuestions,
+      req,
+      res,
+      () =>
+        questionService.getSubQuestions.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(questionService.getSubQuestions).toHaveBeenCalled();
+  });
 
-//   it("should handle prisma errors and return 500", async () => {
-//     await expectError(
-//       getSubQuestions,
-//       req,
-//       res,
-//       () => prisma.question.findMany.mockRejectedValue(new Error("DB error")),
-//       500,
-//       "Internal server error"
-//     );
-//     expect(prisma.question.findMany).toHaveBeenCalled();
-//   });
-// });
+  it("should return 400 for invalid parentId", async () => {
+    req.params.questionIdParent = "invalid";
+    await expectError(
+      questionController.getSubQuestions,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid questionIdParent"
+    );
+    expect(questionService.getSubQuestions).not.toHaveBeenCalled();
+  });
+});

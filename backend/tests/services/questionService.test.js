@@ -1,7 +1,6 @@
 const questionService = require("../../services/questionService");
 const { prisma } = require("../../prisma/prismaClient");
 const { checkIdExistence } = require("../../utils/checkIdExistence");
-const { expectError } = require("../helpers/errorHelper");
 
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
@@ -491,6 +490,73 @@ describe("Question Service - getQuestionsByType", () => {
     );
     expect(prisma.question.findMany).toHaveBeenCalledWith({
       where: { types: { some: { typeId: typeId } } },
+    });
+  });
+});
+
+describe("Question Service - getSubQuestion", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return questions for the given questionIdParent", async () => {
+    const questionIdParent = 1;
+
+    const mockQuestions = [
+      {
+        id: 1,
+        label: "Question 1?",
+        category: "General",
+        numberOfSelectionableOpt: 0,
+        isRelevant: true,
+        hasMultipleResponse: false,
+        questionIdParent: 1,
+      },
+      {
+        id: 2,
+        label: "Question 2?",
+        category: "Specific",
+        numberOfSelectionableOpt: 2,
+        isRelevant: false,
+        hasMultipleResponse: true,
+        questionIdParent: 1,
+      },
+    ];
+
+    prisma.question.findMany.mockResolvedValue(mockQuestions);
+
+    const result = await questionService.getSubQuestions(questionIdParent);
+
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { questionIdParent: questionIdParent },
+    });
+    expect(result).toEqual(mockQuestions);
+  });
+
+  it("should return an empty array if no questions match the questionIdParent", async () => {
+    const questionIdParent = 999;
+
+    prisma.question.findMany.mockResolvedValue([]);
+
+    const result = await questionService.getSubQuestions(questionIdParent);
+
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { questionIdParent: questionIdParent },
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("should throw an error if fetching fails", async () => {
+    const questionIdParent = 1;
+    const mockError = new Error("Database error");
+
+    prisma.question.findMany.mockRejectedValue(mockError);
+
+    await expect(
+      questionService.getSubQuestions(questionIdParent)
+    ).rejects.toThrow("Database error");
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { questionIdParent: questionIdParent },
     });
   });
 });

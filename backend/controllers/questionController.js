@@ -114,7 +114,7 @@ module.exports.getQuestionById = async (req, res) => {
   }
 };
 
-// // Get questions by project
+// WIP: Get questions by project
 // module.exports.getQuestionsByProject = async (req, res) => {
 //   const { projectId } = req.params;
 //   // check if projectId is a number
@@ -166,21 +166,23 @@ module.exports.getQuestionsByType = async (req, res) => {
   }
 };
 
-// // Get sub-questions of a parent question
-// module.exports.getSubQuestions = async (req, res) => {
-//   const { parentId } = req.params;
-//   // check if parentId is a number
-//   if (isNaN(parseInt(parentId))) {
-//     return res.status(400).json({ error: "Bad request" });
-//   }
+// Get subquestions by parent question ID
+module.exports.getSubQuestions = async (req, res) => {
+  const { questionIdParent } = req.params;
+  // check if questionIdParent is a number
+  if (isNaN(parseInt(questionIdParent))) {
+    return res
+      .status(400)
+      .json({ error: "Bad request: Invalid questionIdParent" });
+  }
 
-//   try {
-//     const subQuestions = await prisma.question.findMany({
-//       where: { questionIdParent: parseInt(parentId) },
-//     });
-//     res.status(200).json(subQuestions);
-//   } catch (error) {
-//     console.error("Error fetching sub-questions:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
+  try {
+    const subQuestions = await questionService.getSubQuestions(
+      parseInt(questionIdParent)
+    );
+    res.status(200).json(subQuestions);
+  } catch (error) {
+    console.error("Error fetching sub-questions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
