@@ -1,5 +1,4 @@
 import { InputHTMLAttributes } from "react";
-import { ToggleVariantProps } from "./toggle.variants";
 
 export interface ToggleProps
     extends Omit<InputHTMLAttributes<HTMLInputElement>, "size" | "type">,
