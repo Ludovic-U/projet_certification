@@ -49,3 +49,10 @@ module.exports.getQuestionsByCategory = async (category) => {
     where: { category: category },
   });
 };
+
+// Get questions by type
+module.exports.getQuestionsByType = async (typeId) => {
+  return await prisma.question.findMany({
+    where: { types: { some: { typeId: typeId } } },
+  });
+};

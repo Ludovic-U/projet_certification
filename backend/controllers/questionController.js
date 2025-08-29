@@ -149,38 +149,22 @@ module.exports.getQuestionsByCategory = async (req, res) => {
   }
 };
 
-// // Get questions by category
-// module.exports.getQuestionsByCategory = async (req, res) => {
-//   const { category } = req.params;
-//   try {
-//     const questions = await prisma.question.findMany({
-//       where: { category: category },
-//     });
-//     res.status(200).json(questions);
-//   } catch (error) {
-//     console.error("Error fetching questions by category:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
+// Get questions by type
+module.exports.getQuestionsByType = async (req, res) => {
+  const { typeId } = req.params;
+  // check if typeId is a number
+  if (isNaN(typeId)) {
+    return res.status(400).json({ error: "Bad request: Invalid typeId" });
+  }
 
-// // Get questions by Type
-// module.exports.getQuestionsByType = async (req, res) => {
-//   const { typeId } = req.params;
-//   // check if typeId is a number
-//   if (isNaN(parseInt(typeId))) {
-//     return res.status(400).json({ error: "Bad request" });
-//   }
-
-//   try {
-//     const questions = await prisma.question.findMany({
-//       where: { types: { some: { typeId: typeId } } },
-//     });
-//     res.status(200).json(questions);
-//   } catch (error) {
-//     console.error("Error fetching questions by type:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
+  try {
+    const questions = await questionService.getQuestionsByType(typeId);
+    res.status(200).json(questions);
+  } catch (error) {
+    console.error("Error fetching questions by type:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // // Get sub-questions of a parent question
 // module.exports.getSubQuestions = async (req, res) => {

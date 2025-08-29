@@ -372,99 +372,64 @@ describe("Question Controller - getQuestionsByCategory", () => {
   });
 });
 
-// describe("Get Questions By Category Controller", () => {
-//   let req, res;
+describe("Question Controller - getQuestionsByType", () => {
+  let req, res, next;
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
-//     req = { params: { category: "General" } };
-//     res = mockResponse();
-//   });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
 
-//   it("should fetch questions by category successfully", async () => {
-//     const mockQuestions = [
-//       { questionId: 1, label: "Question 1", category: "General" },
-//       { questionId: 2, label: "Question 2", category: "General" },
-//     ];
-//     prisma.question.findMany.mockResolvedValue(mockQuestions);
+    req = {
+      params: { typeId: 1 },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
 
-//     await getQuestionsByCategory(req, res);
+  it("should fetch questions by type and return 200 status", async () => {
+    const mockQuestions = [
+      { questionId: 1, label: "Question 1", typeId: 1 },
+      { questionId: 2, label: "Question 2", typeId: 1 },
+    ];
+    questionService.getQuestionsByType.mockResolvedValue(mockQuestions);
 
-//     expect(prisma.question.findMany).toHaveBeenCalledWith({
-//       where: { category: req.params.category },
-//     });
-//     expect(res.status).toHaveBeenCalledWith(200);
-//     expect(res.json).toHaveBeenCalledWith(mockQuestions);
-//   });
+    await questionController.getQuestionsByType(req, res, next);
 
-//   it("should handle prisma errors and return 500", async () => {
-//     await expectError(
-//       getQuestionsByCategory,
-//       req,
-//       res,
-//       () => prisma.question.findMany.mockRejectedValue(new Error("DB error")),
-//       500,
-//       "Internal server error"
-//     );
-//     expect(prisma.question.findMany).toHaveBeenCalled();
-//   });
-// });
+    expect(questionService.getQuestionsByType).toHaveBeenCalledWith(
+      parseInt(req.params.typeId)
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockQuestions);
+  });
 
-// describe("Get Question By Type Controller", () => {
-//   let req, res;
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      questionController.getQuestionsByType,
+      req,
+      res,
+      () =>
+        questionService.getQuestionsByType.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(questionService.getQuestionsByType).toHaveBeenCalled();
+  });
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
-
-//     req = {
-//       params: { typeId: 1 },
-//     };
-//     res = mockResponse();
-//   });
-
-//   it("should fetch questions by type successfully", async () => {
-//     const mockQuestions = [
-//       { questionId: 1, label: "Question 1", typeId: 1 },
-//       { questionId: 2, label: "Question 2", typeId: 2 },
-//     ];
-//     prisma.question.findMany.mockResolvedValue(mockQuestions);
-
-//     await getQuestionsByType(req, res);
-
-//     expect(prisma.question.findMany).toHaveBeenCalledWith({
-//       where: { types: { some: { typeId: req.params.typeId } } },
-//     });
-//     expect(res.status).toHaveBeenCalledWith(200);
-//     expect(res.json).toHaveBeenCalledWith(mockQuestions);
-//   });
-
-//   it("should return 400 for invalid typeId", async () => {
-//     req.params.typeId = "invalid";
-//     await expectError(
-//       getQuestionsByType,
-//       req,
-//       res,
-//       () => {},
-//       400,
-//       "Bad request"
-//     );
-//     expect(prisma.question.findMany).not.toHaveBeenCalled();
-//   });
-
-//   it("should handle prisma errors and return 500", async () => {
-//     await expectError(
-//       getQuestionsByType,
-//       req,
-//       res,
-//       () => prisma.question.findMany.mockRejectedValue(new Error("DB error")),
-//       500,
-//       "Internal server error"
-//     );
-//     expect(prisma.question.findMany).toHaveBeenCalled();
-//   });
-// });
+  it("should return 400 for invalid typeId", async () => {
+    req.params.typeId = "invalid";
+    await expectError(
+      questionController.getQuestionsByType,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid typeId"
+    );
+    expect(questionService.getQuestionsByType).not.toHaveBeenCalled();
+  });
+});
 
 // describe("Get Sub Questions Controller", () => {
 //   let req, res;

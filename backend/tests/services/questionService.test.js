@@ -428,3 +428,69 @@ describe("Question Service - getQuestionsByCategory", () => {
     });
   });
 });
+
+describe("Question Service - getQuestionsByType", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return questions for the given typeId", async () => {
+    const typeId = 1;
+    const mockQuestions = [
+      {
+        id: 1,
+        label: "Question 1?",
+        category: "General",
+        numberOfSelectionableOpt: 0,
+        isRelevant: true,
+        hasMultipleResponse: false,
+        questionIdParent: null,
+      },
+      {
+        id: 2,
+        label: "Question 2?",
+        category: "Specific",
+        numberOfSelectionableOpt: 2,
+        isRelevant: false,
+        hasMultipleResponse: true,
+        questionIdParent: null,
+      },
+    ];
+
+    prisma.question.findMany.mockResolvedValue(mockQuestions);
+
+    const result = await questionService.getQuestionsByType(typeId);
+
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { types: { some: { typeId: typeId } } },
+    });
+    expect(result).toEqual(mockQuestions);
+  });
+
+  it("should return an empty array if no questions match the typeId", async () => {
+    const typeId = 999;
+
+    prisma.question.findMany.mockResolvedValue([]);
+
+    const result = await questionService.getQuestionsByType(typeId);
+
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { types: { some: { typeId: typeId } } },
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("should throw an error if fetching fails", async () => {
+    const typeId = 1;
+    const mockError = new Error("Database error");
+
+    prisma.question.findMany.mockRejectedValue(mockError);
+
+    await expect(questionService.getQuestionsByType(typeId)).rejects.toThrow(
+      "Database error"
+    );
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { types: { some: { typeId: typeId } } },
+    });
+  });
+});
