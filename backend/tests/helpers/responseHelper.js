@@ -1,4 +1,4 @@
-function mockResponse() {
+function createMockResponse() {
   return {
     status: jest.fn().mockReturnThis(),
     json: jest.fn(),
@@ -6,4 +6,4 @@ function mockResponse() {
   };
 }
 
-module.exports = { mockResponse };
+module.exports = { createMockResponse };
