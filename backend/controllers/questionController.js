@@ -114,29 +114,6 @@ module.exports.getQuestionById = async (req, res) => {
   }
 };
 
-// // Get a question by ID
-// module.exports.getQuestionById = async (req, res) => {
-//   const { questionId } = req.params;
-//   // check if id is a number
-//   if (isNaN(questionId)) {
-//     return res.status(400).json({ error: "Bad request" });
-//   }
-
-//   try {
-//     // Retrieve question if exists
-//     const question = await prisma.question.findUnique({
-//       where: { questionId: parseInt(questionId) },
-//     });
-//     if (!question) {
-//       return res.status(404).json({ error: "Question not found" });
-//     }
-//     res.status(200).json(question);
-//   } catch (error) {
-//     console.error("Error fetching question:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
-
 // // Get questions by project
 // module.exports.getQuestionsByProject = async (req, res) => {
 //   const { projectId } = req.params;
@@ -159,6 +136,18 @@ module.exports.getQuestionById = async (req, res) => {
 //     res.status(500).json({ error: "Internal server error" });
 //   }
 // };
+
+// Get questions by category
+module.exports.getQuestionsByCategory = async (req, res) => {
+  const { category } = req.params;
+  try {
+    const questions = await questionService.getQuestionsByCategory(category);
+    res.status(200).json(questions);
+  } catch (error) {
+    console.error("Error fetching questions by category:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // // Get questions by category
 // module.exports.getQuestionsByCategory = async (req, res) => {

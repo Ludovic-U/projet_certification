@@ -1,6 +1,7 @@
 const questionService = require("../../services/questionService");
 const { prisma } = require("../../prisma/prismaClient");
 const { checkIdExistence } = require("../../utils/checkIdExistence");
+const { expectError } = require("../helpers/errorHelper");
 
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
@@ -356,6 +357,74 @@ describe("Question Service - getQuestionById", () => {
 
     expect(prisma.question.findUnique).toHaveBeenCalledWith({
       where: { questionId: questionId },
+    });
+  });
+});
+
+// TODO: Add tests for getQuestionsByProject when implemented
+
+describe("Question Service - getQuestionsByCategory", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return questions for the given category", async () => {
+    const category = "General";
+    const mockQuestions = [
+      {
+        id: 1,
+        label: "Question 1?",
+        category: "General",
+        numberOfSelectionableOpt: 0,
+        isRelevant: true,
+        hasMultipleResponse: false,
+        questionIdParent: null,
+      },
+      {
+        id: 2,
+        label: "Question 2?",
+        category: "General",
+        numberOfSelectionableOpt: 2,
+        isRelevant: false,
+        hasMultipleResponse: true,
+        questionIdParent: null,
+      },
+    ];
+
+    prisma.question.findMany.mockResolvedValue(mockQuestions);
+
+    const result = await questionService.getQuestionsByCategory(category);
+
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { category: category },
+    });
+    expect(result).toEqual(mockQuestions);
+  });
+
+  it("should return an empty array if no questions match the category", async () => {
+    const category = "NonExistentCategory";
+
+    prisma.question.findMany.mockResolvedValue([]);
+
+    const result = await questionService.getQuestionsByCategory(category);
+
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { category: category },
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("should throw an error if fetching fails", async () => {
+    const category = "General";
+    const mockError = new Error("Database error");
+
+    prisma.question.findMany.mockRejectedValue(mockError);
+
+    await expect(
+      questionService.getQuestionsByCategory(category)
+    ).rejects.toThrow("Database error");
+    expect(prisma.question.findMany).toHaveBeenCalledWith({
+      where: { category: category },
     });
   });
 });

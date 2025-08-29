@@ -324,64 +324,53 @@ describe("Question Contoller - getQuestionById", () => {
   });
 });
 
-// describe("Get Question By ID Controller", () => {
-//   let req, res;
+// TODO: Add tests for getQuestionsByProject controller when implemented
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
+describe("Question Controller - getQuestionsByCategory", () => {
+  let req, res, next;
 
-//     req = {
-//       params: { questionId: 1 },
-//     };
-//     res = mockResponse();
-//   });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
 
-//   it("should fetch a question by ID successfully", async () => {
-//     const mockQuestion = { questionId: 1, label: "Sample Question" };
-//     prisma.question.findUnique.mockResolvedValue(mockQuestion);
+    req = {
+      params: { category: "General" },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
 
-//     await getQuestionById(req, res);
+  it("should fetch questions by category and return 200 status", async () => {
+    const mockQuestions = [
+      { questionId: 1, label: "Question 1", category: "General" },
+      { questionId: 2, label: "Question 2", category: "General" },
+    ];
+    questionService.getQuestionsByCategory.mockResolvedValue(mockQuestions);
 
-//     expect(prisma.question.findUnique).toHaveBeenCalledWith({
-//       where: { questionId: parseInt(req.params.questionId) },
-//     });
-//     expect(res.status).toHaveBeenCalledWith(200);
-//     expect(res.json).toHaveBeenCalledWith(mockQuestion);
-//   });
+    await questionController.getQuestionsByCategory(req, res, next);
 
-//   it("should return 400 for invalid ID", async () => {
-//     req.params.questionId = "invalid";
-//     await expectError(getQuestionById, req, res, () => {}, 400, "Bad request");
-//     expect(prisma.question.findUnique).not.toHaveBeenCalled();
-//   });
+    expect(questionService.getQuestionsByCategory).toHaveBeenCalledWith(
+      req.params.category
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockQuestions);
+  });
 
-//   it("should return 404 if question does not exist", async () => {
-//     await expectError(
-//       getQuestionById,
-//       req,
-//       res,
-//       () => prisma.question.findUnique.mockResolvedValue(null),
-//       404,
-//       "Question not found"
-//     );
-//     expect(prisma.question.findUnique).toHaveBeenCalled();
-//   });
-
-//   it("should handle prisma errors and return 500", async () => {
-//     await expectError(
-//       getQuestionById,
-//       req,
-//       res,
-//       () => prisma.question.findUnique.mockRejectedValue(new Error("DB error")),
-//       500,
-//       "Internal server error"
-//     );
-//     expect(prisma.question.findUnique).toHaveBeenCalled();
-//   });
-// });
-
-// // TODO: Add test for getQuestionsByProject
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      questionController.getQuestionsByCategory,
+      req,
+      res,
+      () =>
+        questionService.getQuestionsByCategory.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(questionService.getQuestionsByCategory).toHaveBeenCalled();
+  });
+});
 
 // describe("Get Questions By Category Controller", () => {
 //   let req, res;
