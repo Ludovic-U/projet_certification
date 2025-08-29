@@ -6,7 +6,7 @@ import axios from "axios";
 
 import LoginForm from "@/components/forms/LoginForm";
 
-import { Toggle } from "@/components/ui/Toggle";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 
 type LoginFormInputs = {
     email: string;
