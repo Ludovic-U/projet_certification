@@ -382,3 +382,62 @@ describe("Response Controller - getResponsesByProject", () => {
     expect(responseService.getResponsesByProject).not.toHaveBeenCalled();
   });
 });
+
+describe("Response Controller - getSubResponse", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
+
+    req = {
+      params: { responseIdParent: 1 },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
+
+  it("should fetch sub-responses and return 200 status", async () => {
+    const mockSubResponses = [
+      { responseId: 2, label: "Sub Response 1", responseIdParent: 1 },
+      { responseId: 3, label: "Sub Response 2", responseIdParent: 1 },
+    ];
+    responseService.getSubResponse.mockResolvedValue(mockSubResponses);
+
+    await responseController.getSubResponse(req, res, next);
+
+    expect(responseService.getSubResponse).toHaveBeenCalledWith(
+      parseInt(req.params.responseIdParent)
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockSubResponses);
+  });
+
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      responseController.getSubResponse,
+      req,
+      res,
+      () =>
+        responseService.getSubResponse.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(responseService.getSubResponse).toHaveBeenCalled();
+  });
+
+  it("should return 400 for invalid parentId", async () => {
+    req.params.responseIdParent = "invalid";
+    await expectError(
+      responseController.getSubResponse,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid responseIdParent"
+    );
+    expect(responseService.getSubResponse).not.toHaveBeenCalled();
+  });
+});

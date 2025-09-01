@@ -404,3 +404,67 @@ describe("Response Service - getResponsesByProject", () => {
     });
   });
 });
+
+describe("Response Service - getSubresponse", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return responses for the given responseIdParent", async () => {
+    const responseIdParent = 1;
+    const mockResponses = [
+      {
+        responseId: 2,
+        label: "Response 1?",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        responseIdParent: 1,
+      },
+      {
+        responseId: 3,
+        label: "Response 1?",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        responseIdParent: 1,
+      },
+    ];
+
+    prisma.response.findMany.mockResolvedValue(mockResponses);
+
+    const result = await responseService.getSubResponse(responseIdParent);
+
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { responseIdParent: responseIdParent },
+    });
+    expect(result).toEqual(mockResponses);
+  });
+
+  it("should return an empty array if no responses match the responseIdParent", async () => {
+    const responseIdParent = 999;
+
+    prisma.response.findMany.mockResolvedValue([]);
+
+    const result = await responseService.getSubResponse(responseIdParent);
+
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { responseIdParent: responseIdParent },
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("should throw an error if fetching fails", async () => {
+    const responseIdParent = 1;
+    const mockError = new Error("Database error");
+
+    prisma.response.findMany.mockRejectedValue(mockError);
+
+    await expect(
+      responseService.getSubResponse(responseIdParent)
+    ).rejects.toThrow("Database error");
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { responseIdParent: responseIdParent },
+    });
+  });
+});

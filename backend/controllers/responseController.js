@@ -106,3 +106,23 @@ module.exports.getResponsesByProject = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Get subReponses by parent response ID
+module.exports.getSubResponse = async (req, res) => {
+  const { responseIdParent } = req.params;
+  // Check if responseIdParent is a number
+  if (isNaN(parseInt(responseIdParent))) {
+    return res
+      .status(400)
+      .json({ error: "Bad request: Invalid responseIdParent" });
+  }
+  try {
+    const subResponses = await responseService.getSubResponse(
+      parseInt(responseIdParent)
+    );
+    res.status(200).json(subResponses);
+  } catch (error) {
+    console.error("Error fetching sub-responses:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
