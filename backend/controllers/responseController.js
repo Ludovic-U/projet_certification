@@ -1,6 +1,23 @@
-// const { prisma } = require("../prisma/prismaClient");
+const responseService = require("../services/responseService");
 
-// // Create a new response
+// Create a new response
+module.exports.createResponse = async (req, res) => {
+  const { label, projectId, questionId, optionId, responseIdParent } = req.body;
+
+  try {
+    const response = await responseService.createResponse({
+      label: label ?? null,
+      projectId: projectId,
+      questionId: questionId,
+      optionId: optionId ?? null,
+      responseIdParent: responseIdParent ?? null,
+    });
+    res.status(201).json(response);
+  } catch (error) {
+    console.error("Error creating response:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 // module.exports.createResponse = async (req, res) => {
 //   const { label, projectId, questionId, optionId, questionIdParent } = req.body;
 

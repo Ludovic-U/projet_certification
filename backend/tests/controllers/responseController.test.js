@@ -1,78 +1,62 @@
-// const {
-//   createResponse,
-//   updateResponse,
-//   deleteResponse,
-//   getAllResponseByProject,
-// } = require("../../controllers/responseController");
-// const { prisma } = require("../../prisma/prismaClient");
-// const { mockResponse } = require("../helpers/responseHelper");
-// const { expectError } = require("../helpers/errorHelper");
+const responseController = require("../../controllers/responseController");
+const responseService = require("../../services/responseService");
+const { createMockResponse } = require("../helpers/responseHelper");
+const { expectError } = require("../helpers/errorHelper");
 
-// jest.mock("../../prisma/prismaClient", () => ({
-//   prisma: {
-//     response: {
-//       create: jest.fn(),
-//       findMany: jest.fn(),
-//       update: jest.fn(),
-//       delete: jest.fn(),
-//       findUnique: jest.fn(),
-//     },
-//   },
-// }));
+jest.mock("../../services/responseService");
 
-// describe("Create Response Controller", () => {
-//   let req, res;
+describe("Response Controller - createResponse", () => {
+  let req, res, next;
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
 
-//     req = {
-//       body: {
-//         label: "Sample answer",
-//         projectId: 1,
-//         questionId: 1,
-//         optionId: null,
-//         questionIdParent: null,
-//       },
-//     };
-//     res = mockResponse();
-//   });
+    req = {
+      body: {
+        label: "Sample answer",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        responseIdParent: null,
+      },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
 
-//   it("should create a response successfully", async () => {
-//     const mockedResponse = {
-//       responseId: 1,
-//       ...req.body,
-//     };
-//     prisma.response.create.mockResolvedValue(mockedResponse);
+  it("should create a response and return 201 status", async () => {
+    const mockResponse = { responseId: 1, ...req.body };
+    responseService.createResponse.mockResolvedValue(mockResponse);
 
-//     await createResponse(req, res);
+    await responseController.createResponse(req, res, next);
 
-//     expect(prisma.response.create).toHaveBeenCalledWith({
-//       data: {
-//         label: req.body.label,
-//         projectId: req.body.projectId,
-//         questionId: req.body.questionId,
-//         optionId: req.body.optionId,
-//         questionIdParent: req.body.questionIdParent,
-//       },
-//     });
-//     expect(res.status).toHaveBeenCalledWith(201);
-//     expect(res.json).toHaveBeenCalledWith(mockedResponse);
-//   });
+    expect(responseService.createResponse).toHaveBeenCalledWith({
+      label: req.body.label,
+      projectId: req.body.projectId,
+      questionId: req.body.questionId,
+      optionId: req.body.optionId,
+      responseIdParent: req.body.responseIdParent,
+    });
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(mockResponse);
+  });
 
-//   it("should handle errors during response creation and return 500", async () => {
-//     await expectError(
-//       createResponse,
-//       req,
-//       res,
-//       () => prisma.response.create.mockRejectedValue(new Error("DB error")),
-//       500,
-//       "Internal Server Error"
-//     );
-//     expect(prisma.response.create).toHaveBeenCalled();
-//   });
-// });
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      responseController.createResponse,
+      req,
+      res,
+      () =>
+        responseService.createResponse.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(responseService.createResponse).toHaveBeenCalled();
+  });
+});
 
 // describe("update Response Controller", () => {
 //   let req, res;
