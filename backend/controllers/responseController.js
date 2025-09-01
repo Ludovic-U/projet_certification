@@ -47,32 +47,25 @@ module.exports.updateResponse = async (req, res) => {
   }
 };
 
-// // Delete an existing response
-// module.exports.deleteResponse = async (req, res) => {
-//   const { responseId } = req.params;
-//   // check if id is a valid number
-//   if (isNaN(responseId)) {
-//     return res.status(400).json({ error: "Bad Request: Invalid responseId" });
-//   }
+// Delete a reponse by ID
+module.exports.deleteResponse = async (req, res) => {
+  const { responseId } = req.params;
+  // Check if responseId is a number
+  if (isNaN(responseId)) {
+    return res.status(400).json({ error: "Bad request: Invalid responseId" });
+  }
 
-//   try {
-//     // check if response exists
-//     const existingResponse = await prisma.response.findUnique({
-//       where: { responseId: parseInt(responseId) },
-//     });
-//     if (!existingResponse) {
-//       return res.status(404).json({ error: "Response not found" });
-//     }
-
-//     await prisma.response.delete({
-//       where: { responseId: parseInt(responseId) },
-//     });
-//     res.status(204).send();
-//   } catch (error) {
-//     console.error("Error deleting response:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
+  try {
+    await responseService.deleteResponse(responseId);
+    res.status(204).send();
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(404).json({ error: "Response not found" });
+    }
+    console.error("Error deleting response:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // // Get all responses for a project
 // module.exports.getAllResponseByProject = async (req, res) => {

@@ -167,3 +167,73 @@ describe("Response Service - updateResponse", () => {
     });
   });
 });
+
+describe("Response Service - deleteResponse", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should delete the response", async () => {
+    const responseId = 1;
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    prisma.response.delete.mockResolvedValue({ responseId: responseId });
+
+    const result = await responseService.deleteResponse(responseId);
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      responseId,
+      "Response not found"
+    );
+    expect(prisma.response.delete).toHaveBeenCalledWith({
+      where: { responseId: responseId },
+    });
+    expect(result).toEqual({ responseId: responseId });
+  });
+
+  it("should throw an error if the Response does not exist", async () => {
+    const responseId = 999;
+
+    // Mock the existence check to fail
+    const mockError = new Error("Response not found");
+    mockError.status = 404;
+    checkIdExistence.mockRejectedValue(mockError);
+
+    await expect(responseService.deleteResponse(responseId)).rejects.toThrow(
+      "Response not found"
+    );
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      responseId,
+      "Response not found"
+    );
+    expect(prisma.response.delete).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error if deletion fails", async () => {
+    const responseId = 1;
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    const mockError = new Error("Database error");
+    prisma.response.delete.mockRejectedValue(mockError);
+
+    await expect(responseService.deleteResponse(responseId)).rejects.toThrow(
+      "Database error"
+    );
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      responseId,
+      "Response not found"
+    );
+    expect(prisma.response.delete).toHaveBeenCalledWith({
+      where: { responseId: responseId },
+    });
+  });
+});

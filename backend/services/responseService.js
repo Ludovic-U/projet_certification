@@ -14,3 +14,11 @@ module.exports.updateResponse = async (responseId, data) => {
     data,
   });
 };
+
+// Delete a response by ID
+module.exports.deleteResponse = async (responseId) => {
+  await checkIdExistence(prisma.response, responseId, "Response not found");
+  return await prisma.response.delete({
+    where: { responseId: responseId },
+  });
+};
