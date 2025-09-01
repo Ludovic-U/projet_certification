@@ -494,7 +494,7 @@ describe("Question Service - getQuestionsByType", () => {
   });
 });
 
-describe("Question Service - getSubQuestion", () => {
+describe("Question Service - getSubQuestions", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
