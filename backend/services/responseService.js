@@ -5,3 +5,12 @@ const { checkIdExistence } = require("../utils/checkIdExistence");
 module.exports.createResponse = async (data) => {
   return await prisma.response.create({ data });
 };
+
+// Update a response by ID
+module.exports.updateResponse = async (responseId, data) => {
+  await checkIdExistence(prisma.response, responseId, "Response not found");
+  return await prisma.response.update({
+    where: { responseId: responseId },
+    data,
+  });
+};

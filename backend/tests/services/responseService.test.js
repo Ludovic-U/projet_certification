@@ -67,3 +67,103 @@ describe("Response Service - createResponse", () => {
     });
   });
 });
+
+describe("Response Service - updateResponse", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should update and return the updated response", async () => {
+    const responseId = 1;
+    const mockUpdateData = {
+      label: "Updated Response",
+      projectId: 1,
+      questionId: 1,
+      optionId: null,
+      responseIdParent: null,
+    };
+    const mockUpdatedResponse = {
+      responseId: responseId,
+      ...mockUpdateData,
+    };
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    prisma.response.update.mockResolvedValue(mockUpdatedResponse);
+
+    const result = await responseService.updateResponse(
+      responseId,
+      mockUpdateData
+    );
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      responseId,
+      "Response not found"
+    );
+    expect(prisma.response.update).toHaveBeenCalledWith({
+      where: { responseId: responseId },
+      data: mockUpdateData,
+    });
+    expect(result).toEqual(mockUpdatedResponse);
+  });
+
+  it("should throw an error if the response does not exist", async () => {
+    const responseId = 999;
+    const mockUpdateData = {
+      label: "Non-existent Response",
+      projectId: 1,
+      questionId: 1,
+      optionId: null,
+      responseIdParent: null,
+    };
+
+    // Mock the existence check to fail
+    const mockError = new Error("Response not found");
+    mockError.status = 404;
+    checkIdExistence.mockRejectedValue(mockError);
+
+    await expect(
+      responseService.updateResponse(responseId, mockUpdateData)
+    ).rejects.toThrow("Response not found");
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      responseId,
+      "Response not found"
+    );
+    expect(prisma.response.update).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error if update fails", async () => {
+    const responseId = 1;
+    const mockUpdateData = {
+      label: "Failed update",
+      projectId: 1,
+      questionId: 1,
+      optionId: null,
+      responseIdParent: null,
+    };
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    const mockError = new Error("Database error");
+    prisma.response.update.mockRejectedValue(mockError);
+
+    await expect(
+      responseService.updateResponse(responseId, mockUpdateData)
+    ).rejects.toThrow("Database error");
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      responseId,
+      "Response not found"
+    );
+    expect(prisma.response.update).toHaveBeenCalledWith({
+      where: { responseId: responseId },
+      data: mockUpdateData,
+    });
+  });
+});

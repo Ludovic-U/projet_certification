@@ -18,61 +18,34 @@ module.exports.createResponse = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-// module.exports.createResponse = async (req, res) => {
-//   const { label, projectId, questionId, optionId, questionIdParent } = req.body;
 
-//   try {
-//     const response = await prisma.response.create({
-//       data: {
-//         label: label || null,
-//         projectId: projectId,
-//         questionId: questionId,
-//         optionId: optionId || null,
-//         questionIdParent: questionIdParent || null,
-//       },
-//     });
-//     res.status(201).json(response);
-//   } catch (error) {
-//     console.error("Error creating response:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
+// Update a response by ID
+module.exports.updateResponse = async (req, res) => {
+  const { responseId } = req.params;
+  // Check if responseId is a number
+  if (isNaN(responseId)) {
+    return res.status(400).json({ error: "Bad request: Invalid responseId" });
+  }
 
-// // Update an existing response
-// module.exports.updateResponse = async (req, res) => {
-//   const { responseId } = req.params;
-//   // check if id is a valid number
-//   if (isNaN(responseId)) {
-//     return res.status(400).json({ error: "Bad Request: Invalid responseId" });
-//   }
+  const { label, projectId, questionId, optionId, responseIdParent } = req.body;
 
-//   const { label, projectId, questionId, optionId, questionIdParent } = req.body;
-
-//   try {
-//     // check if response exists
-//     const existingResponse = await prisma.response.findUnique({
-//       where: { responseId: parseInt(responseId) },
-//     });
-//     if (!existingResponse) {
-//       return res.status(404).json({ error: "Response not found" });
-//     }
-
-//     const response = await prisma.response.update({
-//       where: { responseId: parseInt(responseId) },
-//       data: {
-//         label: label || null,
-//         projectId: projectId,
-//         questionId: questionId,
-//         optionId: optionId || null,
-//         questionIdParent: questionIdParent || null,
-//       },
-//     });
-//     res.status(200).json(response);
-//   } catch (error) {
-//     console.error("Error updating response:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
+  try {
+    const response = await responseService.updateResponse(responseId, {
+      label: label ?? null,
+      projectId: projectId,
+      questionId: questionId,
+      optionId: optionId ?? null,
+      responseIdParent: responseIdParent ?? null,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(404).json({ error: "Response not found" });
+    }
+    console.error("Error updating response:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // // Delete an existing response
 // module.exports.deleteResponse = async (req, res) => {
