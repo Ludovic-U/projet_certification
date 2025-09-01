@@ -23,6 +23,16 @@ module.exports.deleteResponse = async (responseId) => {
   });
 };
 
+// TODO: Get responses by question of a project
+module.exports.getResponsesByQuestionOfProject = async (
+  projectId,
+  questionId
+) => {
+  return await prisma.response.findMany({
+    where: { projectId: projectId, questionId: questionId },
+  });
+};
+
 // Get responses by project
 module.exports.getResponsesByProject = async (projectId) => {
   await checkIdExistence(prisma.response, projectId, "Project not found");

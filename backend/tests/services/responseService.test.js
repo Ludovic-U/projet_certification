@@ -238,6 +238,73 @@ describe("Response Service - deleteResponse", () => {
   });
 });
 
+// TODO: Added tests for getResponsesByQuestionOfProject
+describe("Response Service - getResponsesByQuestionOfProject", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return responses for the given question of a project", async () => {
+    const projectId = 1;
+    const questionId = 1;
+    const mockResponses = [
+      {
+        responseId: 1,
+        label: "Answer 01",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        responseIdParent: null,
+      },
+    ];
+
+    prisma.response.findMany.mockResolvedValue(mockResponses);
+
+    const result = await responseService.getResponsesByQuestionOfProject(
+      projectId,
+      questionId
+    );
+
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { projectId: projectId, questionId: questionId },
+    });
+    expect(result).toEqual(mockResponses);
+  });
+
+  it("should throw an error if fetching fails", async () => {
+    const projectId = 1;
+    const questionId = 1;
+
+    const mockError = new Error("Database error");
+    prisma.response.findMany.mockRejectedValue(mockError);
+
+    await expect(
+      responseService.getResponsesByQuestionOfProject(projectId, questionId)
+    ).rejects.toThrow("Database error");
+
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { projectId: projectId, questionId: questionId },
+    });
+  });
+
+  it("should return an empty array if no responses match the QuestionId", async () => {
+    const projectId = 1;
+    const questionId = 999;
+
+    prisma.response.findMany.mockResolvedValue([]);
+
+    const result = await responseService.getResponsesByQuestionOfProject(
+      projectId,
+      questionId
+    );
+
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { projectId: projectId, questionId: questionId },
+    });
+    expect(result).toEqual([]);
+  });
+});
+
 describe("Response Service - getResponsesByProject", () => {
   afterEach(() => {
     jest.clearAllMocks();

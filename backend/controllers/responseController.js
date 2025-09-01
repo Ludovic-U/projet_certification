@@ -67,6 +67,8 @@ module.exports.deleteResponse = async (req, res) => {
   }
 };
 
+// TODO: Get responses by question of a project
+
 // Get responses by project
 module.exports.getResponsesByProject = async (req, res) => {
   const { projectId } = req.params;
