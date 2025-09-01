@@ -20,10 +20,11 @@ export const Pagination: React.FC<PaginationProps> = ({
 }) => {
     if (totalPages < 1) return null;
 
+    // Exemple génération d'un tableau pour avoir différentes pages
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
     return (
-        <div className={`flex items-center gap-2 ${className || ""}`}>
+        <div className={`flex items-center gap-1 ${className || ""}`}>
             <Button
              variant="pagination"
              size="pagination"

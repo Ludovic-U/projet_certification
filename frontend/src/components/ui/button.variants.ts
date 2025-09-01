@@ -37,10 +37,12 @@ export const buttonVariants = cva(
                     "hover:bg-lighthover hover:text-primaryhover",
                 ],
                 pagination: [
-                    "rounded-full bg-transparent hover:-bg-transparent hover:text-dark text-dark hover:border hover:border-primarylight"
+                    "rounded-full bg-transparent text-dark",
+                    "hover:-bg-transparent hover:text-dark hover:border hover:border-primarylight",
+                    "focus:border-primary"
                 ],
                 paginationActive: [
-                    "rounded-full text-light bg-primary hover:bg-primary"
+                    "rounded-full text-light bg-primary hover:bg-primary cursor-default"
                 ]
             },
             collapsed: {
