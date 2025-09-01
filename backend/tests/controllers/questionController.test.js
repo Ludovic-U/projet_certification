@@ -253,7 +253,7 @@ describe("Question Controller - deleteQuestion", () => {
   });
 });
 
-describe("Question Contoller - getQuestionById", () => {
+describe("Question Controller - getQuestionById", () => {
   let req, res, next;
 
   beforeEach(() => {
