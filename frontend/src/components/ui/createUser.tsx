@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/button-old";
+import { Button } from "@/components/ui/Button";
 
 const CreateUserButton = () => {
     const handleCreateUser = async () => {

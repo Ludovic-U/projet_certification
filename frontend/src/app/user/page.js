@@ -1,11 +1,11 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, User, Mail, Lock, Briefcase, Users, ListChecks } from 'lucide-react';
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/utils"
 
 const roles = ['Directeur', 'Chef de projet', 'Contributeur', 'Trésorier', 'RH'];
 const projetsDisponibles = ['Projet Alpha', 'Projet Beta', 'Projet Gamma', 'Projet Delta'];

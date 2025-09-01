@@ -1,8 +1,7 @@
 import { InputHTMLAttributes } from "react";
 
 export interface ToggleProps
-    extends Omit<InputHTMLAttributes<HTMLInputElement>, "size" | "type">,
-        ToggleVariantProps {
+    extends Omit<InputHTMLAttributes<HTMLInputElement>, "size" | "type"> {
             checked?: boolean;
             defaultChecked?: boolean;
             onCheckedChange?: (checked: boolean) => void;
