@@ -208,6 +208,92 @@ describe("Response Controller - deleteResponse", () => {
 });
 
 // TODO: Added tests for getResponsesByQuestionOfProject
+describe("Response Controller - getResponsesByQuestionOfProject", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
+
+    req = {
+      params: { projectId: 1, questionId: 1 },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
+
+  it("should fetch responses by question of a project and return 200 status", async () => {
+    const mockReponses = [
+      {
+        responseId: 1,
+        label: "Answer 01",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        responseIdParent: null,
+      },
+    ];
+    responseService.getResponsesByQuestionOfProject.mockResolvedValue(
+      mockReponses
+    );
+
+    await responseController.getResponsesByQuestionOfProject(req, res, next);
+
+    expect(
+      responseService.getResponsesByQuestionOfProject
+    ).toHaveBeenCalledWith(
+      parseInt(req.params.projectId),
+      parseInt(req.params.questionId)
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockReponses);
+  });
+
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      responseController.getResponsesByQuestionOfProject,
+      req,
+      res,
+      () =>
+        responseService.getResponsesByQuestionOfProject.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(responseService.getResponsesByQuestionOfProject).toHaveBeenCalled();
+  });
+
+  it("should return 400 for invalid projectId", async () => {
+    req.params.projectId = "invalid";
+    await expectError(
+      responseController.getResponsesByQuestionOfProject,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid Ids"
+    );
+    expect(
+      responseService.getResponsesByQuestionOfProject
+    ).not.toHaveBeenCalled();
+  });
+
+  it("should return 400 for invalid questionId", async () => {
+    req.params.questionId = "invalid";
+    await expectError(
+      responseController.getResponsesByQuestionOfProject,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid Ids"
+    );
+    expect(
+      responseService.getResponsesByQuestionOfProject
+    ).not.toHaveBeenCalled();
+  });
+});
 
 describe("Response Controller - getResponsesByProject", () => {
   let req, res, next;

@@ -23,7 +23,7 @@ module.exports.deleteResponse = async (responseId) => {
   });
 };
 
-// TODO: Get responses by question of a project
+// Get responses by question of a project
 module.exports.getResponsesByQuestionOfProject = async (
   projectId,
   questionId

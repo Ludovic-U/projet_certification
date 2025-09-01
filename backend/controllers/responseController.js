@@ -67,7 +67,25 @@ module.exports.deleteResponse = async (req, res) => {
   }
 };
 
-// TODO: Get responses by question of a project
+// Get responses by question of a project
+module.exports.getResponsesByQuestionOfProject = async (req, res) => {
+  const { projectId, questionId } = req.params;
+  // Check if projectId and questionId are number
+  if (isNaN(projectId) || isNaN(questionId)) {
+    return res.status(400).json({ error: "Bad request: Invalid Ids" });
+  }
+
+  try {
+    const responses = await responseService.getResponsesByQuestionOfProject(
+      projectId,
+      questionId
+    );
+    return res.status(200).json(responses);
+  } catch (error) {
+    console.error("Error fetching response:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // Get responses by project
 module.exports.getResponsesByProject = async (req, res) => {

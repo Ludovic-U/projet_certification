@@ -238,7 +238,6 @@ describe("Response Service - deleteResponse", () => {
   });
 });
 
-// TODO: Added tests for getResponsesByQuestionOfProject
 describe("Response Service - getResponsesByQuestionOfProject", () => {
   afterEach(() => {
     jest.clearAllMocks();
