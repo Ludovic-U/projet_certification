@@ -67,23 +67,22 @@ module.exports.deleteResponse = async (req, res) => {
   }
 };
 
-// // Get all responses for a project
-// module.exports.getAllResponseByProject = async (req, res) => {
-//   const { projectId } = req.params;
-//   // check if projectId is a valid number
-//   if (isNaN(projectId)) {
-//     return res.status(400).json({ error: "Bad Request: Invalid projectId" });
-//   }
+// Get responses by project
+module.exports.getResponsesByProject = async (req, res) => {
+  const { projectId } = req.params;
+  // Check if projectId is a number
+  if (isNaN(projectId)) {
+    return res.status(400).json({ error: "Bad request: Invalid projectId" });
+  }
 
-//   try {
-//     const responses = await prisma.response.findMany({
-//       where: {
-//         projectId: parseInt(projectId),
-//       },
-//     });
-//     res.status(200).json(responses);
-//   } catch (error) {
-//     console.error("Error fetching responses:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
+  try {
+    const responses = await responseService.getResponsesByProject(projectId);
+    res.status(200).json(responses);
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    console.error("Error fetching response:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

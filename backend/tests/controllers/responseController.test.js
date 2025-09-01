@@ -207,73 +207,90 @@ describe("Response Controller - deleteResponse", () => {
   });
 });
 
-// describe("Get all response by project Controller", () => {
-//   let req, res;
+describe("Response Controller - getResponsesByProject", () => {
+  let req, res, next;
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//     console.error = jest.fn();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    console.error = jest.fn();
 
-//     req = {
-//       params: { projectId: 1 },
-//     };
-//     res = mockResponse();
-//   });
+    req = {
+      params: { projectId: 1 },
+    };
+    res = createMockResponse();
+    next = jest.fn();
+  });
 
-//   it("should retrieve all responses successfully", async () => {
-//     const mockedResponse = [
-//       {
-//         responseId: 1,
-//         label: "Sample answer",
-//         projectId: 1,
-//         questionId: 1,
-//         optionId: null,
-//         questionIdParent: null,
-//       },
-//       {
-//         responseId: 2,
-//         label: "Another answer",
-//         projectId: 1,
-//         questionId: 2,
-//         optionId: null,
-//         questionIdParent: null,
-//       },
-//     ];
-//     prisma.response.findMany.mockResolvedValue(mockedResponse);
+  it("should fetch responses by project and return 200 status", async () => {
+    const mockReponses = [
+      {
+        responseId: 1,
+        label: "Answer 01",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        responseIdParent: null,
+      },
+      {
+        responseId: 2,
+        label: "Answer 02",
+        projectId: 1,
+        questionId: 2,
+        optionId: null,
+        responseIdParent: null,
+      },
+    ];
+    responseService.getResponsesByProject.mockResolvedValue(mockReponses);
 
-//     await getAllResponseByProject(req, res);
+    await responseController.getResponsesByProject(req, res, next);
 
-//     expect(prisma.response.findMany).toHaveBeenCalledWith({
-//       where: {
-//         projectId: 1,
-//       },
-//     });
-//     expect(res.status).toHaveBeenCalledWith(200);
-//     expect(res.json).toHaveBeenCalledWith(mockedResponse);
-//   });
+    expect(responseService.getResponsesByProject).toHaveBeenCalledWith(
+      parseInt(req.params.projectId)
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockReponses);
+  });
 
-//   it("should return 400 for invalid projectId", async () => {
-//     req.params.projectId = "invalid";
-//     await expectError(
-//       getAllResponseByProject,
-//       req,
-//       res,
-//       () => {},
-//       400,
-//       "Bad Request: Invalid projectId"
-//     );
-//     expect(prisma.response.findMany).not.toHaveBeenCalled();
-//   });
+  it("should handle service errors and return 500 status", async () => {
+    await expectError(
+      responseController.getResponsesByProject,
+      req,
+      res,
+      () =>
+        responseService.getResponsesByProject.mockRejectedValue(
+          new Error("Database error")
+        ),
+      500,
+      "Internal server error"
+    );
+    expect(responseService.getResponsesByProject).toHaveBeenCalled();
+  });
 
-//   it("should handle errors during response retrieval and return 500", async () => {
-//     await expectError(
-//       getAllResponseByProject,
-//       req,
-//       res,
-//       () => prisma.response.findMany.mockRejectedValue(new Error("DB error")),
-//       500,
-//       "Internal Server Error"
-//     );
-//     expect(prisma.response.findMany).toHaveBeenCalled();
-//   });
-// });
+  it("should return 404 if project not found", async () => {
+    await expectError(
+      responseController.getResponsesByProject,
+      req,
+      res,
+      () =>
+        responseService.getResponsesByProject.mockRejectedValue({
+          status: 404,
+        }),
+      404,
+      "Project not found"
+    );
+    expect(responseService.getResponsesByProject).toHaveBeenCalled();
+  });
+
+  it("should return 400 for invalid projectId", async () => {
+    req.params.projectId = "invalid";
+    await expectError(
+      responseController.getResponsesByProject,
+      req,
+      res,
+      () => {},
+      400,
+      "Bad request: Invalid projectId"
+    );
+    expect(responseService.getResponsesByProject).not.toHaveBeenCalled();
+  });
+});

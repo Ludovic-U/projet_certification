@@ -237,3 +237,104 @@ describe("Response Service - deleteResponse", () => {
     });
   });
 });
+
+describe("Response Service - getResponsesByProject", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return responses for the given project", async () => {
+    const projectId = 1;
+    const mockResponses = [
+      {
+        responseId: 1,
+        label: "response 01",
+        projectId: 1,
+        questionId: 1,
+        optionId: null,
+        responseIdParent: null,
+      },
+      {
+        responseId: 1,
+        label: "response 02",
+        projectId: 1,
+        questionId: 2,
+        optionId: null,
+        responseIdParent: null,
+      },
+    ];
+
+    prisma.response.findMany.mockResolvedValue(mockResponses);
+
+    const result = await responseService.getResponsesByProject(projectId);
+
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { projectId: projectId },
+    });
+    expect(result).toEqual(mockResponses);
+  });
+
+  it("should throw an error if the projectId is not found", async () => {
+    const projectId = 999;
+
+    // Mock the existence check to fail
+    const mockError = new Error("Project not found");
+    mockError.status = 404;
+    checkIdExistence.mockRejectedValue(mockError);
+
+    await expect(
+      responseService.getResponsesByProject(projectId)
+    ).rejects.toThrow("Project not found");
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      projectId,
+      "Project not found"
+    );
+    expect(prisma.response.findMany).not.toHaveBeenCalled();
+  });
+
+  it("should return an empty array if no responses match the projectId", async () => {
+    const projectId = 999;
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    prisma.response.findMany.mockResolvedValue([]);
+
+    const result = await responseService.getResponsesByProject(projectId);
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      projectId,
+      "Project not found"
+    );
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { projectId: projectId },
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("should throw an error if fetching fails", async () => {
+    const projectId = 1;
+
+    // Mock the existence check to pass
+    checkIdExistence.mockResolvedValue(true);
+
+    const mockError = new Error("Database error");
+    prisma.response.findMany.mockRejectedValue(mockError);
+
+    await expect(
+      responseService.getResponsesByProject(projectId)
+    ).rejects.toThrow("Database error");
+
+    expect(checkIdExistence).toHaveBeenCalledWith(
+      prisma.response,
+      projectId,
+      "Project not found"
+    );
+    expect(prisma.response.findMany).toHaveBeenCalledWith({
+      where: { projectId: projectId },
+    });
+  });
+});

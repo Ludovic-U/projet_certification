@@ -22,3 +22,11 @@ module.exports.deleteResponse = async (responseId) => {
     where: { responseId: responseId },
   });
 };
+
+// Get responses by project
+module.exports.getResponsesByProject = async (projectId) => {
+  await checkIdExistence(prisma.response, projectId, "Project not found");
+  return await prisma.response.findMany({
+    where: { projectId: projectId },
+  });
+};
