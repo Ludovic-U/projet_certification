@@ -383,7 +383,7 @@ describe("Response Controller - getResponsesByProject", () => {
   });
 });
 
-describe("Response Controller - getSubResponse", () => {
+describe("Response Controller - getSubResponses", () => {
   let req, res, next;
 
   beforeEach(() => {
@@ -402,11 +402,11 @@ describe("Response Controller - getSubResponse", () => {
       { responseId: 2, label: "Sub Response 1", responseIdParent: 1 },
       { responseId: 3, label: "Sub Response 2", responseIdParent: 1 },
     ];
-    responseService.getSubResponse.mockResolvedValue(mockSubResponses);
+    responseService.getSubResponses.mockResolvedValue(mockSubResponses);
 
-    await responseController.getSubResponse(req, res, next);
+    await responseController.getSubResponses(req, res, next);
 
-    expect(responseService.getSubResponse).toHaveBeenCalledWith(
+    expect(responseService.getSubResponses).toHaveBeenCalledWith(
       parseInt(req.params.responseIdParent)
     );
     expect(res.status).toHaveBeenCalledWith(200);
@@ -415,29 +415,29 @@ describe("Response Controller - getSubResponse", () => {
 
   it("should handle service errors and return 500 status", async () => {
     await expectError(
-      responseController.getSubResponse,
+      responseController.getSubResponses,
       req,
       res,
       () =>
-        responseService.getSubResponse.mockRejectedValue(
+        responseService.getSubResponses.mockRejectedValue(
           new Error("Database error")
         ),
       500,
       "Internal server error"
     );
-    expect(responseService.getSubResponse).toHaveBeenCalled();
+    expect(responseService.getSubResponses).toHaveBeenCalled();
   });
 
   it("should return 400 for invalid parentId", async () => {
     req.params.responseIdParent = "invalid";
     await expectError(
-      responseController.getSubResponse,
+      responseController.getSubResponses,
       req,
       res,
       () => {},
       400,
       "Bad request: Invalid responseIdParent"
     );
-    expect(responseService.getSubResponse).not.toHaveBeenCalled();
+    expect(responseService.getSubResponses).not.toHaveBeenCalled();
   });
 });

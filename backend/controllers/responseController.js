@@ -108,7 +108,7 @@ module.exports.getResponsesByProject = async (req, res) => {
 };
 
 // Get subReponses by parent response ID
-module.exports.getSubResponse = async (req, res) => {
+module.exports.getSubResponses = async (req, res) => {
   const { responseIdParent } = req.params;
   // Check if responseIdParent is a number
   if (isNaN(parseInt(responseIdParent))) {
@@ -117,7 +117,7 @@ module.exports.getSubResponse = async (req, res) => {
       .json({ error: "Bad request: Invalid responseIdParent" });
   }
   try {
-    const subResponses = await responseService.getSubResponse(
+    const subResponses = await responseService.getSubResponses(
       parseInt(responseIdParent)
     );
     res.status(200).json(subResponses);

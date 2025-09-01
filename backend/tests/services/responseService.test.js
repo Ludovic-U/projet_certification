@@ -405,7 +405,7 @@ describe("Response Service - getResponsesByProject", () => {
   });
 });
 
-describe("Response Service - getSubresponse", () => {
+describe("Response Service - getSubresponses", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -433,7 +433,7 @@ describe("Response Service - getSubresponse", () => {
 
     prisma.response.findMany.mockResolvedValue(mockResponses);
 
-    const result = await responseService.getSubResponse(responseIdParent);
+    const result = await responseService.getSubResponses(responseIdParent);
 
     expect(prisma.response.findMany).toHaveBeenCalledWith({
       where: { responseIdParent: responseIdParent },
@@ -446,7 +446,7 @@ describe("Response Service - getSubresponse", () => {
 
     prisma.response.findMany.mockResolvedValue([]);
 
-    const result = await responseService.getSubResponse(responseIdParent);
+    const result = await responseService.getSubResponses(responseIdParent);
 
     expect(prisma.response.findMany).toHaveBeenCalledWith({
       where: { responseIdParent: responseIdParent },
@@ -461,7 +461,7 @@ describe("Response Service - getSubresponse", () => {
     prisma.response.findMany.mockRejectedValue(mockError);
 
     await expect(
-      responseService.getSubResponse(responseIdParent)
+      responseService.getSubResponses(responseIdParent)
     ).rejects.toThrow("Database error");
     expect(prisma.response.findMany).toHaveBeenCalledWith({
       where: { responseIdParent: responseIdParent },

@@ -42,7 +42,7 @@ module.exports.getResponsesByProject = async (projectId) => {
 };
 
 // Get subReponses by parent response ID
-module.exports.getSubResponse = async (responseIdParent) => {
+module.exports.getSubResponses = async (responseIdParent) => {
   return await prisma.response.findMany({
     where: { responseIdParent: responseIdParent },
   });
