@@ -46,4 +46,24 @@ describe("Response Service - createResponse", () => {
     });
     expect(result).toEqual(mockCreatedResponse);
   });
+
+  it("should throw an error if creation fails", async () => {
+    const mockResponseData = {
+      label: "Response test",
+      projectId: 1,
+      questionId: 1,
+      optionId: null,
+      responseIdParent: null,
+    };
+
+    const mockError = new Error("Database error");
+    prisma.response.create.mockRejectedValue(mockError);
+
+    await expect(
+      responseService.createResponse(mockResponseData)
+    ).rejects.toThrow("Database error");
+    expect(prisma.response.create).toHaveBeenCalledWith({
+      data: mockResponseData,
+    });
+  });
 });
