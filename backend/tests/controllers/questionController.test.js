@@ -124,7 +124,7 @@ describe("Question Controller - updateQuestion", () => {
     next = jest.fn();
   });
 
-  it("should udate a question and return 200 status", async () => {
+  it("should update a question and return 200 status", async () => {
     const mockUpdatedQuestion = { questionId: 1, ...req.body };
     questionService.updateQuestion.mockResolvedValue(mockUpdatedQuestion);
 

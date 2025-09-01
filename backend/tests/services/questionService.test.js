@@ -34,7 +34,7 @@ describe("Question Service - createQuestion", () => {
     };
 
     const mockCreatedQuestion = {
-      id: 1,
+      questionId: 1,
       ...mockQuestionData,
     };
 
@@ -90,7 +90,7 @@ describe("Question Service - getAllQuestions", () => {
   it("should return a list of questions", async () => {
     const mockQuestions = [
       {
-        id: 1,
+        questionId: 1,
         label: "Question 1?",
         category: "General",
         numberOfSelectionableOpt: 0,
@@ -99,7 +99,7 @@ describe("Question Service - getAllQuestions", () => {
         questionIdParent: null,
       },
       {
-        id: 2,
+        questionId: 2,
         label: "Question 2?",
         category: "Specific",
         numberOfSelectionableOpt: 2,
@@ -146,7 +146,7 @@ describe("Question Service - updateQuestion", () => {
     };
 
     const mockUpdatedQuestion = {
-      id: questionId,
+      questionId: questionId,
       ...mockUpdateData,
     };
 
@@ -244,7 +244,7 @@ describe("Question Service - deleteQuestion", () => {
     // Mock the existence check to pass
     checkIdExistence.mockResolvedValue(true);
 
-    prisma.question.delete.mockResolvedValue({ id: questionId });
+    prisma.question.delete.mockResolvedValue({ questionId: questionId });
 
     const result = await questionService.deleteQuestion(questionId);
 
@@ -256,7 +256,7 @@ describe("Question Service - deleteQuestion", () => {
     expect(prisma.question.delete).toHaveBeenCalledWith({
       where: { questionId: questionId },
     });
-    expect(result).toEqual({ id: questionId });
+    expect(result).toEqual({ questionId: questionId });
   });
 
   it("should throw an error if the question does not exist", async () => {
@@ -371,7 +371,7 @@ describe("Question Service - getQuestionsByCategory", () => {
     const category = "General";
     const mockQuestions = [
       {
-        id: 1,
+        questionId: 1,
         label: "Question 1?",
         category: "General",
         numberOfSelectionableOpt: 0,
@@ -380,7 +380,7 @@ describe("Question Service - getQuestionsByCategory", () => {
         questionIdParent: null,
       },
       {
-        id: 2,
+        questionId: 2,
         label: "Question 2?",
         category: "General",
         numberOfSelectionableOpt: 2,
@@ -437,7 +437,7 @@ describe("Question Service - getQuestionsByType", () => {
     const typeId = 1;
     const mockQuestions = [
       {
-        id: 1,
+        questionId: 1,
         label: "Question 1?",
         category: "General",
         numberOfSelectionableOpt: 0,
@@ -446,7 +446,7 @@ describe("Question Service - getQuestionsByType", () => {
         questionIdParent: null,
       },
       {
-        id: 2,
+        questionId: 2,
         label: "Question 2?",
         category: "Specific",
         numberOfSelectionableOpt: 2,
@@ -504,7 +504,7 @@ describe("Question Service - getSubQuestion", () => {
 
     const mockQuestions = [
       {
-        id: 1,
+        questionId: 1,
         label: "Question 1?",
         category: "General",
         numberOfSelectionableOpt: 0,
@@ -513,7 +513,7 @@ describe("Question Service - getSubQuestion", () => {
         questionIdParent: 1,
       },
       {
-        id: 2,
+        questionId: 2,
         label: "Question 2?",
         category: "Specific",
         numberOfSelectionableOpt: 2,
