@@ -69,42 +69,6 @@ export default function LoginPage() {
     };
 
     return (
-<>
-    <div className="flex gap-5 pt-10 bg-light items-center justify-center">
-        <Card
-        title="ideation"
-        description="Générer et structurer les idées initiales."
-        progress={40}
-        color="#BFD1BF"
-        buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>
-
-        <Card
-        title="conception"
-        description="Définir et planifier les solutions."
-        progress={40}
-        color="#ACBFA9"
-        buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>
-
-        <Card
-        title="Pilotage"
-        description="Suivre l'avancement et coordonner l'équipe."
-        progress={40}
-        color="#83A18F"
-        buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>
-
-        <Card
-        title="Reporting"
-        description="Analyser les résultats et partager les bilans."
-        progress={40}
-        color="#6D8E76"
-        buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>        
-
-    </div>
-
         <main className="h-screen w-screen overflow-y-scroll justify-center bg-light flex flex-col items-center">   
             <section className="w-[25vw] min-w-[350px] bg-white flex flex-col items-center text-dark rounded-xl shadow-500base p-8">
                 <img
@@ -126,6 +90,5 @@ export default function LoginPage() {
                 />
             </section>
         </main>
-</>
     );
 }
