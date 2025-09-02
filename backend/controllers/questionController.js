@@ -41,7 +41,7 @@ module.exports.getAllQuestions = async (_, res) => {
 // Update a question by ID
 module.exports.updateQuestion = async (req, res) => {
   const { questionId } = req.params;
-  // check if id is a number
+  // check if questionId is a number
   if (isNaN(questionId)) {
     return res.status(400).json({ error: "Bad request: Invalid questionId" });
   }
@@ -77,7 +77,7 @@ module.exports.updateQuestion = async (req, res) => {
 // Delete a question by ID
 module.exports.deleteQuestion = async (req, res) => {
   const { questionId } = req.params;
-  // check if id is a number
+  // check if questionId is a number
   if (isNaN(questionId)) {
     return res.status(400).json({ error: "Bad request: Invalid questionId" });
   }
@@ -97,7 +97,7 @@ module.exports.deleteQuestion = async (req, res) => {
 // Get a question by ID
 module.exports.getQuestionById = async (req, res) => {
   const { questionId } = req.params;
-  // check if id is a number
+  // check if questionId is a number
   if (isNaN(questionId)) {
     return res.status(400).json({ error: "Bad request: Invalid questionId" });
   }
