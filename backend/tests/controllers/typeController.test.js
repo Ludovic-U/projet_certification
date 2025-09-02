@@ -23,6 +23,7 @@ describe("Type Controller", () => {
 
     it("should create a type and return 201 status", async () => {
       const mockType = { typeId: 1, ...req.body };
+
       typeService.createType.mockResolvedValue(mockType);
 
       await typeController.createType(req, res, next);
@@ -58,6 +59,7 @@ describe("Type Controller", () => {
         { typeId: 1, label: "General" },
         { typeId: 2, label: "Test" },
       ];
+
       typeService.getAllTypes.mockResolvedValue(mockTypes);
 
       await typeController.getAllTypes(req, res, next);
@@ -90,6 +92,7 @@ describe("Type Controller", () => {
 
     it("should update a type and return 200 status", async () => {
       const mockUpdatedType = { typeId: 1, ...req.body };
+
       typeService.updateType.mockResolvedValue(mockUpdatedType);
 
       await typeController.updateType(req, res, next);
@@ -119,6 +122,7 @@ describe("Type Controller", () => {
 
     it("should return 400 for invalid typeId", async () => {
       req.params.typeId = "invalid";
+
       await expectError(
         typeController.updateType,
         req,
@@ -175,6 +179,7 @@ describe("Type Controller", () => {
 
     it("should return 400 for invalid typeId", async () => {
       req.params.typeId = "invalid";
+
       await expectError(
         typeController.deleteType,
         req,
@@ -206,6 +211,7 @@ describe("Type Controller", () => {
 
     it("should fetch a type by ID and return 200 status", async () => {
       const mockType = { typeId: 1, label: "General" };
+
       typeService.getTypeById.mockResolvedValue(mockType);
 
       await typeController.getTypeById(req, res, next);
@@ -234,6 +240,7 @@ describe("Type Controller", () => {
 
     it("should return 400 for invalid typeId", async () => {
       req.params.typeId = "invalid";
+
       await expectError(
         typeController.getTypeById,
         req,

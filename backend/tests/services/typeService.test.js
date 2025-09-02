@@ -45,7 +45,6 @@ describe("Type Service", () => {
       await expect(typeService.createType(mockTypeData)).rejects.toThrow(
         "Database error"
       );
-
       expect(prisma.type.create).toHaveBeenCalledWith({ data: mockTypeData });
     });
   });
@@ -70,7 +69,6 @@ describe("Type Service", () => {
       prisma.type.findMany.mockRejectedValue(mockError);
 
       await expect(typeService.getAllTypes()).rejects.toThrow("Database error");
-
       expect(prisma.type.findMany).toHaveBeenCalled();
     });
   });
@@ -112,7 +110,6 @@ describe("Type Service", () => {
       await expect(
         typeService.updateType(typeId, mockUpdatedData)
       ).rejects.toThrow("Type not found");
-
       expect(checkIdExistence).toHaveBeenCalledWith(
         prisma.type,
         typeId,
@@ -134,7 +131,6 @@ describe("Type Service", () => {
       await expect(
         typeService.updateType(typeId, mockUpdatedData)
       ).rejects.toThrow("Database error");
-
       expect(checkIdExistence).toHaveBeenCalledWith(
         prisma.type,
         typeId,
@@ -181,7 +177,6 @@ describe("Type Service", () => {
       await expect(typeService.deleteType(typeId)).rejects.toThrow(
         "Database error"
       );
-
       expect(checkIdExistence).toHaveBeenCalledWith(
         prisma.type,
         typeId,
@@ -203,7 +198,6 @@ describe("Type Service", () => {
       await expect(typeService.deleteType(typeId)).rejects.toThrow(
         "Type not found"
       );
-
       expect(checkIdExistence).toHaveBeenCalledWith(
         prisma.type,
         typeId,
@@ -237,7 +231,6 @@ describe("Type Service", () => {
       await expect(typeService.getTypeById(typeId)).rejects.toThrow(
         "Database error"
       );
-
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
       });
@@ -251,7 +244,6 @@ describe("Type Service", () => {
       await expect(typeService.getTypeById(typeId)).rejects.toThrow(
         "Type not found"
       );
-
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
       });
