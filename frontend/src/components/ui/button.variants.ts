@@ -27,7 +27,7 @@ export const buttonVariants = cva(
                 ],
                 secondary: [
                     "bg-primary",
-                    "uppercase font-bold text-sm",
+                    "uppercase font-bold text-sm font-noto",
                     "hover:bg-primaryhover",
                 ],
                 iconPrimary: [

@@ -94,6 +94,57 @@ const CirclePlus = () => (
 
     return (
 <>
+    <div className="flex gap-10 pt-10 bg-light items-center justify-center">
+        <Card
+        title="ideation"
+        description="Générer et structurer les idées initiales."
+        progress={40}
+        buttonLabel="ouvrir"
+        onButtonClick={() => handleClick()}/>
+
+        <Card
+        title="proposition des valeurs"
+        progress={90}
+        buttonLabel="voir"
+        onButtonClick={() => handleClick()}/>
+
+    </div>
+    
+     <div className="flex gap-5 pt-10 bg-light items-center justify-center">
+        <Card
+        title="ideation"
+        description="Générer et structurer les idées initiales."
+        progress={40}
+        color="#BFD1BF"
+        buttonLabel="ouvrir"
+        onButtonClick={() => handleClick()}/>
+
+        <Card
+        title="conception"
+        description="Définir et planifier les solutions."
+        progress={40}
+        color="#ACBFA9"
+        buttonLabel="ouvrir"
+        onButtonClick={() => handleClick()}/>
+
+        <Card
+        title="Pilotage"
+        description="Suivre l'avancement et coordonner l'équipe."
+        progress={40}
+        color="#83A18F"
+        buttonLabel="ouvrir"
+        onButtonClick={() => handleClick()}/>
+
+        <Card
+        title="Reporting"
+        description="Analyser les résultats et partager les bilans."
+        progress={40}
+        color="#6D8E76"
+        buttonLabel="ouvrir"
+        onButtonClick={() => handleClick()}/>        
+
+    </div>
+
     <div className="mt-10 w-[70%]">
             <ProjectList
              data={[
