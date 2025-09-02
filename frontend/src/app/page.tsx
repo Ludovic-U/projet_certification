@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 
 import LoginForm from "@/components/forms/LoginForm";
-import { ProjectList } from "@/components/ui/List";
 
 type LoginFormInputs = {
     email: string;
@@ -15,15 +14,6 @@ type LoginFormInputs = {
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState<string>("");
-
-    const users = [
-        { id: 1, content: "Oui"},
-        {id: 2, content: "Non"},
-        {id: 3, content: "Ok"},
-        {id: 4, content: "D'accord"},
-        {id: 5, content: "Jsp"},
-        {id: 6, content: "Test"},
-    ]
 
     const router = useRouter();
     const api = axios.create({
@@ -73,82 +63,7 @@ export default function LoginPage() {
     };
 
     return (
-        <main className=" overflow-scroll justify-center bg-light flex flex-col items-center">   
-            <div className="mt-10 w-[70%]">
-                <ProjectList
-                 
-                 data={[
-                    {
-                        id: "1",
-                        title: "Projet Lambda",
-                        type: "AAP",
-                        step: "IDEATION (3/4 complété)",
-                        contributors: 2,
-                        hasSettings:true,
-                    },
-                   {
-                        id: "2",
-                        title: "Projet Lambda azrzr",
-                        type: "AAP",
-                        step: "IDEATION (0/4 complété)",
-                        contributors: 0,
-                        hasSettings: true,
-                    },
-                   {
-                        id: "3",
-                        title: "Projet Lambda",
-                        type: "AAdzaP",
-                        step: "CONCEPTION (2/4 complété)",
-                        contributors: 8,
-                        hasSettings: true,
-                    },
-                   {
-                        id: "4",
-                        title: "Projet Lafezrzmbda",
-                        type: "AAP",
-                        step: "PILOTAGE (6/8 complété)",
-                        contributors: 13,
-                        hasSettings:true,
-                    },
-                 ]}/>
-
-<hr className="my-8"/>
-
-                 <ProjectList
-                 data={[
-                    {
-                        id: "1",
-                        title: "Projet Lambda",
-                        type: "AAP",
-                        step: "IDEATION (3/4 complété)",
-                        contributors: 2,
-                    },
-                   {
-                        id: "2",
-                        title: "Projet Lambda",
-                        type: "AAP",
-                        step: "IDEATION (0/4 complété)",
-                        contributors: 0,
-                    },
-                   {
-                        id: "3",
-                        title: "Projet Lambda",
-                        type: "AAP",
-                        step: "CONCEPTION (2/4 complété)",
-                        contributors: 8,
-                    },
-                   {
-                        id: "4",
-                        title: "Projet Lambda",
-                        type: "AAP",
-                        step: "PILOTAGE (6/8 complété)",
-                        contributors: 13,
-                    },
-                 ]}/>
-
-            </div>
-
-            
+        <main className="h-screen w-screen overflow-y-scroll justify-center bg-light flex flex-col items-center">   
             <section className="w-[25vw] min-w-[350px] bg-white flex flex-col items-center text-dark rounded-xl shadow-500base p-8">
                 <img
                     src="/logo-sm.jpeg"

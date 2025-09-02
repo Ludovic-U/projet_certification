@@ -94,6 +94,46 @@ const CirclePlus = () => (
 
     return (
 <>
+    <div className="mt-10 w-[70%]">
+            <ProjectList
+             data={[
+                {
+                    id: "1",
+                    title: "Projet Lambda",
+                    type: "AAP",
+                    step: "IDEATION (3/4 complété)",
+                    contributors: 2,
+                    hasSettings:true,
+                },
+               {
+                    id: "2",
+                    title: "Projet Lambda azrzr",
+                    type: "AAP",
+                    step: "IDEATION (0/4 complété)",
+                    contributors: 0,
+                    hasSettings: true,
+                },
+               {
+                    id: "3",
+                    title: "Projet Lambda",
+                    type: "AAdzaP",
+                    step: "CONCEPTION (2/4 complété)",
+                    contributors: 8,
+                    hasSettings: true,
+                },
+               {
+                    id: "4",
+                    title: "Projet Lafezrzmbda",
+                    type: "AAP",
+                    step: "PILOTAGE (6/8 complété)",
+                    contributors: 13,
+                     hasSettings:true,
+                },
+             ]}/>
+             <hr className="m-10"/>
+        </div>
+
+
         <div className="flex flex-col w-screen items-center h-fit gap-10 py-8 bg-lighthover">
             
             <div className="flex flex-col gap-3">

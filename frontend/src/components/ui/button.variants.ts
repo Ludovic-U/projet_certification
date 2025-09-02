@@ -31,7 +31,7 @@ export const buttonVariants = cva(
                     "hover:bg-primaryhover",
                 ],
                 iconPrimary: [
-                    "group font-normal text-sm text-left leading-tight"
+                    "group font-normal text-sm text-left"
                 ],
                 nav: [
                     "hover:bg-lighthover hover:text-primaryhover",
