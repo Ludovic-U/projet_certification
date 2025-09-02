@@ -51,76 +51,7 @@ describe("Question Controller", () => {
 
       await questionController.createQuestion(req, res, next);
 
-<<<<<<< HEAD
       expect(questionService.createQuestion).toHaveBeenCalledWith({
-=======
-    req = {};
-    res = createMockResponse();
-    next = jest.fn();
-  });
-
-  it("should fetch all questions and return 200 status", async () => {
-    const mockQuestions = [
-      { questionId: 1, label: "Question 1" },
-      { questionId: 2, label: "Question 2" },
-    ];
-    questionService.getAllQuestions.mockResolvedValue(mockQuestions);
-
-    await questionController.getAllQuestions(req, res, next);
-
-    expect(questionService.getAllQuestions).toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockQuestions);
-  });
-
-  it("should handle service errors and return 500 status", async () => {
-    await expectError(
-      questionController.getAllQuestions,
-      req,
-      res,
-      () =>
-        questionService.getAllQuestions.mockRejectedValue(
-          new Error("Database error")
-        ),
-      500,
-      "Internal server error"
-    );
-    expect(questionService.getAllQuestions).toHaveBeenCalled();
-  });
-});
-
-describe("Question Controller - updateQuestion", () => {
-  let req, res, next;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    console.error = jest.fn();
-
-    req = {
-      params: { questionId: 1 },
-      body: {
-        label: "Updated Question",
-        category: "Updated Category",
-        numberOfSelectionableOpt: 3,
-        isRelevant: false,
-        hasMultipleResponse: true,
-        questionIdParent: null,
-      },
-    };
-    res = createMockResponse();
-    next = jest.fn();
-  });
-
-  it("should udpate a question and return 200 status", async () => {
-    const mockUpdatedQuestion = { questionId: 1, ...req.body };
-    questionService.updateQuestion.mockResolvedValue(mockUpdatedQuestion);
-
-    await questionController.updateQuestion(req, res, next);
-
-    expect(questionService.updateQuestion).toHaveBeenCalledWith(
-      parseInt(req.params.questionId),
-      {
->>>>>>> 14d4c96 (update: Change updateResponse to separate service logic add added tests)
         label: req.body.label,
         category: req.body.category,
         numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
