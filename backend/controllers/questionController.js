@@ -138,28 +138,26 @@ module.exports.getQuestionById = async (req, res) => {
   }
 };
 
-// WIP: Get questions by project
-// module.exports.getQuestionsByProject = async (req, res) => {
-//   const { projectId } = req.params;
-//   // check if projectId is a number
-//   if (isNaN(parseInt(projectId))) {
-//     return res.status(400).json({ error: "Bad request" });
-//   }
+/**
+ * Get questions by project.
+ * Expects projectId in req.params.
+ * Responds with an array of questions for the given project.
+ */
+module.exports.getQuestionsByProject = async (req, res) => {
+  const { projectId } = req.params;
+  // check if projectId is a number
+  if (isNaN(projectId)) {
+    return res.status(400).json({ error: "Bad request: Invalid projectId" });
+  }
 
-//   try {
-//     // Retrieve questions specific to a project
-//     const questions = await prisma.question.findMany({
-//       where: { projects: { some: { projectId: projectId } } },
-//     });
-
-//     //TODO: Retrieve questions linked to types associated with the project
-
-//     res.status(200).json(questions);
-//   } catch (error) {
-//     console.error("Error fetching questions by project:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
+  try {
+    const questions = await questionService.getQuestionsByProject(projectId);
+    res.status(200).json(questions);
+  } catch (error) {
+    console.error("Error fetching questions by project:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 /**
  * Get questions by category.

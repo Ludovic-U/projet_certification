@@ -333,7 +333,79 @@ describe("Question Service", () => {
     });
   });
 
-  // TODO: Add tests for getQuestionsByProject when implemented
+  describe("getQuestionsByProject", () => {
+    it("should return questions for the given project", async () => {
+      const projectId = 1;
+      const mockQuestions = [
+        { questionId: 1, label: "Q1" },
+        { questionId: 2, label: "Q2" },
+      ];
+
+      prisma.question.findMany.mockResolvedValue(mockQuestions);
+
+      const result = await questionService.getQuestionsByProject(projectId);
+
+      expect(prisma.question.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { projects: { some: { projectId: projectId } } },
+            {
+              types: {
+                some: { projectTypes: { some: { projectId: projectId } } },
+              },
+            },
+          ],
+        },
+      });
+      expect(result).toEqual(mockQuestions);
+    });
+
+    it("should throw an error if fetching fails", async () => {
+      const projectId = 1;
+
+      const mockError = new Error("Database error");
+
+      prisma.question.findMany.mockRejectedValue(mockError);
+
+      await expect(
+        questionService.getQuestionsByProject(projectId)
+      ).rejects.toThrow("Database error");
+      expect(prisma.question.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { projects: { some: { projectId: projectId } } },
+            {
+              types: {
+                some: { projectTypes: { some: { projectId: projectId } } },
+              },
+            },
+          ],
+        },
+      });
+    });
+
+    it("should return an empty array if no questions found", async () => {
+      const projectId = 1;
+
+      prisma.question.findMany.mockResolvedValue([]);
+
+      const result = await questionService.getQuestionsByProject(projectId);
+
+      expect(prisma.question.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { projects: { some: { projectId: projectId } } },
+            {
+              types: {
+                some: { projectTypes: { some: { projectId: projectId } } },
+              },
+            },
+          ],
+        },
+      });
+      expect(result).toEqual([]);
+    });
+  });
 
   describe("getQuestionsByCategory", () => {
     it("should return questions for the given category", async () => {

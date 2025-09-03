@@ -41,7 +41,22 @@ module.exports.getQuestionById = async (questionId) => {
   return question;
 };
 
-// TODO: Add getQuestionsByProject service
+// Get questions by project
+module.exports.getQuestionsByProject = async (projectId) => {
+  const allQuestions = await prisma.question.findMany({
+    where: {
+      OR: [
+        // Questions directly linked to the project
+        { projects: { some: { projectId: projectId } } },
+        // Questions linked by project type
+        {
+          types: { some: { projectTypes: { some: { projectId: projectId } } } },
+        },
+      ],
+    },
+  });
+  return allQuestions;
+};
 
 // Get questions by category
 module.exports.getQuestionsByCategory = async (category) => {

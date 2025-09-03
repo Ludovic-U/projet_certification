@@ -301,12 +301,47 @@ describe("Question Controller", () => {
   });
 
   // TODO: Add tests for getQuestionsByProject controller when implemented
+  describe("getQuestionsByProject", () => {
+    beforeEach(() => {
+      req = { params: { projectId: 1 } };
+    });
+
+    it("should fetch questions by project and return 200 status", async () => {
+      const mockQuestions = [
+        { questionId: 1, label: "Q1" },
+        { questionId: 2, label: "Q2" },
+      ];
+
+      questionService.getQuestionsByProject.mockResolvedValue(mockQuestions);
+
+      await questionController.getQuestionsByProject(req, res, next);
+
+      expect(questionService.getQuestionsByProject).toHaveBeenCalledWith(
+        req.params.projectId
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockQuestions);
+    });
+
+    it("should handle service errors and return 500 status", async () => {
+      await expectError(
+        questionController.getQuestionsByProject,
+        req,
+        res,
+        () =>
+          questionService.getQuestionsByProject.mockRejectedValue(
+            new Error("Database error")
+          ),
+        500,
+        "Internal server error"
+      );
+      expect(questionService.getQuestionsByProject).toHaveBeenCalled();
+    });
+  });
 
   describe("getQuestionsByCategory", () => {
     beforeEach(() => {
-      req = {
-        params: { category: "General" },
-      };
+      req = { params: { category: "General" } };
     });
 
     it("should fetch questions by category and return 200 status", async () => {
