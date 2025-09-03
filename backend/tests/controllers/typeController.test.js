@@ -1,8 +1,16 @@
+/**
+ * @fileoverview
+ * Unit tests for the Type Controller.
+ * Covers all controller endpoints: create, read, update, delete, and query by various parameters.
+ * Uses Jest and mocks the typeService layer.
+ */
+
 const typeController = require("../../controllers/typeController");
 const typeService = require("../../services/typeService");
 const { createMockResponse } = require("../helpers/responseHelper");
 const { expectError } = require("../helpers/errorHelper");
 
+// Mock typeService layer to isolate business logic
 jest.mock("../../services/typeService");
 
 describe("Type Controller", () => {
@@ -16,6 +24,9 @@ describe("Type Controller", () => {
     next = jest.fn();
   });
 
+  /**
+   * Test suite for creating types
+   */
   describe("createType", () => {
     beforeEach(() => {
       req = { body: { label: "General" } };
@@ -49,6 +60,9 @@ describe("Type Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching types
+   */
   describe("getAllTypes", () => {
     beforeEach(() => {
       req = {};
@@ -85,6 +99,9 @@ describe("Type Controller", () => {
     });
   });
 
+  /**
+   * Test suite for updating types
+   */
   describe("updateType", () => {
     beforeEach(() => {
       req = { params: { typeId: 1 }, body: { label: "Updated Label" } };
@@ -147,6 +164,9 @@ describe("Type Controller", () => {
     });
   });
 
+  /**
+   * Test suite for deleting types
+   */
   describe("deleteType", () => {
     beforeEach(() => {
       req = { params: { typeId: 1 } };
@@ -204,6 +224,9 @@ describe("Type Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching types by ID
+   */
   describe("getTypeById", () => {
     beforeEach(() => {
       req = { params: { typeId: 1 } };
