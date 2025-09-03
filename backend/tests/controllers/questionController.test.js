@@ -10,6 +10,7 @@ const questionService = require("../../services/questionService");
 const { createMockResponse } = require("../helpers/responseHelper");
 const { expectError } = require("../helpers/errorHelper");
 
+// Mock questionService layer to isolate business logic
 jest.mock("../../services/questionService");
 
 describe("Question Controller", () => {
@@ -22,6 +23,9 @@ describe("Question Controller", () => {
     next = jest.fn();
   });
 
+  /**
+   * Test suite for creating questions
+   */
   describe("createQuestion", () => {
     beforeEach(() => {
       req = {
@@ -70,6 +74,9 @@ describe("Question Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions
+   */
   describe("getAllQuestions", () => {
     beforeEach(() => {
       req = {};
@@ -105,6 +112,9 @@ describe("Question Controller", () => {
     });
   });
 
+  /**
+   * Test suite for updating questions
+   */
   describe("updateQuestion", () => {
     beforeEach(() => {
       req = {
@@ -183,6 +193,9 @@ describe("Question Controller", () => {
     });
   });
 
+  /**
+   * Test suite for deleteing questions
+   */
   describe("deleteQuestion", () => {
     beforeEach(() => {
       req = { params: { questionId: 1 } };
@@ -242,6 +255,9 @@ describe("Question Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by ID
+   */
   describe("getQuestionById", () => {
     beforeEach(() => {
       req = { params: { questionId: 1 } };
@@ -303,6 +319,9 @@ describe("Question Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by project
+   */
   describe("getQuestionsByProject", () => {
     beforeEach(() => {
       req = { params: { projectId: 1 } };
@@ -340,6 +359,9 @@ describe("Question Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by category
+   */
   describe("getQuestionsByCategory", () => {
     beforeEach(() => {
       req = { params: { category: "General" } };
@@ -377,6 +399,9 @@ describe("Question Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by type
+   */
   describe("getQuestionsByType", () => {
     beforeEach(() => {
       req = { params: { typeId: 1 } };
@@ -428,6 +453,9 @@ describe("Question Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by parent
+   */
   describe("getSubQuestions", () => {
     beforeEach(() => {
       req = { params: { questionIdParent: 1 } };

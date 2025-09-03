@@ -1,7 +1,15 @@
+/**
+ * @fileoverview
+ * Unit tests for the Question Service.
+ * Covers CRUD operations and query methods for questions.
+ * Uses Jest and mocks the prismaClient and checkIdExistence function.
+ */
+
 const questionService = require("../../services/questionService");
 const { prisma } = require("../../prisma/prismaClient");
 const { checkIdExistence } = require("../../utils/checkIdExistence");
 
+// Mock the prisma methods to isolate service logic
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
     question: {
@@ -14,6 +22,7 @@ jest.mock("../../prisma/prismaClient", () => ({
   },
 }));
 
+// Mock checkIdExistence function to control test scenarios
 jest.mock("../../utils/checkIdExistence", () => ({
   checkIdExistence: jest.fn(),
 }));
@@ -23,6 +32,9 @@ describe("Question Service", () => {
     jest.clearAllMocks();
   });
 
+  /**
+   * Test suite for creating questions
+   */
   describe("createQuestion", () => {
     it("should create and return a new question", async () => {
       const mockQuestionData = {
@@ -78,6 +90,9 @@ describe("Question Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions
+   */
   describe("getAllQuestions", () => {
     it("should return a list of questions", async () => {
       const mockQuestions = [
@@ -121,6 +136,9 @@ describe("Question Service", () => {
     });
   });
 
+  /**
+   * Test suite for updating questions
+   */
   describe("updateQuestion", () => {
     it("should update and return the updated question", async () => {
       const questionId = 1;
@@ -216,6 +234,9 @@ describe("Question Service", () => {
     });
   });
 
+  /**
+   * Test suite for deleting questions
+   */
   describe("deleteQuestion", () => {
     it("should delete the question", async () => {
       const questionId = 1;
@@ -281,6 +302,9 @@ describe("Question Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by ID
+   */
   describe("getQuestionById", () => {
     it("should return the question if found", async () => {
       const questionId = 1;
@@ -333,6 +357,9 @@ describe("Question Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by project
+   */
   describe("getQuestionsByProject", () => {
     it("should return questions for the given project", async () => {
       const projectId = 1;
@@ -407,6 +434,9 @@ describe("Question Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by category
+   */
   describe("getQuestionsByCategory", () => {
     it("should return questions for the given category", async () => {
       const category = "General";
@@ -469,6 +499,9 @@ describe("Question Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching questions by type
+   */
   describe("getQuestionsByType", () => {
     it("should return questions for the given typeId", async () => {
       const typeId = 1;
@@ -531,6 +564,9 @@ describe("Question Service", () => {
     });
   });
 
+  /**
+   * Test suite for fecthing sub-questions by parent
+   */
   describe("getSubQuestions", () => {
     it("should return questions for the given questionIdParent", async () => {
       const questionIdParent = 1;
