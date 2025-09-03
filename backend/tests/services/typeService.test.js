@@ -1,7 +1,15 @@
+/**
+ * @fileoverview
+ * Unit tests for the Type Service.
+ * Covers CRUD operations and query methods for types.
+ * Uses Jest and mocks the prismaClient and checkIdExistence function.
+ */
+
 const typeService = require("../../services/typeService");
 const { prisma } = require("../../prisma/prismaClient");
 const { checkIdExistence } = require("../../utils/checkIdExistence");
 
+// Mock the prisma methods to isolate service logic
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
     type: {
@@ -14,6 +22,7 @@ jest.mock("../../prisma/prismaClient", () => ({
   },
 }));
 
+// Mock checkIdExistence function to control test scenarios
 jest.mock("../../utils/checkIdExistence", () => ({
   checkIdExistence: jest.fn(),
 }));
@@ -23,6 +32,9 @@ describe("Type Service", () => {
     jest.clearAllMocks();
   });
 
+  /**
+   * Test suite for creating types
+   */
   describe("createType", () => {
     it("should create and return a new type", async () => {
       const mockTypeData = { label: "General" };
@@ -49,6 +61,9 @@ describe("Type Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching types
+   */
   describe("getAllTypes", () => {
     it("should return a list of types", async () => {
       const mockTypes = [
@@ -73,6 +88,9 @@ describe("Type Service", () => {
     });
   });
 
+  /**
+   * Test suite for updating types
+   */
   describe("updateType", () => {
     it("should update and return the updated type", async () => {
       const typeId = 1;
@@ -143,6 +161,9 @@ describe("Type Service", () => {
     });
   });
 
+  /**
+   * Test suite for deleting types
+   */
   describe("deleteType", () => {
     it("should delete the type", async () => {
       const typeId = 1;
@@ -207,6 +228,9 @@ describe("Type Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching types by ID
+   */
   describe("getTypeById", () => {
     it("should return the type if found", async () => {
       const typeId = 1;
