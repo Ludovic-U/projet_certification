@@ -1,6 +1,14 @@
 const responseService = require("../services/responseService");
 
-// Create a new response
+/**
+ * Create a new response.
+ * Expects the following fields in req.body:
+ * - label: String (Optional)
+ * - projectId: Number
+ * - questionId: Number
+ * - optionId: Number (Optional)
+ * - responseIdParent: Number (Optional)
+ */
 module.exports.createResponse = async (req, res) => {
   const { label, projectId, questionId, optionId, responseIdParent } = req.body;
 
@@ -19,7 +27,11 @@ module.exports.createResponse = async (req, res) => {
   }
 };
 
-// Update a response by ID
+/**
+ * Update a response by ID.
+ * Expects responseId in req.params and updated fields in req.body.
+ * Responds with the updated response.
+ */
 module.exports.updateResponse = async (req, res) => {
   const { responseId } = req.params;
   // Check if responseId is a number
@@ -47,7 +59,11 @@ module.exports.updateResponse = async (req, res) => {
   }
 };
 
-// Delete a reponse by ID
+/**
+ * Delete a response by ID.
+ * Expects responseId in req.params.
+ * Responds with 204 No Content on success.
+ */
 module.exports.deleteResponse = async (req, res) => {
   const { responseId } = req.params;
   // Check if responseId is a number
@@ -67,7 +83,11 @@ module.exports.deleteResponse = async (req, res) => {
   }
 };
 
-// Get responses by question of a project
+/**
+ * Get responses by question of a project.
+ * Expects projectId and questionId in req.params.
+ * Responds with an array of responses for the given project and question.
+ */
 module.exports.getResponsesByQuestionOfProject = async (req, res) => {
   const { projectId, questionId } = req.params;
   // Check if projectId and questionId are number
@@ -87,7 +107,11 @@ module.exports.getResponsesByQuestionOfProject = async (req, res) => {
   }
 };
 
-// Get responses by project
+/**
+ * Get responses by project.
+ * Expects projectId in req.params.
+ * Responds with an array of responses for the given project.
+ */
 module.exports.getResponsesByProject = async (req, res) => {
   const { projectId } = req.params;
   // Check if projectId is a number
@@ -107,7 +131,11 @@ module.exports.getResponsesByProject = async (req, res) => {
   }
 };
 
-// Get subReponses by parent response ID
+/**
+ * Get subReponses by parent response ID.
+ * Expects responseIdParent in req.params.
+ * Responds with an array of subresponses.
+ */
 module.exports.getSubResponses = async (req, res) => {
   const { responseIdParent } = req.params;
   // Check if responseIdParent is a number
