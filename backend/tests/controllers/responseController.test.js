@@ -1,8 +1,16 @@
+/**
+ * @fileoverview
+ * Unit tests for the Response Controller.
+ * Covers all controller endpoints: create, read, update, delete, and query by various parameters.
+ * Uses Jest and mocks the responseService layer.
+ */
+
 const responseController = require("../../controllers/responseController");
 const responseService = require("../../services/responseService");
 const { createMockResponse } = require("../helpers/responseHelper");
 const { expectError } = require("../helpers/errorHelper");
 
+// Mock responseService layer to isolate business logic
 jest.mock("../../services/responseService");
 
 describe("Response Controller", () => {
@@ -15,6 +23,9 @@ describe("Response Controller", () => {
     next = jest.fn();
   });
 
+  /**
+   * Test suite for creating responses
+   */
   describe("createResponse", () => {
     beforeEach(() => {
       req = {
@@ -62,6 +73,9 @@ describe("Response Controller", () => {
     });
   });
 
+  /**
+   * Test suite for updating responses
+   */
   describe("udpateResponse", () => {
     beforeEach(() => {
       req = {
@@ -139,6 +153,9 @@ describe("Response Controller", () => {
     });
   });
 
+  /**
+   * Test suite for deleting responses
+   */
   describe("deleteResponse", () => {
     beforeEach(() => {
       req = {
@@ -200,6 +217,9 @@ describe("Response Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching responses by question of a project
+   */
   describe("getResponsesByQuestionOfProject", () => {
     beforeEach(() => {
       req = {
@@ -285,6 +305,9 @@ describe("Response Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching responses by project
+   */
   describe("getResponsesByProject", () => {
     beforeEach(() => {
       req = {
@@ -368,6 +391,9 @@ describe("Response Controller", () => {
     });
   });
 
+  /**
+   * Test suite for fetching sub-responses by parent
+   */
   describe("getSubResponses", () => {
     beforeEach(() => {
       req = {
