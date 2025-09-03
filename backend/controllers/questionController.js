@@ -1,6 +1,15 @@
 const questionService = require("../services/questionService");
 
-// Create a new question
+/**
+ * Create a new question.
+ * Expects the following fields in req.body:
+ * - label: String
+ * - category: String
+ * - numberOfSelectionableOpt: Number (optional)
+ * - isRelevant: Boolean (optional)
+ * - hasMultipleResponse: Boolean (optional)
+ * - questionIdParent: Number (optional)
+ */
 module.exports.createQuestion = async (req, res) => {
   const {
     label,
@@ -27,7 +36,10 @@ module.exports.createQuestion = async (req, res) => {
   }
 };
 
-// Get all questions
+/**
+ * Get all questions.
+ * Responds with an array of all questions.
+ */
 module.exports.getAllQuestions = async (_, res) => {
   try {
     const questions = await questionService.getAllQuestions();
@@ -38,7 +50,11 @@ module.exports.getAllQuestions = async (_, res) => {
   }
 };
 
-// Update a question by ID
+/**
+ * Update a question by ID.
+ * Expects questionId in req.params and updated fields in req.body.
+ * Responds with the updated question.
+ */
 module.exports.updateQuestion = async (req, res) => {
   const { questionId } = req.params;
   // check if questionId is a number
@@ -74,7 +90,11 @@ module.exports.updateQuestion = async (req, res) => {
   }
 };
 
-// Delete a question by ID
+/**
+ * Delete a question by ID.
+ * Expects questionId in req.params.
+ * Responds with 204 No Content on success.
+ */
 module.exports.deleteQuestion = async (req, res) => {
   const { questionId } = req.params;
   // check if questionId is a number
@@ -94,7 +114,11 @@ module.exports.deleteQuestion = async (req, res) => {
   }
 };
 
-// Get a question by ID
+/**
+ * Get a question by ID.
+ * Expects questionId in req.params.
+ * Responds with the question object.
+ */
 module.exports.getQuestionById = async (req, res) => {
   const { questionId } = req.params;
   // check if questionId is a number
@@ -137,7 +161,11 @@ module.exports.getQuestionById = async (req, res) => {
 //   }
 // };
 
-// Get questions by category
+/**
+ * Get questions by category.
+ * Expects category in req.params.
+ * Responds with an array of questions in the given category.
+ */
 module.exports.getQuestionsByCategory = async (req, res) => {
   const { category } = req.params;
   try {
@@ -149,7 +177,11 @@ module.exports.getQuestionsByCategory = async (req, res) => {
   }
 };
 
-// Get questions by type
+/**
+ * Get questions by type.
+ * Expects typeId in req.params.
+ * Responds with an array of questions for the given type.
+ */
 module.exports.getQuestionsByType = async (req, res) => {
   const { typeId } = req.params;
   // check if typeId is a number
@@ -166,7 +198,11 @@ module.exports.getQuestionsByType = async (req, res) => {
   }
 };
 
-// Get subquestions by parent question ID
+/**
+ * Get subquestions by parent question ID.
+ * Expects questionIdParent in req.params.
+ * Responds with an array of subquestions.
+ */
 module.exports.getSubQuestions = async (req, res) => {
   const { questionIdParent } = req.params;
   // check if questionIdParent is a number
