@@ -1,3 +1,10 @@
+/**
+ * @fileoverview
+ * Unit tests for the Question Controller.
+ * Covers all controller endpoints: create, read, update, delete, and query by various parameters.
+ * Uses Jest and mocks the questionService layer.
+ */
+
 const questionController = require("../../controllers/questionController");
 const questionService = require("../../services/questionService");
 const { createMockResponse } = require("../helpers/responseHelper");
@@ -31,7 +38,6 @@ describe("Question Controller", () => {
 
     it("should create a question and return 201 status", async () => {
       const mockQuestion = { questionId: 1, ...req.body };
-
       questionService.createQuestion.mockResolvedValue(mockQuestion);
 
       await questionController.createQuestion(req, res, next);
@@ -74,7 +80,6 @@ describe("Question Controller", () => {
         { questionId: 1, label: "Question 1" },
         { questionId: 2, label: "Question 2" },
       ];
-
       questionService.getAllQuestions.mockResolvedValue(mockQuestions);
 
       await questionController.getAllQuestions(req, res, next);
@@ -117,7 +122,6 @@ describe("Question Controller", () => {
 
     it("should update a question and return 200 status", async () => {
       const mockUpdatedQuestion = { questionId: 1, ...req.body };
-
       questionService.updateQuestion.mockResolvedValue(mockUpdatedQuestion);
 
       await questionController.updateQuestion(req, res, next);
@@ -245,7 +249,6 @@ describe("Question Controller", () => {
 
     it("should fetch a question by ID and return 200 status", async () => {
       const mockQuestion = { questionId: 1, label: "Sample Question" };
-
       questionService.getQuestionById.mockResolvedValue(mockQuestion);
 
       await questionController.getQuestionById(req, res, next);
@@ -300,7 +303,6 @@ describe("Question Controller", () => {
     });
   });
 
-  // TODO: Add tests for getQuestionsByProject controller when implemented
   describe("getQuestionsByProject", () => {
     beforeEach(() => {
       req = { params: { projectId: 1 } };
@@ -311,7 +313,6 @@ describe("Question Controller", () => {
         { questionId: 1, label: "Q1" },
         { questionId: 2, label: "Q2" },
       ];
-
       questionService.getQuestionsByProject.mockResolvedValue(mockQuestions);
 
       await questionController.getQuestionsByProject(req, res, next);
@@ -349,7 +350,6 @@ describe("Question Controller", () => {
         { questionId: 1, label: "Question 1", category: "General" },
         { questionId: 2, label: "Question 2", category: "General" },
       ];
-
       questionService.getQuestionsByCategory.mockResolvedValue(mockQuestions);
 
       await questionController.getQuestionsByCategory(req, res, next);
@@ -379,9 +379,7 @@ describe("Question Controller", () => {
 
   describe("getQuestionsByType", () => {
     beforeEach(() => {
-      req = {
-        params: { typeId: 1 },
-      };
+      req = { params: { typeId: 1 } };
     });
 
     it("should fetch questions by type and return 200 status", async () => {
@@ -389,7 +387,6 @@ describe("Question Controller", () => {
         { questionId: 1, label: "Question 1", typeId: 1 },
         { questionId: 2, label: "Question 2", typeId: 1 },
       ];
-
       questionService.getQuestionsByType.mockResolvedValue(mockQuestions);
 
       await questionController.getQuestionsByType(req, res, next);
@@ -433,9 +430,7 @@ describe("Question Controller", () => {
 
   describe("getSubQuestions", () => {
     beforeEach(() => {
-      req = {
-        params: { questionIdParent: 1 },
-      };
+      req = { params: { questionIdParent: 1 } };
     });
 
     it("should fetch sub-questions and return 200 status", async () => {
@@ -443,7 +438,6 @@ describe("Question Controller", () => {
         { questionId: 2, label: "Sub Question 1", questionIdParent: 1 },
         { questionId: 3, label: "Sub Question 2", questionIdParent: 1 },
       ];
-
       questionService.getSubQuestions.mockResolvedValue(mockSubQuestions);
 
       await questionController.getSubQuestions(req, res, next);
