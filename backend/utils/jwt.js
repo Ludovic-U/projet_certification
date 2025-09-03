@@ -9,7 +9,7 @@ module.exports.createJWT = (payload) => {
 
 module.exports.verifyJWT = (token) => {
   try {
-    return jwt.verify(token, JWT_SECRET); // TODO: token should be meaningless, should ask the db to retrieve and return user_data
+    return jwt.verify(token, JWT_SECRET); 
   } catch (err) {
     return null;
   }

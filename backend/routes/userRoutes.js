@@ -4,20 +4,9 @@ const { authenticateUser } = require('../middlewares/auth');
 const router = Router()
 
 
-
-
-
-
-
-
-
-
-
-
-
-router.post('/login',loginPost);
-router.post('/:clientId/register',authenticateUser,registerPost);
-router.get('/logout',authenticateUser,logout)
+router.post('/login', loginPost);
+router.post('/:clientId/register', authenticateUser,registerPost);
+router.post('/logout', logout)
 
 
 

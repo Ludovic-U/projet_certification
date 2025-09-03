@@ -15,8 +15,6 @@ export default function Header() {
   const router = useRouter();
   const [headerTitle, setHeaderTitle] = useState('');
 
-  var superadmin_is_connected = false // TODO: à CHANGER
-
   const api = axios.create({
     baseURL: "http://localhost:4000/api/",
     withCredentials: true
@@ -27,10 +25,8 @@ export default function Header() {
   }
 
   const signOut = () => {
-    api.get('/user/logout');
-      console.log("Déconnexion réussie");
-      // Optionnel : redirection vers la page de login ou d’accueil
-      router.push("/")
+    api.post('/user/logout');
+    router.push("/")
   };
 
   const goToFinancepage = () => {
@@ -62,9 +58,10 @@ export default function Header() {
 
   // Simule une récupération du rôle utilisateur depuis le stockage local
   useEffect(() => {
+    console.log(localStorage)
     const storedRole = localStorage.getItem("userRole") || "guest";
     setUserRole(storedRole);
-    console.log(storedRole)
+    console.log("header componant stored role :", storedRole)
 
     if (pathname !== "/") {
       let title = "";
@@ -95,16 +92,16 @@ export default function Header() {
       );
     }
 
-    if (userRole === "user") {
-      return (
-        <>
-          {location.pathname !== "/dashboard" && (
-            <button className="px-4 py-2 bg-blue-500 text-white rounded">Tableau de bord</button>
-          )}
-          <button className="px-4 py-2 bg-gray-500 text-white rounded">Déconnexion</button>
-        </>
-      );
-    }
+    // if (userRole === "user") {
+    //   return (
+    //     <>
+    //       {location.pathname !== "/dashboard" && (
+    //         <button className="px-4 py-2 bg-blue-500 text-white rounded">Tableau de bord</button>
+    //       )}
+    //       <button className="px-4 py-2 bg-gray-500 text-white rounded" onClick={signOut}>Déconnexion</button>
+    //     </>
+    //   );
+    // }
   };
 
   if (pathname === "/") {

@@ -63,7 +63,7 @@ model ClientUserRole { // Role dans l'entreprise, pas dans l'appli, TODO: à éc
 
 model Role {
   roleId   Int     @id @default(autoincrement())
-  roleName String
+  roleName String  @unique
   roleDesc String?
 
   userRoles       UserRole[]
@@ -82,7 +82,7 @@ model UserRole {
 
 model Permission {
   permId   Int     @id @default(autoincrement())
-  permName String
+  permName String  @unique
   permDesc String?
 
   rolePermissions RolePermission[]
@@ -190,4 +190,10 @@ enum BudgetCategory {
   EQUIPEMENTS_PEDAGOGIQUES
   PRESTATIONS
   COMMUNICATION_EVENEMENTIEL
+}
+
+enum PermissionScope {
+  ANY
+  ORG
+  OWN
 }

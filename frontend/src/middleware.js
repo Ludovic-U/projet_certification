@@ -1,16 +1,18 @@
-
+// Le middleware vérifie si l'utilisateur  est authentifié grâce au cookie, avant d'accéder à une page
+// et redirige vers la page de connexion si ce n'est pas le cas.
 import axios from "axios";
 import { NextResponse } from 'next/server';
-// import { NextRequest } from 'next/server';
 
-import {routePermissions} from "../src/routePermissions.js"
+ const f2s_routes = {
+  "/super_admin": "view_super_admin_dashboard",
+};
 
-export async function middleware(request)  {
+export async function middleware(request)  { // TODO: à modifier pour ne pas faire d'appel API à chaque fois
   
   const { pathname } = request.nextUrl;
 
   const api = axios.create({
-    baseURL: "http://localhost:4000/api/me",
+    baseURL: "http://localhost:4000/api/",
     withCredentials: true,    
     headers: {
         'cookie': request.headers.get('cookie')
@@ -22,17 +24,17 @@ export async function middleware(request)  {
   const checkAuth = async () => {
     console.log("Vérification de l'authentification...");
     try {
-      const response = await api.get('/authenticateUser'); 
-      console.log("User connecté:", response.data);
-      userPermissions = response.data.permissions;
+      const response = await api.get('/me');
+      userPermissions = response.data.user.permissions;
+      console.log("Utilisateur authentifié avec les permissions :", response.data.user.permissions);
       return true;
     } catch (err) {
-      console.warn("Utilisateur non authentifié");
+      console.warn("Utilisateur non authentifié", err.message);
       return false;
     }
   };
-  var isAuth = (await checkAuth()).valueOf()
 
+  var isAuth = (await checkAuth()).valueOf()
   
 
   // redirige vers la page de connexion si l'utilisateur n'est pas connecté
@@ -42,19 +44,27 @@ export async function middleware(request)  {
     return NextResponse.redirect(url);
   }
 
-  // Vérifie si la route est protégée
-  const requiredPerms = routePermissions[request.path];
-  if (requiredPerms && !requiredPerms.length) {
-    console.log(`No permissions defined for route: ${request.path}`);
-    return NextResponse.next();
+  // redirige vers une page d'erreur si l'utilisateur n'est pas un super_admin et qu'il essaie d'accéder à une page super_admin
+  if (isAuth && Object.keys(f2s_routes).includes(pathname)) {
+    if (!userPermissions?.includes("view_super_admin_dashboard")) {
+      console.log("Page super_admin, utilisateur non authorisé, redirection...", pathname, userPermissions);
+      const url = new URL('/admin', request.url);
+      return NextResponse.redirect(url);
   }
+}
 
   //redirect si l'utilisateur est déjà connecté
   if (isAuth && pathname === '/') {
-    const url = new URL('/admin', request.url); //TODO: change to the desired default page
+    // rediger vers la page super admin si l'utilisateur est super_admin
+    if (userPermissions?.includes("view_super_admin_dashboard")) { 
+      const url = new URL('/super_admin', request.url); // 
+      return NextResponse.redirect(url);
+    }
+
+    // rediger vers la page admin(orga_dashboard) si l'utilisateur est un autre role
+    const url = new URL('/admin', request.url); 
     return NextResponse.redirect(url);
   }
-
 }
 
 export const config = {

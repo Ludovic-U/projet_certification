@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
 
 module.exports.createClient = async (req, res) => {
     user = req.user;
-    if (!isAdmin(user)) {
-        return res.status(403).json({ error: 'Forbidden ADMIN ONLY!!!' });
+    if (!user.permissisons.includes('client:create:any')){
+        throw new Error('createClient : Unauthorized');
     }
     const { name, type, desc } = req.body;
     try {
@@ -25,17 +25,16 @@ module.exports.createClient = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
 module.exports.getClients = async (req, res) => {
     user = req.user;
-    console.log(user);
-    if (!isAdmin(user)) {
-        return res.status(403).json({ error: 'Forbidden ADMIN ONLY!!!' });
+    if (!user.permissisons.includes('client:read:any')){
+        throw new Error('getClient : Unauthorized');
     }
     try {
         const clients = await prisma.client.findMany();
-        res.status(200).json(clients);
+       return clients
     } catch (error) {
-        console.error('Error fetching clients:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        throw new Error('Error fetching clients', error.message);
     }
 }

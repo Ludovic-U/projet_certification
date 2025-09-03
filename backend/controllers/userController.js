@@ -1,82 +1,27 @@
-const { createJWT } = require('../utils/jwt');
+const { createJWT, verifyJWT } = require('../utils/jwt');
 const crypto = require('crypto');
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { isAdmin, isManager } = require('../utils/roles');
+// const { isAdmin, isManager } = require('../utils/roles');
+const { createSession, deleteSessions } = require('../services/sessionService');
+const { findUserByEmailAndPassword } = require('../services/userService');
 
 
 
 module.exports.loginPost = async (req, res) => {
     const { email, password } = req.body;
     // $2b$10$SsckLn71poxLmYmfC62kGuWc0YUJsOzQONkHZmwpyotRTfvglp7Fi
+    // try {
+    //     const hashedPassword = await bcrypt.hash('admin', parseInt(process.env.HASH_SALT));
+
+    // } catch (error) {
+    //     console.error('Error hashing password:', error);
+    // }
+
     try {
-        const hashedPassword = await bcrypt.hash('admin', parseInt(process.env.HASH_SALT));
-        console.log(hashedPassword);
-
-    } catch (error) {
-        console.error('Error hashing password:', error);
-    }
-
-    try {
-        const user = await prisma.user.findFirst({
-            where: {
-                OR:
-                    [{ email },
-                    { username: email },
-                    ]
-            },
-            include: {
-                roles: {
-                    include: {
-                        role: {
-                            include: {
-                                rolePermissions: {
-                                    include: {
-                                        permission: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                clientUserRoles: true,
-            },
-        });
-
-        if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-
-        const valid = await bcrypt.compare(password, user.password);
-        if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
-
-        const roles = user.roles.map((userRole) => userRole.role.roleName);
-        const permissions = user.roles.flatMap((userRole) =>
-            userRole.role.rolePermissions.map((rolePerm) => rolePerm.permission.permName)
-        );
-
-        const clientData = user.clientUserRoles[0] || null;
-
-
-         // token is sent to a cookie AND saved in the db.
-        const tokenPayload = {
-             userId: user.userId,
-             clientId: clientData?.clientId || null,
-             permissions: permissions,
-             createdAT: Date.now
-         };
-
-        const token = createJWT(tokenPayload);
-        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-
-        await prisma.userSession.create({
-        data: {
-            userId: user.userId,
-            tokenHash: tokenHash,
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 jour
-            ip: req.ip, 
-            userAgent: req.headers['user-agent'],
-        },
-        });
+        // find user by email or username
+        const token = await findUserByEmailAndPassword(email, password, req);
 
         // Set the token in a cookie
         res.cookie('token', token, {
@@ -95,7 +40,7 @@ module.exports.loginPost = async (req, res) => {
     }
 };
 
-module.exports.registerPost = async (req, res) => {
+module.exports.registerPost = async (req, res) => { // TODO : a refaire
     const { clientId } = req.params;
     const token = req.cookies.token;
     const user = req.user;
@@ -153,17 +98,22 @@ module.exports.registerPost = async (req, res) => {
 };
 
 
-module.exports.logout = async (req, res) => { //TODO: clear the session in the db
+module.exports.logout = async (req, res) => {
+    console.log("Logging out user...");
     const crypto = require('crypto');
     const token = req.cookies.token;
     if (token) {
-        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-        await prisma.userSession.deleteMany({ where: { tokenHash } });
+        const payload = verifyJWT(token);
+        const userId = payload.userId;
+
+        //delete every session of the user 
+        await deleteSessions(userId);
     }
+    console.log("User logged out, clearing cookie.");
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
     });
-    res.status(200).json({ message: 'Logout successful' });
 }
+
