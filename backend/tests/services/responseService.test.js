@@ -1,7 +1,15 @@
+/**
+ * @fileoverview
+ * Unit tests for the Response Service.
+ * Covers CRUD operations and query methods for responses.
+ * Uses Jest and mocks the prismaClient and checkIdExistence function.
+ */
+
 const responseService = require("../../services/responseService");
 const { prisma } = require("../../prisma/prismaClient");
 const { checkIdExistence } = require("../../utils/checkIdExistence");
 
+// Mock the prisma methods to isolate service logic
 jest.mock("../../prisma/prismaClient", () => ({
   prisma: {
     response: {
@@ -14,6 +22,7 @@ jest.mock("../../prisma/prismaClient", () => ({
   },
 }));
 
+// Mock checkIdExistence function to control test scenarios
 jest.mock("../../utils/checkIdExistence", () => ({
   checkIdExistence: jest.fn(),
 }));
@@ -23,6 +32,9 @@ describe("Response Service", () => {
     jest.clearAllMocks();
   });
 
+  /**
+   * Test suite for creating responses
+   */
   describe("createResponse", () => {
     it("should create and return a new response", async () => {
       const mockResponseData = {
@@ -65,6 +77,9 @@ describe("Response Service", () => {
     });
   });
 
+  /**
+   * Test suite for updating responses
+   */
   describe("updateResponse", () => {
     it("should update and return the updated response", async () => {
       const responseId = 1;
@@ -159,6 +174,9 @@ describe("Response Service", () => {
     });
   });
 
+  /**
+   * Test suite for deleting responses
+   */
   describe("deleteResponse", () => {
     it("should delete the response", async () => {
       const responseId = 1;
@@ -223,6 +241,9 @@ describe("Response Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching responses by question of a project
+   */
   describe("getResponsesByQuestionOfProject", () => {
     it("should return responses for the given question of a project", async () => {
       const projectId = 1;
@@ -284,6 +305,9 @@ describe("Response Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching responses by project
+   */
   describe("getResponsesByProject", () => {
     it("should return responses for the given project", async () => {
       const projectId = 1;
@@ -379,6 +403,9 @@ describe("Response Service", () => {
     });
   });
 
+  /**
+   * Test suite for fetching sub-responses by parent
+   */
   describe("getSubresponses", () => {
     it("should return responses for the given responseIdParent", async () => {
       const responseIdParent = 1;
