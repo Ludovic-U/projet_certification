@@ -1,6 +1,10 @@
 const typeService = require("../services/typeService");
 
-// Create a new type
+/**
+ * Create a new type.
+ * Expects the following fields in req.body:
+ * - label: String
+ */
 module.exports.createType = async (req, res) => {
   const { label } = req.body;
 
@@ -15,7 +19,10 @@ module.exports.createType = async (req, res) => {
   }
 };
 
-// Get all types
+/**
+ * Get all types.
+ * Responds with an array of all types.
+ */
 module.exports.getAllTypes = async (_, res) => {
   try {
     const types = await typeService.getAllTypes();
@@ -26,7 +33,11 @@ module.exports.getAllTypes = async (_, res) => {
   }
 };
 
-// Update a type by ID
+/**
+ * Update a type by ID.
+ * Expects typeId in req.params and updated fields in req.body.
+ * Responds with the updated type.
+ */
 module.exports.updateType = async (req, res) => {
   const { typeId } = req.params;
   // Check if typeId is a number
@@ -47,7 +58,11 @@ module.exports.updateType = async (req, res) => {
   }
 };
 
-// Delete a Type by ID
+/**
+ * Delete a type by ID.
+ * Expects typeId in req.params.
+ * Responds with 204 No content on success.
+ */
 module.exports.deleteType = async (req, res) => {
   const { typeId } = req.params;
   // Check if typeId is a number
@@ -67,7 +82,11 @@ module.exports.deleteType = async (req, res) => {
   }
 };
 
-// Get a type by ID
+/**
+ * Get a type by ID.
+ * Expects typeId in req.params.
+ * Responds with the type object.
+ */
 module.exports.getTypeById = async (req, res) => {
   const { typeId } = req.params;
   // Check if typeId is a number
