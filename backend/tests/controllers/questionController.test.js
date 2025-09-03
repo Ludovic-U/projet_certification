@@ -194,7 +194,7 @@ describe("Question Controller", () => {
   });
 
   /**
-   * Test suite for deleteing questions
+   * Test suite for deleting questions
    */
   describe("deleteQuestion", () => {
     beforeEach(() => {
