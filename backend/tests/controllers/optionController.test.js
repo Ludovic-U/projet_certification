@@ -250,4 +250,58 @@ describe("Option Controller", () => {
       expect(optionService.getOptionById).toHaveBeenCalled();
     });
   });
+
+  /**
+   * Test suite for fetching options by question
+   */
+  describe("getOptionsByQuestion", () => {
+    beforeEach(() => {
+      req = { params: { questionId: 1 } };
+    });
+
+    it("should fetch options and return 200 status", async () => {
+      const mockOptions = [
+        { optionId: 1, label: "Opt1", questionId: 1 },
+        { optionId: 2, label: "Opt2", questionId: 1 },
+      ];
+      optionService.getOptionsByQuestion.mockResolvedValue(mockOptions);
+
+      await optionController.getOptionsByQuestion(req, res, next);
+
+      expect(optionService.getOptionsByQuestion).toHaveBeenCalledWith(
+        parseInt(req.params.questionId)
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockOptions);
+    });
+
+    it("should handle service errors and return 500 status", async () => {
+      await expectError(
+        optionController.getOptionsByQuestion,
+        req,
+        res,
+        () =>
+          optionService.getOptionsByQuestion.mockRejectedValue(
+            new Error("Database error")
+          ),
+        500,
+        "Internal server error"
+      );
+      expect(optionService.getOptionsByQuestion).toHaveBeenCalled();
+    });
+
+    it("should return 400 for invalid questionId", async () => {
+      req.params.questionId = "invalid";
+
+      await expectError(
+        optionController.getOptionsByQuestion,
+        req,
+        res,
+        () => {},
+        400,
+        "Bad request: Invalid questionId"
+      );
+      expect(optionService.getOptionsByQuestion).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -97,3 +97,26 @@ module.exports.getOptionById = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+/**
+ * Get options by question.
+ * Expects questionId in req.params.
+ * Responds with an array of options.
+ */
+module.exports.getOptionsByQuestion = async (req, res) => {
+  const { questionId } = req.params;
+  // check if questionId is a number
+  if (isNaN(questionId)) {
+    return res.status(400).json({ error: "Bad request: Invalid questionId" });
+  }
+
+  try {
+    const options = await optionService.getOptionsByQuestion(
+      parseInt(questionId)
+    );
+    res.status(200).json(options);
+  } catch (error) {
+    console.error("Error fetching options:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
