@@ -125,4 +125,66 @@ describe("Option Controller", () => {
       expect(optionService.updateOption).toHaveBeenCalled();
     });
   });
+
+  /**
+   * Test suite for deleting options
+   */
+  describe("deleteOption", () => {
+    beforeEach(() => {
+      req = { params: { optionId: 1 } };
+    });
+
+    it("should delete an option and return 204 status", async () => {
+      optionService.deleteOption.mockResolvedValue();
+
+      await optionController.deleteOption(req, res, next);
+
+      expect(optionService.deleteOption).toHaveBeenCalledWith(
+        parseInt(req.params.optionId)
+      );
+      expect(res.status).toHaveBeenCalledWith(204);
+      expect(res.send).toHaveBeenCalled();
+    });
+
+    it("should handle service errors and return 500 status", async () => {
+      await expectError(
+        optionController.deleteOption,
+        req,
+        res,
+        () =>
+          optionService.deleteOption.mockRejectedValue(
+            new Error("Database error")
+          ),
+        500,
+        "Internal server error"
+      );
+      expect(optionService.deleteOption).toHaveBeenCalled();
+    });
+
+    it("should return 400 for invalid optionId", async () => {
+      req.params.optionId = "invalid";
+
+      await expectError(
+        optionController.deleteOption,
+        req,
+        res,
+        () => {},
+        400,
+        "Bad request: Invalid optionId"
+      );
+      expect(optionService.deleteOption).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if option not found", async () => {
+      await expectError(
+        optionController.deleteOption,
+        req,
+        res,
+        () => optionService.deleteOption.mockRejectedValue({ status: 404 }),
+        404,
+        "Option not found"
+      );
+      expect(optionService.deleteOption).toHaveBeenCalled();
+    });
+  });
 });
