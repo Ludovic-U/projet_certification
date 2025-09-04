@@ -71,7 +71,7 @@ describe("Option Controller", () => {
     });
 
     it("should update an option and return 200 status", async () => {
-      const mockUpdateOption = { optioonId: 1, ...req.body };
+      const mockUpdateOption = { optionId: 1, ...req.body };
       optionService.updateOption.mockResolvedValue(mockUpdateOption);
 
       await optionController.updateOption(req, res, next);
@@ -185,6 +185,69 @@ describe("Option Controller", () => {
         "Option not found"
       );
       expect(optionService.deleteOption).toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * Test suite for fetching options by ID
+   */
+  describe("getOptionById", () => {
+    beforeEach(() => {
+      req = { params: { optionId: 1 } };
+    });
+
+    it("should fetch an option by ID and return 200 status", async () => {
+      const mockOption = { optionId: 1, label: "Opt1" };
+      optionService.getOptionById.mockResolvedValue(mockOption);
+
+      await optionController.getOptionById(req, res, next);
+
+      expect(optionService.getOptionById).toHaveBeenCalledWith(
+        parseInt(req.params.optionId)
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockOption);
+    });
+
+    it("should handle service errors and return 500 status", async () => {
+      await expectError(
+        optionController.getOptionById,
+        req,
+        res,
+        () =>
+          optionService.getOptionById.mockRejectedValue(
+            new Error("Database error")
+          ),
+        500,
+        "Internal server error"
+      );
+      expect(optionService.getOptionById).toHaveBeenCalled();
+    });
+
+    it("should return 400 for invalid questionId", async () => {
+      req.params.optionId = "invalid";
+
+      await expectError(
+        optionController.getOptionById,
+        req,
+        res,
+        () => {},
+        400,
+        "Bad request: Invalid optionId"
+      );
+      expect(optionService.getOptionById).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if option not found", async () => {
+      await expectError(
+        optionController.getOptionById,
+        req,
+        res,
+        () => optionService.getOptionById.mockRejectedValue({ status: 404 }),
+        404,
+        "Option not found"
+      );
+      expect(optionService.getOptionById).toHaveBeenCalled();
     });
   });
 });

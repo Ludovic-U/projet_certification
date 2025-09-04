@@ -73,3 +73,27 @@ module.exports.deleteOption = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+/**
+ * Get an option by ID.
+ * Expects optionId in req.params.
+ * Responds with the option object.
+ */
+module.exports.getOptionById = async (req, res) => {
+  const { optionId } = req.params;
+  // check if optionId is a number
+  if (isNaN(optionId)) {
+    return res.status(400).json({ error: "Bad request: Invalid optionId" });
+  }
+
+  try {
+    const option = await optionService.getOptionById(optionId);
+    res.status(200).json(option);
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(404).json({ error: "Option not found" });
+    }
+    console.error("Error fetching option:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
