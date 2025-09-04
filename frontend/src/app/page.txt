@@ -1,0 +1,34 @@
+// Page défault avec Header, SideNav et taille/flex du contenu
+
+export default function LoginPage() {
+
+    const [isSideNavOpen, setIsSideNavOpen] = useState(false);
+
+    return (
+        <div className="min-h-screen flex flex-col">
+            <Header/>
+            <div className="flex flex-1">
+                <SideNav
+                isOpen={isSideNavOpen}
+                toggle={() => setIsSideNavOpen((prev) => !prev)}
+                />
+
+                <main
+                 className={`
+                    overflow-y-scroll bg-light transition-all duration-300 flex-1
+                    ${isSideNavOpen ? "ml-[240px]" : "ml-[90px]"}
+                 `}
+                >   
+                    <div className="w-fit ml-20 my-10 cursor-default select-none flex flex-col gap-2">
+                        <h1 className="font-oswald text-dark text-4xl">
+                            Liste des clients
+                        </h1>
+                        <p className="font-didact text-greydarker text-xl">
+                            Consultez la liste des clients, recherchez un compte et accédez aux détails ou à la gestion des profils.
+                        </p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
+}

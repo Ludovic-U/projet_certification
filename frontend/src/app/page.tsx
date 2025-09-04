@@ -6,8 +6,6 @@ import axios from "axios";
 
 import LoginForm from "@/components/forms/LoginForm";
 
-import { Card } from "@/components/ui/Card";
-
 type LoginFormInputs = {
     email: string;
     password: string;
@@ -16,10 +14,6 @@ type LoginFormInputs = {
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState<string>("");
-
-    const handleClick = () => {
-        console.log("Bouton cliqué")
-    }
 
     const router = useRouter();
     const api = axios.create({

@@ -17,6 +17,7 @@ interface ProjectItem {
 
 interface ProjectProps {
     data: ProjectItem[];
+    role: "superadmin" |
 }
 
 export const List: React.FC<ProjectProps> = ({ data }) => {
@@ -26,7 +27,7 @@ export const List: React.FC<ProjectProps> = ({ data }) => {
                 <thead className="text-xs capitalize text-center font-noto text-greydarker">
                     <tr>
                         <th className=" w-10 font-bold py-1 px-2">ID</th>
-                        <th className="w-60 font-bold py-1">Titre</th>
+                        <th className="w-40 font-bold py-1">Titre</th>
                         <th className="w-20 font-bold py-1">Type</th>
                         <th className="w-40 font-bold py-1">étape actuelle</th>
                         <th className="w-24 font-bold py-1">Contributeurs</th>
@@ -37,30 +38,30 @@ export const List: React.FC<ProjectProps> = ({ data }) => {
                 <tbody>
                     {data.map((item) => (
                         <tr key={item.id} className="bg-white shadow-400 hover:bg-lighthover cursor-pointer">
-                            <td className=" w-10 text-center   py-5 px-2 text-grey font-bold rounded-l-md">
+                            <td className=" w-10 text-center py-5 px-2 text-grey font-bold rounded-l-md">
                                 {item.id}
                             </td>
 
-                            <td className="max-w-60   py-5 px-2 font-noto">
+                            <td className="max-w-40 py-5 px-2 font-noto">
                                 <span className="block truncate text-left text-lg">{item.title}</span>
                             </td>
 
-                            <td className="w-20   py-5 text-center text-sm font-bold uppercase">
+                            <td className="w-20 py-5 text-center text-sm font-bold uppercase">
                                 <span className="inline-block border px-4 py-1 rounded-full whitespace-nowrap">
                                     {item.type}
                                 </span>
                             </td>
 
-                            <td className="w-40   py-5 px-2 text-center text-primary font-bold uppercase">
+                            <td className="w-40 py-5 px-2 text-center text-primary font-bold uppercase">
                                 {item.step}
                             </td>
                             
                             
-                            <td className="w-24   py-5 text-center text-base font-bold">
+                            <td className="w-24 py-5 text-center text-base font-bold">
                                 <FontAwesomeIcon className="mr-2" icon={faUsers}></FontAwesomeIcon>
                                 {item.contributors}
                             </td>
-                            <td className="w-32   py-5 text-center rounded-r-md">
+                            <td className="w-32 py-5 text-center rounded-r-md">
                                 <Button size="sm" variant="iconPrimary">
                                     <FontAwesomeIcon  icon={faGear}></FontAwesomeIcon>
                                     Paramètres

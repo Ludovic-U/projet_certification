@@ -1,10 +1,10 @@
 import React from "react";
 
-export default function SideNav() {
+export default function Header() {
     return (
-    <header className="h-[60px] bg-blue-200 sticky top-0 flex items-center justify-end z-10">
+    <header className="h-[60px] bg-primary sticky top-0 flex items-center justify-end z-10">
         <div className="flex pr-10">
-            <p className="text-primary font-medium text-2xl">Bonjour, Super admin</p>
+            <p className="text-light font-medium text-2xl">Bonjour, Super admin</p>
         </div>
     </header>
     )
