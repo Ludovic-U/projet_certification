@@ -64,4 +64,78 @@ describe("Option Service", () => {
       });
     });
   });
+
+  /**
+   * Test suite for updating options
+   */
+  describe("updateOption", () => {
+    it("should update and return the updated option", async () => {
+      const optionId = 1;
+      const mockUpdateData = { label: "Updated Opt", questionId: 1 };
+      const mockUpdatedOption = { optionId: optionId, ...mockUpdateData };
+
+      // Mock the existence check to pass
+      checkIdExistence.mockResolvedValue(true);
+
+      prisma.option.update.mockResolvedValue(mockUpdatedOption);
+
+      const result = await optionService.updateOption(optionId, mockUpdateData);
+
+      expect(checkIdExistence).toHaveBeenCalledWith(
+        prisma.option,
+        optionId,
+        "Option not found"
+      );
+      expect(prisma.option.update).toHaveBeenCalledWith({
+        where: { optionId: optionId },
+        data: mockUpdateData,
+      });
+      expect(result).toEqual(mockUpdatedOption);
+    });
+
+    it("should throw an error if the update fails", async () => {
+      const optionId = 1;
+      const mockUpdateData = { label: "Failed update", questionId: 1 };
+
+      // Mock the existence check to pass
+      checkIdExistence.mockResolvedValue(true);
+
+      const mockError = new Error("Database error");
+
+      prisma.option.update.mockRejectedValue(mockError);
+
+      await expect(
+        optionService.updateOption(optionId, mockUpdateData)
+      ).rejects.toThrow("Database error");
+      expect(checkIdExistence).toHaveBeenCalledWith(
+        prisma.option,
+        optionId,
+        "Option not found"
+      );
+      expect(prisma.option.update).toHaveBeenCalledWith({
+        where: { optionId: optionId },
+        data: mockUpdateData,
+      });
+    });
+
+    it("should throw an error if the option does not exist", async () => {
+      const optionId = 999;
+      const mockUpdateData = { label: "Non-existent Opt", questionId: 1 };
+
+      // Mock the existence check to fail
+      const mockError = new Error("Option not found");
+      mockError.status = 404;
+      checkIdExistence.mockRejectedValue(mockError);
+
+      await expect(
+        optionService.updateOption(optionId, mockUpdateData)
+      ).rejects.toThrow("Option not found");
+      expect(checkIdExistence).toHaveBeenCalledWith(
+        prisma.option,
+        optionId,
+        "Option not found"
+      );
+      expect(prisma.option.update).not.toHaveBeenCalled();
+    });
+  });
 });
