@@ -206,4 +206,51 @@ describe("Option Service", () => {
       expect(prisma.option.delete).not.toHaveBeenCalled();
     });
   });
+
+  /**
+   * Test suite for fetching options by ID
+   */
+  describe("getOptionById", () => {
+    it("should return the option if found", async () => {
+      const optionId = 1;
+      const mockOption = { label: "Opt1", questionId: 1 };
+
+      prisma.option.findUnique.mockResolvedValue(mockOption);
+
+      const result = await optionService.getOptionById(optionId);
+
+      expect(prisma.option.findUnique).toHaveBeenCalledWith({
+        where: { optionId: optionId },
+      });
+      expect(result).toEqual(mockOption);
+    });
+
+    it("should throw an error if fetching fails", async () => {
+      const optionId = 1;
+
+      const mockError = new Error("Database error");
+
+      prisma.option.findUnique.mockRejectedValue(mockError);
+
+      await expect(optionService.getOptionById(optionId)).rejects.toThrow(
+        "Database error"
+      );
+      expect(prisma.option.findUnique).toHaveBeenCalledWith({
+        where: { optionId: optionId },
+      });
+    });
+
+    it("should throw an error if the option is not found", async () => {
+      const optionId = 999;
+
+      prisma.option.findUnique.mockResolvedValue(null);
+
+      await expect(optionService.getOptionById(optionId)).rejects.toThrow(
+        "Option not found"
+      );
+      expect(prisma.option.findUnique).toHaveBeenCalledWith({
+        where: { optionId: optionId },
+      });
+    });
+  });
 });
