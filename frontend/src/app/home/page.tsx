@@ -4,16 +4,12 @@ import { useState } from "react";
 
 import Header from "@/components/layout/Header"
 import SideNav from "@/components/layout/SideNav"
-
 import { Button } from "@/components/ui";
 import { List } from "@/components/ui/List";
 import { Input } from "@/components/ui/Input";
 import { Pagination } from "@/components/ui/Pagination";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
-
-
 
 export default function Home() {
 
@@ -104,7 +100,7 @@ export default function Home() {
                             />
                         </div>
 
-                        <List data={currentProjects}/>
+                        {/* <List data={currentProjects}/>
                         {totalPages > 1 && (
                             <div className="flex justify-center mt-5">
                                 <Pagination
@@ -113,7 +109,7 @@ export default function Home() {
                                 onPageChange={setCurrentPage}
                                 />
                              </div>
-                        )}
+                        )} */}
                     </div>
                 </main>
             </div>
