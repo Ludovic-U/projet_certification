@@ -253,4 +253,52 @@ describe("Option Service", () => {
       });
     });
   });
+  /**
+   * Test suite for fetching options by question
+   */
+  describe("getOptionsByQuestion", () => {
+    it("should return options for the given question", async () => {
+      const questionId = 1;
+      const mockOptions = [
+        { optionId: 1, label: "Opt1", questionId: 1 },
+        { optionId: 2, label: "Opt2", questionId: 1 },
+      ];
+
+      prisma.option.findMany.mockResolvedValue(mockOptions);
+
+      const result = await optionService.getOptionsByQuestion(questionId);
+
+      expect(prisma.option.findMany).toHaveBeenCalledWith({
+        where: { questionId: questionId },
+      });
+      expect(result).toEqual(mockOptions);
+    });
+
+    it("should throw an error if fetching fails", async () => {
+      const questionId = 1;
+      const mockError = new Error("Database error");
+
+      prisma.option.findMany.mockRejectedValue(mockError);
+
+      await expect(
+        optionService.getOptionsByQuestion(questionId)
+      ).rejects.toThrow("Database error");
+      expect(prisma.option.findMany).toHaveBeenCalledWith({
+        where: { questionId: questionId },
+      });
+    });
+
+    it("should return an empty array if no options match the question", async () => {
+      const questionId = 999;
+
+      prisma.option.findMany.mockResolvedValue([]);
+
+      const result = await optionService.getOptionsByQuestion(questionId);
+
+      expect(prisma.option.findMany).toHaveBeenCalledWith({
+        where: { questionId: questionId },
+      });
+      expect(result).toEqual([]);
+    });
+  });
 });

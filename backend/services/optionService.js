@@ -50,3 +50,12 @@ module.exports.getOptionById = async (optionId) => {
   }
   return option;
 };
+
+/**
+ * Get all options by question.
+ * @param { number} questionId - The question ID.
+ * @returns {Promise<Array>} List of options.
+ */
+module.exports.getOptionsByQuestion = async (questionId) => {
+  return await prisma.option.findMany({ where: { questionId: questionId } });
+};
