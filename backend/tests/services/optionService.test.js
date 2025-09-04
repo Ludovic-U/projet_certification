@@ -138,4 +138,72 @@ describe("Option Service", () => {
       expect(prisma.option.update).not.toHaveBeenCalled();
     });
   });
+
+  /**
+   * Test suite for deleting options
+   */
+  describe("deleteOption", () => {
+    it("should delete the option", async () => {
+      const optionId = 1;
+
+      // Mock the existence check to pass
+      checkIdExistence.mockResolvedValue(true);
+
+      prisma.option.delete.mockResolvedValue({ optionId: optionId });
+
+      const result = await optionService.deleteOption(optionId);
+
+      expect(checkIdExistence).toHaveBeenCalledWith(
+        prisma.option,
+        optionId,
+        "Option not found"
+      );
+      expect(prisma.option.delete).toHaveBeenCalledWith({
+        where: { optionId: optionId },
+      });
+      expect(result).toEqual({ optionId: optionId });
+    });
+
+    it("should throw an error if deletion fails", async () => {
+      const optionId = 1;
+
+      // Mock the existence check to pass
+      checkIdExistence.mockResolvedValue(true);
+
+      const mockError = new Error("Database error");
+
+      prisma.option.delete.mockRejectedValue(mockError);
+
+      await expect(optionService.deleteOption(optionId)).rejects.toThrow(
+        "Database error"
+      );
+      expect(checkIdExistence).toHaveBeenCalledWith(
+        prisma.option,
+        optionId,
+        "Option not found"
+      );
+      expect(prisma.option.delete).toHaveBeenCalledWith({
+        where: { optionId: optionId },
+      });
+    });
+
+    it("should throw an error if the option does not exist", async () => {
+      const optionId = 999;
+
+      // Mock the existence check to fail
+      const mockError = new Error("Option not found");
+      mockError.status = 404;
+      checkIdExistence.mockRejectedValue(mockError);
+
+      await expect(optionService.deleteOption(optionId)).rejects.toThrow(
+        "Option not found"
+      );
+      expect(checkIdExistence).toHaveBeenCalledWith(
+        prisma.option,
+        optionId,
+        "Option not found"
+      );
+      expect(prisma.option.delete).not.toHaveBeenCalled();
+    });
+  });
 });

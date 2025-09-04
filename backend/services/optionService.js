@@ -21,3 +21,14 @@ module.exports.updateOption = async (optionId, data) => {
   await checkIdExistence(prisma.option, optionId, "Option not found");
   return await prisma.option.update({ where: { optionId: optionId }, data });
 };
+
+/**
+ * Delete an option by ID.
+ * @param {number} optionId - The ID of the option to delete.
+ * @return {Promise<Object>} The deleted option.
+ * @throws {Error} If the option does not exist.
+ */
+module.exports.deleteOption = async (optionId) => {
+  await checkIdExistence(prisma.option, optionId, "Option not found");
+  return await prisma.option.delete({ where: { optionId: optionId } });
+};
