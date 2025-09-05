@@ -4,10 +4,11 @@
 
 import { useState } from "react";
 
-import Header from "@/components/layout/Header"
-import SideNav from "@/components/layout/SideNav_old"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faPlus, faGear, faUsers } from "@fortawesome/free-solid-svg-icons";
+
+import Header from "@/components/layout/Header"
+import { SideNav } from "@/components/layout"
 
 import {
     Button,

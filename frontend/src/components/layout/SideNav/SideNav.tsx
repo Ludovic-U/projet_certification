@@ -1,40 +1,42 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import React, { forwardRef } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight, faUsers, faUserTie, faProjectDiagram, faBriefcase, faGear } from "@fortawesome/free-solid-svg-icons";
+import {
+    faChevronRight,
+    
+} from "@fortawesome/free-solid-svg-icons";
 
+import { SideNavProps } from "./sidenav.types";
 import { Tooltip, Button } from "@/components/ui";
 
-type SideNavProps = {
-    isOpen: boolean;
-    toggle: () => void;
-};
+export const SideNav = forwardRef<HTMLElement, SideNavProps> (
+    ({ isOpen, toggle, navItems = [] }, ref) => {
 
-export default function SideNav({ isOpen, toggle }: SideNavProps) {
     return (
         <aside
-            className={`
+         ref={ref}
+         className={`
             fixed top-0 left-0 h-screen z-20 flex flex-col bg-dark text-light pt-8
             transition-all duration-300 shrink-0
             ${isOpen ? "w-[240px]" : "w-[90px]"}
-            `}
+         `}
         >
-            <Button
-                variant="iconRound"
-                className={`absolute top-25
-                ${isOpen ? "left-56" : "left-19"}`}
-                size="smRound"
-                onClick={toggle}
-                icon={
-                    <FontAwesomeIcon
-                        icon={faChevronRight}
-                        size="sm"
-                        className={`transition-transform duration-300
-                    ${isOpen ? "rotate-180" : ""}`}
-                    />
-                }
-            ></Button>
+        <Button
+         variant="iconRound"
+         className={`absolute top-25
+         ${isOpen ? "left-56" : "left-19"}`}
+         size="smRound"
+         onClick={toggle}
+         icon={
+            <FontAwesomeIcon
+             icon={faChevronRight}
+             size="sm"
+             className={`transition-transform duration-300
+             ${isOpen ? "rotate-180" : ""}`}
+            />
+         }/>
 
             <p className="font-bold text-center justify-center w-full">
                 {isOpen ? "Figure de Skills" : "F2S"}
@@ -112,4 +114,6 @@ export default function SideNav({ isOpen, toggle }: SideNavProps) {
             </ul>
         </aside>
     )
-}
+})
+
+SideNav.displayName = "SideNav";

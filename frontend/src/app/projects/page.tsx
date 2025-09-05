@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 import Header from "@/components/layout/Header"
-import SideNav from "@/components/layout/SideNav_old"
+import { SideNav } from "@/components/layout"
 import {
     Button,
     List,
