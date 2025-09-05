@@ -22,8 +22,8 @@ module.exports.createQuestion = async (req, res) => {
 
   try {
     const question = await questionService.createQuestion({
-      label: label,
-      category: category,
+      label,
+      category,
       numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
       isRelevant: isRelevant ?? false,
       hasMultipleResponse: hasMultipleResponse ?? false,
@@ -56,10 +56,10 @@ module.exports.getAllQuestions = async (_, res) => {
  * Responds with the updated question.
  */
 module.exports.updateQuestion = async (req, res) => {
-  const { questionId } = req.params;
-  // check if questionId is a number
-  if (isNaN(questionId)) {
-    return res.status(400).json({ error: "Bad request: Invalid questionId" });
+  const questionId = Number(req.params.questionId);
+  // Validate questionId
+  if (!Number.isInteger(questionId) || questionId <= 0) {
+    return res.status(400).json({ error: "Invalid questionId" });
   }
 
   const {
@@ -73,8 +73,8 @@ module.exports.updateQuestion = async (req, res) => {
 
   try {
     const question = await questionService.updateQuestion(questionId, {
-      label: label,
-      category: category,
+      label,
+      category,
       numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
       isRelevant: isRelevant ?? false,
       hasMultipleResponse: hasMultipleResponse ?? false,
@@ -82,7 +82,7 @@ module.exports.updateQuestion = async (req, res) => {
     });
     res.status(200).json(question);
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Question not found" });
     }
     console.error("Error updating question:", error);
@@ -96,17 +96,17 @@ module.exports.updateQuestion = async (req, res) => {
  * Responds with 204 No Content on success.
  */
 module.exports.deleteQuestion = async (req, res) => {
-  const { questionId } = req.params;
-  // check if questionId is a number
-  if (isNaN(questionId)) {
-    return res.status(400).json({ error: "Bad request: Invalid questionId" });
+  const questionId = Number(req.params.questionId);
+  // Validate questionId
+  if (!Number.isInteger(questionId) || questionId <= 0) {
+    return res.status(400).json({ error: "Invalid questionId" });
   }
 
   try {
     await questionService.deleteQuestion(questionId);
     res.status(204).send();
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Question not found" });
     }
     console.error("Error deleting question:", error);
@@ -120,17 +120,17 @@ module.exports.deleteQuestion = async (req, res) => {
  * Responds with the question object.
  */
 module.exports.getQuestionById = async (req, res) => {
-  const { questionId } = req.params;
-  // check if questionId is a number
-  if (isNaN(questionId)) {
-    return res.status(400).json({ error: "Bad request: Invalid questionId" });
+  const questionId = Number(req.params.questionId);
+  // Validate questionId
+  if (!Number.isInteger(questionId) || questionId <= 0) {
+    return res.status(400).json({ error: "Invalid questionId" });
   }
 
   try {
     const question = await questionService.getQuestionById(questionId);
     res.status(200).json(question);
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Question not found" });
     }
     console.error("Error fetching question:", error);
@@ -144,16 +144,19 @@ module.exports.getQuestionById = async (req, res) => {
  * Responds with an array of questions for the given project.
  */
 module.exports.getQuestionsByProject = async (req, res) => {
-  const { projectId } = req.params;
-  // check if projectId is a number
-  if (isNaN(projectId)) {
-    return res.status(400).json({ error: "Bad request: Invalid projectId" });
+  const projectId = Number(req.params.projectId);
+  // Validate projectId
+  if (!Number.isInteger(projectId) || projectId <= 0) {
+    return res.status(400).json({ error: "Invalid projectId" });
   }
 
   try {
     const questions = await questionService.getQuestionsByProject(projectId);
     res.status(200).json(questions);
   } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Project not found" });
+    }
     console.error("Error fetching questions by project:", error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -170,6 +173,9 @@ module.exports.getQuestionsByCategory = async (req, res) => {
     const questions = await questionService.getQuestionsByCategory(category);
     res.status(200).json(questions);
   } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Category not found" });
+    }
     console.error("Error fetching questions by category:", error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -181,16 +187,19 @@ module.exports.getQuestionsByCategory = async (req, res) => {
  * Responds with an array of questions for the given type.
  */
 module.exports.getQuestionsByType = async (req, res) => {
-  const { typeId } = req.params;
-  // check if typeId is a number
-  if (isNaN(typeId)) {
-    return res.status(400).json({ error: "Bad request: Invalid typeId" });
+  const typeId = Number(req.params.typeId);
+  // Validate typeId
+  if (!Number.isInteger(typeId) || typeId <= 0) {
+    return res.status(400).json({ error: "Invalid typeId" });
   }
 
   try {
     const questions = await questionService.getQuestionsByType(typeId);
     res.status(200).json(questions);
   } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Type not found" });
+    }
     console.error("Error fetching questions by type:", error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -202,12 +211,10 @@ module.exports.getQuestionsByType = async (req, res) => {
  * Responds with an array of subquestions.
  */
 module.exports.getSubQuestions = async (req, res) => {
-  const { questionIdParent } = req.params;
-  // check if questionIdParent is a number
-  if (isNaN(parseInt(questionIdParent))) {
-    return res
-      .status(400)
-      .json({ error: "Bad request: Invalid questionIdParent" });
+  const questionIdParent = Number(req.params.questionIdParent);
+  // Validate questionIdParent
+  if (!Number.isInteger(questionIdParent) || questionIdParent <= 0) {
+    return res.status(400).json({ error: "Invalid questionIdParent" });
   }
 
   try {
@@ -216,6 +223,9 @@ module.exports.getSubQuestions = async (req, res) => {
     );
     res.status(200).json(subQuestions);
   } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "QuestionParent not found" });
+    }
     console.error("Error fetching sub-questions:", error);
     res.status(500).json({ error: "Internal server error" });
   }

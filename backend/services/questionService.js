@@ -1,5 +1,4 @@
 const { prisma } = require("../prisma/prismaClient");
-const { checkIdExistence } = require("../utils/checkIdExistence");
 
 /**
  * Create a new question.
@@ -26,11 +25,17 @@ module.exports.getAllQuestions = async () => {
  * @throws {Error} If the question does not exist.
  */
 module.exports.updateQuestion = async (questionId, data) => {
-  await checkIdExistence(prisma.question, questionId, "Question not found");
-  return await prisma.question.update({
-    where: { questionId: questionId },
-    data,
-  });
+  try {
+    return await prisma.question.update({
+      where: { questionId: questionId },
+      data,
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Question not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -40,10 +45,16 @@ module.exports.updateQuestion = async (questionId, data) => {
  * @throws {Error} If the question does not exist.
  */
 module.exports.deleteQuestion = async (questionId) => {
-  await checkIdExistence(prisma.question, questionId, "Question not found");
-  return await prisma.question.delete({
-    where: { questionId: questionId },
-  });
+  try {
+    return await prisma.question.delete({
+      where: { questionId: questionId },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Question not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -53,15 +64,16 @@ module.exports.deleteQuestion = async (questionId) => {
  * @throws {Error} If the question does not exist.
  */
 module.exports.getQuestionById = async (questionId) => {
-  const question = await prisma.question.findUnique({
-    where: { questionId: questionId },
-  });
-  if (!question) {
-    const error = new Error("Question not found");
-    error.status = 404;
+  try {
+    return await prisma.question.findUnique({
+      where: { questionId: questionId },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Question not found");
+    }
     throw error;
   }
-  return question;
 };
 
 /**
@@ -71,19 +83,27 @@ module.exports.getQuestionById = async (questionId) => {
  * @returns {Promise<Array>} List of questions.
  */
 module.exports.getQuestionsByProject = async (projectId) => {
-  const allQuestions = await prisma.question.findMany({
-    where: {
-      OR: [
-        // Questions directly linked to the project
-        { projects: { some: { projectId: projectId } } },
-        // Questions linked by project type
-        {
-          types: { some: { projectTypes: { some: { projectId: projectId } } } },
-        },
-      ],
-    },
-  });
-  return allQuestions;
+  try {
+    return await prisma.question.findMany({
+      where: {
+        OR: [
+          // Questions directly linked to the project
+          { projects: { some: { projectId: projectId } } },
+          // Questions linked by project type
+          {
+            types: {
+              some: { projectTypes: { some: { projectId: projectId } } },
+            },
+          },
+        ],
+      },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Project not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -103,9 +123,16 @@ module.exports.getQuestionsByCategory = async (category) => {
  * @returns {Promise<Array>} List of questions with the given type.
  */
 module.exports.getQuestionsByType = async (typeId) => {
-  return await prisma.question.findMany({
-    where: { types: { some: { typeId: typeId } } },
-  });
+  try {
+    return await prisma.question.findMany({
+      where: { types: { some: { typeId: typeId } } },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Type not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -114,7 +141,14 @@ module.exports.getQuestionsByType = async (typeId) => {
  * @returns {Promise<Array>} List of subquestions.
  */
 module.exports.getSubQuestions = async (questionIdParent) => {
-  return await prisma.question.findMany({
-    where: { questionIdParent: questionIdParent },
-  });
+  try {
+    return await prisma.question.findMany({
+      where: { questionIdParent: questionIdParent },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("ParentQuestion not found");
+    }
+    throw error;
+  }
 };

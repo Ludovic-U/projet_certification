@@ -70,6 +70,7 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(questionService.createQuestion).toHaveBeenCalled();
     });
   });
@@ -108,6 +109,7 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(questionService.getAllQuestions).toHaveBeenCalled();
     });
   });
@@ -151,6 +153,35 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockUpdatedQuestion);
     });
 
+    it("should return 400 for invalid questionId", async () => {
+      req.params.questionId = "invalid";
+
+      await expectError(
+        questionController.updateQuestion,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid questionId"
+      );
+
+      expect(questionService.updateQuestion).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if question not found", async () => {
+      await expectError(
+        questionController.updateQuestion,
+        req,
+        res,
+        () =>
+          questionService.updateQuestion.mockRejectedValue({ code: "P2025" }),
+        404,
+        "Question not found"
+      );
+
+      expect(questionService.updateQuestion).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         questionController.updateQuestion,
@@ -163,32 +194,7 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
-      expect(questionService.updateQuestion).toHaveBeenCalled();
-    });
 
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-
-      await expectError(
-        questionController.updateQuestion,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid questionId"
-      );
-      expect(questionService.updateQuestion).not.toHaveBeenCalled();
-    });
-
-    it("should return 404 if question not found", async () => {
-      await expectError(
-        questionController.updateQuestion,
-        req,
-        res,
-        () => questionService.updateQuestion.mockRejectedValue({ status: 404 }),
-        404,
-        "Question not found"
-      );
       expect(questionService.updateQuestion).toHaveBeenCalled();
     });
   });
@@ -213,6 +219,35 @@ describe("Question Controller", () => {
       expect(res.send).toHaveBeenCalled();
     });
 
+    it("should return 400 for invalid questionId", async () => {
+      req.params.questionId = "invalid";
+
+      await expectError(
+        questionController.deleteQuestion,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid questionId"
+      );
+
+      expect(questionService.deleteQuestion).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if question not found", async () => {
+      await expectError(
+        questionController.deleteQuestion,
+        req,
+        res,
+        () =>
+          questionService.deleteQuestion.mockRejectedValue({ code: "P2025" }),
+        404,
+        "Question not found"
+      );
+
+      expect(questionService.deleteQuestion).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         questionController.deleteQuestion,
@@ -225,32 +260,7 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
-      expect(questionService.deleteQuestion).toHaveBeenCalled();
-    });
 
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-
-      await expectError(
-        questionController.deleteQuestion,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid questionId"
-      );
-      expect(questionService.deleteQuestion).not.toHaveBeenCalled();
-    });
-
-    it("should return 404 if question not found", async () => {
-      await expectError(
-        questionController.deleteQuestion,
-        req,
-        res,
-        () => questionService.deleteQuestion.mockRejectedValue({ status: 404 }),
-        404,
-        "Question not found"
-      );
       expect(questionService.deleteQuestion).toHaveBeenCalled();
     });
   });
@@ -276,6 +286,35 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockQuestion);
     });
 
+    it("should return 400 for invalid questionId", async () => {
+      req.params.questionId = "invalid";
+
+      await expectError(
+        questionController.getQuestionById,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid questionId"
+      );
+
+      expect(questionService.getQuestionById).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if question not found", async () => {
+      await expectError(
+        questionController.getQuestionById,
+        req,
+        res,
+        () =>
+          questionService.getQuestionById.mockRejectedValue({ code: "P2025" }),
+        404,
+        "Question not found"
+      );
+
+      expect(questionService.getQuestionById).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         questionController.getQuestionById,
@@ -288,33 +327,7 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
-      expect(questionService.getQuestionById).toHaveBeenCalled();
-    });
 
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-
-      await expectError(
-        questionController.getQuestionById,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid questionId"
-      );
-      expect(questionService.getQuestionById).not.toHaveBeenCalled();
-    });
-
-    it("should return 404 if question not found", async () => {
-      await expectError(
-        questionController.getQuestionById,
-        req,
-        res,
-        () =>
-          questionService.getQuestionById.mockRejectedValue({ status: 404 }),
-        404,
-        "Question not found"
-      );
       expect(questionService.getQuestionById).toHaveBeenCalled();
     });
   });
@@ -343,6 +356,37 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockQuestions);
     });
 
+    it("should return 400 for invalid projectId", async () => {
+      req.params.projectId = "invalid";
+
+      await expectError(
+        questionController.getQuestionsByProject,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid projectId"
+      );
+
+      expect(questionService.getQuestionsByProject).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if project not found", async () => {
+      await expectError(
+        questionController.getQuestionsByProject,
+        req,
+        res,
+        () =>
+          questionService.getQuestionsByProject.mockRejectedValue({
+            code: "P2025",
+          }),
+        404,
+        "Project not found"
+      );
+
+      expect(questionService.getQuestionsByProject).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         questionController.getQuestionsByProject,
@@ -355,6 +399,7 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(questionService.getQuestionsByProject).toHaveBeenCalled();
     });
   });
@@ -383,6 +428,22 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockQuestions);
     });
 
+    it("should return 404 if category not found", async () => {
+      await expectError(
+        questionController.getQuestionsByCategory,
+        req,
+        res,
+        () =>
+          questionService.getQuestionsByCategory.mockRejectedValue({
+            code: "P2025",
+          }),
+        404,
+        "Category not found"
+      );
+
+      expect(questionService.getQuestionsByCategory).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         questionController.getQuestionsByCategory,
@@ -395,6 +456,7 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(questionService.getQuestionsByCategory).toHaveBeenCalled();
     });
   });
@@ -423,6 +485,37 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockQuestions);
     });
 
+    it("should return 400 for invalid typeId", async () => {
+      req.params.typeId = "invalid";
+
+      await expectError(
+        questionController.getQuestionsByType,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid typeId"
+      );
+
+      expect(questionService.getQuestionsByType).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if type not found", async () => {
+      await expectError(
+        questionController.getQuestionsByType,
+        req,
+        res,
+        () =>
+          questionService.getQuestionsByType.mockRejectedValue({
+            code: "P2025",
+          }),
+        404,
+        "Type not found"
+      );
+
+      expect(questionService.getQuestionsByType).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         questionController.getQuestionsByType,
@@ -435,21 +528,8 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(questionService.getQuestionsByType).toHaveBeenCalled();
-    });
-
-    it("should return 400 for invalid typeId", async () => {
-      req.params.typeId = "invalid";
-
-      await expectError(
-        questionController.getQuestionsByType,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid typeId"
-      );
-      expect(questionService.getQuestionsByType).not.toHaveBeenCalled();
     });
   });
 
@@ -477,6 +557,37 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockSubQuestions);
     });
 
+    it("should return 400 for invalid parentId", async () => {
+      req.params.questionIdParent = "invalid";
+
+      await expectError(
+        questionController.getSubQuestions,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid questionIdParent"
+      );
+
+      expect(questionService.getSubQuestions).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if parent question not found", async () => {
+      await expectError(
+        questionController.getSubQuestions,
+        req,
+        res,
+        () =>
+          questionService.getSubQuestions.mockRejectedValue({
+            code: "P2025",
+          }),
+        404,
+        "QuestionParent not found"
+      );
+
+      expect(questionService.getSubQuestions).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         questionController.getSubQuestions,
@@ -489,21 +600,8 @@ describe("Question Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(questionService.getSubQuestions).toHaveBeenCalled();
-    });
-
-    it("should return 400 for invalid parentId", async () => {
-      req.params.questionIdParent = "invalid";
-
-      await expectError(
-        questionController.getSubQuestions,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid questionIdParent"
-      );
-      expect(questionService.getSubQuestions).not.toHaveBeenCalled();
     });
   });
 });
