@@ -26,7 +26,7 @@ EXEMPLES utilisés lors de la conception pour voir les différents états.
  placeholder="Placeholder"
  leftIcon={
     <span>
-        <FontAwesomeIcon icon={faSearch}/>
+        <FontAwesomeIcon icon={Icons.search}/>
     </span>}/>
 
 <Input
@@ -34,5 +34,5 @@ EXEMPLES utilisés lors de la conception pour voir les différents états.
  placeholder="Placeholder"
  rightIcon={
     <span className="cursor-pointer">
-        <FontAwesomeIcon icon={faEye}/>
+        <FontAwesomeIcon icon={Icons.eye}/>
     </span>}/>

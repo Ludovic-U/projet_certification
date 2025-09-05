@@ -3,8 +3,7 @@
 import * as React from "react";
 import { PaginationProps } from "./pagination.types";
 import { Button } from "../Button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 export const Pagination: React.FC<PaginationProps> = ({
     currentPage,
@@ -24,7 +23,7 @@ export const Pagination: React.FC<PaginationProps> = ({
              disabled={currentPage === 1}
              onClick={() => onPageChange(currentPage - 1)}
             >
-                <FontAwesomeIcon icon={faChevronLeft}/>
+                <FontAwesomeIcon icon={Icons.chevronLeft}/>
             </Button>
 
             {pages.map((page) => (
@@ -43,7 +42,7 @@ export const Pagination: React.FC<PaginationProps> = ({
              disabled={currentPage === totalPages}
              onClick={() => onPageChange(currentPage + 1)}
             >
-                <FontAwesomeIcon icon={faChevronRight}/>
+                <FontAwesomeIcon icon={Icons.chevronRight}/>
             </Button>
 
         </div>

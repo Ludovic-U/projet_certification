@@ -2,11 +2,7 @@
 
 import React, { forwardRef } from "react";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faChevronRight,
-    
-} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 import { SideNavProps } from "./sidenav.types";
 import { Tooltip, Button } from "@/components/ui";
@@ -31,7 +27,7 @@ export const SideNav = forwardRef<HTMLElement, SideNavProps> (
          onClick={toggle}
          icon={
             <FontAwesomeIcon
-             icon={faChevronRight}
+             icon={Icons.chevronRight}
              size="sm"
              className={`transition-transform duration-300
              ${isOpen ? "rotate-180" : ""}`}
@@ -50,7 +46,7 @@ export const SideNav = forwardRef<HTMLElement, SideNavProps> (
                             size={isOpen ? "sm" : "xs"}
                             icon={
                                 <FontAwesomeIcon
-                                    icon={faUserTie}
+                                    icon={Icons.userTie}
                                     className="hover:text-lighthover"
                                     size="lg"
                                 />
@@ -67,7 +63,7 @@ export const SideNav = forwardRef<HTMLElement, SideNavProps> (
                             size={isOpen ? "sm" : "xs"}
                             icon={
                                 <FontAwesomeIcon
-                                    icon={faBriefcase}
+                                    icon={Icons.briefcase}
                                     className="hover:text-lighthover"
                                     size="lg"
                                 />
@@ -84,7 +80,7 @@ export const SideNav = forwardRef<HTMLElement, SideNavProps> (
                             size={isOpen ? "sm" : "xs"}
                             icon={
                                 <FontAwesomeIcon
-                                    icon={faUsers}
+                                    icon={Icons.users}
                                     className="hover:text-lighthover"
                                     size="lg"
                                 />
@@ -101,7 +97,7 @@ export const SideNav = forwardRef<HTMLElement, SideNavProps> (
                             size={isOpen ? "sm" : "xs"}
                             icon={
                                 <FontAwesomeIcon
-                                    icon={faProjectDiagram}
+                                    icon={Icons.projectDiagram}
                                     className="hover:text-lighthover"
                                     size="lg"
                                 />

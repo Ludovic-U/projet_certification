@@ -12,7 +12,7 @@
     placeholder="Placeholder"
     rightIcon={
         <span className="cursor-pointer">
-            <FontAwesomeIcon icon={faEye}/>
+            <FontAwesomeIcon icon={Icons.eye}/>
         </span>}/>
 </Tooltip>
 

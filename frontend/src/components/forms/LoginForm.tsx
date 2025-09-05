@@ -3,14 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faEnvelope,
-    faLock,
-    faEye,
-    faEyeSlash
-} from "@fortawesome/free-solid-svg-icons";
-
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { Input, Button } from "@/components/ui"
 
 type LoginFormInputs = {
@@ -58,7 +51,7 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
                 error={errors.email?.message}
                 leftIcon={
                     <span className="text-grey">
-                        <FontAwesomeIcon icon={faEnvelope} />
+                        <FontAwesomeIcon icon={Icons.envelope} />
                     </span>
                 }
                 />
@@ -82,17 +75,17 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
                         onClick={() =>
                             setShowPassword(!showPassword)
                         }>
-                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye}/>
+                            <FontAwesomeIcon icon={showPassword ? Icons.eyeSlash : Icons.eye}/>
                         </span>
                     ) : (
                         <span className="cursor-default opacity-50">
-                            <FontAwesomeIcon icon={faEye} />
+                            <FontAwesomeIcon icon={Icons.eye} />
                         </span>
                     )
                 }
                 leftIcon={
                     <span className="text-grey">
-                        <FontAwesomeIcon icon={faLock} />
+                        <FontAwesomeIcon icon={Icons.lock} />
                     </span>
                 }
                 />

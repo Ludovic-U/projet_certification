@@ -4,8 +4,7 @@
 
 import { useState } from "react";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 import Header from "@/components/layout/Header"
 import { SideNav } from "@/components/layout"
@@ -23,7 +22,7 @@ export default function Home() {
     const CirclePlus = () => (
         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary group-hover:bg-primaryhover transition-colors duration-200 ease-in-out">
             <FontAwesomeIcon
-            icon={faPlus}
+            icon={Icons.plus}
             className="text-light group-hover:text-lighthover"
             size="xl"/>
         </div>
@@ -98,7 +97,7 @@ export default function Home() {
                              placeholder="Rechercher dans cette liste"
                              leftIcon={
                                 <span>
-                                    <FontAwesomeIcon icon={faSearch}/>
+                                    <FontAwesomeIcon icon={Icons.search}/>
                                 </span>
                              }
                              className="min-w-70 max-w-80"

@@ -7,8 +7,7 @@ import {
     checkboxBoxVariants,
 } from "./checkbox.variants";
 import { CheckboxProps } from "./checkbox.types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon, Icons } from "@/lib/icons"
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     (
@@ -59,7 +58,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
                     <div className={checkboxBoxVariants({ size })}>
                         <FontAwesomeIcon
-                            icon={faCheck}
+                            icon={Icons.check}
                             className="text-light"
                         />
                     </div>

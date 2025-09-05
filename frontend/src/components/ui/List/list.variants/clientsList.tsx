@@ -1,7 +1,7 @@
-import { Column } from "../List";
-import { Button } from "../../Button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { Column } from "../index";
+import { Button } from "@/components/ui";
+
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 export type Client = {
   id: number;
@@ -38,8 +38,8 @@ export const clientsList: Column<Client>[] = [
           label: "Actions",
           render: () => (
             <Button size="sm" variant="iconPrimary">
-                <FontAwesomeIcon icon={faGear} />
-                Paramètres
+                <FontAwesomeIcon icon={Icons.gear} />
+                <span className="hidden md:inline">Paramètres</span>
             </Button>
           ),
         },

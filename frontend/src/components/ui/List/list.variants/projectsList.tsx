@@ -1,7 +1,6 @@
 import { Column } from "../index";
 import { Button } from "../../Button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 export type Project = {
   id: number;
@@ -39,7 +38,7 @@ export const projectsList: Column<Project>[] = [
             label: "Contributeurs",
             render: (item) => (
                 <span className="font-bold">
-                    <FontAwesomeIcon className="mr-2" icon={faUsers} />
+                    <FontAwesomeIcon className="mr-2" icon={Icons.users} />
                     {item.contributors}
                 </span>
             )
@@ -49,7 +48,7 @@ export const projectsList: Column<Project>[] = [
             label: "Actions",
             render: () => (
                 <Button size="sm" variant="iconPrimary">
-                    <FontAwesomeIcon icon={faGear} />
+                    <FontAwesomeIcon icon={Icons.gear} />
                     Paramètres
                 </Button>
             ),
