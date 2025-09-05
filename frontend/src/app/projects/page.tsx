@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 
-import { FontAwesomeIcon, Icons } from "@/lib/icons";
+import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
 
 import Header from "@/components/layout/Header"
 import { SideNav } from "@/components/layout"
@@ -18,15 +18,6 @@ import {
 
 export default function Home() {
     const [isSideNavOpen, setIsSideNavOpen] = useState(false);
-
-    const CirclePlus = () => (
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary group-hover:bg-primaryhover transition-colors duration-200 ease-in-out">
-            <FontAwesomeIcon
-            icon={Icons.plus}
-            className="text-light group-hover:text-lighthover"
-            size="xl"/>
-        </div>
-    );
 
     const projects = [
         { id: 1, title: "Projet lamazeazebda", type: "AAP", step:"REPORTING (1/4)", contributors: 12},

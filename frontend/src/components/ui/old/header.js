@@ -3,8 +3,8 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { Button } from "../Button";
-import { Card } from "../Card"
+
+import { Button } from "../index"
 import { Bell, ArrowLeft } from "lucide-react";
 
 export default function Header() {

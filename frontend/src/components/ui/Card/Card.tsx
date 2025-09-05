@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import { cn } from "@/utils/utils";
-import { Button } from "../Button";
-import { ProgressBar } from "../ProgressBar/ProgressBar";
-import { CardProps } from "./card.types"
+
+import { ProgressBar, Button, CardProps} from "@/components/ui";
 
 export const Card: React.FC<CardProps> = ({
     title,

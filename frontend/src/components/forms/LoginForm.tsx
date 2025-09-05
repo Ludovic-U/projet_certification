@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { FontAwesomeIcon, Icons } from "@/lib/icons";
+import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
 import { Input, Button } from "@/components/ui"
 
 type LoginFormInputs = {

@@ -13,7 +13,8 @@ import {
     faLock,
     faEye,
     faEyeSlash,
-    faCheck
+    faCheck,
+    faHome
 } from "@fortawesome/free-solid-svg-icons"
 
 export const Icons = {
@@ -31,6 +32,7 @@ export const Icons = {
     eye: faEye,
     eyeSlash: faEyeSlash,
     check: faCheck,
+    home: faHome
 }
 
 export { FontAwesomeIcon }

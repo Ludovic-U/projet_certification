@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/utils/utils";
+
 import { ProgressBarProps } from "./progressBar.types";
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({

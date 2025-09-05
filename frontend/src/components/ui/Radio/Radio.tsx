@@ -2,7 +2,8 @@
 
 import { forwardRef, useId } from "react";
 import { cn } from "@/utils/utils";
-import { radioVariants, RadioProps, useRadioGroup } from "./index";
+
+import { radioVariants, RadioProps, useRadioGroup } from "@/components/ui";
 
 export const Radio = forwardRef<HTMLInputElement, RadioProps>(
     (

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 
 import LoginForm from "@/components/forms/LoginForm";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
 
 import { Card } from "@/components/ui/Card";
 import { Pagination } from "@/components/ui/Pagination";
@@ -37,15 +37,6 @@ const startIndex = (currentPage - 1) * itemsPerPage;
 const endIndex = startIndex + itemsPerPage;
 const visibleItems = items.slice(startIndex, endIndex);
 const totalPages = Math.ceil(items.length / itemsPerPage);
-
-const CirclePlus = () => (
-  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary group-hover:bg-primaryhover transition-colors duration-200 ease-in-out">
-    <FontAwesomeIcon
-     icon={faPlus}
-     className="text-light group-hover:text-lighthover"
-     size="xl"/>
-  </div>
-);
 
     const router = useRouter();
     const api = axios.create({
@@ -279,3 +270,4 @@ const CirclePlus = () => (
                 />
             </div>
         </div>
+}

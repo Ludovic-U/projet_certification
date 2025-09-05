@@ -1,5 +1,4 @@
-import { Column } from "../index";
-import { Button } from "../../Button";
+import { Column, Button } from "@/components/ui";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 export type Project = {

@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { PaginationProps } from "./pagination.types";
-import { Button } from "../Button";
+
+import { Button } from "@/components/ui";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
+
+import { PaginationProps } from "./pagination.types";
 
 export const Pagination: React.FC<PaginationProps> = ({
     currentPage,

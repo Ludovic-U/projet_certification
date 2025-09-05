@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/utils/utils";
+
 import { TooltipProps } from "./tooltip.types";
 
 export const Tooltip: React.FC<TooltipProps> = ({

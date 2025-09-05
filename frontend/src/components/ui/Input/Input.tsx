@@ -2,8 +2,8 @@
 
 import { forwardRef, useId } from "react";
 import { cn } from "@/utils/utils";
-import { inputVariants, InputProps } from "./index";
-import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+
+import { inputVariants, InputProps, LoadingSpinner } from "@/components/ui";
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
     (

@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { cn } from "@/utils/utils";
-import { ToggleProps } from "./toggle.types";
-import { Input } from "../Input";
+
+import { Input, ToggleProps } from "@/components/ui";
 
 export const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
     (

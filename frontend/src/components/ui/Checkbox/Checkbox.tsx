@@ -2,11 +2,13 @@
 
 import { forwardRef, useId } from "react";
 import { cn } from "@/utils/utils";
+
 import {
     checkboxVariants,
     checkboxBoxVariants,
-} from "./checkbox.variants";
-import { CheckboxProps } from "./checkbox.types";
+    CheckboxProps
+} from "@/components/ui";
+
 import { FontAwesomeIcon, Icons } from "@/lib/icons"
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(

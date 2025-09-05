@@ -1,7 +1,6 @@
-import { Column } from "../index";
-import { Button } from "@/components/ui";
-
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
+
+import { Column, Button } from "@/components/ui";
 
 export type Client = {
   id: number;
@@ -39,7 +38,7 @@ export const clientsList: Column<Client>[] = [
           render: () => (
             <Button size="sm" variant="iconPrimary">
                 <FontAwesomeIcon icon={Icons.gear} />
-                <span className="hidden md:inline">Paramètres</span>
+                Paramètres
             </Button>
           ),
         },

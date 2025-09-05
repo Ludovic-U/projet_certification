@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from "react";
 
-import { FontAwesomeIcon, Icons } from "@/lib/icons";
+import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
 
 import { SideNavProps } from "./sidenav.types";
 import { Tooltip, Button } from "@/components/ui";

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import { RadioGroupProps } from "./index";
+import { RadioGroupProps } from "@/components/ui";
 
 const RadioGroupContext = createContext<{
     name: string;
@@ -16,6 +16,7 @@ export const RadioGroup = ({
     onValueChange,
     children,
     className,
+
 }: RadioGroupProps) => {
     const [internalValue, setInternalValue] = useState(defaultValue);
 
