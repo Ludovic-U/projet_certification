@@ -3,7 +3,7 @@ import "../styles/globals.css";
 import { oswald, notoSans, didactGothic } from "./fonts";
 
 import Header from "../components/layout/Header"
-import SideNav from "../components/layout/SideNav"
+import SideNav from "../components/layout/SideNav_old"
 
 export const metadata: Metadata = {
   title: "F2S_APP",

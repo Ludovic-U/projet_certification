@@ -1,13 +1,13 @@
 "use client";
 import React from 'react';
-import { Button } from "@/components/ui/Button"
-// import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { cn } from "@/utils/utils"
 import {
     ArrowLeft,
     LogOut,
     ChevronRight
 } from 'lucide-react';
-import { cn } from "@/utils/utils"
+
+import { Button } from "@/components/ui"
 
 // Remplace l'interface TypeScript par un objet JavaScript simple
 const etapeProjetModel = {

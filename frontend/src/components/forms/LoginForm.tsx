@@ -11,8 +11,7 @@ import {
     faEyeSlash
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
+import { Input, Button } from "@/components/ui"
 
 type LoginFormInputs = {
     email: string;

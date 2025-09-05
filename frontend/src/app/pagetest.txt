@@ -9,14 +9,16 @@ import LoginForm from "@/components/forms/LoginForm";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { Card } from "@/components/ui/Card";
 import { Pagination } from "@/components/ui/Pagination";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui";
 import { RadioGroup } from "@/components/ui/RadioGroup";
 import { Toggle } from "@/components/ui/Toggle";
 import { faGear, faPlus, faEye, faChevronLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Input } from "@/components/ui/Input";
+import { projectsList } from "@/components/ui/list.variants/projectsList";
 import { Radio } from "@/components/ui/Radio";
 
 type LoginFormInputs = {
@@ -100,13 +102,13 @@ const CirclePlus = () => (
         description="Générer et structurer les idées initiales."
         progress={40}
         buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>
+        onButtonClick={() => console.log("ok")}/>
 
         <Card
         title="proposition des valeurs"
         progress={90}
         buttonLabel="voir"
-        onButtonClick={() => handleClick()}/>
+        onButtonClick={() => console.log("ok")}/>
 
     </div>
     
@@ -117,7 +119,7 @@ const CirclePlus = () => (
         progress={40}
         color="#BFD1BF"
         buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>
+        onButtonClick={() => console.log("ok")}/>
 
         <Card
         title="conception"
@@ -125,7 +127,7 @@ const CirclePlus = () => (
         progress={40}
         color="#ACBFA9"
         buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>
+        onButtonClick={() => console.log("ok")}/>
 
         <Card
         title="Pilotage"
@@ -133,7 +135,7 @@ const CirclePlus = () => (
         progress={40}
         color="#83A18F"
         buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>
+        onButtonClick={() => console.log("ok")}/>
 
         <Card
         title="Reporting"
@@ -141,49 +143,9 @@ const CirclePlus = () => (
         progress={40}
         color="#6D8E76"
         buttonLabel="ouvrir"
-        onButtonClick={() => handleClick()}/>        
+        onButtonClick={() => console.log("ok")}/>        
 
     </div>
-
-    <div className="mt-10 w-[70%]">
-            <ProjectList
-             data={[
-                {
-                    id: "1",
-                    title: "Projet Lambda",
-                    type: "AAP",
-                    step: "IDEATION (3/4 complété)",
-                    contributors: 2,
-                    hasSettings:true,
-                },
-               {
-                    id: "2",
-                    title: "Projet Lambda azrzr",
-                    type: "AAP",
-                    step: "IDEATION (0/4 complété)",
-                    contributors: 0,
-                    hasSettings: true,
-                },
-               {
-                    id: "3",
-                    title: "Projet Lambda",
-                    type: "AAdzaP",
-                    step: "CONCEPTION (2/4 complété)",
-                    contributors: 8,
-                    hasSettings: true,
-                },
-               {
-                    id: "4",
-                    title: "Projet Lafezrzmbda",
-                    type: "AAP",
-                    step: "PILOTAGE (6/8 complété)",
-                    contributors: 13,
-                     hasSettings:true,
-                },
-             ]}/>
-             <hr className="m-10"/>
-        </div>
-
 
         <div className="flex flex-col w-screen items-center h-fit gap-10 py-8 bg-lighthover">
             
@@ -317,28 +279,3 @@ const CirclePlus = () => (
                 />
             </div>
         </div>
-
-        <main className="h-screen w-screen justify-center bg-light flex flex-col items-center">   
-            <section className="w-[25vw] min-w-[350px] bg-white flex flex-col items-center text-dark rounded-xl shadow-500base p-8">
-                <img
-                    src="/logo-sm.jpeg"
-                    className="rounded-full w-12 h-12"
-                    alt="logo"
-                />
-                <h1 className="cursor-default font-oswald font-medium text-2xl my-3">
-                    BIENVENUE
-                </h1>
-                <p className="cursor-default font-didact text-center text-greydarker text-lg mb-8">
-                    Entrez vos identifiants pour vous connecter.
-                </p>
-
-                <LoginForm
-                 onSubmit={onSubmit}
-                 isLoading={isLoading}
-                 apiError={apiError}
-                />
-            </section>
-        </main>
-</>
-    );
-}
