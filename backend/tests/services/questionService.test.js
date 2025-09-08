@@ -36,7 +36,7 @@ describe("Question Service", () => {
         category: "General",
         numberOfSelectionableOpt: 0,
         isRelevant: true,
-        hasMultipleResponse: false,
+        hasMultipleOpenResponse: false,
         questionIdParent: null,
       };
       const mockCreatedQuestion = { questionId: 1, ...mockQuestionData };
@@ -69,7 +69,7 @@ describe("Question Service", () => {
         category: "General",
         numberOfSelectionableOpt: 0,
         isRelevant: true,
-        hasMultipleResponse: false,
+        hasMultipleOpenResponse: false,
         questionIdParent: null,
       };
       const mockError = new Error("Database error");
@@ -98,7 +98,7 @@ describe("Question Service", () => {
           category: "General",
           numberOfSelectionableOpt: 0,
           isRelevant: true,
-          hasMultipleResponse: false,
+          hasMultipleOpenResponse: false,
           questionIdParent: null,
         },
         {
@@ -107,7 +107,7 @@ describe("Question Service", () => {
           category: "Specific",
           numberOfSelectionableOpt: 2,
           isRelevant: false,
-          hasMultipleResponse: true,
+          hasMultipleOpenResponse: true,
           questionIdParent: null,
         },
       ];
@@ -144,7 +144,7 @@ describe("Question Service", () => {
         category: "Updated Category",
         numberOfSelectionableOpt: 1,
         isRelevant: false,
-        hasMultipleResponse: true,
+        hasMultipleOpenResponse: true,
         questionIdParent: null,
       };
       const mockUpdatedQuestion = { questionId: questionId, ...mockUpdateData };
@@ -170,7 +170,8 @@ describe("Question Service", () => {
         category: "None",
         numberOfSelectionableOpt: 0,
         isRelevant: false,
-        hasMultipleResponse: false,
+        hasMultipleOpenResponse: false,
+        shouldMultiply: false,
         questionIdParent: null,
       };
 
@@ -196,7 +197,8 @@ describe("Question Service", () => {
         category: "Error",
         numberOfSelectionableOpt: 0,
         isRelevant: false,
-        hasMultipleResponse: false,
+        hasMultipleOpenResponse: false,
+        shouldMultiply: false,
         questionIdParent: null,
       };
 
@@ -278,7 +280,8 @@ describe("Question Service", () => {
         category: "General",
         numberOfSelectionableOpt: 0,
         isRelevant: true,
-        hasMultipleResponse: false,
+        hasMultipleOpenResponse: false,
+        shouldMultiply: false,
         questionIdParent: null,
       };
 
@@ -443,7 +446,8 @@ describe("Question Service", () => {
           category: "General",
           numberOfSelectionableOpt: 0,
           isRelevant: true,
-          hasMultipleResponse: false,
+          hasMultipleOpenResponse: false,
+          shouldMultiply: false,
           questionIdParent: null,
         },
         {
@@ -452,7 +456,8 @@ describe("Question Service", () => {
           category: "General",
           numberOfSelectionableOpt: 2,
           isRelevant: false,
-          hasMultipleResponse: true,
+          hasMultipleOpenResponse: true,
+          shouldMultiply: false,
           questionIdParent: null,
         },
       ];
@@ -527,7 +532,8 @@ describe("Question Service", () => {
           category: "General",
           numberOfSelectionableOpt: 0,
           isRelevant: true,
-          hasMultipleResponse: false,
+          hasMultipleOpenResponse: false,
+          shouldMultiply: false,
           questionIdParent: null,
         },
         {
@@ -536,7 +542,8 @@ describe("Question Service", () => {
           category: "Specific",
           numberOfSelectionableOpt: 2,
           isRelevant: false,
-          hasMultipleResponse: true,
+          hasMultipleOpenResponse: true,
+          shouldMultiply: false,
           questionIdParent: null,
         },
       ];
@@ -611,7 +618,8 @@ describe("Question Service", () => {
           category: "General",
           numberOfSelectionableOpt: 0,
           isRelevant: true,
-          hasMultipleResponse: false,
+          hasMultipleOpenResponse: false,
+          shouldMultiply: false,
           questionIdParent: 1,
         },
         {
@@ -620,7 +628,8 @@ describe("Question Service", () => {
           category: "Specific",
           numberOfSelectionableOpt: 2,
           isRelevant: false,
-          hasMultipleResponse: true,
+          hasMultipleOpenResponse: true,
+          shouldMultiply: false,
           questionIdParent: 1,
         },
       ];

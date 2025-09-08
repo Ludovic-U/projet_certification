@@ -34,7 +34,8 @@ describe("Question Controller", () => {
           category: "General",
           numberOfSelectionableOpt: 2,
           isRelevant: true,
-          hasMultipleResponse: false,
+          hasMultipleOpenResponse: false,
+          shouldMultiply: false,
           questionIdParent: null,
         },
       };
@@ -51,7 +52,8 @@ describe("Question Controller", () => {
         category: req.body.category,
         numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
         isRelevant: req.body.isRelevant,
-        hasMultipleResponse: req.body.hasMultipleResponse,
+        hasMultipleOpenResponse: req.body.hasMultipleOpenResponse,
+        shouldMultiply: req.body.shouldMultiply,
         questionIdParent: req.body.questionIdParent,
       });
       expect(res.status).toHaveBeenCalledWith(201);
@@ -126,7 +128,8 @@ describe("Question Controller", () => {
           category: "Updated Category",
           numberOfSelectionableOpt: 3,
           isRelevant: false,
-          hasMultipleResponse: true,
+          hasMultipleOpenResponse: true,
+          shouldMultiply: false,
           questionIdParent: null,
         },
       };
@@ -145,7 +148,8 @@ describe("Question Controller", () => {
           category: req.body.category,
           numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
           isRelevant: req.body.isRelevant,
-          hasMultipleResponse: req.body.hasMultipleResponse,
+          hasMultipleOpenResponse: req.body.hasMultipleOpenResponse,
+          shouldMultiply: req.body.shouldMultiply,
           questionIdParent: req.body.questionIdParent,
         }
       );

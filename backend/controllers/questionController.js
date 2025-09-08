@@ -7,7 +7,8 @@ const questionService = require("../services/questionService");
  * - category: String
  * - numberOfSelectionableOpt: Number (optional)
  * - isRelevant: Boolean (optional)
- * - hasMultipleResponse: Boolean (optional)
+ * - hasMultipleOpenResponse: Boolean (optional)
+ * - shouldMultiply: Boolean (optional)
  * - questionIdParent: Number (optional)
  */
 module.exports.createQuestion = async (req, res) => {
@@ -16,7 +17,8 @@ module.exports.createQuestion = async (req, res) => {
     category,
     numberOfSelectionableOpt,
     isRelevant,
-    hasMultipleResponse,
+    hasMultipleOpenResponse,
+    shouldMultiply,
     questionIdParent,
   } = req.body;
 
@@ -26,7 +28,8 @@ module.exports.createQuestion = async (req, res) => {
       category,
       numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
       isRelevant: isRelevant ?? false,
-      hasMultipleResponse: hasMultipleResponse ?? false,
+      hasMultipleOpenResponse: hasMultipleOpenResponse ?? false,
+      shouldMultiply: shouldMultiply ?? false,
       questionIdParent: questionIdParent ?? null,
     });
     res.status(201).json(question);
@@ -67,7 +70,8 @@ module.exports.updateQuestion = async (req, res) => {
     category,
     numberOfSelectionableOpt,
     isRelevant,
-    hasMultipleResponse,
+    hasMultipleOpenResponse,
+    shouldMultiply,
     questionIdParent,
   } = req.body;
 
@@ -77,7 +81,8 @@ module.exports.updateQuestion = async (req, res) => {
       category,
       numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
       isRelevant: isRelevant ?? false,
-      hasMultipleResponse: hasMultipleResponse ?? false,
+      hasMultipleOpenResponse: hasMultipleOpenResponse ?? false,
+      shouldMultiply: shouldMultiply ?? false,
       questionIdParent: questionIdParent ?? null,
     });
     res.status(200).json(question);
