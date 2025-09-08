@@ -214,7 +214,8 @@ model Question {
   category                 String
   numberOfSelectionableOpt Int?
   isRelevant               Boolean?
-  hasMultipleResponse      Boolean?
+  hasMultipleOpenResponse  Boolean?
+  shouldMultiply           Boolean?
   questionIdParent         Int?
 
   types     TypeQuestion[]
