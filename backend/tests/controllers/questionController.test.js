@@ -2,7 +2,7 @@
  * @fileoverview
  * Unit tests for the Question Controller.
  * Covers all controller endpoints: create, read, update, delete, and query by various parameters.
- * Uses Jest and mocks the questionService layer.
+ * Uses Jest and mocks the questionService layer and mock validateId function.
  */
 
 const questionController = require("../../controllers/questionController");
@@ -142,7 +142,7 @@ describe("Question Controller", () => {
       await questionController.updateQuestion(req, res, next);
 
       expect(questionService.updateQuestion).toHaveBeenCalledWith(
-        parseInt(req.params.questionId),
+        req.params.questionId,
         {
           label: req.body.label,
           category: req.body.category,
@@ -217,7 +217,7 @@ describe("Question Controller", () => {
       await questionController.deleteQuestion(req, res, next);
 
       expect(questionService.deleteQuestion).toHaveBeenCalledWith(
-        parseInt(req.params.questionId)
+        req.params.questionId
       );
       expect(res.status).toHaveBeenCalledWith(204);
       expect(res.send).toHaveBeenCalled();
@@ -284,7 +284,7 @@ describe("Question Controller", () => {
       await questionController.getQuestionById(req, res, next);
 
       expect(questionService.getQuestionById).toHaveBeenCalledWith(
-        parseInt(req.params.questionId)
+        req.params.questionId
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockQuestion);
@@ -483,7 +483,7 @@ describe("Question Controller", () => {
       await questionController.getQuestionsByType(req, res, next);
 
       expect(questionService.getQuestionsByType).toHaveBeenCalledWith(
-        parseInt(req.params.typeId)
+        req.params.typeId
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockQuestions);
@@ -555,7 +555,7 @@ describe("Question Controller", () => {
       await questionController.getSubQuestions(req, res, next);
 
       expect(questionService.getSubQuestions).toHaveBeenCalledWith(
-        parseInt(req.params.questionIdParent)
+        req.params.questionIdParent
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockSubQuestions);

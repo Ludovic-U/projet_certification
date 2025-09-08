@@ -1,4 +1,5 @@
 const questionService = require("../services/questionService");
+const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new question.
@@ -21,6 +22,11 @@ module.exports.createQuestion = async (req, res) => {
     shouldMultiply,
     questionIdParent,
   } = req.body;
+
+  // Check label or category to be not null
+  if (!label || !category) {
+    return res.status(400).json({ error: "label and category are required" });
+  }
 
   try {
     const question = await questionService.createQuestion({
@@ -61,9 +67,7 @@ module.exports.getAllQuestions = async (_, res) => {
 module.exports.updateQuestion = async (req, res) => {
   const questionId = Number(req.params.questionId);
   // Validate questionId
-  if (!Number.isInteger(questionId) || questionId <= 0) {
-    return res.status(400).json({ error: "Invalid questionId" });
-  }
+  if (!validateId(questionId, "questionId", res)) return;
 
   const {
     label,
@@ -75,15 +79,20 @@ module.exports.updateQuestion = async (req, res) => {
     questionIdParent,
   } = req.body;
 
+  // Check label or category to be not null
+  if (!label || !category) {
+    return res.status(400).json({ error: "label and category are required" });
+  }
+
   try {
     const question = await questionService.updateQuestion(questionId, {
       label,
       category,
-      numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
-      isRelevant: isRelevant ?? false,
-      hasMultipleOpenResponse: hasMultipleOpenResponse ?? false,
-      shouldMultiply: shouldMultiply ?? false,
-      questionIdParent: questionIdParent ?? null,
+      numberOfSelectionableOpt,
+      isRelevant,
+      hasMultipleOpenResponse,
+      shouldMultiply,
+      questionIdParent,
     });
     res.status(200).json(question);
   } catch (error) {
@@ -103,9 +112,7 @@ module.exports.updateQuestion = async (req, res) => {
 module.exports.deleteQuestion = async (req, res) => {
   const questionId = Number(req.params.questionId);
   // Validate questionId
-  if (!Number.isInteger(questionId) || questionId <= 0) {
-    return res.status(400).json({ error: "Invalid questionId" });
-  }
+  if (!validateId(questionId, "questionId", res)) return;
 
   try {
     await questionService.deleteQuestion(questionId);
@@ -127,9 +134,7 @@ module.exports.deleteQuestion = async (req, res) => {
 module.exports.getQuestionById = async (req, res) => {
   const questionId = Number(req.params.questionId);
   // Validate questionId
-  if (!Number.isInteger(questionId) || questionId <= 0) {
-    return res.status(400).json({ error: "Invalid questionId" });
-  }
+  if (!validateId(questionId, "questionId", res)) return;
 
   try {
     const question = await questionService.getQuestionById(questionId);
@@ -151,9 +156,7 @@ module.exports.getQuestionById = async (req, res) => {
 module.exports.getQuestionsByProject = async (req, res) => {
   const projectId = Number(req.params.projectId);
   // Validate projectId
-  if (!Number.isInteger(projectId) || projectId <= 0) {
-    return res.status(400).json({ error: "Invalid projectId" });
-  }
+  if (!validateId(projectId, "projectId", res)) return;
 
   try {
     const questions = await questionService.getQuestionsByProject(projectId);
@@ -194,9 +197,7 @@ module.exports.getQuestionsByCategory = async (req, res) => {
 module.exports.getQuestionsByType = async (req, res) => {
   const typeId = Number(req.params.typeId);
   // Validate typeId
-  if (!Number.isInteger(typeId) || typeId <= 0) {
-    return res.status(400).json({ error: "Invalid typeId" });
-  }
+  if (!validateId(typeId, "typeId", res)) return;
 
   try {
     const questions = await questionService.getQuestionsByType(typeId);
@@ -218,13 +219,11 @@ module.exports.getQuestionsByType = async (req, res) => {
 module.exports.getSubQuestions = async (req, res) => {
   const questionIdParent = Number(req.params.questionIdParent);
   // Validate questionIdParent
-  if (!Number.isInteger(questionIdParent) || questionIdParent <= 0) {
-    return res.status(400).json({ error: "Invalid questionIdParent" });
-  }
+  if (!validateId(questionIdParent, "questionIdParent", res)) return;
 
   try {
     const subQuestions = await questionService.getSubQuestions(
-      parseInt(questionIdParent)
+      questionIdParent
     );
     res.status(200).json(subQuestions);
   } catch (error) {
