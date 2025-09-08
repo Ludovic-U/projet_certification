@@ -1,5 +1,4 @@
 const { prisma } = require("../prisma/prismaClient");
-const { checkIdExistence } = require("../utils/checkIdExistence");
 
 /**
  * Create a new type.
@@ -26,11 +25,17 @@ module.exports.getAllTypes = async () => {
  * @throws {Error} If the type does not exist.
  */
 module.exports.updateType = async (typeId, data) => {
-  await checkIdExistence(prisma.type, typeId, "Type not found");
-  return await prisma.type.update({
-    where: { typeId: typeId },
-    data,
-  });
+  try {
+    return await prisma.type.update({
+      where: { typeId: typeId },
+      data,
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Type not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -40,10 +45,16 @@ module.exports.updateType = async (typeId, data) => {
  * @throws {Error} If the type does not exist.
  */
 module.exports.deleteType = async (typeId) => {
-  await checkIdExistence(prisma.type, typeId, "Type not found");
-  return await prisma.type.delete({
-    where: { typeId: typeId },
-  });
+  try {
+    return await prisma.type.delete({
+      where: { typeId: typeId },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Type not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -53,13 +64,14 @@ module.exports.deleteType = async (typeId) => {
  * @throws {Error} If the type does not exist.
  */
 module.exports.getTypeById = async (typeId) => {
-  const type = await prisma.type.findUnique({
-    where: { typeId: typeId },
-  });
-  if (!type) {
-    const error = new Error("Type not found");
-    error.status = 404;
+  try {
+    return await prisma.type.findUnique({
+      where: { typeId: typeId },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Type not found");
+    }
     throw error;
   }
-  return type;
 };

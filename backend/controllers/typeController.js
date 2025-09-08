@@ -10,7 +10,7 @@ module.exports.createType = async (req, res) => {
 
   try {
     const type = await typeService.createType({
-      label: label,
+      label,
     });
     res.status(201).json(type);
   } catch (error) {
@@ -39,10 +39,10 @@ module.exports.getAllTypes = async (_, res) => {
  * Responds with the updated type.
  */
 module.exports.updateType = async (req, res) => {
-  const { typeId } = req.params;
-  // Check if typeId is a number
-  if (isNaN(typeId)) {
-    return res.status(400).json({ error: "Bad request: Invalid typeId" });
+  const typeId = Number(req.params.typeId);
+  // Validate typeId
+  if (!Number.isInteger(typeId) || typeId <= 0) {
+    return res.status(400).json({ error: "Invalid typeId" });
   }
   const { label } = req.body;
 
@@ -50,7 +50,7 @@ module.exports.updateType = async (req, res) => {
     const type = await typeService.updateType(typeId, { label: label });
     res.status(200).json(type);
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Type not found" });
     }
     console.error("Error updating type:", error);
@@ -64,17 +64,17 @@ module.exports.updateType = async (req, res) => {
  * Responds with 204 No content on success.
  */
 module.exports.deleteType = async (req, res) => {
-  const { typeId } = req.params;
-  // Check if typeId is a number
-  if (isNaN(typeId)) {
-    return res.status(400).json({ error: "Bad request: Invalid typeId" });
+  const typeId = Number(req.params.typeId);
+  // Validate typeId
+  if (!Number.isInteger(typeId) || typeId <= 0) {
+    return res.status(400).json({ error: "Invalid typeId" });
   }
 
   try {
     await typeService.deleteType(typeId);
     res.status(204).send();
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Type not found" });
     }
     console.error("Error deleting type:", error);
@@ -88,17 +88,17 @@ module.exports.deleteType = async (req, res) => {
  * Responds with the type object.
  */
 module.exports.getTypeById = async (req, res) => {
-  const { typeId } = req.params;
-  // Check if typeId is a number
-  if (isNaN(typeId)) {
-    return res.status(400).json({ error: "Bad request: Invalid typeId" });
+  const typeId = Number(req.params.typeId);
+  // Validate typeId
+  if (!Number.isInteger(typeId) || typeId <= 0) {
+    return res.status(400).json({ error: "Invalid typeId" });
   }
 
   try {
     const type = await typeService.getTypeById(typeId);
     res.status(200).json(type);
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Type not found" });
     }
     console.error("Error fetching type:", error);

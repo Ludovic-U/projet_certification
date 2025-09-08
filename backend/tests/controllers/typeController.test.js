@@ -19,7 +19,6 @@ describe("Type Controller", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     console.error = jest.fn();
-
     res = createMockResponse();
     next = jest.fn();
   });
@@ -56,6 +55,7 @@ describe("Type Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(typeService.createType).toHaveBeenCalled();
     });
   });
@@ -95,6 +95,7 @@ describe("Type Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(typeService.getAllTypes).toHaveBeenCalled();
     });
   });
@@ -124,6 +125,34 @@ describe("Type Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockUpdatedType);
     });
 
+    it("should return 400 for invalid typeId", async () => {
+      req.params.typeId = "invalid";
+
+      await expectError(
+        typeController.updateType,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid typeId"
+      );
+
+      expect(typeService.updateType).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if type not found", async () => {
+      await expectError(
+        typeController.updateType,
+        req,
+        res,
+        () => typeService.updateType.mockRejectedValue({ code: "P2025" }),
+        404,
+        "Type not found"
+      );
+
+      expect(typeService.updateType).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         typeController.updateType,
@@ -134,32 +163,7 @@ describe("Type Controller", () => {
         500,
         "Internal server error"
       );
-      expect(typeService.updateType).toHaveBeenCalled();
-    });
 
-    it("should return 400 for invalid typeId", async () => {
-      req.params.typeId = "invalid";
-
-      await expectError(
-        typeController.updateType,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid typeId"
-      );
-      expect(typeService.updateType).not.toHaveBeenCalled();
-    });
-
-    it("should return 404 if type not found", async () => {
-      await expectError(
-        typeController.updateType,
-        req,
-        res,
-        () => typeService.updateType.mockRejectedValue({ status: 404 }),
-        404,
-        "Type not found"
-      );
       expect(typeService.updateType).toHaveBeenCalled();
     });
   });
@@ -184,6 +188,34 @@ describe("Type Controller", () => {
       expect(res.send).toHaveBeenCalled();
     });
 
+    it("should return 400 for invalid typeId", async () => {
+      req.params.typeId = "invalid";
+
+      await expectError(
+        typeController.deleteType,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid typeId"
+      );
+
+      expect(typeService.deleteType).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if type not found", async () => {
+      await expectError(
+        typeController.deleteType,
+        req,
+        res,
+        () => typeService.deleteType.mockRejectedValue({ code: "P2025" }),
+        404,
+        "Type not found"
+      );
+
+      expect(typeService.deleteType).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         typeController.deleteType,
@@ -194,32 +226,7 @@ describe("Type Controller", () => {
         500,
         "Internal server error"
       );
-      expect(typeService.deleteType).toHaveBeenCalled();
-    });
 
-    it("should return 400 for invalid typeId", async () => {
-      req.params.typeId = "invalid";
-
-      await expectError(
-        typeController.deleteType,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid typeId"
-      );
-      expect(typeService.deleteType).not.toHaveBeenCalled();
-    });
-
-    it("should return 404 if type not found", async () => {
-      await expectError(
-        typeController.deleteType,
-        req,
-        res,
-        () => typeService.deleteType.mockRejectedValue({ status: 404 }),
-        404,
-        "Type not found"
-      );
       expect(typeService.deleteType).toHaveBeenCalled();
     });
   });
@@ -246,6 +253,37 @@ describe("Type Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockType);
     });
 
+    it("should return 400 for invalid typeId", async () => {
+      req.params.typeId = "invalid";
+
+      await expectError(
+        typeController.getTypeById,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid typeId"
+      );
+
+      expect(typeService.getTypeById).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if type not found", async () => {
+      await expectError(
+        typeController.getTypeById,
+        req,
+        res,
+        () =>
+          typeService.getTypeById.mockRejectedValue({
+            code: "P2025",
+          }),
+        404,
+        "Type not found"
+      );
+
+      expect(typeService.getTypeById).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         typeController.getTypeById,
@@ -258,35 +296,7 @@ describe("Type Controller", () => {
         500,
         "Internal server error"
       );
-      expect(typeService.getTypeById).toHaveBeenCalled();
-    });
 
-    it("should return 400 for invalid typeId", async () => {
-      req.params.typeId = "invalid";
-
-      await expectError(
-        typeController.getTypeById,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid typeId"
-      );
-      expect(typeService.getTypeById).not.toHaveBeenCalled();
-    });
-
-    it("should return 404 if type not found", async () => {
-      await expectError(
-        typeController.getTypeById,
-        req,
-        res,
-        () =>
-          typeService.getTypeById.mockRejectedValue({
-            status: 404,
-          }),
-        404,
-        "Type not found"
-      );
       expect(typeService.getTypeById).toHaveBeenCalled();
     });
   });

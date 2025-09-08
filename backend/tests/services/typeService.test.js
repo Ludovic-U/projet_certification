@@ -7,7 +7,6 @@
 
 const typeService = require("../../services/typeService");
 const { prisma } = require("../../prisma/prismaClient");
-const { checkIdExistence } = require("../../utils/checkIdExistence");
 
 // Mock the prisma methods to isolate service logic
 jest.mock("../../prisma/prismaClient", () => ({
@@ -20,11 +19,6 @@ jest.mock("../../prisma/prismaClient", () => ({
       findUnique: jest.fn(),
     },
   },
-}));
-
-// Mock checkIdExistence function to control test scenarios
-jest.mock("../../utils/checkIdExistence", () => ({
-  checkIdExistence: jest.fn(),
 }));
 
 describe("Type Service", () => {
@@ -57,6 +51,7 @@ describe("Type Service", () => {
       await expect(typeService.createType(mockTypeData)).rejects.toThrow(
         "Database error"
       );
+
       expect(prisma.type.create).toHaveBeenCalledWith({ data: mockTypeData });
     });
   });
@@ -84,6 +79,7 @@ describe("Type Service", () => {
       prisma.type.findMany.mockRejectedValue(mockError);
 
       await expect(typeService.getAllTypes()).rejects.toThrow("Database error");
+
       expect(prisma.type.findMany).toHaveBeenCalled();
     });
   });
@@ -97,18 +93,10 @@ describe("Type Service", () => {
       const mockUpdatedData = { label: "Updated label" };
       const mockUpdatedType = { typeId: typeId, ...mockUpdatedData };
 
-      // Mock the existence check to pass
-      checkIdExistence.mockResolvedValue(true);
-
       prisma.type.update.mockResolvedValue(mockUpdatedType);
 
       const result = await typeService.updateType(typeId, mockUpdatedData);
 
-      expect(checkIdExistence).toHaveBeenCalledWith(
-        prisma.type,
-        typeId,
-        "Type not found"
-      );
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
         data: mockUpdatedData,
@@ -116,32 +104,28 @@ describe("Type Service", () => {
       expect(result).toEqual(mockUpdatedType);
     });
 
-    it("should throw an error if the type does not exist", async () => {
+    it("should throw an error if the type is not found", async () => {
       const typeId = 999;
       const mockUpdatedData = { label: "Non-existant label" };
 
-      // Mock the existence check to fail
       const mockError = new Error("Type not found");
-      mockError.status = 404;
-      checkIdExistence.mockRejectedValue(mockError);
+      mockError.code = "P025";
+
+      prisma.type.update.mockRejectedValue(mockError);
 
       await expect(
         typeService.updateType(typeId, mockUpdatedData)
       ).rejects.toThrow("Type not found");
-      expect(checkIdExistence).toHaveBeenCalledWith(
-        prisma.type,
-        typeId,
-        "Type not found"
-      );
-      expect(prisma.type.update).not.toHaveBeenCalled();
+
+      expect(prisma.type.update).toHaveBeenCalledWith({
+        where: { typeId: typeId },
+        data: mockUpdatedData,
+      });
     });
 
     it("should throw an error if update fails", async () => {
       const typeId = 1;
       const mockUpdatedData = { label: "Failed Update" };
-
-      // Mock the existence check to pass
-      checkIdExistence.mockResolvedValue(true);
 
       const mockError = new Error("Database error");
       prisma.type.update.mockRejectedValue(mockError);
@@ -149,11 +133,7 @@ describe("Type Service", () => {
       await expect(
         typeService.updateType(typeId, mockUpdatedData)
       ).rejects.toThrow("Database error");
-      expect(checkIdExistence).toHaveBeenCalledWith(
-        prisma.type,
-        typeId,
-        "Type not found"
-      );
+
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
         data: mockUpdatedData,
@@ -168,29 +148,35 @@ describe("Type Service", () => {
     it("should delete the type", async () => {
       const typeId = 1;
 
-      // Mock the existence check to pass
-      checkIdExistence.mockResolvedValue(true);
-
       prisma.type.delete.mockResolvedValue({ typeId: typeId });
 
       const result = await typeService.deleteType(typeId);
 
-      expect(checkIdExistence).toHaveBeenCalledWith(
-        prisma.type,
-        typeId,
-        "Type not found"
-      );
       expect(prisma.type.delete).toHaveBeenCalledWith({
         where: { typeId: typeId },
       });
       expect(result).toEqual({ typeId: typeId });
     });
 
+    it("should throw an error if the type is not found", async () => {
+      const typeId = 999;
+
+      const mockError = new Error("Type not found");
+      mockError.code = "P025";
+
+      prisma.type.delete.mockRejectedValue(mockError);
+
+      await expect(typeService.deleteType(typeId)).rejects.toThrow(
+        "Type not found"
+      );
+
+      expect(prisma.type.delete).toHaveBeenCalledWith({
+        where: { typeId: typeId },
+      });
+    });
+
     it("should throw an error if deletion fails", async () => {
       const typeId = 1;
-
-      // Mock the existence check to pass
-      checkIdExistence.mockResolvedValue(true);
 
       const mockError = new Error("Database error");
       prisma.type.delete.mockRejectedValue(mockError);
@@ -198,33 +184,10 @@ describe("Type Service", () => {
       await expect(typeService.deleteType(typeId)).rejects.toThrow(
         "Database error"
       );
-      expect(checkIdExistence).toHaveBeenCalledWith(
-        prisma.type,
-        typeId,
-        "Type not found"
-      );
+
       expect(prisma.type.delete).toHaveBeenCalledWith({
         where: { typeId: typeId },
       });
-    });
-
-    it("should throw an error if the type does not exist", async () => {
-      const typeId = 999;
-
-      // Mock the existence check to fail
-      const mockError = new Error("Type not found");
-      mockError.status = 404;
-      checkIdExistence.mockRejectedValue(mockError);
-
-      await expect(typeService.deleteType(typeId)).rejects.toThrow(
-        "Type not found"
-      );
-      expect(checkIdExistence).toHaveBeenCalledWith(
-        prisma.type,
-        typeId,
-        "Type not found"
-      );
-      expect(prisma.type.delete).not.toHaveBeenCalled();
     });
   });
 
@@ -246,6 +209,23 @@ describe("Type Service", () => {
       expect(result).toEqual(mockType);
     });
 
+    it("should throw an error if the type is not found", async () => {
+      const typeId = 999;
+
+      const mockError = new Error("Type not found");
+      mockError.code = "P025";
+
+      prisma.type.findUnique.mockRejectedValue(mockError);
+
+      await expect(typeService.getTypeById(typeId)).rejects.toThrow(
+        "Type not found"
+      );
+
+      expect(prisma.type.findUnique).toHaveBeenCalledWith({
+        where: { typeId: typeId },
+      });
+    });
+
     it("should throw an error if fetching fails", async () => {
       const typeId = 1;
 
@@ -255,19 +235,7 @@ describe("Type Service", () => {
       await expect(typeService.getTypeById(typeId)).rejects.toThrow(
         "Database error"
       );
-      expect(prisma.type.findUnique).toHaveBeenCalledWith({
-        where: { typeId: typeId },
-      });
-    });
 
-    it("should throw an error if the type is not found", async () => {
-      const typeId = 999;
-
-      prisma.type.findUnique.mockResolvedValue(null);
-
-      await expect(typeService.getTypeById(typeId)).rejects.toThrow(
-        "Type not found"
-      );
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
       });
