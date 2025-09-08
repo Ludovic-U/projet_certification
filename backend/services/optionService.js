@@ -1,5 +1,4 @@
 const { prisma } = require("../prisma/prismaClient");
-const { checkIdExistence } = require("../utils/checkIdExistence");
 
 /**
  * Create a new option.
@@ -18,8 +17,14 @@ module.exports.createOption = async (data) => {
  * @throws {Error} If the option does not exist.
  */
 module.exports.updateOption = async (optionId, data) => {
-  await checkIdExistence(prisma.option, optionId, "Option not found");
-  return await prisma.option.update({ where: { optionId: optionId }, data });
+  try {
+    return await prisma.option.update({ where: { optionId: optionId }, data });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Option not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -29,8 +34,14 @@ module.exports.updateOption = async (optionId, data) => {
  * @throws {Error} If the option does not exist.
  */
 module.exports.deleteOption = async (optionId) => {
-  await checkIdExistence(prisma.option, optionId, "Option not found");
-  return await prisma.option.delete({ where: { optionId: optionId } });
+  try {
+    return await prisma.option.delete({ where: { optionId: optionId } });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Option not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -40,15 +51,14 @@ module.exports.deleteOption = async (optionId) => {
  * @throws {Error} If the option does not exist.
  */
 module.exports.getOptionById = async (optionId) => {
-  const option = await prisma.option.findUnique({
-    where: { optionId: optionId },
-  });
-  if (!option) {
-    const error = new Error("Option not found");
-    error.status = 404;
+  try {
+    return await prisma.option.findUnique({ where: { optionId: optionId } });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Option not found");
+    }
     throw error;
   }
-  return option;
 };
 
 /**
@@ -57,5 +67,12 @@ module.exports.getOptionById = async (optionId) => {
  * @returns {Promise<Array>} List of options.
  */
 module.exports.getOptionsByQuestion = async (questionId) => {
-  return await prisma.option.findMany({ where: { questionId: questionId } });
+  try {
+    return await prisma.option.findMany({ where: { questionId: questionId } });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Question not found");
+    }
+    throw error;
+  }
 };

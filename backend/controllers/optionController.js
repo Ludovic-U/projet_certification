@@ -11,8 +11,8 @@ module.exports.createOption = async (req, res) => {
 
   try {
     const option = await optionService.createOption({
-      label: label,
-      questionId: questionId,
+      label,
+      questionId,
     });
     res.status(201).json(option);
   } catch (error) {
@@ -27,22 +27,22 @@ module.exports.createOption = async (req, res) => {
  * Responds with the updated option.
  */
 module.exports.updateOption = async (req, res) => {
-  const { optionId } = req.params;
-  // check if optionId is a number
-  if (isNaN(optionId)) {
-    return res.status(400).json({ error: "Bad request: Invalid optionId" });
+  const optionId = Number(req.params.optionId);
+  // Validate optionId
+  if (!Number.isInteger(optionId) || optionId <= 0) {
+    return res.status(400).json({ error: "Invalid optionId" });
   }
 
   const { label, questionId } = req.body;
 
   try {
     const option = await optionService.updateOption(optionId, {
-      label: label,
-      questionId: questionId,
+      label,
+      questionId,
     });
     res.status(200).json(option);
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Option not found" });
     }
     console.error("Error updating option:", error);
@@ -56,17 +56,17 @@ module.exports.updateOption = async (req, res) => {
  * Responds with the option object.
  */
 module.exports.deleteOption = async (req, res) => {
-  const { optionId } = req.params;
-  // check if optionId is a number
-  if (isNaN(optionId)) {
-    return res.status(400).json({ error: "Bad request: Invalid optionId" });
+  const optionId = Number(req.params.optionId);
+  // Validate optionId
+  if (!Number.isInteger(optionId) || optionId <= 0) {
+    return res.status(400).json({ error: "Invalid optionId" });
   }
 
   try {
     await optionService.deleteOption(optionId);
     res.status(204).send();
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Option not found" });
     }
     console.error("Error deleting option:", error);
@@ -80,17 +80,17 @@ module.exports.deleteOption = async (req, res) => {
  * Responds with the option object.
  */
 module.exports.getOptionById = async (req, res) => {
-  const { optionId } = req.params;
-  // check if optionId is a number
-  if (isNaN(optionId)) {
-    return res.status(400).json({ error: "Bad request: Invalid optionId" });
+  const optionId = Number(req.params.optionId);
+  // Validate optionId
+  if (!Number.isInteger(optionId) || optionId <= 0) {
+    return res.status(400).json({ error: "Invalid optionId" });
   }
 
   try {
     const option = await optionService.getOptionById(optionId);
     res.status(200).json(option);
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Option not found" });
     }
     console.error("Error fetching option:", error);
@@ -104,10 +104,10 @@ module.exports.getOptionById = async (req, res) => {
  * Responds with an array of options.
  */
 module.exports.getOptionsByQuestion = async (req, res) => {
-  const { questionId } = req.params;
-  // check if questionId is a number
-  if (isNaN(questionId)) {
-    return res.status(400).json({ error: "Bad request: Invalid questionId" });
+  const questionId = Number(req.params.questionId);
+  // Validate questionId
+  if (!Number.isInteger(questionId) || questionId <= 0) {
+    return res.status(400).json({ error: "Invalid questionId" });
   }
 
   try {
@@ -116,6 +116,9 @@ module.exports.getOptionsByQuestion = async (req, res) => {
     );
     res.status(200).json(options);
   } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Question not found" });
+    }
     console.error("Error fetching options:", error);
     res.status(500).json({ error: "Internal server error" });
   }
