@@ -69,6 +69,7 @@ describe("Response Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(responseService.createResponse).toHaveBeenCalled();
     });
   });
@@ -111,6 +112,35 @@ describe("Response Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockUpdatedResponse);
     });
 
+    it("should return 400 for invalid responseId", async () => {
+      req.params.responseId = "invalid";
+
+      await expectError(
+        responseController.updateResponse,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid responseId"
+      );
+
+      expect(responseService.updateResponse).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if response not found", async () => {
+      await expectError(
+        responseController.updateResponse,
+        req,
+        res,
+        () =>
+          responseService.updateResponse.mockRejectedValue({ code: "P2025" }),
+        404,
+        "Response not found"
+      );
+
+      expect(responseService.updateResponse).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         responseController.updateResponse,
@@ -123,32 +153,7 @@ describe("Response Controller", () => {
         500,
         "Internal server error"
       );
-      expect(responseService.updateResponse).toHaveBeenCalled();
-    });
 
-    it("should return 400 for invalid responseId", async () => {
-      req.params.responseId = "invalid";
-
-      await expectError(
-        responseController.updateResponse,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid responseId"
-      );
-      expect(responseService.updateResponse).not.toHaveBeenCalled();
-    });
-
-    it("should return 404 if response not found", async () => {
-      await expectError(
-        responseController.updateResponse,
-        req,
-        res,
-        () => responseService.updateResponse.mockRejectedValue({ status: 404 }),
-        404,
-        "Response not found"
-      );
       expect(responseService.updateResponse).toHaveBeenCalled();
     });
   });
@@ -175,6 +180,35 @@ describe("Response Controller", () => {
       expect(res.send).toHaveBeenCalled();
     });
 
+    it("should return 400 for invalid responseId", async () => {
+      req.params.responseId = "invalid";
+
+      await expectError(
+        responseController.deleteResponse,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid responseId"
+      );
+
+      expect(responseService.deleteResponse).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if Response not found", async () => {
+      await expectError(
+        responseController.deleteResponse,
+        req,
+        res,
+        () =>
+          responseService.deleteResponse.mockRejectedValue({ code: "P2025" }),
+        404,
+        "Response not found"
+      );
+
+      expect(responseService.deleteResponse).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         responseController.deleteResponse,
@@ -187,32 +221,7 @@ describe("Response Controller", () => {
         500,
         "Internal server error"
       );
-      expect(responseService.deleteResponse).toHaveBeenCalled();
-    });
 
-    it("should return 400 for invalid responseId", async () => {
-      req.params.responseId = "invalid";
-
-      await expectError(
-        responseController.deleteResponse,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid responseId"
-      );
-      expect(responseService.deleteResponse).not.toHaveBeenCalled();
-    });
-
-    it("should return 404 if Response not found", async () => {
-      await expectError(
-        responseController.deleteResponse,
-        req,
-        res,
-        () => responseService.deleteResponse.mockRejectedValue({ status: 404 }),
-        404,
-        "Response not found"
-      );
       expect(responseService.deleteResponse).toHaveBeenCalled();
     });
   });
@@ -255,6 +264,42 @@ describe("Response Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockReponses);
     });
 
+    it("should return 400 for invalid projectId", async () => {
+      req.params.projectId = "invalid";
+      req.params.questionId = "invalid";
+
+      await expectError(
+        responseController.getResponsesByQuestionOfProject,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid projectId or questionId"
+      );
+
+      expect(
+        responseService.getResponsesByQuestionOfProject
+      ).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 for invalid questionId", async () => {
+      await expectError(
+        responseController.getResponsesByQuestionOfProject,
+        req,
+        res,
+        () =>
+          responseService.getResponsesByQuestionOfProject.mockRejectedValue({
+            code: "P2025",
+          }),
+        404,
+        "Project or Question not found"
+      );
+
+      expect(
+        responseService.getResponsesByQuestionOfProject
+      ).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         responseController.getResponsesByQuestionOfProject,
@@ -267,41 +312,10 @@ describe("Response Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(
         responseService.getResponsesByQuestionOfProject
       ).toHaveBeenCalled();
-    });
-
-    it("should return 400 for invalid projectId", async () => {
-      req.params.projectId = "invalid";
-
-      await expectError(
-        responseController.getResponsesByQuestionOfProject,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid Ids"
-      );
-      expect(
-        responseService.getResponsesByQuestionOfProject
-      ).not.toHaveBeenCalled();
-    });
-
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-
-      await expectError(
-        responseController.getResponsesByQuestionOfProject,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid Ids"
-      );
-      expect(
-        responseService.getResponsesByQuestionOfProject
-      ).not.toHaveBeenCalled();
     });
   });
 
@@ -346,6 +360,37 @@ describe("Response Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockReponses);
     });
 
+    it("should return 400 for invalid projectId", async () => {
+      req.params.projectId = "invalid";
+
+      await expectError(
+        responseController.getResponsesByProject,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid projectId"
+      );
+
+      expect(responseService.getResponsesByProject).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if project not found", async () => {
+      await expectError(
+        responseController.getResponsesByProject,
+        req,
+        res,
+        () =>
+          responseService.getResponsesByProject.mockRejectedValue({
+            code: "P2025",
+          }),
+        404,
+        "Project not found"
+      );
+
+      expect(responseService.getResponsesByProject).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         responseController.getResponsesByProject,
@@ -358,36 +403,8 @@ describe("Response Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(responseService.getResponsesByProject).toHaveBeenCalled();
-    });
-
-    it("should return 404 if project not found", async () => {
-      await expectError(
-        responseController.getResponsesByProject,
-        req,
-        res,
-        () =>
-          responseService.getResponsesByProject.mockRejectedValue({
-            status: 404,
-          }),
-        404,
-        "Project not found"
-      );
-      expect(responseService.getResponsesByProject).toHaveBeenCalled();
-    });
-
-    it("should return 400 for invalid projectId", async () => {
-      req.params.projectId = "invalid";
-
-      await expectError(
-        responseController.getResponsesByProject,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid projectId"
-      );
-      expect(responseService.getResponsesByProject).not.toHaveBeenCalled();
     });
   });
 
@@ -418,6 +435,37 @@ describe("Response Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockSubResponses);
     });
 
+    it("should return 400 for invalid parentId", async () => {
+      req.params.responseIdParent = "invalid";
+
+      await expectError(
+        responseController.getSubResponses,
+        req,
+        res,
+        () => {},
+        400,
+        "Invalid responseIdParent"
+      );
+
+      expect(responseService.getSubResponses).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 if responseIdParent not found", async () => {
+      await expectError(
+        responseController.getSubResponses,
+        req,
+        res,
+        () =>
+          responseService.getSubResponses.mockRejectedValue({
+            code: "P2025",
+          }),
+        404,
+        "ResponseParent not found"
+      );
+
+      expect(responseService.getSubResponses).toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         responseController.getSubResponses,
@@ -430,21 +478,8 @@ describe("Response Controller", () => {
         500,
         "Internal server error"
       );
+
       expect(responseService.getSubResponses).toHaveBeenCalled();
-    });
-
-    it("should return 400 for invalid parentId", async () => {
-      req.params.responseIdParent = "invalid";
-
-      await expectError(
-        responseController.getSubResponses,
-        req,
-        res,
-        () => {},
-        400,
-        "Bad request: Invalid responseIdParent"
-      );
-      expect(responseService.getSubResponses).not.toHaveBeenCalled();
     });
   });
 });

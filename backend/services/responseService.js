@@ -1,5 +1,4 @@
 const { prisma } = require("../prisma/prismaClient");
-const { checkIdExistence } = require("../utils/checkIdExistence");
 
 /**
  * Create a new response.
@@ -18,11 +17,17 @@ module.exports.createResponse = async (data) => {
  * @throws {Error} If the response does not exist
  */
 module.exports.updateResponse = async (responseId, data) => {
-  await checkIdExistence(prisma.response, responseId, "Response not found");
-  return await prisma.response.update({
-    where: { responseId: responseId },
-    data,
-  });
+  try {
+    return await prisma.response.update({
+      where: { responseId: responseId },
+      data,
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Response not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -32,10 +37,16 @@ module.exports.updateResponse = async (responseId, data) => {
  * @throws {Error} If the response does not exist.
  */
 module.exports.deleteResponse = async (responseId) => {
-  await checkIdExistence(prisma.response, responseId, "Response not found");
-  return await prisma.response.delete({
-    where: { responseId: responseId },
-  });
+  try {
+    return await prisma.response.delete({
+      where: { responseId: responseId },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Response not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -48,9 +59,16 @@ module.exports.getResponsesByQuestionOfProject = async (
   projectId,
   questionId
 ) => {
-  return await prisma.response.findMany({
-    where: { projectId: projectId, questionId: questionId },
-  });
+  try {
+    return await prisma.response.findMany({
+      where: { projectId: projectId, questionId: questionId },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Project or Question not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -60,10 +78,16 @@ module.exports.getResponsesByQuestionOfProject = async (
  * @throws {Error} If project does not exist.
  */
 module.exports.getResponsesByProject = async (projectId) => {
-  await checkIdExistence(prisma.response, projectId, "Project not found");
-  return await prisma.response.findMany({
-    where: { projectId: projectId },
-  });
+  try {
+    return await prisma.response.findMany({
+      where: { projectId: projectId },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("Project not found");
+    }
+    throw error;
+  }
 };
 
 /**
@@ -72,7 +96,14 @@ module.exports.getResponsesByProject = async (projectId) => {
  * @returns {Promise<Array>} List of subresponses.
  */
 module.exports.getSubResponses = async (responseIdParent) => {
-  return await prisma.response.findMany({
-    where: { responseIdParent: responseIdParent },
-  });
+  try {
+    return await prisma.response.findMany({
+      where: { responseIdParent: responseIdParent },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new Error("ResponseParent not found");
+    }
+    throw error;
+  }
 };

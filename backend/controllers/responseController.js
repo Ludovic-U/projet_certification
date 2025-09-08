@@ -15,8 +15,8 @@ module.exports.createResponse = async (req, res) => {
   try {
     const response = await responseService.createResponse({
       label: label ?? null,
-      projectId: projectId,
-      questionId: questionId,
+      projectId,
+      questionId,
       optionId: optionId ?? null,
       responseIdParent: responseIdParent ?? null,
     });
@@ -33,10 +33,10 @@ module.exports.createResponse = async (req, res) => {
  * Responds with the updated response.
  */
 module.exports.updateResponse = async (req, res) => {
-  const { responseId } = req.params;
-  // Check if responseId is a number
-  if (isNaN(responseId)) {
-    return res.status(400).json({ error: "Bad request: Invalid responseId" });
+  const responseId = Number(req.params.responseId);
+  // Validate reponseId
+  if (!Number.isInteger(responseId) || responseId <= 0) {
+    return res.status(400).json({ error: "Invalid responseId" });
   }
 
   const { label, projectId, questionId, optionId, responseIdParent } = req.body;
@@ -44,14 +44,14 @@ module.exports.updateResponse = async (req, res) => {
   try {
     const response = await responseService.updateResponse(responseId, {
       label: label ?? null,
-      projectId: projectId,
-      questionId: questionId,
+      projectId,
+      questionId,
       optionId: optionId ?? null,
       responseIdParent: responseIdParent ?? null,
     });
     res.status(200).json(response);
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Response not found" });
     }
     console.error("Error updating response:", error);
@@ -65,17 +65,17 @@ module.exports.updateResponse = async (req, res) => {
  * Responds with 204 No Content on success.
  */
 module.exports.deleteResponse = async (req, res) => {
-  const { responseId } = req.params;
-  // Check if responseId is a number
-  if (isNaN(responseId)) {
-    return res.status(400).json({ error: "Bad request: Invalid responseId" });
+  const responseId = Number(req.params.responseId);
+  // Validate responseId
+  if (!Number.isInteger(responseId) || responseId <= 0) {
+    return res.status(400).json({ error: "Invalid responseId" });
   }
 
   try {
     await responseService.deleteResponse(responseId);
     res.status(204).send();
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Response not found" });
     }
     console.error("Error deleting response:", error);
@@ -89,10 +89,16 @@ module.exports.deleteResponse = async (req, res) => {
  * Responds with an array of responses for the given project and question.
  */
 module.exports.getResponsesByQuestionOfProject = async (req, res) => {
-  const { projectId, questionId } = req.params;
-  // Check if projectId and questionId are number
-  if (isNaN(projectId) || isNaN(questionId)) {
-    return res.status(400).json({ error: "Bad request: Invalid Ids" });
+  const projectId = Number(req.params.projectId);
+  const questionId = Number(req.params.questionId);
+  // Validate projectId and questionId
+  if (
+    !Number.isInteger(projectId) ||
+    !Number.isInteger(questionId) ||
+    projectId <= 0 ||
+    questionId <= 0
+  ) {
+    return res.status(400).json({ error: "Invalid projectId or questionId" });
   }
 
   try {
@@ -102,6 +108,9 @@ module.exports.getResponsesByQuestionOfProject = async (req, res) => {
     );
     return res.status(200).json(responses);
   } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Project or Question not found" });
+    }
     console.error("Error fetching response:", error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -113,17 +122,17 @@ module.exports.getResponsesByQuestionOfProject = async (req, res) => {
  * Responds with an array of responses for the given project.
  */
 module.exports.getResponsesByProject = async (req, res) => {
-  const { projectId } = req.params;
-  // Check if projectId is a number
-  if (isNaN(projectId)) {
-    return res.status(400).json({ error: "Bad request: Invalid projectId" });
+  const projectId = Number(req.params.projectId);
+  // Validate projectId
+  if (!Number.isInteger(projectId) || projectId <= 0) {
+    return res.status(400).json({ error: "Invalid projectId" });
   }
 
   try {
     const responses = await responseService.getResponsesByProject(projectId);
     res.status(200).json(responses);
   } catch (error) {
-    if (error.status === 404) {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Project not found" });
     }
     console.error("Error fetching response:", error);
@@ -137,12 +146,10 @@ module.exports.getResponsesByProject = async (req, res) => {
  * Responds with an array of subresponses.
  */
 module.exports.getSubResponses = async (req, res) => {
-  const { responseIdParent } = req.params;
-  // Check if responseIdParent is a number
-  if (isNaN(parseInt(responseIdParent))) {
-    return res
-      .status(400)
-      .json({ error: "Bad request: Invalid responseIdParent" });
+  const responseIdParent = Number(req.params.responseIdParent);
+  // Validate reponseIdParent
+  if (!Number.isInteger(responseIdParent) || responseIdParent <= 0) {
+    return res.status(400).json({ error: "Invalid responseIdParent" });
   }
 
   try {
@@ -151,6 +158,9 @@ module.exports.getSubResponses = async (req, res) => {
     );
     res.status(200).json(subResponses);
   } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "ResponseParent not found" });
+    }
     console.error("Error fetching sub-responses:", error);
     res.status(500).json({ error: "Internal server error" });
   }
