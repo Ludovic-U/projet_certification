@@ -65,7 +65,12 @@
 
 //     return (
 //         <main className="h-screen w-screen overflow-y-scroll justify-center bg-light flex flex-col items-center">   
-//             <section className="w-[25vw] min-w-[350px] bg-white flex flex-col items-center text-dark rounded-xl shadow-500base p-8">
+//             <section className="
+//                         flex flex-col bg-white text-dark items-center justify-center
+//                         w-full h-full
+//                         md:w-[50%] md:h-fit
+//                         lg:min-w-fit lg:max-w-[25vw]
+//                         rounded-xl shadow-500base p-8">
 //                 <img
 //                     src="/logo-sm.jpeg"
 //                     className="rounded-full w-12 h-12"
@@ -93,8 +98,6 @@
 
 import { useState } from "react";
 
-import Header from "@/components/layout/Header"
-
 import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
 
 import {
@@ -104,8 +107,6 @@ import {
     Pagination,
     clientsList
 } from "@/components/ui"
-
-import { SideNav } from "@/components/layout";
 
 export default function Home() {
     const [isSideNavOpen, setIsSideNavOpen] = useState(false);
@@ -129,32 +130,36 @@ export default function Home() {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Header/>
+            {/* <Header/> */}
             <div className="flex flex-1">
-                <SideNav
+                {/* <SideNav
                 isOpen={isSideNavOpen}
                 toggle={() => setIsSideNavOpen((prev) => !prev)}
-                />
+                /> */}
 
                 <main
                  className={`
-                    overflow-y-scroll flex flex-col bg-light transition-all duration-300 flex-1
-                    ${isSideNavOpen ? "ml-[240px]" : "ml-[90px]"}
+                    flex flex-col flex-1 overflow-y-scroll bg-light transition-all duration-300
+                    ${isSideNavOpen ? "md:ml-[240px]" : "md:ml-[90px]"}
                  `}
                 >   
-                    <div className="flex items-center justify-between mx-20 my-10">
-                        <div className="w-fit cursor-default select-none flex flex-col gap-2">
-                            <h1 className="font-oswald text-dark text-4xl">
+                    <div className="flex items-center justify-between
+                                    mx-8 my-7
+                                    lg:mx-20 lg:my-10 lg:text-left">
+                        <div className="w-fit cursor-default select-none flex flex-col md:gap-2">
+                            <h1 className="font-oswald text-dark text-2xl md:text-4xl">
                                 Liste des clients
                             </h1>
-                            <p className="font-didact text-greydarker text-xl">
+                            <p className="font-didact text-greydarker text-md md:text-xl">
                                 Consultez la liste des clients et accèdez aux détails.
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex flex-col self-center w-[80%] max-w-[1200px] flex-1">
-                        <div className="flex justify-between ">
+                    <div className="flex flex-col self-center flex-1
+                                    sm:w-[90%] md:w-[80%] max-w-[1200px]">
+                        <div className="flex flex-col gap-4 mx-8 mb-6
+                                        sm:flex-row sm:justify-between sm:mx-0 sm:items-center">
                             <Button
                              variant="iconPrimary"
                              size="sm">
@@ -168,23 +173,26 @@ export default function Home() {
                                     <FontAwesomeIcon icon={Icons.search}/>
                                 </span>
                              }
-                             className="min-w-70 max-w-80"
+                             className="w-full sm:w-72 max-w-80"
                             />
                         </div>
                             
-                            <List<typeof currentData[0]>
-                            data={currentData}
-                            columns={clientsList}
-                            />
-                         {totalPages > 1 && (
-                            <div className="flex justify-center mt-10">
-                                <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={setCurrentPage}
+                            <div className="flex-1 mb-8 flex flex-col items-center justify-center">
+                                <List<typeof currentData[0]>
+                                data={currentData}
+                                columns={clientsList}
                                 />
-                             </div>
-                        )}
+                                { totalPages > 1 && (
+                                <div className="flex justify-center mt-10">
+                                    <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={setCurrentPage}
+                                    />
+                                </div>
+                                )}                                
+                            </div>
+
                     </div>
                 </main>
             </div>

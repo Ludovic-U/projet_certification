@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 
-import Header from "@/components/layout/Header"
+import Header from "@/components/layout/Header/Header"
 import { SideNav } from "@/components/layout"
 import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
 

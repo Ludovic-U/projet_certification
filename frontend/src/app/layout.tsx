@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../styles/globals.css";
 import { oswald, notoSans, didactGothic } from "./fonts";
+import { Header, HeaderMobile, SideNav } from "@/components/layout";
 
 export const metadata: Metadata = {
   title: "F2S_APP",
@@ -15,6 +16,8 @@ export default function RootLayout({
   return (
       <html lang="fr" className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>
         <body>
+            {/* <Header/> */}
+            {/* <HeaderMobile/> */}
             {children}
         </body>
       </html>

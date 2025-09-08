@@ -4,12 +4,12 @@ import { SideTestItem } from "./types"
 export const SIDETEST_ITEMS: SideTestItem[] = [
     {
         title: "Clients",
-        path: "/",
+        path: "/clients",
         icon: <FontAwesomeIcon icon={Icons.userTie}/>
     },
     {
-        title: "Projects",
-        path: "/",
+        title: "P rojects",
+        path: "/projects",
         icon: <FontAwesomeIcon icon={Icons.briefcase}/>,
         subMenu: true,
         subMenuItems: [
