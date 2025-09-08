@@ -60,6 +60,21 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockQuestion);
     });
 
+    it("should return 400 if a required field is missing", async () => {
+      req.body.label = "";
+
+      await expectError(
+        questionController.createQuestion,
+        req,
+        res,
+        () => {},
+        400,
+        "label and category are required"
+      );
+
+      expect(questionService.createQuestion).not.toHaveBeenCalled();
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await expectError(
         questionController.createQuestion,
@@ -167,6 +182,21 @@ describe("Question Controller", () => {
         () => {},
         400,
         "Invalid questionId"
+      );
+
+      expect(questionService.updateQuestion).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 if a required field is missing", async () => {
+      req.body.label = "";
+
+      await expectError(
+        questionController.updateQuestion,
+        req,
+        res,
+        () => {},
+        400,
+        "label and category are required"
       );
 
       expect(questionService.updateQuestion).not.toHaveBeenCalled();
