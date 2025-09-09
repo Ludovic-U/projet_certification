@@ -242,6 +242,17 @@ describe("Response Controller", () => {
       );
     });
 
+    it("should return 400 for invalid questionId", async () => {
+      req.params.questionId = "invalid";
+      await invalidOrMissingStatus(
+        responseController.getResponsesByQuestionOfProject,
+        req,
+        res,
+        responseService.getResponsesByQuestionOfProject,
+        "Invalid questionId"
+      );
+    });
+
     it("should return 404 if project or question not found", async () => {
       await notFoundStatus(
         responseController.getResponsesByQuestionOfProject,
