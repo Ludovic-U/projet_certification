@@ -1,4 +1,5 @@
 const responseService = require("../services/responseService");
+const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new response.
@@ -35,9 +36,7 @@ module.exports.createResponse = async (req, res) => {
 module.exports.updateResponse = async (req, res) => {
   const responseId = Number(req.params.responseId);
   // Validate reponseId
-  if (!Number.isInteger(responseId) || responseId <= 0) {
-    return res.status(400).json({ error: "Invalid responseId" });
-  }
+  if (!validateId(responseId, "responseId", res)) return;
 
   const { label, projectId, questionId, optionId, responseIdParent } = req.body;
 
@@ -67,9 +66,7 @@ module.exports.updateResponse = async (req, res) => {
 module.exports.deleteResponse = async (req, res) => {
   const responseId = Number(req.params.responseId);
   // Validate responseId
-  if (!Number.isInteger(responseId) || responseId <= 0) {
-    return res.status(400).json({ error: "Invalid responseId" });
-  }
+  if (!validateId(responseId, "responseId", res)) return;
 
   try {
     await responseService.deleteResponse(responseId);
@@ -93,13 +90,10 @@ module.exports.getResponsesByQuestionOfProject = async (req, res) => {
   const questionId = Number(req.params.questionId);
   // Validate projectId and questionId
   if (
-    !Number.isInteger(projectId) ||
-    !Number.isInteger(questionId) ||
-    projectId <= 0 ||
-    questionId <= 0
-  ) {
-    return res.status(400).json({ error: "Invalid projectId or questionId" });
-  }
+    !validateId(projectId, "projectId", res) ||
+    !validateId(questionId, "questionId", res)
+  )
+    return;
 
   try {
     const responses = await responseService.getResponsesByQuestionOfProject(
@@ -124,9 +118,7 @@ module.exports.getResponsesByQuestionOfProject = async (req, res) => {
 module.exports.getResponsesByProject = async (req, res) => {
   const projectId = Number(req.params.projectId);
   // Validate projectId
-  if (!Number.isInteger(projectId) || projectId <= 0) {
-    return res.status(400).json({ error: "Invalid projectId" });
-  }
+  if (!validateId(projectId, "projectId", res)) return;
 
   try {
     const responses = await responseService.getResponsesByProject(projectId);
@@ -148,9 +140,7 @@ module.exports.getResponsesByProject = async (req, res) => {
 module.exports.getSubResponses = async (req, res) => {
   const responseIdParent = Number(req.params.responseIdParent);
   // Validate reponseIdParent
-  if (!Number.isInteger(responseIdParent) || responseIdParent <= 0) {
-    return res.status(400).json({ error: "Invalid responseIdParent" });
-  }
+  if (!validateId(responseIdParent, "responseIdParent", res)) return;
 
   try {
     const subResponses = await responseService.getSubResponses(

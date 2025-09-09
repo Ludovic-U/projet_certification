@@ -8,7 +8,11 @@
 const responseController = require("../../controllers/responseController");
 const responseService = require("../../services/responseService");
 const { createMockResponse } = require("../helpers/responseHelper");
-const { expectError } = require("../helpers/errorHelper");
+const {
+  invalidOrMissingStatus,
+  notFoundStatus,
+  internalServerErrorStatus,
+} = require("../helpers/errorHelper");
 
 // Mock responseService layer to isolate business logic
 jest.mock("../../services/responseService");
@@ -58,19 +62,12 @@ describe("Response Controller", () => {
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         responseController.createResponse,
         req,
         res,
-        () =>
-          responseService.createResponse.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        responseService.createResponse
       );
-
-      expect(responseService.createResponse).toHaveBeenCalled();
     });
   });
 
@@ -114,47 +111,32 @@ describe("Response Controller", () => {
 
     it("should return 400 for invalid responseId", async () => {
       req.params.responseId = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         responseController.updateResponse,
         req,
         res,
-        () => {},
-        400,
+        responseService.updateResponse,
         "Invalid responseId"
       );
-
-      expect(responseService.updateResponse).not.toHaveBeenCalled();
     });
 
     it("should return 404 if response not found", async () => {
-      await expectError(
+      await notFoundStatus(
         responseController.updateResponse,
         req,
         res,
-        () =>
-          responseService.updateResponse.mockRejectedValue({ code: "P2025" }),
-        404,
-        "Response not found"
+        responseService.updateResponse,
+        "Response"
       );
-
-      expect(responseService.updateResponse).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         responseController.updateResponse,
         req,
         res,
-        () =>
-          responseService.updateResponse.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        responseService.updateResponse
       );
-
-      expect(responseService.updateResponse).toHaveBeenCalled();
     });
   });
 
@@ -182,47 +164,32 @@ describe("Response Controller", () => {
 
     it("should return 400 for invalid responseId", async () => {
       req.params.responseId = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         responseController.deleteResponse,
         req,
         res,
-        () => {},
-        400,
+        responseService.deleteResponse,
         "Invalid responseId"
       );
-
-      expect(responseService.deleteResponse).not.toHaveBeenCalled();
     });
 
     it("should return 404 if Response not found", async () => {
-      await expectError(
+      await notFoundStatus(
         responseController.deleteResponse,
         req,
         res,
-        () =>
-          responseService.deleteResponse.mockRejectedValue({ code: "P2025" }),
-        404,
-        "Response not found"
+        responseService.deleteResponse,
+        "Response"
       );
-
-      expect(responseService.deleteResponse).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         responseController.deleteResponse,
         req,
         res,
-        () =>
-          responseService.deleteResponse.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        responseService.deleteResponse
       );
-
-      expect(responseService.deleteResponse).toHaveBeenCalled();
     });
   });
 
@@ -266,56 +233,32 @@ describe("Response Controller", () => {
 
     it("should return 400 for invalid projectId", async () => {
       req.params.projectId = "invalid";
-      req.params.questionId = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         responseController.getResponsesByQuestionOfProject,
         req,
         res,
-        () => {},
-        400,
-        "Invalid projectId or questionId"
+        responseService.getResponsesByQuestionOfProject,
+        "Invalid projectId"
       );
-
-      expect(
-        responseService.getResponsesByQuestionOfProject
-      ).not.toHaveBeenCalled();
     });
 
-    it("should return 404 for invalid questionId", async () => {
-      await expectError(
+    it("should return 404 if project or question not found", async () => {
+      await notFoundStatus(
         responseController.getResponsesByQuestionOfProject,
         req,
         res,
-        () =>
-          responseService.getResponsesByQuestionOfProject.mockRejectedValue({
-            code: "P2025",
-          }),
-        404,
-        "Project or Question not found"
+        responseService.getResponsesByQuestionOfProject,
+        "Project or Question"
       );
-
-      expect(
-        responseService.getResponsesByQuestionOfProject
-      ).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         responseController.getResponsesByQuestionOfProject,
         req,
         res,
-        () =>
-          responseService.getResponsesByQuestionOfProject.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
-      );
-
-      expect(
         responseService.getResponsesByQuestionOfProject
-      ).toHaveBeenCalled();
+      );
     });
   });
 
@@ -362,49 +305,32 @@ describe("Response Controller", () => {
 
     it("should return 400 for invalid projectId", async () => {
       req.params.projectId = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         responseController.getResponsesByProject,
         req,
         res,
-        () => {},
-        400,
+        responseService.getResponsesByProject,
         "Invalid projectId"
       );
-
-      expect(responseService.getResponsesByProject).not.toHaveBeenCalled();
     });
 
     it("should return 404 if project not found", async () => {
-      await expectError(
+      await notFoundStatus(
         responseController.getResponsesByProject,
         req,
         res,
-        () =>
-          responseService.getResponsesByProject.mockRejectedValue({
-            code: "P2025",
-          }),
-        404,
-        "Project not found"
+        responseService.getResponsesByProject,
+        "Project"
       );
-
-      expect(responseService.getResponsesByProject).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         responseController.getResponsesByProject,
         req,
         res,
-        () =>
-          responseService.getResponsesByProject.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        responseService.getResponsesByProject
       );
-
-      expect(responseService.getResponsesByProject).toHaveBeenCalled();
     });
   });
 
@@ -437,49 +363,32 @@ describe("Response Controller", () => {
 
     it("should return 400 for invalid parentId", async () => {
       req.params.responseIdParent = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         responseController.getSubResponses,
         req,
         res,
-        () => {},
-        400,
+        responseService.getSubResponses,
         "Invalid responseIdParent"
       );
-
-      expect(responseService.getSubResponses).not.toHaveBeenCalled();
     });
 
     it("should return 404 if responseIdParent not found", async () => {
-      await expectError(
+      await notFoundStatus(
         responseController.getSubResponses,
         req,
         res,
-        () =>
-          responseService.getSubResponses.mockRejectedValue({
-            code: "P2025",
-          }),
-        404,
-        "ResponseParent not found"
+        responseService.getSubResponses,
+        "ResponseParent"
       );
-
-      expect(responseService.getSubResponses).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         responseController.getSubResponses,
         req,
         res,
-        () =>
-          responseService.getSubResponses.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        responseService.getSubResponses
       );
-
-      expect(responseService.getSubResponses).toHaveBeenCalled();
     });
   });
 });
