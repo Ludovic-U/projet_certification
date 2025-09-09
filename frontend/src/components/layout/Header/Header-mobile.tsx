@@ -5,7 +5,6 @@ import React, { ReactNode, useEffect, useRef, useState} from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// import { Button } from "@/components/ui";
 import { useDimensions } from "@/hooks"
 
 import { SIDENAV_ITEMS, SideNavItem, MenuItemWithSubMenuProps } from "../SideNav";
@@ -53,9 +52,9 @@ const variants = {
     Affiche un menu mobile animé avec Framer Motion (burger menu)
 */
 const HeaderMobile = () => {
-    const pathname = usePathname();
-    const containerRef = useRef(null);
-    const { height } = useDimensions(containerRef);
+    const pathname = usePathname(); // récupère le chemin actuel (URL path)
+    const containerRef = useRef(null); // ref sur le nav principal pour mesurer hauteur
+    const { height } = useDimensions(containerRef); // hook pour récupérer la hauteur
     const [isOpen, toggleOpen] = useCycle(false, true) // gestion de l'état du menu (ouvert/fermé)
 
     return (
@@ -68,6 +67,7 @@ const HeaderMobile = () => {
         }
          ref={containerRef}>
 
+            {/* Cercle animé qui masque ou révèle le menu */}
             <motion.div
              className="absolute inset-0 right-0 w-full bg-light"
              variants={sidebar}/>
@@ -112,7 +112,7 @@ const HeaderMobile = () => {
 export default HeaderMobile;
 
 
-    // Bouton animé (burger, croix, etc) avec framer-motion
+    // Bouton animé (burger, croix) avec framer-motion
 const MenuToggle = ({ toggle }: { toggle: any }) => (
     <button
      onClick={toggle}
