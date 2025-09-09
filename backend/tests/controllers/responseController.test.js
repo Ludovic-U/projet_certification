@@ -96,7 +96,7 @@ describe("Response Controller", () => {
       await responseController.updateResponse(req, res, next);
 
       expect(responseService.updateResponse).toHaveBeenCalledWith(
-        parseInt(req.params.responseId),
+        Number(req.params.responseId),
         {
           label: req.body.label,
           projectId: req.body.projectId,
@@ -156,7 +156,7 @@ describe("Response Controller", () => {
       await responseController.deleteResponse(req, res, next);
 
       expect(responseService.deleteResponse).toHaveBeenCalledWith(
-        parseInt(req.params.responseId)
+        Number(req.params.responseId)
       );
       expect(res.status).toHaveBeenCalledWith(204);
       expect(res.send).toHaveBeenCalled();
@@ -224,8 +224,8 @@ describe("Response Controller", () => {
       expect(
         responseService.getResponsesByQuestionOfProject
       ).toHaveBeenCalledWith(
-        parseInt(req.params.projectId),
-        parseInt(req.params.questionId)
+        Number(req.params.projectId),
+        Number(req.params.questionId)
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockReponses);
@@ -308,7 +308,7 @@ describe("Response Controller", () => {
       await responseController.getResponsesByProject(req, res, next);
 
       expect(responseService.getResponsesByProject).toHaveBeenCalledWith(
-        parseInt(req.params.projectId)
+        Number(req.params.projectId)
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockReponses);
@@ -366,7 +366,7 @@ describe("Response Controller", () => {
       await responseController.getSubResponses(req, res, next);
 
       expect(responseService.getSubResponses).toHaveBeenCalledWith(
-        parseInt(req.params.responseIdParent)
+        Number(req.params.responseIdParent)
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockSubResponses);
