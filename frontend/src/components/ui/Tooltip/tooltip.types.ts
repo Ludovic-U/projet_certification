@@ -1,6 +1,6 @@
 import React from "react";
 
-export type TooltipPosition = "top" | "bottom" | "left" | "right";
+export type TooltipPosition = "top" | "bottom" | "left" | "right" | "rightMenu";
 
 export interface TooltipProps {
     content: string;

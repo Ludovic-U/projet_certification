@@ -3,21 +3,22 @@ import { SideNavItem } from "./types"
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
     {
-        title: "Clients",
-        path: "/clients",
-        icon: <FontAwesomeIcon icon={Icons.userTie}/>
-    },
-    {
-        title: "Projects",
-        path: "/projects",
+        title: "Projets",
+        path: "/projets",
         icon: <FontAwesomeIcon icon={Icons.briefcase}/>,
         subMenu: true,
         subMenuItems: [
-            { title: "Idéation", path:"/sub1", icon: <FontAwesomeIcon icon={Icons.briefcase}/>},
-            { title: "Conception", path:"/sub2", icon: <FontAwesomeIcon icon={Icons.gear}/>},
-            { title: "Pilotage", path:"/sub3", icon: <FontAwesomeIcon icon={Icons.gear}/>},
-            { title: "Reporting", path:"/sub4", icon: <FontAwesomeIcon icon={Icons.gear}/>},
+            { title: "Vue d'ensemble", path:"/sub1", icon: <FontAwesomeIcon icon={Icons.tableCells}/>},
+            { title: "Idéation", path:"/sub1", icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+            { title: "Conception", path:"/sub2", icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
+            { title: "Pilotage", path:"/sub3", icon: <FontAwesomeIcon icon={Icons.compass}/>},
+            { title: "Reporting", path:"/sub4", icon: <FontAwesomeIcon icon={Icons.users}/>},
         ],
+    },
+    {
+        title: "Clients",
+        path: "/clients",
+        icon: <FontAwesomeIcon icon={Icons.userTie}/>
     },
     {
         title: "Contributeurs",
@@ -28,11 +29,23 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         title: "Questions",
         path: "/questions",
         icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>,
+    },
+    {
+        title: "Finances",
+        path: "/finance",
+        icon: <FontAwesomeIcon icon={Icons.coins}/>,
         subMenu: true,
         subMenuItems: [
-            { title: "Sub1", path:"/sub1", icon: <FontAwesomeIcon icon={Icons.gear}/>},
-            { title: "Sub2", path:"/sub2", icon: <FontAwesomeIcon icon={Icons.gear}/>},
-            { title: "Sub3", path:"/sub3", icon: <FontAwesomeIcon icon={Icons.gear}/>},
+            { title: "Vue d'ensemble", path:"/sub1", icon: <FontAwesomeIcon icon={Icons.tableCells}/>},
+            { title: "Idéation", path:"/sub1", icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+            { title: "Conception", path:"/sub2", icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
+            { title: "Pilotage", path:"/sub3", icon: <FontAwesomeIcon icon={Icons.compass}/>},
+            { title: "Reporting", path:"/sub4", icon: <FontAwesomeIcon icon={Icons.users}/>},
         ],
+    },
+    {
+        title: "Planning",
+        path: "/planning",
+        icon: <FontAwesomeIcon icon={Icons.calendar}/>,
     },
 ]

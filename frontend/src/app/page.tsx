@@ -65,10 +65,10 @@ export default function LoginPage() {
 
     return (
         <>
-        {/* <div>
+        <div>
             Page
-        </div> */}
-        <div className="h-full overflow-y-scroll justify-center bg-light flex flex-col items-center">
+        </div>
+        {/* <div className="h-full overflow-y-scroll justify-center bg-light flex flex-col items-center">
             <section className="
                         flex flex-col bg-white text-dark items-center justify-center
                         w-full h-full
@@ -93,7 +93,7 @@ export default function LoginPage() {
                  apiError={apiError}
                 />
             </section>
-        </div>
+        </div> */}
         </>
     );
 }

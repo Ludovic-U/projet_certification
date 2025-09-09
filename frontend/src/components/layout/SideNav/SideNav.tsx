@@ -7,13 +7,19 @@ import { usePathname } from "next/navigation"; // Hook pour récupérer le chemi
 
 import { SIDENAV_ITEMS } from "./constants"; // Liste des items du menu (icônes, titres, liens...)
 import { SideNavItem, SideNavProps } from "./types"; // Type TypeScript décrivant la forme d'un item de menu
-import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons"; // Icones utilisés dans la navbar
+import { FontAwesomeIcon, Icons } from "@/lib/icons"; // Icones utilisés dans la navbar
 
 import { Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
 
 // Déclare l'état de la sidenav (ouverte ou fermée).
 const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+    
+    // Etat pour gérer quel sous-menu est ouvert (pour n'en avoir qu'un seul à la fois)
+    const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null);
+    const handleSubMenuToggle = (index: number) => {
+        setOpenSubMenuIndex(openSubMenuIndex === index ? null : index);
+    }
 
     return (
         // Composant principal :
@@ -43,14 +49,22 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                 {/* Boucle sur SIDENAV_ITEMS et crée un MenuItem pour chaque item. */}
                 <div className={`flex flex-col space-y-2 md:px-6 ${isCollapsed ? "items-center px-0" : ""}`}>
                     {SIDENAV_ITEMS.map((item, idx) => {
-                        return <MenuItem key={idx} item={item} isCollapsed={isCollapsed}/>;
+                        return (
+                            <MenuItem
+                             key={idx}
+                             item={item}
+                             isCollapsed={isCollapsed}
+                             isSubMenuOpen={openSubMenuIndex === idx}
+                             onSubMenuToggle={() => handleSubMenuToggle(idx)}
+                            />
+                        );
                     })}
                 </div>
 
                 {/* Bouton pour ouvrir ou fermer la sidenav avec toggleCollapse */}
                 <button
                  onClick={toggleCollapse}
-                 className="absolute top-16 -right-4 cursor-pointer h-8 w-8 text-dark border border-dark bg-light rounded-full hover:bg-lighthover hover:text-darkhover transition-colors">
+                 className="absolute top-14 -right-4 cursor-pointer h-8 w-8 text-dark border border-dark bg-light rounded-full hover:bg-lighthover hover:text-darkhover transition-colors">
                     <FontAwesomeIcon icon={isCollapsed ? Icons.chevronRight : Icons.chevronLeft}
                      className="text-md text-dark"/>
                 </button>
@@ -64,16 +78,28 @@ export default SideNav;
 // Composant MenuItem
 // Gère l'affichage d'un item du menu
 // Récupère le chemin actuel (pathname) pour mettre en surbrillance l'item actif
-const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolean}) => {
-    const pathname = usePathname();
-    // Etat local pour gérer si le sous-menu est ouvert
-    const [subMenuOpen, setSubMenuOpen] = useState(false);
-    const toggleSubMenu = () => {
-        setSubMenuOpen(!subMenuOpen);
-    };
+const MenuItem = (
+    {
+        item,
+        isCollapsed,
+        isSubMenuOpen,
+        onSubMenuToggle
+    }: {
+        item: SideNavItem,
+        isCollapsed: boolean,
+        isSubMenuOpen: boolean,
+        onSubMenuToggle: () => void;
+    }) => {
+        const pathname = usePathname();
 
-    const parentActive = pathname === item.path;
-    const childActive = item.subMenuItems?.some(sub => sub.path === pathname);
+        const parentActive = pathname === item.path;
+        const childActive = item.subMenuItems?.some(sub => sub.path === pathname);
+
+    //     // Etat local pour gérer si le sous-menu est ouvert
+    //     const [subMenuOpen, setSubMenuOpen] = useState(false);
+    //     const toggleSubMenu = () => {
+    //         setSubMenuOpen(!subMenuOpen);
+    // };
 
     // SIDENAV FERMEE
     // Chaque item s'affiche uniquement comme icône carré cliquable + Tooltip en hover avec le titre
@@ -99,17 +125,23 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
 
                     {/* Flyout menu : apparaît à droite au hover */}
                     <div
-                     className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover:flex flex-col bg-dark text-light rounded-lg shadow-400 p-2 z-50 min-w-[160px]">
+                     className="absolute left-full top-0 ml-4 hidden group-hover:flex flex-col
+                     bg-dark text-primary200 rounded-lg shadow-400 p-3 z-50 min-w-[180px]">
+
+                        {/* Zone Tampon pour laisser le flyoutmenu ouvert le temps de mettre la souris dessus */}
+                        <div className="absolute -left-4 top-0 h-full w-4"/>
+
                         {/* Titre du menu parent */}
-                        <span className="font-semibold text-sm mb-2">{item.title}</span>
+                        <span className="font-semibold text-base mb-3 text-light">{item.title}</span>
                         {/* Liste des sous-items */}
-                        <div className="flex flex-col space-y-2">
+                        <div className="flex flex-col space-y-1">
                             {item.subMenuItems?.map((subItem, idx) => (
                                 <Link
                                  key={idx}
                                  href={subItem.path}
-                                 className={`whitespace-nowrap text-sm rounded px-3 py-1 hover:bg-lighthover hover:text-primary
-                                 ${subItem.path === pathname ? "font-bold text-primary200" : ""}`}>
+                                 className={`flex items-center gap-2 whitespace-nowrap text-sm rounded-lg px-3 py-2
+                                            hover:bg-lighthover hover:text-primary
+                                 ${subItem.path === pathname ? "bg-light font-semibold text-primary" : ""}`}>
                                     {subItem.title}
                                 </Link>
                             ))}
@@ -121,7 +153,7 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
 
         // Item sans sous-menu, simple tooltip affichant le titre au survol
         return (
-            <Tooltip content={item.title} position="right">
+            <Tooltip content={item.title} position="rightMenu">
                 <Link href={item.path}>
                     {menuContent}
                 </Link>
@@ -138,7 +170,7 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
                 {/* Bouton principal : icône + titre + chevron */}
                 {/* Mis en surbrillance si le pathname correspond */}
                     <button
-                     onClick={toggleSubMenu}
+                     onClick={onSubMenuToggle}
                      className={`
                         cursor-pointer flex w-full flex-row items-center justify-between transition p-2 rounded-lg
                         hover:bg-lighthover hover:text-primary
@@ -151,21 +183,21 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
                         </div>
 
                         {/* chevron pour ouvrir/fermer le submenu*/}
-                        <div className={`${subMenuOpen ? 'rotate-180' : ""} flex`}>
+                        <div className={`${isSubMenuOpen ? 'rotate-180' : ""} flex`}>
                             <FontAwesomeIcon className="text-md" icon={Icons.chevronDown}></FontAwesomeIcon>
                         </div>
                     </button>
 
                     {/* Si le sous-menu est ouvert, affichage de la liste des liens enfants */}
                     {/* Surligne le sous-item actif si le pathname actuel correspond */}
-                    {subMenuOpen && (
-                        <div className="my-2 ml-6 flex flex-col space-y-5 text-primary200 w-fit p-2">
+                    {isSubMenuOpen && (
+                        <div className="my-2 ml-2 flex flex-col space-y-5 text-primary200 w-fit p-2">
                             {item.subMenuItems?.map((subItem, idx) => {
                                 return (
                                     <Link
                                      key={idx}
                                      href={subItem.path}
-                                     className={`flex gap-3 items-center p-2 rounded-lg transition
+                                     className={`flex gap-3 text-md items-center p-2 rounded-lg transition
                                                 ${subItem.path === pathname ? 'bg-light font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
                                     >
                                         <span className="flex gap-3 items-center">{subItem.icon}{subItem.title}</span>
