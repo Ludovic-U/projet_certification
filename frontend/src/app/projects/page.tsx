@@ -52,13 +52,7 @@ export default function Home() {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Header/>
             <div className="flex flex-1">
-                <SideNav
-                isOpen={isSideNavOpen}
-                toggle={() => setIsSideNavOpen((prev) => !prev)}
-                />
-
                 <main
                  className={`
                     overflow-y-scroll flex flex-col bg-light transition-all duration-300 flex-1
