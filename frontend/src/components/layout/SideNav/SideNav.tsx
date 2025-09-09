@@ -24,7 +24,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                 {/* Logo + Titre */}
                 <Link
                  href="/"
-                 className={`flex h-12 w-full flex-row items-center
+                 className={`flex mt-2 h-12 w-full flex-row items-center
                             ${isCollapsed ? "justify-center" : "md:justify-start md:px-6 spase-x-3"}`}
                  >
                     {/* cercle coloré représentant le logo */}
@@ -72,6 +72,9 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
         setSubMenuOpen(!subMenuOpen);
     };
 
+    const parentActive = pathname === item.path;
+    const childActive = item.subMenuItems?.some(sub => sub.path === pathname);
+
     // SIDENAV FERMEE
     // Chaque item s'affiche uniquement comme icône carré cliquable + Tooltip en hover avec le titre
     // Si le chemin actuel (pathname) correspond, l'icône de l'item actif est mis en surbrillance
@@ -80,7 +83,8 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
             // Contenu graphique de base (icône dans carré centré)
             <div
              className={`cursor-pointer flex items-center justify-center h-10 w-10 rounded-lg transition hover:bg-lighthover hover:text-primary
-                    ${pathname.includes(item.path) ? "bg-light text-primary" : ""}`}
+                    ${pathname.includes(item.path) ? "bg-light text-primary" : ""}
+                    ${childActive && !parentActive ? "text-primary" : ""}`}
             >
                 {item.icon}
             </div>
@@ -135,12 +139,15 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
                 {/* Mis en surbrillance si le pathname correspond */}
                     <button
                      onClick={toggleSubMenu}
-                     className={`cursor-pointer flex w-full flex-row items-center transition p-2 rounded-lg hover:bg-lighthover hover:text-primary justify-between
-                     ${pathname.includes(item.path) ? "bg-light text-primary" : ""}`}
+                     className={`
+                        cursor-pointer flex w-full flex-row items-center justify-between transition p-2 rounded-lg
+                        hover:bg-lighthover hover:text-primary
+                        ${pathname.includes(item.path) ? "bg-light text-primary" : ""}
+                        ${childActive && !parentActive ? "text-primary" : ""}`}
                     >
                         <div className="flex flex-row space-x-4 items-center">
                             {item.icon}
-                            <span className="font-semibold text-xl flex">{item.title}</span>
+                            <span className="font-base text-lg flex">{item.title}</span>
                         </div>
 
                         {/* chevron pour ouvrir/fermer le submenu*/}
@@ -152,15 +159,16 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
                     {/* Si le sous-menu est ouvert, affichage de la liste des liens enfants */}
                     {/* Surligne le sous-item actif si le pathname actuel correspond */}
                     {subMenuOpen && (
-                        <div className="my-2 ml-12 flex flex-col space-y-4 text-primarylighter">
+                        <div className="my-2 ml-6 flex flex-col space-y-5 text-primary200 w-fit p-2">
                             {item.subMenuItems?.map((subItem, idx) => {
                                 return (
                                     <Link
                                      key={idx}
                                      href={subItem.path}
-                                     className={`${subItem.path === pathname ? 'font-bold text-primary200' : ''}`}
+                                     className={`flex gap-3 items-center p-2 rounded-lg transition
+                                                ${subItem.path === pathname ? 'bg-light font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
                                     >
-                                        <span>{subItem.title}</span>
+                                        <span className="flex gap-3 items-center">{subItem.icon}{subItem.title}</span>
                                     </Link>
                                 );
                             })}
@@ -173,10 +181,10 @@ const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolea
                 <Link
                  href={item.path}
                  className={`flex flex-row space-x-4 items-center p-2 rounded-lg hover:bg-lighthover hover:text-primary
-                    ${item.path === pathname ? 'text-primary bg-light' : ''}`}
+                    ${item.path === pathname ? 'text-primary bg-light font-semibold cursor-default' : ''}`}
                 >
                     {item.icon}
-                    <span className="flex font-semibold text-xl">{item.title}</span>
+                    <span className="flex font-base text-lg">{item.title}</span>
                 </Link>
             )}
         </div>
