@@ -8,7 +8,11 @@
 const optionController = require("../../controllers/optionController");
 const optionService = require("../../services/optionService");
 const { createMockResponse } = require("../helpers/responseHelper");
-const { expectError } = require("../helpers/errorHelper");
+const {
+  invalidOrMissingStatus,
+  notFoundStatus,
+  internalServerErrorStatus,
+} = require("../helpers/errorHelper");
 
 // Mock optionService layer to isolate business logic
 jest.mock("../../services/optionService");
@@ -47,17 +51,12 @@ describe("Option Controller", () => {
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         optionController.createOption,
         req,
         res,
-        () =>
-          optionService.createOption.mockRejectedValue(Error("Database error")),
-        500,
-        "Internal server error"
+        optionService.createOption
       );
-
-      expect(optionService.createOption).toHaveBeenCalled();
     });
   });
 
@@ -80,7 +79,7 @@ describe("Option Controller", () => {
       await optionController.updateOption(req, res, next);
 
       expect(optionService.updateOption).toHaveBeenCalledWith(
-        parseInt(req.params.optionId),
+        Number(req.params.optionId),
         { label: req.body.label, questionId: req.body.questionId }
       );
       expect(res.status).toHaveBeenCalledWith(200);
@@ -89,45 +88,32 @@ describe("Option Controller", () => {
 
     it("should return 400 for invalid optionId", async () => {
       req.params.optionId = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         optionController.updateOption,
         req,
         res,
-        () => {},
-        400,
+        optionService.updateOption,
         "Invalid optionId"
       );
-      expect(optionService.updateOption).not.toHaveBeenCalled();
     });
 
     it("should return 404 if option not found", async () => {
-      await expectError(
+      await notFoundStatus(
         optionController.updateOption,
         req,
         res,
-        () => optionService.updateOption.mockRejectedValue({ code: "P2025" }),
-        404,
-        "Option not found"
+        optionService.updateOption,
+        "Option"
       );
-
-      expect(optionService.updateOption).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         optionController.updateOption,
         req,
         res,
-        () =>
-          optionService.updateOption.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        optionService.updateOption
       );
-
-      expect(optionService.updateOption).toHaveBeenCalled();
     });
   });
 
@@ -145,7 +131,7 @@ describe("Option Controller", () => {
       await optionController.deleteOption(req, res, next);
 
       expect(optionService.deleteOption).toHaveBeenCalledWith(
-        parseInt(req.params.optionId)
+        Number(req.params.optionId)
       );
       expect(res.status).toHaveBeenCalledWith(204);
       expect(res.send).toHaveBeenCalled();
@@ -153,46 +139,32 @@ describe("Option Controller", () => {
 
     it("should return 400 for invalid optionId", async () => {
       req.params.optionId = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         optionController.deleteOption,
         req,
         res,
-        () => {},
-        400,
+        optionService.deleteOption,
         "Invalid optionId"
       );
-
-      expect(optionService.deleteOption).not.toHaveBeenCalled();
     });
 
     it("should return 404 if option not found", async () => {
-      await expectError(
+      await notFoundStatus(
         optionController.deleteOption,
         req,
         res,
-        () => optionService.deleteOption.mockRejectedValue({ code: "P2025" }),
-        404,
-        "Option not found"
+        optionService.deleteOption,
+        "Option"
       );
-
-      expect(optionService.deleteOption).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         optionController.deleteOption,
         req,
         res,
-        () =>
-          optionService.deleteOption.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        optionService.deleteOption
       );
-
-      expect(optionService.deleteOption).toHaveBeenCalled();
     });
   });
 
@@ -212,7 +184,7 @@ describe("Option Controller", () => {
       await optionController.getOptionById(req, res, next);
 
       expect(optionService.getOptionById).toHaveBeenCalledWith(
-        parseInt(req.params.optionId)
+        Number(req.params.optionId)
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockOption);
@@ -220,45 +192,32 @@ describe("Option Controller", () => {
 
     it("should return 400 for invalid questionId", async () => {
       req.params.optionId = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         optionController.getOptionById,
         req,
         res,
-        () => {},
-        400,
+        optionService.getOptionById,
         "Invalid optionId"
       );
-      expect(optionService.getOptionById).not.toHaveBeenCalled();
     });
 
     it("should return 404 if option not found", async () => {
-      await expectError(
+      await notFoundStatus(
         optionController.getOptionById,
         req,
         res,
-        () => optionService.getOptionById.mockRejectedValue({ code: "P2025" }),
-        404,
-        "Option not found"
+        optionService.getOptionById,
+        "Option"
       );
-
-      expect(optionService.getOptionById).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         optionController.getOptionById,
         req,
         res,
-        () =>
-          optionService.getOptionById.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        optionService.getOptionById
       );
-
-      expect(optionService.getOptionById).toHaveBeenCalled();
     });
   });
 
@@ -281,7 +240,7 @@ describe("Option Controller", () => {
       await optionController.getOptionsByQuestion(req, res, next);
 
       expect(optionService.getOptionsByQuestion).toHaveBeenCalledWith(
-        parseInt(req.params.questionId)
+        Number(req.params.questionId)
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockOptions);
@@ -289,49 +248,32 @@ describe("Option Controller", () => {
 
     it("should return 400 for invalid questionId", async () => {
       req.params.questionId = "invalid";
-
-      await expectError(
+      await invalidOrMissingStatus(
         optionController.getOptionsByQuestion,
         req,
         res,
-        () => {},
-        400,
+        optionService.getOptionsByQuestion,
         "Invalid questionId"
       );
-
-      expect(optionService.getOptionsByQuestion).not.toHaveBeenCalled();
     });
 
     it("should return 404 if question not found", async () => {
-      await expectError(
+      await notFoundStatus(
         optionController.getOptionsByQuestion,
         req,
         res,
-        () =>
-          optionService.getOptionsByQuestion.mockRejectedValue({
-            code: "P2025",
-          }),
-        404,
-        "Question not found"
+        optionService.getOptionsByQuestion,
+        "Question"
       );
-
-      expect(optionService.getOptionsByQuestion).toHaveBeenCalled();
     });
 
     it("should handle service errors and return 500 status", async () => {
-      await expectError(
+      await internalServerErrorStatus(
         optionController.getOptionsByQuestion,
         req,
         res,
-        () =>
-          optionService.getOptionsByQuestion.mockRejectedValue(
-            new Error("Database error")
-          ),
-        500,
-        "Internal server error"
+        optionService.getOptionsByQuestion
       );
-
-      expect(optionService.getOptionsByQuestion).toHaveBeenCalled();
     });
   });
 });

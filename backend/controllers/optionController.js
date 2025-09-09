@@ -1,4 +1,5 @@
 const optionService = require("../services/optionService");
+const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new option.
@@ -29,9 +30,7 @@ module.exports.createOption = async (req, res) => {
 module.exports.updateOption = async (req, res) => {
   const optionId = Number(req.params.optionId);
   // Validate optionId
-  if (!Number.isInteger(optionId) || optionId <= 0) {
-    return res.status(400).json({ error: "Invalid optionId" });
-  }
+  if (!validateId(optionId, "optionId", res)) return;
 
   const { label, questionId } = req.body;
 
@@ -58,9 +57,7 @@ module.exports.updateOption = async (req, res) => {
 module.exports.deleteOption = async (req, res) => {
   const optionId = Number(req.params.optionId);
   // Validate optionId
-  if (!Number.isInteger(optionId) || optionId <= 0) {
-    return res.status(400).json({ error: "Invalid optionId" });
-  }
+  if (!validateId(optionId, "optionId", res)) return;
 
   try {
     await optionService.deleteOption(optionId);
@@ -82,9 +79,7 @@ module.exports.deleteOption = async (req, res) => {
 module.exports.getOptionById = async (req, res) => {
   const optionId = Number(req.params.optionId);
   // Validate optionId
-  if (!Number.isInteger(optionId) || optionId <= 0) {
-    return res.status(400).json({ error: "Invalid optionId" });
-  }
+  if (!validateId(optionId, "optionId", res)) return;
 
   try {
     const option = await optionService.getOptionById(optionId);
@@ -106,9 +101,7 @@ module.exports.getOptionById = async (req, res) => {
 module.exports.getOptionsByQuestion = async (req, res) => {
   const questionId = Number(req.params.questionId);
   // Validate questionId
-  if (!Number.isInteger(questionId) || questionId <= 0) {
-    return res.status(400).json({ error: "Invalid questionId" });
-  }
+  if (!validateId(questionId, "questionId", res)) return;
 
   try {
     const options = await optionService.getOptionsByQuestion(
