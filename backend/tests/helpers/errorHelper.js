@@ -29,4 +29,52 @@ async function expectError(
   expect(res.json).toHaveBeenCalledWith({ error: expectedMessage });
 }
 
-module.exports = { expectError };
+async function invalidOrMissingStatus(
+  controllerMethod,
+  req,
+  res,
+  serviceMehtod,
+  message
+) {
+  await expectError(controllerMethod, req, res, () => {}, 400, message);
+
+  expect(serviceMehtod).not.toHaveBeenCalled();
+}
+
+async function notFoundStatus(controllerMethod, req, res, serviceMehtod, name) {
+  await expectError(
+    controllerMethod,
+    req,
+    res,
+    () => serviceMehtod.mockRejectedValue({ code: "P2025" }),
+    404,
+    `${name} not found`
+  );
+
+  expect(serviceMehtod).toHaveBeenCalled();
+}
+
+async function internalServerErrorStatus(
+  controllerMethod,
+  req,
+  res,
+  serviceMehtod
+) {
+  await expectError(
+    controllerMethod,
+    req,
+    res,
+    () => serviceMehtod.mockRejectedValue(new Error("Database error")),
+    500,
+    "Internal server error"
+  );
+
+  expect(serviceMehtod).toHaveBeenCalled();
+}
+
+module.exports = {
+  expectError,
+  invalidOrMissingStatus,
+  notFoundStatus,
+  internalServerErrorStatus,
+};
