@@ -50,8 +50,8 @@ module.exports.updateResponse = async (req, res) => {
     });
     res.status(200).json(response);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Response not found" });
+    if (error.message === "Response not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error updating response:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -72,8 +72,8 @@ module.exports.deleteResponse = async (req, res) => {
     await responseService.deleteResponse(responseId);
     res.status(204).send();
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Response not found" });
+    if (error.message === "Response not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error deleting response:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -102,8 +102,8 @@ module.exports.getResponsesByQuestionOfProject = async (req, res) => {
     );
     return res.status(200).json(responses);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Project or Question not found" });
+    if (error.message === "Project or Question not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching response:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -124,8 +124,8 @@ module.exports.getResponsesByProject = async (req, res) => {
     const responses = await responseService.getResponsesByProject(projectId);
     res.status(200).json(responses);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Project not found" });
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching response:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -148,8 +148,8 @@ module.exports.getSubResponses = async (req, res) => {
     );
     res.status(200).json(subResponses);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "ResponseParent not found" });
+    if (error.message === "ResponseParent not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching sub-responses:", error);
     res.status(500).json({ error: "Internal server error" });
