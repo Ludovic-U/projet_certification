@@ -96,8 +96,8 @@ module.exports.updateQuestion = async (req, res) => {
     });
     res.status(200).json(question);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Question not found" });
+    if (error.message === "Question not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error updating question:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -118,8 +118,8 @@ module.exports.deleteQuestion = async (req, res) => {
     await questionService.deleteQuestion(questionId);
     res.status(204).send();
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Question not found" });
+    if (error.message === "Question not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error deleting question:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -140,8 +140,8 @@ module.exports.getQuestionById = async (req, res) => {
     const question = await questionService.getQuestionById(questionId);
     res.status(200).json(question);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Question not found" });
+    if (error.message === "Question not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching question:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -162,8 +162,8 @@ module.exports.getQuestionsByProject = async (req, res) => {
     const questions = await questionService.getQuestionsByProject(projectId);
     res.status(200).json(questions);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Project not found" });
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching questions by project:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -181,9 +181,6 @@ module.exports.getQuestionsByCategory = async (req, res) => {
     const questions = await questionService.getQuestionsByCategory(category);
     res.status(200).json(questions);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Category not found" });
-    }
     console.error("Error fetching questions by category:", error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -203,8 +200,8 @@ module.exports.getQuestionsByType = async (req, res) => {
     const questions = await questionService.getQuestionsByType(typeId);
     res.status(200).json(questions);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Type not found" });
+    if (error.message === "Type not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching questions by type:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -227,8 +224,8 @@ module.exports.getSubQuestions = async (req, res) => {
     );
     res.status(200).json(subQuestions);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "QuestionParent not found" });
+    if (error.message === "QuestionParent not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching sub-questions:", error);
     res.status(500).json({ error: "Internal server error" });

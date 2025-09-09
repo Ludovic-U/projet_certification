@@ -64,16 +64,16 @@ module.exports.deleteQuestion = async (questionId) => {
  * @throws {Error} If the question does not exist.
  */
 module.exports.getQuestionById = async (questionId) => {
-  try {
-    return await prisma.question.findUnique({
-      where: { questionId: questionId },
-    });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("Question not found");
-    }
-    throw error;
+  const question = await prisma.question.findUnique({
+    where: { questionId: questionId },
+    include: { projects: true, types: true },
+  });
+
+  if (!question) {
+    throw new Error("Question not found");
   }
+
+  return question;
 };
 
 /**
@@ -83,27 +83,37 @@ module.exports.getQuestionById = async (questionId) => {
  * @returns {Promise<Array>} List of questions.
  */
 module.exports.getQuestionsByProject = async (projectId) => {
-  try {
-    return await prisma.question.findMany({
-      where: {
-        OR: [
-          // Questions directly linked to the project
-          { projects: { some: { projectId: projectId } } },
-          // Questions linked by project type
-          {
-            types: {
-              some: { projectTypes: { some: { projectId: projectId } } },
-            },
+  const projectWithQuestions = await prisma.project.findUnique({
+    where: { projectId: projectId },
+    include: {
+      questions: true, // Specific questions
+      types: {
+        include: {
+          projectTypes: {
+            where: { projectId },
+            include: { questions: true }, // Questions via type
           },
-        ],
+        },
       },
-    });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("Project not found");
-    }
-    throw error;
+    },
+  });
+
+  if (!projectWithQuestions) {
+    throw new Error("Project not found");
   }
+  // Flatten and combine questions
+  const typeQuestions = projectWithQuestions.types.flatMap((type) =>
+    type.projectTypes.flatMap((pt) => pt.questions)
+  );
+
+  const allQuestions = [...projectWithQuestions.questions, ...typeQuestions];
+
+  // Optionally remove duplicates
+  const questions = Array.from(
+    new Map(allQuestions.map((q) => [q.questionId, q])).values()
+  );
+
+  return questions;
 };
 
 /**
@@ -123,16 +133,16 @@ module.exports.getQuestionsByCategory = async (category) => {
  * @returns {Promise<Array>} List of questions with the given type.
  */
 module.exports.getQuestionsByType = async (typeId) => {
-  try {
-    return await prisma.question.findMany({
-      where: { types: { some: { typeId: typeId } } },
-    });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("Type not found");
-    }
-    throw error;
+  const typeWithQuestions = await prisma.type.findUnique({
+    where: { typeId: typeId },
+    include: { questions: true },
+  });
+
+  if (!typeWithQuestions) {
+    throw new Error("Type not found");
   }
+
+  return typeWithQuestions.questions;
 };
 
 /**
@@ -141,14 +151,14 @@ module.exports.getQuestionsByType = async (typeId) => {
  * @returns {Promise<Array>} List of subquestions.
  */
 module.exports.getSubQuestions = async (questionIdParent) => {
-  try {
-    return await prisma.question.findMany({
-      where: { questionIdParent: questionIdParent },
-    });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("ParentQuestion not found");
-    }
-    throw error;
+  const parentQuestion = await prisma.question.findUnique({
+    where: { questionIdParent: questionIdParent },
+    include: { children: true },
+  });
+
+  if (!parentQuestion) {
+    throw new Error("QuestionParent not found");
   }
+
+  return parentQuestion.children;
 };

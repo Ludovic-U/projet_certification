@@ -18,6 +18,8 @@ jest.mock("../../prisma/prismaClient", () => ({
       delete: jest.fn(),
       findUnique: jest.fn(),
     },
+    project: { findUnique: jest.fn() },
+    type: { findUnique: jest.fn() },
   },
 }));
 
@@ -174,7 +176,6 @@ describe("Question Service", () => {
         shouldMultiply: false,
         questionIdParent: null,
       };
-
       const mockError = new Error("Question not found");
       mockError.code = "P2025";
 
@@ -201,7 +202,6 @@ describe("Question Service", () => {
         shouldMultiply: false,
         questionIdParent: null,
       };
-
       const mockError = new Error("Database error");
 
       prisma.question.update.mockRejectedValue(mockError);
@@ -236,7 +236,6 @@ describe("Question Service", () => {
 
     it("should throw an error if the question is not found", async () => {
       const questionId = 999;
-
       const mockError = new Error("Question not found");
       mockError.code = "P2025";
 
@@ -253,7 +252,6 @@ describe("Question Service", () => {
 
     it("should throw an error if deletion fails", async () => {
       const questionId = 1;
-
       const mockError = new Error("Database error");
 
       prisma.question.delete.mockRejectedValue(mockError);
@@ -276,7 +274,7 @@ describe("Question Service", () => {
       const questionId = 1;
       const mockQuestion = {
         id: questionId,
-        label: "Sample Question?",
+        label: "Sample Question",
         category: "General",
         numberOfSelectionableOpt: 0,
         isRelevant: true,
@@ -291,30 +289,21 @@ describe("Question Service", () => {
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
+        include: { projects: true, types: true },
       });
       expect(result).toEqual(mockQuestion);
     });
 
     it("should throw an error if the question is not found", async () => {
-      const questionId = 999;
+      prisma.question.findUnique.mockResolvedValue(null);
 
-      const mockError = new Error("Question not found");
-      mockError.code = "P2025";
-
-      prisma.question.findUnique.mockRejectedValue(mockError);
-
-      await expect(questionService.getQuestionById(questionId)).rejects.toThrow(
+      await expect(questionService.getQuestionById(999)).rejects.toThrow(
         "Question not found"
       );
-
-      expect(prisma.question.findUnique).toHaveBeenCalledWith({
-        where: { questionId: questionId },
-      });
     });
 
     it("should throw an error if fetching fails", async () => {
       const questionId = 1;
-
       const mockError = new Error("Database error");
 
       prisma.question.findUnique.mockRejectedValue(mockError);
@@ -325,6 +314,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
+        include: { projects: true, types: true },
       });
     });
   });
@@ -335,99 +325,100 @@ describe("Question Service", () => {
   describe("getQuestionsByProject", () => {
     it("should return questions for the given project", async () => {
       const projectId = 1;
-      const mockQuestions = [
-        { questionId: 1, label: "Q1" },
-        { questionId: 2, label: "Q2" },
-      ];
+      const mockProject = {
+        projectId,
+        questions: [{ questionId: 1, text: "Project question 1" }],
+        types: [
+          {
+            projectTypes: [
+              { questions: [{ questionId: 2, text: "Type question 1" }] },
+            ],
+          },
+        ],
+      };
 
-      prisma.question.findMany.mockResolvedValue(mockQuestions);
+      prisma.project.findUnique.mockResolvedValue(mockProject);
 
       const result = await questionService.getQuestionsByProject(projectId);
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: {
-          OR: [
-            { projects: { some: { projectId: projectId } } },
-            {
-              types: {
-                some: { projectTypes: { some: { projectId: projectId } } },
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
+        where: { projectId: projectId },
+        include: {
+          questions: true,
+          types: {
+            include: {
+              projectTypes: {
+                where: { projectId },
+                include: { questions: true },
               },
             },
-          ],
+          },
         },
       });
-      expect(result).toEqual(mockQuestions);
+      expect(result).toEqual([
+        { questionId: 1, text: "Project question 1" },
+        { questionId: 2, text: "Type question 1" },
+      ]);
     });
 
     it("should return an empty array if no questions found", async () => {
       const projectId = 1;
 
-      prisma.question.findMany.mockResolvedValue([]);
+      prisma.project.findUnique.mockResolvedValue({
+        projectId,
+        questions: [],
+        types: [],
+      });
 
       const result = await questionService.getQuestionsByProject(projectId);
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: {
-          OR: [
-            { projects: { some: { projectId: projectId } } },
-            {
-              types: {
-                some: { projectTypes: { some: { projectId: projectId } } },
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
+        where: { projectId: projectId },
+        include: {
+          questions: true,
+          types: {
+            include: {
+              projectTypes: {
+                where: { projectId },
+                include: { questions: true },
               },
             },
-          ],
+          },
         },
       });
       expect(result).toEqual([]);
     });
 
     it("should thow an error if the project is not found", async () => {
-      const projectId = 999;
+      prisma.project.findUnique.mockResolvedValue(null);
 
-      const mockError = new Error("Project not found");
-      mockError.code = "P2025";
-
-      prisma.question.findMany.mockRejectedValue(mockError);
-
-      await expect(
-        questionService.getQuestionsByProject(projectId)
-      ).rejects.toThrow("Project not found");
-
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: {
-          OR: [
-            { projects: { some: { projectId: projectId } } },
-            {
-              types: {
-                some: { projectTypes: { some: { projectId: projectId } } },
-              },
-            },
-          ],
-        },
-      });
+      await expect(questionService.getQuestionsByProject(999)).rejects.toThrow(
+        "Project not found"
+      );
     });
 
     it("should throw an error if fetching fails", async () => {
       const projectId = 1;
-
       const mockError = new Error("Database error");
 
-      prisma.question.findMany.mockRejectedValue(mockError);
+      prisma.project.findUnique.mockRejectedValue(mockError);
 
       await expect(
         questionService.getQuestionsByProject(projectId)
       ).rejects.toThrow("Database error");
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: {
-          OR: [
-            { projects: { some: { projectId: projectId } } },
-            {
-              types: {
-                some: { projectTypes: { some: { projectId: projectId } } },
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
+        where: { projectId: projectId },
+        include: {
+          questions: true,
+          types: {
+            include: {
+              projectTypes: {
+                where: { projectId },
+                include: { questions: true },
               },
             },
-          ],
+          },
         },
       });
     });
@@ -440,26 +431,8 @@ describe("Question Service", () => {
     it("should return questions for the given category", async () => {
       const category = "General";
       const mockQuestions = [
-        {
-          questionId: 1,
-          label: "Question 1?",
-          category: "General",
-          numberOfSelectionableOpt: 0,
-          isRelevant: true,
-          hasMultipleOpenResponse: false,
-          shouldMultiply: false,
-          questionIdParent: null,
-        },
-        {
-          questionId: 2,
-          label: "Question 2?",
-          category: "General",
-          numberOfSelectionableOpt: 2,
-          isRelevant: false,
-          hasMultipleOpenResponse: true,
-          shouldMultiply: false,
-          questionIdParent: null,
-        },
+        { questionId: 1, label: "Question 1" },
+        { questionId: 2, label: "Question 2" },
       ];
 
       prisma.question.findMany.mockResolvedValue(mockQuestions);
@@ -473,7 +446,7 @@ describe("Question Service", () => {
     });
 
     it("should return an empty array if no questions match the category", async () => {
-      const category = "NonExistentCategory";
+      const category = "emptyCategory";
 
       prisma.question.findMany.mockResolvedValue([]);
 
@@ -485,26 +458,8 @@ describe("Question Service", () => {
       expect(result).toEqual([]);
     });
 
-    it("should throw an error if the category is not found", async () => {
-      const category = "qwer";
-
-      const mockError = new Error("Category not found");
-      mockError.code = "P2025";
-
-      prisma.question.findMany.mockRejectedValue(mockError);
-
-      await expect(
-        questionService.getQuestionsByCategory(category)
-      ).rejects.toThrow("Category not found");
-
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: { category: category },
-      });
-    });
-
     it("should throw an error if fetching fails", async () => {
       const category = "General";
-
       const mockError = new Error("Database error");
 
       prisma.question.findMany.mockRejectedValue(mockError);
@@ -525,82 +480,67 @@ describe("Question Service", () => {
   describe("getQuestionsByType", () => {
     it("should return questions for the given typeId", async () => {
       const typeId = 1;
-      const mockQuestions = [
-        {
-          questionId: 1,
-          label: "Question 1?",
-          category: "General",
-          numberOfSelectionableOpt: 0,
-          isRelevant: true,
-          hasMultipleOpenResponse: false,
-          shouldMultiply: false,
-          questionIdParent: null,
-        },
-        {
-          questionId: 2,
-          label: "Question 2?",
-          category: "Specific",
-          numberOfSelectionableOpt: 2,
-          isRelevant: false,
-          hasMultipleOpenResponse: true,
-          shouldMultiply: false,
-          questionIdParent: null,
-        },
-      ];
+      const mockType = {
+        typeId: typeId,
+        questions: [
+          { questionId: 1, label: "Question 1" },
+          { questionId: 2, label: "Question 2" },
+        ],
+      };
 
-      prisma.question.findMany.mockResolvedValue(mockQuestions);
+      prisma.type.findUnique.mockResolvedValue(mockType);
 
       const result = await questionService.getQuestionsByType(typeId);
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: { types: { some: { typeId: typeId } } },
+      expect(prisma.type.findUnique).toHaveBeenCalledWith({
+        where: { typeId: typeId },
+        include: { questions: true },
       });
-      expect(result).toEqual(mockQuestions);
+      expect(result).toEqual([
+        { questionId: 1, label: "Question 1" },
+        { questionId: 2, label: "Question 2" },
+      ]);
     });
 
     it("should return an empty array if no questions match the typeId", async () => {
-      const typeId = 999;
+      const typeId = 1;
+      const mockType = {
+        typeId: typeId,
+        questions: [],
+      };
 
-      prisma.question.findMany.mockResolvedValue([]);
+      prisma.type.findUnique.mockResolvedValue(mockType);
 
       const result = await questionService.getQuestionsByType(typeId);
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: { types: { some: { typeId: typeId } } },
+      expect(prisma.type.findUnique).toHaveBeenCalledWith({
+        where: { typeId: typeId },
+        include: { questions: true },
       });
       expect(result).toEqual([]);
     });
 
     it("should throw an error if the type is not found", async () => {
-      const typeId = 999;
+      prisma.type.findUnique.mockResolvedValue(null);
 
-      const mockError = new Error("Type not found");
-      mockError.code = "P2025";
-
-      prisma.question.findMany.mockRejectedValue(mockError);
-
-      await expect(questionService.getQuestionsByType(typeId)).rejects.toThrow(
+      await expect(questionService.getQuestionsByType(999)).rejects.toThrow(
         "Type not found"
       );
-
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: { types: { some: { typeId: typeId } } },
-      });
     });
 
     it("should throw an error if fetching fails", async () => {
       const typeId = 1;
-
       const mockError = new Error("Database error");
 
-      prisma.question.findMany.mockRejectedValue(mockError);
+      prisma.type.findUnique.mockRejectedValue(mockError);
 
       await expect(questionService.getQuestionsByType(typeId)).rejects.toThrow(
         "Database error"
       );
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: { types: { some: { typeId: typeId } } },
+      expect(prisma.type.findUnique).toHaveBeenCalledWith({
+        where: { typeId: typeId },
+        include: { questions: true },
       });
     });
   });
@@ -611,82 +551,67 @@ describe("Question Service", () => {
   describe("getSubQuestions", () => {
     it("should return questions for the given questionIdParent", async () => {
       const questionIdParent = 1;
-      const mockQuestions = [
-        {
-          questionId: 1,
-          label: "Question 1?",
-          category: "General",
-          numberOfSelectionableOpt: 0,
-          isRelevant: true,
-          hasMultipleOpenResponse: false,
-          shouldMultiply: false,
-          questionIdParent: 1,
-        },
-        {
-          questionId: 2,
-          label: "Question 2?",
-          category: "Specific",
-          numberOfSelectionableOpt: 2,
-          isRelevant: false,
-          hasMultipleOpenResponse: true,
-          shouldMultiply: false,
-          questionIdParent: 1,
-        },
-      ];
+      const mockQuestionParent = {
+        questionId: questionIdParent,
+        children: [
+          { questionId: 1, label: "Question 1" },
+          { questionId: 2, label: "Question 2" },
+        ],
+      };
 
-      prisma.question.findMany.mockResolvedValue(mockQuestions);
+      prisma.question.findUnique.mockResolvedValue(mockQuestionParent);
 
       const result = await questionService.getSubQuestions(questionIdParent);
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
+      expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionIdParent: questionIdParent },
+        include: { children: true },
       });
-      expect(result).toEqual(mockQuestions);
+      expect(result).toEqual([
+        { questionId: 1, label: "Question 1" },
+        { questionId: 2, label: "Question 2" },
+      ]);
     });
 
     it("should return an empty array if no questions match the questionIdParent", async () => {
-      const questionIdParent = 999;
+      const questionIdParent = 1;
+      const mockQuestionParent = {
+        questionId: questionIdParent,
+        children: [],
+      };
 
-      prisma.question.findMany.mockResolvedValue([]);
+      prisma.question.findUnique.mockResolvedValue(mockQuestionParent);
 
       const result = await questionService.getSubQuestions(questionIdParent);
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
+      expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionIdParent: questionIdParent },
+        include: { children: true },
       });
       expect(result).toEqual([]);
     });
 
-    it("should throw an error if parent question is not found", async () => {
-      const questionIdParent = 999;
+    it("should throw an error if the question parent is not found", async () => {
+      prisma.question.findUnique.mockResolvedValue(null);
 
-      const mockError = new Error("ParentQuestion not found");
-      mockError.code = "P2025";
-
-      prisma.question.findMany.mockRejectedValue(mockError);
-
-      await expect(
-        questionService.getSubQuestions(questionIdParent)
-      ).rejects.toThrow("ParentQuestion not found");
-
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
-        where: { questionIdParent: questionIdParent },
-      });
+      await expect(questionService.getSubQuestions(999)).rejects.toThrow(
+        "QuestionParent not found"
+      );
     });
 
     it("should throw an error if fetching fails", async () => {
       const questionIdParent = 1;
-
       const mockError = new Error("Database error");
 
-      prisma.question.findMany.mockRejectedValue(mockError);
+      prisma.question.findUnique.mockRejectedValue(mockError);
 
       await expect(
         questionService.getSubQuestions(questionIdParent)
       ).rejects.toThrow("Database error");
 
-      expect(prisma.question.findMany).toHaveBeenCalledWith({
+      expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionIdParent: questionIdParent },
+        include: { children: true },
       });
     });
   });

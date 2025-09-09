@@ -284,6 +284,7 @@ describe("Question Controller", () => {
     });
 
     it("should return 404 if question not found", async () => {
+      req.params.questionId = 999;
       await notFoundStatus(
         questionController.getQuestionById,
         req,
@@ -380,16 +381,6 @@ describe("Question Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockQuestions);
-    });
-
-    it("should return 404 if category not found", async () => {
-      await notFoundStatus(
-        questionController.getQuestionsByCategory,
-        req,
-        res,
-        questionService.getQuestionsByCategory,
-        "Category"
-      );
     });
 
     it("should handle service errors and return 500 status", async () => {

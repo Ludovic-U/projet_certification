@@ -46,7 +46,7 @@ async function notFoundStatus(controllerMethod, req, res, serviceMehtod, name) {
     controllerMethod,
     req,
     res,
-    () => serviceMehtod.mockRejectedValue({ code: "P2025" }),
+    () => serviceMehtod.mockRejectedValue(new Error(`${name} not found`)),
     404,
     `${name} not found`
   );
