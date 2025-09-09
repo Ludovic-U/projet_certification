@@ -1,4 +1,5 @@
 const typeService = require("../services/typeService");
+const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new type.
@@ -41,9 +42,8 @@ module.exports.getAllTypes = async (_, res) => {
 module.exports.updateType = async (req, res) => {
   const typeId = Number(req.params.typeId);
   // Validate typeId
-  if (!Number.isInteger(typeId) || typeId <= 0) {
-    return res.status(400).json({ error: "Invalid typeId" });
-  }
+  if (!validateId(typeId, "typeId", res)) return;
+
   const { label } = req.body;
 
   try {
@@ -66,9 +66,7 @@ module.exports.updateType = async (req, res) => {
 module.exports.deleteType = async (req, res) => {
   const typeId = Number(req.params.typeId);
   // Validate typeId
-  if (!Number.isInteger(typeId) || typeId <= 0) {
-    return res.status(400).json({ error: "Invalid typeId" });
-  }
+  if (!validateId(typeId, "typeId", res)) return;
 
   try {
     await typeService.deleteType(typeId);
@@ -90,9 +88,7 @@ module.exports.deleteType = async (req, res) => {
 module.exports.getTypeById = async (req, res) => {
   const typeId = Number(req.params.typeId);
   // Validate typeId
-  if (!Number.isInteger(typeId) || typeId <= 0) {
-    return res.status(400).json({ error: "Invalid typeId" });
-  }
+  if (!validateId(typeId, "typeId", res)) return;
 
   try {
     const type = await typeService.getTypeById(typeId);
