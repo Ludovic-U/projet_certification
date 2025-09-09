@@ -2,6 +2,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faChevronRight,
     faChevronLeft,
+    faChevronDown,
+    faChevronUp,
     faUserTie,
     faBriefcase,
     faUsers,
@@ -20,6 +22,8 @@ import {
 export const Icons = {
     chevronRight: faChevronRight,
     chevronLeft: faChevronLeft,
+    chevronDown: faChevronDown,
+    chevronUp: faChevronUp,
     userTie: faUserTie,
     briefcase: faBriefcase,
     users: faUsers,

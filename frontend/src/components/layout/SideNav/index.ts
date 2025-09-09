@@ -1,2 +1,3 @@
-export { SideNav } from "./SideNav"
-export type { SideNavProps, NavItem } from "./sidenav.types"
+export { SIDENAV_ITEMS } from "./constants"
+export type { SideNavItem, MenuItemWithSubMenuProps } from "./types"
+export { default as SideNav } from "./SideNav"

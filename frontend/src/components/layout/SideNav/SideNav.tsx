@@ -1,115 +1,184 @@
 "use client";
 
-import React, { forwardRef } from "react";
+import React, { useState } from "react";
 
-import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
+import Link from "next/link"; // Composant de navigation côté client
+import { usePathname } from "next/navigation"; // Hook pour récupérer le chemin de l'url active 
 
-import { SideNavProps } from "./sidenav.types";
-import { Tooltip, Button } from "@/components/ui";
+import { SIDENAV_ITEMS } from "./constants"; // Liste des items du menu (icônes, titres, liens...)
+import { SideNavItem, SideNavProps } from "./types"; // Type TypeScript décrivant la forme d'un item de menu
+import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons"; // Icones utilisés dans la navbar
 
-export const SideNav = forwardRef<HTMLElement, SideNavProps> (
-    ({ isOpen, toggle, navItems = [] }, ref) => {
+import { Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
+
+// Déclare l'état de la sidenav (ouverte ou fermée).
+const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
+    const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
     return (
-        <aside
-         ref={ref}
-         className={`
-            fixed top-0 left-0 h-screen z-20 flex flex-col bg-dark text-light pt-8
-            transition-all duration-300 shrink-0
-            ${isOpen ? "w-[240px]" : "w-[90px]"}
-         `}
-        >
-        <Button
-         variant="iconRound"
-         className={`absolute top-25
-         ${isOpen ? "left-56" : "left-19"}`}
-         size="smRound"
-         onClick={toggle}
-         icon={
-            <FontAwesomeIcon
-             icon={Icons.chevronRight}
-             size="sm"
-             className={`transition-transform duration-300
-             ${isOpen ? "rotate-180" : ""}`}
-            />
-         }/>
+        // Composant principal :
+        // Fixée à gauche, prend toute la hauteur de l'écran et masquée sur mobile.
+        <div className={`fixed hidden h-screen ${isCollapsed ? 'md:w-16' : 'md:w-60'} flex-1 bg-dark text-light font-noto md:flex z-50 transistion-all duration-300`}>
+            <div className="relative flex w-full flex-col space-y-8">
 
-            <p className="font-bold text-center justify-center w-full">
-                {isOpen ? "Figure de Skills" : "F2S"}
-            </p>
+                {/* Logo + Titre */}
+                <Link
+                 href="/"
+                 className={`flex h-12 w-full flex-row items-center
+                            ${isCollapsed ? "justify-center" : "md:justify-start md:px-6 spase-x-3"}`}
+                 >
+                    {/* cercle coloré représentant le logo */}
+                    <span className="h-7 w-7 bg-primary rounded-full flex-shrink-0"/>
 
-            <ul className="mt-4 space-y-2 flex flex-col items-center">
-                <li className="">
-                    <Tooltip content="Voir tous les clients" position="right">
-                        <Button
-                            variant="nav"
-                            size={isOpen ? "sm" : "xs"}
-                            icon={
-                                <FontAwesomeIcon
-                                    icon={Icons.userTie}
-                                    className="hover:text-lighthover"
-                                    size="lg"
-                                />
-                            }
-                        >
-                            {isOpen && "Clients"}
-                        </Button>
-                    </Tooltip>                    
-                </li>
-                <li className="">
-                    <Tooltip content="Voir tous les projets" position="right">
-                        <Button
-                            variant="nav"
-                            size={isOpen ? "sm" : "xs"}
-                            icon={
-                                <FontAwesomeIcon
-                                    icon={Icons.briefcase}
-                                    className="hover:text-lighthover"
-                                    size="lg"
-                                />
-                            }
-                        >
-                            {isOpen && "Projets"}
-                        </Button>
-                    </Tooltip>
-                </li>
-                <li className="">
-                    <Tooltip content="Voir tous les collaborateurs" position="right">
-                        <Button
-                            variant="nav"
-                            size={isOpen ? "sm" : "xs"}
-                            icon={
-                                <FontAwesomeIcon
-                                    icon={Icons.users}
-                                    className="hover:text-lighthover"
-                                    size="lg"
-                                />
-                            }
-                        >
-                            {isOpen && "Collaborateurs"}
-                        </Button>
-                    </Tooltip>
-                </li>
-                <li className="">
-                    <Tooltip content="Voir toutes les questions" position="right">
-                        <Button
-                            variant="nav"
-                            size={isOpen ? "sm" : "xs"}
-                            icon={
-                                <FontAwesomeIcon
-                                    icon={Icons.projectDiagram}
-                                    className="hover:text-lighthover"
-                                    size="lg"
-                                />
-                            }
-                        >
-                            {isOpen && "Questions"}
-                        </Button>
-                    </Tooltip>
-                </li>
-            </ul>
-        </aside>
-    )
-})
+                    {/* Titre affiché uniquement lorsque la sidenav est ouverte (isCollapsed à false) */}
+                    {!isCollapsed && (
+                        <span className={`font-bold font-oswald text-xl ml-2 whitespace-nowrap overflow-hidden transition-all duration-300
+                                        ${isCollapsed ? "opacity-0 w-0 ml-0" : "opacity-100 w-auto ml-2"}`}>
+                            Figure de Skills
+                        </span>
+                    )}
+                
+                </Link>
 
-SideNav.displayName = "SideNav";
+                {/* Boucle sur SIDENAV_ITEMS et crée un MenuItem pour chaque item. */}
+                <div className={`flex flex-col space-y-2 md:px-6 ${isCollapsed ? "items-center px-0" : ""}`}>
+                    {SIDENAV_ITEMS.map((item, idx) => {
+                        return <MenuItem key={idx} item={item} isCollapsed={isCollapsed}/>;
+                    })}
+                </div>
+
+                {/* Bouton pour ouvrir ou fermer la sidenav avec toggleCollapse */}
+                <button
+                 onClick={toggleCollapse}
+                 className="absolute top-16 -right-4 cursor-pointer h-8 w-8 text-dark border border-dark bg-light rounded-full hover:bg-lighthover hover:text-darkhover transition-colors">
+                    <FontAwesomeIcon icon={isCollapsed ? Icons.chevronRight : Icons.chevronLeft}
+                     className="text-md text-dark"/>
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default SideNav;
+
+// Composant MenuItem
+// Gère l'affichage d'un item du menu
+// Récupère le chemin actuel (pathname) pour mettre en surbrillance l'item actif
+const MenuItem = ({ item, isCollapsed }: {item: SideNavItem, isCollapsed: boolean}) => {
+    const pathname = usePathname();
+    // Etat local pour gérer si le sous-menu est ouvert
+    const [subMenuOpen, setSubMenuOpen] = useState(false);
+    const toggleSubMenu = () => {
+        setSubMenuOpen(!subMenuOpen);
+    };
+
+    // SIDENAV FERMEE
+    // Chaque item s'affiche uniquement comme icône carré cliquable + Tooltip en hover avec le titre
+    // Si le chemin actuel (pathname) correspond, l'icône de l'item actif est mis en surbrillance
+    if (isCollapsed) {
+        const menuContent = (
+            // Contenu graphique de base (icône dans carré centré)
+            <div
+             className={`cursor-pointer flex items-center justify-center h-10 w-10 rounded-lg transition hover:bg-lighthover hover:text-primary
+                    ${pathname.includes(item.path) ? "bg-light text-primary" : ""}`}
+            >
+                {item.icon}
+            </div>
+        );
+
+        // Si l'item a un sous-menu, affichage d'un flyoutmenu au hover
+        if (item.subMenu) {
+            return (
+                <div className="relative group">
+                    {/* Icône visible en sidebar */}
+                    {menuContent}
+
+                    {/* Flyout menu : apparaît à droite au hover */}
+                    <div
+                     className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover:flex flex-col bg-dark text-light rounded-lg shadow-400 p-2 z-50 min-w-[160px]">
+                        {/* Titre du menu parent */}
+                        <span className="font-semibold text-sm mb-2">{item.title}</span>
+                        {/* Liste des sous-items */}
+                        <div className="flex flex-col space-y-2">
+                            {item.subMenuItems?.map((subItem, idx) => (
+                                <Link
+                                 key={idx}
+                                 href={subItem.path}
+                                 className={`whitespace-nowrap text-sm rounded px-3 py-1 hover:bg-lighthover hover:text-primary
+                                 ${subItem.path === pathname ? "font-bold text-primary200" : ""}`}>
+                                    {subItem.title}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Item sans sous-menu, simple tooltip affichant le titre au survol
+        return (
+            <Tooltip content={item.title} position="right">
+                <Link href={item.path}>
+                    {menuContent}
+                </Link>
+            </Tooltip>
+        );
+    }
+
+    // SIDENAV OUVERTE
+    return (
+        <div className="">
+            {/* Si l'item a un submenu */}
+            {item.subMenu ? (
+                <>
+                {/* Bouton principal : icône + titre + chevron */}
+                {/* Mis en surbrillance si le pathname correspond */}
+                    <button
+                     onClick={toggleSubMenu}
+                     className={`cursor-pointer flex w-full flex-row items-center transition p-2 rounded-lg hover:bg-lighthover hover:text-primary justify-between
+                     ${pathname.includes(item.path) ? "bg-light text-primary" : ""}`}
+                    >
+                        <div className="flex flex-row space-x-4 items-center">
+                            {item.icon}
+                            <span className="font-semibold text-xl flex">{item.title}</span>
+                        </div>
+
+                        {/* chevron pour ouvrir/fermer le submenu*/}
+                        <div className={`${subMenuOpen ? 'rotate-180' : ""} flex`}>
+                            <FontAwesomeIcon className="text-md" icon={Icons.chevronDown}></FontAwesomeIcon>
+                        </div>
+                    </button>
+
+                    {/* Si le sous-menu est ouvert, affichage de la liste des liens enfants */}
+                    {/* Surligne le sous-item actif si le pathname actuel correspond */}
+                    {subMenuOpen && (
+                        <div className="my-2 ml-12 flex flex-col space-y-4 text-primarylighter">
+                            {item.subMenuItems?.map((subItem, idx) => {
+                                return (
+                                    <Link
+                                     key={idx}
+                                     href={subItem.path}
+                                     className={`${subItem.path === pathname ? 'font-bold text-primary200' : ''}`}
+                                    >
+                                        <span>{subItem.title}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    )}
+                </>
+            ) : (
+                // Item sans sous-menu
+                // Icône + titre cliquables pour rediriger et si pathname correspond à l'item, alors mis en surbrillance.
+                <Link
+                 href={item.path}
+                 className={`flex flex-row space-x-4 items-center p-2 rounded-lg hover:bg-lighthover hover:text-primary
+                    ${item.path === pathname ? 'text-primary bg-light' : ''}`}
+                >
+                    {item.icon}
+                    <span className="flex font-semibold text-xl">{item.title}</span>
+                </Link>
+            )}
+        </div>
+    );
+};
