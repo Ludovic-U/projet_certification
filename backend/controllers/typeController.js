@@ -10,9 +10,7 @@ module.exports.createType = async (req, res) => {
   const { label } = req.body;
 
   try {
-    const type = await typeService.createType({
-      label,
-    });
+    const type = await typeService.createType({ label });
     res.status(201).json(type);
   } catch (error) {
     console.error("Error creating type:", error);
@@ -50,8 +48,8 @@ module.exports.updateType = async (req, res) => {
     const type = await typeService.updateType(typeId, { label: label });
     res.status(200).json(type);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Type not found" });
+    if (error.message === "Type not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error updating type:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -72,8 +70,8 @@ module.exports.deleteType = async (req, res) => {
     await typeService.deleteType(typeId);
     res.status(204).send();
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Type not found" });
+    if (error.message === "Type not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error deleting type:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -94,8 +92,8 @@ module.exports.getTypeById = async (req, res) => {
     const type = await typeService.getTypeById(typeId);
     res.status(200).json(type);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Type not found" });
+    if (error.message === "Type not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching type:", error);
     res.status(500).json({ error: "Internal server error" });

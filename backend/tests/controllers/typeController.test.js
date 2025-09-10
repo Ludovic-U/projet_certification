@@ -109,9 +109,7 @@ describe("Type Controller", () => {
 
       expect(typeService.updateType).toHaveBeenCalledWith(
         Number(req.params.typeId),
-        {
-          label: req.body.label,
-        }
+        { label: req.body.label }
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockUpdatedType);
