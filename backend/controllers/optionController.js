@@ -11,10 +11,7 @@ module.exports.createOption = async (req, res) => {
   const { label, questionId } = req.body;
 
   try {
-    const option = await optionService.createOption({
-      label,
-      questionId,
-    });
+    const option = await optionService.createOption({ label, questionId });
     res.status(201).json(option);
   } catch (error) {
     console.error("Error creating option:", error);
@@ -41,8 +38,8 @@ module.exports.updateOption = async (req, res) => {
     });
     res.status(200).json(option);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Option not found" });
+    if (error.message === "Option not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error updating option:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -63,8 +60,8 @@ module.exports.deleteOption = async (req, res) => {
     await optionService.deleteOption(optionId);
     res.status(204).send();
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Option not found" });
+    if (error.message === "Option not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error deleting option:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -85,8 +82,8 @@ module.exports.getOptionById = async (req, res) => {
     const option = await optionService.getOptionById(optionId);
     res.status(200).json(option);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Option not found" });
+    if (error.message === "Option not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching option:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -104,13 +101,11 @@ module.exports.getOptionsByQuestion = async (req, res) => {
   if (!validateId(questionId, "questionId", res)) return;
 
   try {
-    const options = await optionService.getOptionsByQuestion(
-      parseInt(questionId)
-    );
+    const options = await optionService.getOptionsByQuestion(questionId);
     res.status(200).json(options);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Question not found" });
+    if (error.message === "Question not found") {
+      return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching options:", error);
     res.status(500).json({ error: "Internal server error" });
