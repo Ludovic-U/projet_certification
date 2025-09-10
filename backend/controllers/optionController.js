@@ -10,6 +10,10 @@ const { validateId } = require("./helpers/validateId");
 module.exports.createOption = async (req, res) => {
   const { label, questionId } = req.body;
 
+  if (!label) {
+    return res.status(400).json({ error: "label is required" });
+  }
+
   try {
     const option = await optionService.createOption({ label, questionId });
     res.status(201).json(option);
@@ -30,6 +34,10 @@ module.exports.updateOption = async (req, res) => {
   if (!validateId(optionId, "optionId", res)) return;
 
   const { label, questionId } = req.body;
+
+  if (!label) {
+    return res.status(400).json({ error: "label is required" });
+  }
 
   try {
     const option = await optionService.updateOption(optionId, {

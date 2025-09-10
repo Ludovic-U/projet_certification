@@ -50,6 +50,17 @@ describe("Option Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockOption);
     });
 
+    it("should return 400 if a required field is missing", async () => {
+      req.body.label = "";
+      await invalidOrMissingStatus(
+        optionController.createOption,
+        req,
+        res,
+        optionService.createOption,
+        "label is required"
+      );
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await internalServerErrorStatus(
         optionController.createOption,
@@ -94,6 +105,17 @@ describe("Option Controller", () => {
         res,
         optionService.updateOption,
         "Invalid optionId"
+      );
+    });
+
+    it("should return 400 if a required field is missing", async () => {
+      req.body.label = "";
+      await invalidOrMissingStatus(
+        optionController.updateOption,
+        req,
+        res,
+        optionService.updateOption,
+        "label is required"
       );
     });
 
