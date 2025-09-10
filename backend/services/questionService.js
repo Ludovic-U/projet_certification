@@ -152,7 +152,7 @@ module.exports.getQuestionsByType = async (typeId) => {
  */
 module.exports.getSubQuestions = async (questionIdParent) => {
   const parentQuestion = await prisma.question.findUnique({
-    where: { questionIdParent: questionIdParent },
+    where: { questionId: questionIdParent },
     include: { children: true },
   });
 

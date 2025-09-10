@@ -564,7 +564,7 @@ describe("Question Service", () => {
       const result = await questionService.getSubQuestions(questionIdParent);
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
-        where: { questionIdParent: questionIdParent },
+        where: { questionId: questionIdParent },
         include: { children: true },
       });
       expect(result).toEqual([
@@ -585,7 +585,7 @@ describe("Question Service", () => {
       const result = await questionService.getSubQuestions(questionIdParent);
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
-        where: { questionIdParent: questionIdParent },
+        where: { questionId: questionIdParent },
         include: { children: true },
       });
       expect(result).toEqual([]);
@@ -610,7 +610,7 @@ describe("Question Service", () => {
       ).rejects.toThrow("Database error");
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
-        where: { questionIdParent: questionIdParent },
+        where: { questionId: questionIdParent },
         include: { children: true },
       });
     });
