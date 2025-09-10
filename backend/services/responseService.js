@@ -59,16 +59,11 @@ module.exports.getResponsesByQuestionOfProject = async (
   projectId,
   questionId
 ) => {
-  try {
-    return await prisma.response.findMany({
-      where: { projectId: projectId, questionId: questionId },
-    });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("Project or Question not found");
-    }
-    throw error;
-  }
+  const projectWithQuestions = await prisma.response.findMany({
+    where: { projectId: projectId, questionId: questionId },
+  });
+
+  return projectWithQuestions;
 };
 
 /**
@@ -78,16 +73,16 @@ module.exports.getResponsesByQuestionOfProject = async (
  * @throws {Error} If project does not exist.
  */
 module.exports.getResponsesByProject = async (projectId) => {
-  try {
-    return await prisma.response.findMany({
-      where: { projectId: projectId },
-    });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("Project not found");
-    }
-    throw error;
+  const projectWithResponses = await prisma.project.findUnique({
+    where: { projectId: projectId },
+    include: { responses: true },
+  });
+
+  if (!projectWithResponses) {
+    throw new Error("Project not found");
   }
+
+  return projectWithResponses.responses;
 };
 
 /**
@@ -96,14 +91,14 @@ module.exports.getResponsesByProject = async (projectId) => {
  * @returns {Promise<Array>} List of subresponses.
  */
 module.exports.getSubResponses = async (responseIdParent) => {
-  try {
-    return await prisma.response.findMany({
-      where: { responseIdParent: responseIdParent },
-    });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("ResponseParent not found");
-    }
-    throw error;
+  const responseParent = await prisma.response.findUnique({
+    where: { responseId: responseIdParent },
+    include: { children: true },
+  });
+
+  if (!responseParent) {
+    throw new Error("ResponseParent not found");
   }
+
+  return responseParent.children;
 };

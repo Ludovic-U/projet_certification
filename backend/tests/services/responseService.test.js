@@ -18,6 +18,7 @@ jest.mock("../../prisma/prismaClient", () => ({
       delete: jest.fn(),
       findUnique: jest.fn(),
     },
+    project: { findUnique: jest.fn() },
   },
 }));
 
@@ -58,7 +59,6 @@ describe("Response Service", () => {
         optionId: null,
         responseIdParent: null,
       };
-
       const mockError = new Error("Database error");
 
       prisma.response.create.mockRejectedValue(mockError);
@@ -114,7 +114,6 @@ describe("Response Service", () => {
         optionId: null,
         responseIdParent: null,
       };
-
       const mockError = new Error("Response not found");
       mockError.code = "P2025";
 
@@ -139,7 +138,6 @@ describe("Response Service", () => {
         optionId: null,
         responseIdParent: null,
       };
-
       const mockError = new Error("Database error");
 
       prisma.response.update.mockRejectedValue(mockError);
@@ -174,7 +172,6 @@ describe("Response Service", () => {
 
     it("should throw an error if the Response is not found", async () => {
       const responseId = 999;
-
       const mockError = new Error("Response not found");
       mockError.code = "P2025";
 
@@ -191,7 +188,6 @@ describe("Response Service", () => {
 
     it("should throw an error if deletion fails", async () => {
       const responseId = 1;
-
       const mockError = new Error("Database error");
 
       prisma.response.delete.mockRejectedValue(mockError);
@@ -219,8 +215,12 @@ describe("Response Service", () => {
           label: "Answer 01",
           projectId: 1,
           questionId: 1,
-          optionId: null,
-          responseIdParent: null,
+        },
+        {
+          responseId: 2,
+          label: "Answer 02",
+          projectId: 1,
+          questionId: 1,
         },
       ];
 
@@ -254,28 +254,9 @@ describe("Response Service", () => {
       expect(result).toEqual([]);
     });
 
-    it("should throw an error if the project or question is not found", async () => {
-      const projectId = 999;
-      const questionId = 999;
-
-      const mockError = new Error("Project or Question not found");
-      mockError.code = "P2025";
-
-      prisma.response.findMany.mockRejectedValue(mockError);
-
-      await expect(
-        responseService.getResponsesByQuestionOfProject(projectId, questionId)
-      ).rejects.toThrow("Project or Question not found");
-
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { projectId: projectId, questionId: questionId },
-      });
-    });
-
     it("should throw an error if fetching fails", async () => {
       const projectId = 1;
       const questionId = 1;
-
       const mockError = new Error("Database error");
 
       prisma.response.findMany.mockRejectedValue(mockError);
@@ -296,77 +277,66 @@ describe("Response Service", () => {
   describe("getResponsesByProject", () => {
     it("should return responses for the given project", async () => {
       const projectId = 1;
-      const mockResponses = [
-        {
-          responseId: 1,
-          label: "response 01",
-          projectId: 1,
-          questionId: 1,
-          optionId: null,
-          responseIdParent: null,
-        },
-        {
-          responseId: 1,
-          label: "response 02",
-          projectId: 1,
-          questionId: 2,
-          optionId: null,
-          responseIdParent: null,
-        },
-      ];
+      const mockProject = {
+        projectId: projectId,
+        responses: [
+          { responseId: 1, label: "response 01", projectId: 1 },
+          { responseId: 2, label: "response 02", projectId: 1 },
+        ],
+      };
 
-      prisma.response.findMany.mockResolvedValue(mockResponses);
+      prisma.project.findUnique.mockResolvedValue(mockProject);
 
       const result = await responseService.getResponsesByProject(projectId);
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
+        include: { responses: true },
       });
-      expect(result).toEqual(mockResponses);
+      expect(result).toEqual([
+        { responseId: 1, label: "response 01", projectId: 1 },
+        { responseId: 2, label: "response 02", projectId: 1 },
+      ]);
+    });
+
+    it("should throw an error if the project is not found", async () => {
+      prisma.project.findUnique.mockResolvedValue(null);
+
+      await expect(responseService.getResponsesByProject(999)).rejects.toThrow(
+        "Project not found"
+      );
     });
 
     it("should return an empty array if no responses match the projectId", async () => {
-      const projectId = 999;
+      const projectId = 1;
+      const mockProject = {
+        projectId: projectId,
+        responses: [],
+      };
 
-      prisma.response.findMany.mockResolvedValue([]);
+      prisma.project.findUnique.mockResolvedValue(mockProject);
 
       const result = await responseService.getResponsesByProject(projectId);
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
+        include: { responses: true },
       });
       expect(result).toEqual([]);
     });
 
-    it("should throw an error if the project is not found", async () => {
-      const projectId = 999;
-
-      const mockError = new Error("Project not found");
-      mockError.status = "P2025";
-
-      prisma.response.findMany.mockRejectedValue(mockError);
-
-      await expect(
-        responseService.getResponsesByProject(projectId)
-      ).rejects.toThrow("Project not found");
-
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { projectId: projectId },
-      });
-    });
-
     it("should throw an error if fetching fails", async () => {
       const projectId = 1;
-
       const mockError = new Error("Database error");
-      prisma.response.findMany.mockRejectedValue(mockError);
+      prisma.project.findUnique.mockRejectedValue(mockError);
 
       await expect(
         responseService.getResponsesByProject(projectId)
       ).rejects.toThrow("Database error");
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
+        include: { responses: true },
       });
     });
   });
@@ -377,77 +347,67 @@ describe("Response Service", () => {
   describe("getSubresponses", () => {
     it("should return responses for the given responseIdParent", async () => {
       const responseIdParent = 1;
-      const mockResponses = [
-        {
-          responseId: 2,
-          label: "Response 1?",
-          projectId: 1,
-          questionId: 1,
-          optionId: null,
-          responseIdParent: 1,
-        },
-        {
-          responseId: 3,
-          label: "Response 1?",
-          projectId: 1,
-          questionId: 1,
-          optionId: null,
-          responseIdParent: 1,
-        },
-      ];
+      const mockResponseParent = {
+        responseId: responseIdParent,
+        children: [
+          { responseId: 2, label: "Response 2", responseIdParent: 1 },
+          { responseId: 3, label: "Response 3", responseIdParent: 1 },
+        ],
+      };
 
-      prisma.response.findMany.mockResolvedValue(mockResponses);
+      prisma.response.findUnique.mockResolvedValue(mockResponseParent);
 
       const result = await responseService.getSubResponses(responseIdParent);
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { responseIdParent: responseIdParent },
+      expect(prisma.response.findUnique).toHaveBeenCalledWith({
+        where: { responseId: responseIdParent },
+        include: { children: true },
       });
-      expect(result).toEqual(mockResponses);
+      expect(result).toEqual([
+        { responseId: 2, label: "Response 2", responseIdParent: 1 },
+        { responseId: 3, label: "Response 3", responseIdParent: 1 },
+      ]);
     });
 
     it("should return an empty array if no responses match the responseIdParent", async () => {
-      const responseIdParent = 999;
+      const responseIdParent = 1;
+      const mockResponseParent = {
+        responseId: responseIdParent,
+        children: [],
+      };
 
-      prisma.response.findMany.mockResolvedValue([]);
+      prisma.response.findUnique.mockResolvedValue(mockResponseParent);
 
       const result = await responseService.getSubResponses(responseIdParent);
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { responseIdParent: responseIdParent },
+      expect(prisma.response.findUnique).toHaveBeenCalledWith({
+        where: { responseId: responseIdParent },
+        include: { children: true },
       });
       expect(result).toEqual([]);
     });
 
-    it("should throw an error if response parent is not found", async () => {
-      const responseIdParent = 1;
+    it("should throw an error if the response parent is not found", async () => {
+      prisma.response.findUnique.mockResolvedValue(null);
 
-      const mockError = new Error("ResponseParent not found");
-      mockError.code = "P2025";
-
-      prisma.response.findMany.mockRejectedValue(mockError);
-
-      await expect(
-        responseService.getSubResponses(responseIdParent)
-      ).rejects.toThrow("ResponseParent not found");
-
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { responseIdParent: responseIdParent },
-      });
+      await expect(responseService.getSubResponses(999)).rejects.toThrow(
+        "ResponseParent not found"
+      );
     });
 
     it("should throw an error if fetching fails", async () => {
       const responseIdParent = 1;
       const mockError = new Error("Database error");
 
-      prisma.response.findMany.mockRejectedValue(mockError);
+      prisma.response.findUnique.mockRejectedValue(mockError);
 
       await expect(
         responseService.getSubResponses(responseIdParent)
       ).rejects.toThrow("Database error");
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { responseIdParent: responseIdParent },
+      expect(prisma.response.findUnique).toHaveBeenCalledWith({
+        where: { responseId: responseIdParent },
+        include: { children: true },
       });
     });
   });
