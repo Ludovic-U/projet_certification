@@ -64,14 +64,13 @@ module.exports.deleteType = async (typeId) => {
  * @throws {Error} If the type does not exist.
  */
 module.exports.getTypeById = async (typeId) => {
-  try {
-    return await prisma.type.findUnique({
-      where: { typeId: typeId },
-    });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("Type not found");
-    }
-    throw error;
+  const type = await prisma.type.findUnique({
+    where: { typeId: typeId },
+  });
+
+  if (!type) {
+    throw new Error("Type not found");
   }
+
+  return type;
 };

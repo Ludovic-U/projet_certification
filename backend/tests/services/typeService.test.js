@@ -44,8 +44,8 @@ describe("Type Service", () => {
 
     it("should throw an error if creation fails", async () => {
       const mockTypeData = { label: "General" };
-
       const mockError = new Error("Database error");
+
       prisma.type.create.mockRejectedValue(mockError);
 
       await expect(typeService.createType(mockTypeData)).rejects.toThrow(
@@ -76,6 +76,7 @@ describe("Type Service", () => {
 
     it("should throw an error if fetching fails", async () => {
       const mockError = new Error("Database error");
+
       prisma.type.findMany.mockRejectedValue(mockError);
 
       await expect(typeService.getAllTypes()).rejects.toThrow("Database error");
@@ -107,7 +108,6 @@ describe("Type Service", () => {
     it("should throw an error if the type is not found", async () => {
       const typeId = 999;
       const mockUpdatedData = { label: "Non-existant label" };
-
       const mockError = new Error("Type not found");
       mockError.code = "P025";
 
@@ -126,8 +126,8 @@ describe("Type Service", () => {
     it("should throw an error if update fails", async () => {
       const typeId = 1;
       const mockUpdatedData = { label: "Failed Update" };
-
       const mockError = new Error("Database error");
+
       prisma.type.update.mockRejectedValue(mockError);
 
       await expect(
@@ -160,7 +160,6 @@ describe("Type Service", () => {
 
     it("should throw an error if the type is not found", async () => {
       const typeId = 999;
-
       const mockError = new Error("Type not found");
       mockError.code = "P025";
 
@@ -177,7 +176,6 @@ describe("Type Service", () => {
 
     it("should throw an error if deletion fails", async () => {
       const typeId = 1;
-
       const mockError = new Error("Database error");
       prisma.type.delete.mockRejectedValue(mockError);
 
@@ -210,26 +208,17 @@ describe("Type Service", () => {
     });
 
     it("should throw an error if the type is not found", async () => {
-      const typeId = 999;
+      prisma.type.findUnique.mockResolvedValue(null);
 
-      const mockError = new Error("Type not found");
-      mockError.code = "P025";
-
-      prisma.type.findUnique.mockRejectedValue(mockError);
-
-      await expect(typeService.getTypeById(typeId)).rejects.toThrow(
+      await expect(typeService.getTypeById(999)).rejects.toThrow(
         "Type not found"
       );
-
-      expect(prisma.type.findUnique).toHaveBeenCalledWith({
-        where: { typeId: typeId },
-      });
     });
 
     it("should throw an error if fetching fails", async () => {
       const typeId = 1;
-
       const mockError = new Error("Database error");
+
       prisma.type.findUnique.mockRejectedValue(mockError);
 
       await expect(typeService.getTypeById(typeId)).rejects.toThrow(
