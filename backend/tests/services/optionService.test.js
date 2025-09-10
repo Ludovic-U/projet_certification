@@ -18,6 +18,7 @@ jest.mock("../../prisma/prismaClient", () => ({
       delete: jest.fn(),
       findUnique: jest.fn(),
     },
+    question: { findUnique: jest.fn() },
   },
 }));
 
@@ -46,8 +47,8 @@ describe("Option Service", () => {
 
     it("should throw an error if creation fails", async () => {
       const mockOptionData = { label: "Opt1", questionId: 1 };
-
       const mockError = new Error("Database error");
+
       prisma.option.create.mockRejectedValue(mockError);
 
       await expect(optionService.createOption(mockOptionData)).rejects.toThrow(
@@ -83,7 +84,6 @@ describe("Option Service", () => {
     it("should throw an error if the option is not found", async () => {
       const optionId = 999;
       const mockUpdateData = { label: "Non-existent Opt", questionId: 1 };
-
       const mockError = new Error("Option not found");
       mockError.code = "P2025";
 
@@ -102,8 +102,8 @@ describe("Option Service", () => {
     it("should throw an error if the update fails", async () => {
       const optionId = 1;
       const mockUpdateData = { label: "Failed update", questionId: 1 };
-
       const mockError = new Error("Database error");
+
       prisma.option.update.mockRejectedValue(mockError);
 
       await expect(
@@ -136,7 +136,6 @@ describe("Option Service", () => {
 
     it("should throw an error if the option is not found", async () => {
       const optionId = 999;
-
       const mockError = new Error("Option not found");
       mockError.code = "P2025";
 
@@ -153,8 +152,8 @@ describe("Option Service", () => {
 
     it("should throw an error if deletion fails", async () => {
       const optionId = 1;
-
       const mockError = new Error("Database error");
+
       prisma.option.delete.mockRejectedValue(mockError);
 
       await expect(optionService.deleteOption(optionId)).rejects.toThrow(
@@ -186,26 +185,17 @@ describe("Option Service", () => {
     });
 
     it("should throw an error if the option is not found", async () => {
-      const optionId = 999;
+      prisma.option.findUnique.mockResolvedValue(null);
 
-      const mockError = new Error("Option not found");
-      mockError.code = "P2025";
-
-      prisma.option.findUnique.mockRejectedValue(mockError);
-
-      await expect(optionService.getOptionById(optionId)).rejects.toThrow(
+      await expect(optionService.getOptionById(999)).rejects.toThrow(
         "Option not found"
       );
-
-      expect(prisma.option.findUnique).toHaveBeenCalledWith({
-        where: { optionId: optionId },
-      });
     });
 
     it("should throw an error if fetching fails", async () => {
       const optionId = 1;
-
       const mockError = new Error("Database error");
+
       prisma.option.findUnique.mockRejectedValue(mockError);
 
       await expect(optionService.getOptionById(optionId)).rejects.toThrow(
@@ -223,63 +213,67 @@ describe("Option Service", () => {
   describe("getOptionsByQuestion", () => {
     it("should return options for the given question", async () => {
       const questionId = 1;
-      const mockOptions = [
-        { optionId: 1, label: "Opt1", questionId: 1 },
-        { optionId: 2, label: "Opt2", questionId: 1 },
-      ];
+      const mockQuestion = {
+        questionId: questionId,
+        options: [
+          { optionId: 1, label: "Opt1", questionId: 1 },
+          { optionId: 2, label: "Opt2", questionId: 1 },
+        ],
+      };
 
-      prisma.option.findMany.mockResolvedValue(mockOptions);
+      prisma.question.findUnique.mockResolvedValue(mockQuestion);
 
       const result = await optionService.getOptionsByQuestion(questionId);
 
-      expect(prisma.option.findMany).toHaveBeenCalledWith({
+      expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
+        include: { options: true },
       });
-      expect(result).toEqual(mockOptions);
+      expect(result).toEqual([
+        { optionId: 1, label: "Opt1", questionId: 1 },
+        { optionId: 2, label: "Opt2", questionId: 1 },
+      ]);
     });
 
     it("should return an empty array if no options match the question", async () => {
-      const questionId = 999;
+      const questionId = 1;
+      const mockQuestion = {
+        questionId: questionId,
+        options: [],
+      };
 
-      prisma.option.findMany.mockResolvedValue([]);
+      prisma.question.findUnique.mockResolvedValue(mockQuestion);
 
       const result = await optionService.getOptionsByQuestion(questionId);
 
-      expect(prisma.option.findMany).toHaveBeenCalledWith({
+      expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
+        include: { options: true },
       });
       expect(result).toEqual([]);
     });
 
     it("should throw an error if question is not found", async () => {
-      const questionId = 999;
+      prisma.question.findUnique.mockResolvedValue(null);
 
-      const mockError = new Error("Question not found");
-      mockError.code = "P2025";
-
-      prisma.option.findMany.mockRejectedValue(mockError);
-
-      await expect(
-        optionService.getOptionsByQuestion(questionId)
-      ).rejects.toThrow("Question not found");
-
-      expect(prisma.option.findMany).toHaveBeenCalledWith({
-        where: { questionId: questionId },
-      });
+      await expect(optionService.getOptionsByQuestion(999)).rejects.toThrow(
+        "Question not found"
+      );
     });
 
     it("should throw an error if fetching fails", async () => {
       const questionId = 1;
-
       const mockError = new Error("Database error");
-      prisma.option.findMany.mockRejectedValue(mockError);
+
+      prisma.question.findUnique.mockRejectedValue(mockError);
 
       await expect(
         optionService.getOptionsByQuestion(questionId)
       ).rejects.toThrow("Database error");
 
-      expect(prisma.option.findMany).toHaveBeenCalledWith({
+      expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
+        include: { options: true },
       });
     });
   });

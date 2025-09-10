@@ -51,14 +51,15 @@ module.exports.deleteOption = async (optionId) => {
  * @throws {Error} If the option does not exist.
  */
 module.exports.getOptionById = async (optionId) => {
-  try {
-    return await prisma.option.findUnique({ where: { optionId: optionId } });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("Option not found");
-    }
-    throw error;
+  const option = await prisma.option.findUnique({
+    where: { optionId: optionId },
+  });
+
+  if (!option) {
+    throw new Error("Option not found");
   }
+
+  return option;
 };
 
 /**
@@ -67,12 +68,14 @@ module.exports.getOptionById = async (optionId) => {
  * @returns {Promise<Array>} List of options.
  */
 module.exports.getOptionsByQuestion = async (questionId) => {
-  try {
-    return await prisma.option.findMany({ where: { questionId: questionId } });
-  } catch (error) {
-    if (error.code === "P2025") {
-      throw new Error("Question not found");
-    }
-    throw error;
+  const questionWithOptions = await prisma.question.findUnique({
+    where: { questionId: questionId },
+    include: { options: true },
+  });
+
+  if (!questionWithOptions) {
+    throw new Error("Question not found");
   }
+
+  return questionWithOptions.options;
 };
