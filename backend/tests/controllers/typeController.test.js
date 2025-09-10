@@ -49,6 +49,17 @@ describe("Type Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockType);
     });
 
+    it("should return 400 if a required field is missing", async () => {
+      req.body.label = "";
+      await invalidOrMissingStatus(
+        typeController.createType,
+        req,
+        res,
+        typeService.createType,
+        "label is required"
+      );
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await internalServerErrorStatus(
         typeController.createType,
@@ -123,6 +134,17 @@ describe("Type Controller", () => {
         res,
         typeService.updateType,
         "Invalid typeId"
+      );
+    });
+
+    it("should return 400 if a required field is missing", async () => {
+      req.body.label = "";
+      await invalidOrMissingStatus(
+        typeController.updateType,
+        req,
+        res,
+        typeService.updateType,
+        "label is required"
       );
     });
 

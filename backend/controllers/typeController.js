@@ -9,6 +9,10 @@ const { validateId } = require("./helpers/validateId");
 module.exports.createType = async (req, res) => {
   const { label } = req.body;
 
+  if (!label) {
+    return res.status(400).json({ error: "label is required" });
+  }
+
   try {
     const type = await typeService.createType({ label });
     res.status(201).json(type);
@@ -43,6 +47,10 @@ module.exports.updateType = async (req, res) => {
   if (!validateId(typeId, "typeId", res)) return;
 
   const { label } = req.body;
+
+  if (!label) {
+    return res.status(400).json({ error: "label is required" });
+  }
 
   try {
     const type = await typeService.updateType(typeId, { label: label });
