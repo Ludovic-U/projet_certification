@@ -17,8 +17,8 @@ export default function RootLayout({
   return (
       <html lang="fr" className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>
         <body className="bg-light">
-          {/* <ClientLayout>{children}</ClientLayout> */}
-          {children}
+          <ClientLayout>{children}</ClientLayout>
+          {/* {children} */}
         </body>
       </html>
   );

@@ -190,22 +190,25 @@ const MenuItem = (
 
                     {/* Si le sous-menu est ouvert, affichage de la liste des liens enfants */}
                     {/* Surligne le sous-item actif si le pathname actuel correspond */}
-                    {isSubMenuOpen && (
-                        <div className="my-2 ml-2 flex flex-col space-y-5 text-primary200 w-fit p-2">
-                            {item.subMenuItems?.map((subItem, idx) => {
-                                return (
-                                    <Link
-                                     key={idx}
-                                     href={subItem.path}
-                                     className={`flex gap-3 text-md items-center p-2 rounded-lg transition
-                                                ${subItem.path === pathname ? 'bg-light font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
-                                    >
-                                        <span className="flex gap-3 items-center">{subItem.icon}{subItem.title}</span>
-                                    </Link>
-                                );
-                            })}
+                    {/* {isSubMenuOpen && ( */}
+                        <div className={`overflow-hidden transition-all duration-300 ease-in-out
+                                        ${isSubMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+                            <div className="my-2 ml-2 flex flex-col space-y-5 text-primary200 w-fit p-2">
+                                {item.subMenuItems?.map((subItem, idx) => {
+                                    return (
+                                        <Link
+                                        key={idx}
+                                        href={subItem.path}
+                                        className={`flex gap-3 text-md items-center p-2 rounded-lg transition
+                                                    ${subItem.path === pathname ? 'bg-light font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
+                                        >
+                                            <span className="flex gap-3 items-center">{subItem.icon}{subItem.title}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    )}
+                    {/* )} */}
                 </>
             ) : (
                 // Item sans sous-menu

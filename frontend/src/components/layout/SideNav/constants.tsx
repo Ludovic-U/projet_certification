@@ -9,7 +9,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         subMenu: true,
         subMenuItems: [
             { title: "Vue d'ensemble", path:"/sub1", icon: <FontAwesomeIcon icon={Icons.tableCells}/>},
-            { title: "Idéation", path:"/sub1", icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+            { title: "Idéation", path:"/sub", icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
             { title: "Conception", path:"/sub2", icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
             { title: "Pilotage", path:"/sub3", icon: <FontAwesomeIcon icon={Icons.compass}/>},
             { title: "Reporting", path:"/sub4", icon: <FontAwesomeIcon icon={Icons.users}/>},
