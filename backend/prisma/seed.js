@@ -29,8 +29,8 @@ async function main() {
     { permName: "project:delete:org", permDesc: "Supprimer les projets liés au client" },
     { permName: "clientUserRole:update:org", permDesc: "Modifier le rôle d'un utilisateur lié au client" },
     //chef de projet
-    { permName: "user:read:proj", permDesc: "Voir ses projets" },
-    { permName: "user:update:proj", permDesc: "Voir ses projets" },
+    { permName: "user:read:proj", permDesc: "Voir les utilisateurs liés à un projet" },
+    { permName: "user:update:proj", permDesc: "Assigner les utilisateurs à des taches" },
     { permName: "project:read:own", permDesc: "Voir ses projets" },
     { permName: "project:update:own", permDesc: "Modifier ses projets" },
 

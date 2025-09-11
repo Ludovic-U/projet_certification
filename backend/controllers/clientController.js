@@ -26,7 +26,7 @@ module.exports.createClient = async (req, res) => {
     }
 }
 
-module.exports.getClients = async (req, res) => {
+module.exports.getClients = async (req, res) => { //TODO: appeler clientService
     user = req.user;
     if (!user.permissisons.includes('client:read:any')){
         throw new Error('getClient : Unauthorized');

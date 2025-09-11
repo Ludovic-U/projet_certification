@@ -1,12 +1,13 @@
 const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
+const { hashToken } = require('../utils/hash');
 const prisma = new PrismaClient();
 
 const sessionDurationHours = 24; // Default session duration
 
 
 module.exports.findSession = async ( userId, token) => {
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const tokenHash = hashToken(token) //crypto.createHash('sha256').update(token).digest('hex');
     return await prisma.userSession.findFirst({
       where: {
         userId,
@@ -30,14 +31,14 @@ module.exports.extendSession = async (sessionId, additionalHours = sessionDurati
   });
 };
 
-module.exports.createSession = async (userId, tokenHash, req, durationHours = sessionDurationHours) => {
+module.exports.createSession = async (userId, tokenHash, req = null, durationHours = sessionDurationHours) => {
     await prisma.userSession.create({
         data: {
             userId: userId,
             tokenHash: tokenHash,
             expiresAt: new Date(Date.now() + durationHours * 60 * 60 * 1000), 
-            ip: req.ip, 
-            userAgent: req.headers['user-agent'],
+            ip: req?.ip || null,
+            userAgent: req?.headers?.['user-agent'] || null,
         },
         });
 }

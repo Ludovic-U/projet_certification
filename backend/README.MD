@@ -64,7 +64,7 @@
 
   * `403 Forbidden` : Permissions insuffisantes (l'utilisateur n'est pas un administrateur ou un responsable pour ce client).
 
-### 3. GET `/logout` :
+### 3. POST `/logout` :
 
 * **Description** : Permet de déconnecter l'utilisateur en supprimant le jeton JWT du cookie.
 
@@ -149,3 +149,14 @@ Le serveur utilise ***Express*** pour le traitement des requêtes et est configu
 * **Cookies** : Le jeton JWT est envoyé dans un cookie sécurisé lors de la connexion.
 
 Le serveur écoute sur le port spécifié dans ***process.env.PORT***.
+
+## Liste des routes
+* `api/me` : renvoie un objet utilisateur
+* `api/me` : renvoie un objet utilisateur
+* `api/me` : renvoie un objet utilisateur
+* `api/me` : renvoie un objet utilisateur
+* `api/me` : renvoie un objet utilisateur
+* `api/me` : renvoie un objet utilisateur
+* `api/me` : renvoie un objet utilisateur
+* `api/me` : renvoie un objet utilisateur
+* `api/me` : renvoie un objet utilisateur

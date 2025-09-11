@@ -3,25 +3,27 @@ const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { createJWT } = require('../utils/jwt');
-const { createSession } = require('../services/sessionService');
+const { createSession, deleteSessions } = require('../services/sessionService');
+const { hashToken, hashPassword } = require('../utils/hash');
 
-class User {
-  constructor(firstname, lastname, email, roleList = [], tasks = []) {
-    this.firstname = firstname;
-    this.lastname = lastname;
-    this.email = email;
-    this.roleList = roleList; // Array of roles
-    this.tasks = tasks; // Array of tasks
-  }
-}
+// class User {
+//   constructor(firstname, lastname, email, roleList = [], tasks = []) {
+//     this.firstname = firstname;
+//     this.lastname = lastname;
+//     this.email = email;
+//     this.roleList = roleList; // Array of roles
+//     this.tasks = tasks; // Array of tasks
+//   }
+// }
 
 // récupère un utilisateur par email ou username et password, vérifie le mot de passe, crée un token JWT et une session, et retourne un token pour le front
-module.exports.findUserByEmailAndPassword = async (email, password, req) => {
+//TODO: rename to authenticateUser? 
+module.exports.authenticateAndCreateSession = async (emailOrUsername, password, req) => {
      const user = await prisma.user.findFirst({
          where: {
              OR:
-                 [{ email },
-                 { username: email },
+                 [{ email: emailOrUsername },
+                 { username: emailOrUsername },
                  ]
          },
          include: {
@@ -63,7 +65,7 @@ module.exports.findUserByEmailAndPassword = async (email, password, req) => {
     const token = createJWT(tokenPayload);
 
     // hash the token before storing it in the database
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex'); 
+    const tokenHash = hashToken(token) //crypto.createHash('sha256').update(token).digest('hex'); 
     try {
         await createSession(user.userId, tokenHash, req);
     } catch (error) {
@@ -107,10 +109,97 @@ module.exports.getUsersByClientId = async (clientId, permissions) => {
     return userlist;
 }
 
-// module.exports.getUsersByProjectId = async (projectId) => {
-//     return "placeholder";
-// }
+//  module.exports.getUsersByProjectId = async (projectId) => {
+//      return "placeholder";
+//  }
 
-// module.exports.createUser = async (userForm) => {}
+ module.exports.createUser = async ({ username, firstname, lastname, email }) => {
+  try {
+    const user = await prisma.user.create({
+      data: {
+        username,
+        firstname,
+        lastname,
+        email,
+        password: null,
+      },
+    });
+
+    return user;
+  } catch (error) {
+    if (error.code === 'P2002') {
+      throw new Error('Un utilisateur avec ce username ou email existe déjà');
+    }
+    throw error; // autre erreur
+  }
+};
 
 // module.exports.deleteUser = async (userId, ) => {}
+
+// ask for a password reset
+module.exports.requestPasswordReset = async (email) => {
+  // pas de check de permission car un utilisateur peut avoir oublié son mdp
+  const user = await prisma.user.findUnique({
+    where: { email }
+  });
+  if (!user) {
+    throw new Error("requestPasswordReset : Utilisateur introuvable");
+  }
+  // generate a reset token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+  createSession(user.userId, resetToken, null, resetTokenExpiry); // TOKEN A USAGE UNIQUE
+
+  // send email with the reset link
+  const { sendResetPasswordEmail } = require('../utils/mailer');
+  sendResetPasswordEmail(user.email, resetToken, user.password === null); // if password is null, it's a first connection
+}
+
+// set or reset password
+module.exports.resetPassword = async (resetToken, newPassword) => {
+
+  const session = await prisma.userSession.findFirst({ // find the session with this reset token
+    where: {
+      tokenHash: resetToken,
+    }
+  });
+  if (!session) {
+    throw new Error("resetPassword : Token invalide ou expiré");
+  }
+
+  const userId = session.userId;
+  deleteSessions(session.userId); // delete all sessions for this user, including the reset token session
+
+  // Mise à jour du mdp
+  const hashedPassword = await hashPassword(newPassword); // hash du mot de passe
+  await prisma.user.update({
+    where: { userId },
+    data: { password: hashedPassword }
+  });
+}
+
+module.exports.updatePassword = async (userId, oldPassword, newPassword) => {
+  const user = await prisma.user.findUnique({
+    where: { userId }
+  });
+  if (!user) {
+    throw new Error("Utilisateur introuvable");
+  }
+
+  // Vérifie l'ancien mot de passe
+  const isValid = await bcrypt.compare(oldPassword, user.password);
+  if (!isValid) {
+    throw new Error("Ancien mot de passe incorrect");
+  }
+
+  // Hash du nouveau mot de passe
+  const hashedPassword = hashPassword(newPassword);
+
+  // Mise à jour en DB
+  await prisma.user.update({
+    where: { userId },
+    data: { password: hashedPassword }
+  });
+
+  return { message: "Mot de passe mis à jour avec succès" };
+};

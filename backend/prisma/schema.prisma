@@ -12,7 +12,7 @@ model User {
   username  String   @unique
   firstname String
   lastname  String
-  password  String
+  password  String? 
   email     String   @unique
   createdAt DateTime @default(now())
 
@@ -110,6 +110,7 @@ model Project {
   projectDesc    String?
   createdAt      DateTime  @default(now())
   clientId       Int
+  
   client         Client    @relation(fields: [clientId], references: [clientId])
   manager        User      @relation("ProjectManager", fields: [projectManager], references: [userId])
   actions        Action[]
@@ -192,8 +193,3 @@ enum BudgetCategory {
   COMMUNICATION_EVENEMENTIEL
 }
 
-enum PermissionScope {
-  ANY
-  ORG
-  OWN
-}

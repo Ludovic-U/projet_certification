@@ -4,24 +4,20 @@ const bcrypt = require('bcrypt');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 // const { isAdmin, isManager } = require('../utils/roles');
-const { createSession, deleteSessions } = require('../services/sessionService');
-const { findUserByEmailAndPassword } = require('../services/userService');
+const { deleteSessions } = require('../services/sessionService');
+const { authenticateAndCreateSession, requestPasswordReset, resetPassword } = require('../services/userService');
 
 
 
 module.exports.loginPost = async (req, res) => {
     const { email, password } = req.body;
-    // $2b$10$SsckLn71poxLmYmfC62kGuWc0YUJsOzQONkHZmwpyotRTfvglp7Fi
-    // try {
-    //     const hashedPassword = await bcrypt.hash('admin', parseInt(process.env.HASH_SALT));
-
-    // } catch (error) {
-    //     console.error('Error hashing password:', error);
-    // }
+    if (password == undefined || password == null){ // verification important car les contributeurs n'ont pas de mot de passe.
+        return res.status(400).json({ error: 'Password is required' });
+    }
 
     try {
         // find user by email or username
-        const token = await findUserByEmailAndPassword(email, password, req);
+        const token = await authenticateAndCreateSession(email, password, req);
 
         // Set the token in a cookie
         res.cookie('token', token, {
@@ -116,4 +112,41 @@ module.exports.logout = async (req, res) => {
         sameSite: 'strict',
     });
 }
+
+// forgot password request, sends email with reset link
+module.exports.forgotPasswordPost = async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+    try {
+        requestPasswordReset(email);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error processing request' });
+    } 
+}
+
+// reset password form submission, with new password and consumme the token
+module.exports.resetPasswordPost = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Token and new password are required' });
+  }
+
+  try {
+    await userService.resetPassword(token, newPassword);
+    return res.json({ message: 'Password reset successful' });
+  } catch (err) {
+    if (err.message === 'Invalid token') {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+    if (err.message === 'Weak password') {
+      return res.status(400).json({ error: 'Password does not meet security requirements' });
+    }
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
