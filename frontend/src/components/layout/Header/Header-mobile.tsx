@@ -214,15 +214,14 @@ const MenuItemWithSubMenu: React.FC<MenuItemWithSubMenuProps> = ({
                     </div>
                 </button>
             </MenuItem>
-            <div className="mt-2 ml-2 flex flex-col space-y-2">
-                {subMenuOpen && (
-                    <>
+             <div className={`overflow-hidden transition-all duration-300 ease-in-out ml-2 mt-2 flex flex-col space-y-2
+                            ${subMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0" }`}>
                         {item.subMenuItems?.map((subItem, subIdx) => {
                             return (
                                 <MenuItem key={subIdx} className="text-dark font-medium">
                                     <Link
                                      href={subItem.path}
-                                     onClick={() => toggleOpen}
+                                     onClick={() => toggleOpen()}
                                      className={`${subItem.path === pathname ? "font-bold text-primaryhover" : ""}`}
                                     >
                                         {subItem.title}
@@ -230,8 +229,6 @@ const MenuItemWithSubMenu: React.FC<MenuItemWithSubMenuProps> = ({
                                 </MenuItem>
                             );
                         })}
-                    </>
-                )}
             </div>
         </>
     );
