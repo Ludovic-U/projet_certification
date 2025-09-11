@@ -6,8 +6,6 @@ import { useState } from "react";
 
 import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
 
-import Header from "@/components/layout/Header/Header"
-import { SideNav } from "@/components/layout"
 import {
     Button,
     List,

@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 
 import { useDimensions } from "@/hooks"
 
-import { SIDENAV_ITEMS, SideNavItem, MenuItemWithSubMenuProps } from "../SideNav";
-import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
+import { SIDENAV_ITEMS, MenuItemWithSubMenuProps } from "../SideNav";
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 import { motion, useCycle, Variants, TargetAndTransition } from "framer-motion"
 
@@ -38,6 +38,7 @@ const sidebar: Variants = {
 
 
     // Variants pour la liste d'items => animation en cascade (stagger)
+    // Utilisation d'un stagger pour afficher les éléments en cascade
 const variants = {
     open: {
         transition: { staggerChildren: 0.02, delayChildren: 0.15 },
@@ -49,7 +50,9 @@ const variants = {
 
 /*
     Composant principal HeaderMobile
-    Affiche un menu mobile animé avec Framer Motion (burger menu)
+    Affiche un menu mobile (burger menu) animé avec Framer Motion
+    Le bouton toggle ouvre/ferme le menu
+    Les liens sont générés dynamiquement depuis SIDENAV_ITEMS
 */
 const HeaderMobile = () => {
     const pathname = usePathname(); // récupère le chemin actuel (URL path)
@@ -89,7 +92,7 @@ const HeaderMobile = () => {
                                      href={item.path}
                                      onClick={() => toggleOpen()}
                                      className={`flex w-full text-2xl text-primary 
-                                        ${item.path === pathname ? "font-medium text-primaryhover" : ""}`
+                                        ${item.path === pathname ? "font-bold text-primaryhover" : ""}`
                                      }
                                     >
                                         {item.title}
@@ -112,11 +115,11 @@ const HeaderMobile = () => {
 export default HeaderMobile;
 
 
-    // Bouton animé (burger, croix) avec framer-motion
+    // Bouton animé (burger -> croix)
 const MenuToggle = ({ toggle }: { toggle: any }) => (
     <button
      onClick={toggle}
-     className="pointer-events-auto absolute right-4 top-[14px] z-30">
+     className="pointer-events-auto cursor-pointer absolute right-4 top-[14px] z-30">
         <svg width="23" height="23" viewBox="0 0 23 23">
             <Path
                 variants={{
@@ -201,12 +204,12 @@ const MenuItemWithSubMenu: React.FC<MenuItemWithSubMenuProps> = ({
                 <button
                  className="flex w-full text-2xl"
                  onClick={() => setSubMenuOpen(!subMenuOpen)}>
-                    <div className="flex flex-row justify-between font-noto text-primaryhover w-full items-center">
-                        <span className={`${pathname.includes(item.path) ? "font-bold text-primary900" : ""}`}>
+                    <div className="flex flex-row gap-3 cursor-pointer font-noto text-primary">
+                        <span className={`${pathname.includes(item.path) ? "font-bold text-primaryhover" : ""}`}>
                             {item.title}
                         </span>
                         <div className={`${subMenuOpen && "rotate-180"}`}>
-                            <FontAwesomeIcon className="text-sm text-primary800" icon={Icons.chevronDown}></FontAwesomeIcon>
+                            <FontAwesomeIcon className="text-sm text-dark" icon={Icons.chevronDown}></FontAwesomeIcon>
                         </div>
                     </div>
                 </button>
@@ -220,7 +223,7 @@ const MenuItemWithSubMenu: React.FC<MenuItemWithSubMenuProps> = ({
                                     <Link
                                      href={subItem.path}
                                      onClick={() => toggleOpen}
-                                     className={`${subItem.path === pathname ? "font-bold text-primary" : ""}`}
+                                     className={`${subItem.path === pathname ? "font-bold text-primaryhover" : ""}`}
                                     >
                                         {subItem.title}
                                     </Link>
