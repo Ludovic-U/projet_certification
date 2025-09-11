@@ -189,10 +189,10 @@ const MenuItem = (
                     </button>
 
                     {/* Si le sous-menu est ouvert, affichage de la liste des liens enfants */}
-                    {/* Surligne le sous-item actif si le pathname actuel correspond */}
-                    {/* {isSubMenuOpen && ( */}
+                    {/* Animation de transition avec le conteneur qui reste toujours monté et jeu sur opacity et taille en fonction de isSubMenuOpen true ou false */}
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out
                                         ${isSubMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+                            {/* Liste des liens enfants (submenu), l'item actif est surlignée si son path correspond */}
                             <div className="my-2 ml-2 flex flex-col space-y-5 text-primary200 w-fit p-2">
                                 {item.subMenuItems?.map((subItem, idx) => {
                                     return (
@@ -208,7 +208,6 @@ const MenuItem = (
                                 })}
                             </div>
                         </div>
-                    {/* )} */}
                 </>
             ) : (
                 // Item sans sous-menu
