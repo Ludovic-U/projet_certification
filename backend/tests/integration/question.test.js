@@ -1,5 +1,6 @@
 const request = require("supertest");
 const app = require("../../index");
+const { newQuestion } = require("../helpers/functionFactory");
 
 describe("Question Integration Tests", () => {
   describe("POST - /api/question/create", () => {
@@ -47,7 +48,7 @@ describe("Question Integration Tests", () => {
       expect(res.body).toEqual({ error: "label and category are required" });
     });
 
-    it("should return 400 status if label is missing", async () => {
+    it("should return 400 status if category is missing", async () => {
       const payload = {
         label: "Test",
         category: "",
@@ -99,6 +100,7 @@ describe("Question Integration Tests", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.label).toBe(question1.label);
+      expect(res.body.category).toBe(question1.category);
     });
 
     it("should return 404 status if question does not exist", async () => {
@@ -165,14 +167,6 @@ describe("Question Integration Tests", () => {
       expect(res.body.label).toBe(newData.label);
     });
 
-    it("should return 404 status if question does not exist", async () => {
-      const res = await request(app)
-        .patch("/api/question/update/999")
-        .send({ label: "a", category: "b" });
-
-      expect(res.status).toBe(404);
-    });
-
     it("should return 400 status if new label data is empty", async () => {
       const question = await newQuestion();
       const newData = {
@@ -199,6 +193,14 @@ describe("Question Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(400);
+    });
+
+    it("should return 404 status if question does not exist", async () => {
+      const res = await request(app)
+        .patch("/api/question/update/999")
+        .send({ label: "a", category: "b" });
+
+      expect(res.status).toBe(404);
     });
   });
 
@@ -227,26 +229,3 @@ describe("Question Integration Tests", () => {
     });
   });
 });
-
-async function newQuestion({
-  label = "Default label",
-  category = "Default",
-  numberOfSelectionableOpt = null,
-  isRelevant = false,
-  hasMultipleOpenResponse = false,
-  shouldMultiply = false,
-  questionIdParent = null,
-} = {}) {
-  const question = await global.prisma.question.create({
-    data: {
-      label,
-      category,
-      numberOfSelectionableOpt,
-      isRelevant,
-      hasMultipleOpenResponse,
-      shouldMultiply,
-      questionIdParent,
-    },
-  });
-  return question;
-}
