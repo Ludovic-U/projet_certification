@@ -31,7 +31,7 @@ export async function middleware(request)  {
       console.log("Utilisateur authentifié avec les permissions :", response.data.user.permissions);
       return true;
     } catch (err) {
-      console.warn("Utilisateur non authentifié", err.message, err);
+      console.warn("Utilisateur non authentifié", err.message, err.data);
       return false;
     }
   };

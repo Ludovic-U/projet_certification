@@ -97,7 +97,7 @@ export default function LoginPage() {
           />
           {errors.password && <p>Entrez votre mot de passe pour vous connecter</p>}
         
-          <Button size="md" variant="blue">
+          <Button size="md" variant="blue" type="submit">
             Se connecter
           </Button>
         </form>
