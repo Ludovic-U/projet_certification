@@ -9,7 +9,8 @@ import { SIDENAV_ITEMS } from "./constants"; // Liste des items du menu (icônes
 import { SideNavItem, SideNavProps } from "./types"; // Type TypeScript décrivant la forme d'un item de menu
 import { FontAwesomeIcon, Icons } from "@/lib/icons"; // Icones utilisés dans la navbar
 
-import { Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
+import { Button, Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
+import api_backend from "@/api/axiosInstance";
 
 // Déclare l'état de la sidenav (ouverte ou fermée).
 const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
@@ -45,6 +46,17 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                     )}
                 
                 </Link>
+
+                <Button
+                    variant="secondary"
+                    className={`mx-4 ${isCollapsed ? "px-2 py-2" : "w-auto px-4 py-2"} text-sm`}
+                    onClick={() => {api_backend.post("user/logout")
+                        .then(() => { window.location.href = "/"  // TODO: Redirect to login page after logout
+                        }) 
+                    }}
+                >
+                    Déconnexion
+                </Button>
 
                 {/* Boucle sur SIDENAV_ITEMS et crée un MenuItem pour chaque item. */}
                 <div className={`flex flex-col space-y-2 md:px-6 ${isCollapsed ? "items-center px-0" : ""}`}>

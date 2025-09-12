@@ -13,7 +13,7 @@ export async function middleware(request)  {
 
   const API_INTERNAL = process.env.API_INTERNAL_URL || 'http://localhost:4000';
 
-  const api = axios.create({
+  const api = axios.create({ // TODO: import api_backend
     baseURL: `${API_INTERNAL}/api/`, // baseURL: "http://localhost:4000/api/",
     withCredentials: true,    
     headers: {
@@ -23,7 +23,7 @@ export async function middleware(request)  {
 
   
   var userPermissions = [];
-  const checkAuth = async () => {
+  const checkAuth = async () => { // TODO: modifier pour vérifier les permissions du cookie, pour pas avoir à chaque fois une requête au backend
     console.log("Vérification de l'authentification...");
     try {
       const response = await api.get('/me');

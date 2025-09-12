@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+// import axios from "axios";
 
 import LoginForm from "@/components/forms/LoginForm";
+import api_backend from "@/api/axiosInstance";
 
 type LoginFormInputs = {
     email: string;
@@ -16,10 +17,11 @@ export default function LoginPage() {
     const [apiError, setApiError] = useState<string>("");
 
     const router = useRouter();
-    const api = axios.create({
-        baseURL: "http://localhost:4000/api/",
-        withCredentials: true,
-    });
+
+    // const api = axios.create({ //  TODO: move to a central api file
+    //     baseURL: "http://localhost:4000/api/",
+    //     withCredentials: true,
+    // });
 
     const onSubmit = (data: LoginFormInputs) => {
         setIsLoading(true);
@@ -27,7 +29,7 @@ export default function LoginPage() {
 
         console.log("login data: ", data);
 
-        api.post("user/login", {
+        api_backend.post("user/login", {
             email: data.email,
             password: data.password,
         })

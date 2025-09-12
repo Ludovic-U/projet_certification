@@ -48,4 +48,9 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         path: "/planning",
         icon: <FontAwesomeIcon icon={Icons.calendar}/>,
     },
+    {
+        title: "Déconnexion",
+        path: "/",
+        icon: <FontAwesomeIcon icon={Icons.calendar}/>,
+    },
 ]

@@ -7,6 +7,7 @@ export type SideNavItem = {
     icon?: React.ReactNode; // Icône
     subMenu?: boolean; // Optionnel : indique si cet item comprend un submenu
     subMenuItems?: SideNavItem[]; // Optionnel : tableau d'items enfants
+    button?: React.ReactNode; // Optionnel : bouton personnalisé
 };
 
 // Indique si la sidebar est réduite ou étendue

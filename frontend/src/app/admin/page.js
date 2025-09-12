@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from ""
+import { Button } from "@/components/ui";
 
 const ProjectPage = () => {
   return (

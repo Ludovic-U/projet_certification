@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Button } from "@/components/ui/button-old";
+import { Button } from "@/components/ui";
 
 const AdminPage = () => {
   return (
