@@ -7,12 +7,14 @@ import { NextResponse } from 'next/server';
   "/super_admin": "view_super_admin_dashboard",
 };
 
-export async function middleware(request)  { // TODO: à modifier pour ne pas faire d'appel API à chaque fois
+export async function middleware(request)  { 
   
   const { pathname } = request.nextUrl;
 
+  const API_INTERNAL = process.env.API_INTERNAL_URL || 'http://localhost:4000';
+
   const api = axios.create({
-    baseURL: "http://localhost:4000/api/",
+    baseURL: `${API_INTERNAL}/api/`, // baseURL: "http://localhost:4000/api/",
     withCredentials: true,    
     headers: {
         'cookie': request.headers.get('cookie')
@@ -29,7 +31,7 @@ export async function middleware(request)  { // TODO: à modifier pour ne pas fa
       console.log("Utilisateur authentifié avec les permissions :", response.data.user.permissions);
       return true;
     } catch (err) {
-      console.warn("Utilisateur non authentifié", err.message);
+      console.warn("Utilisateur non authentifié", err.message, err);
       return false;
     }
   };
@@ -75,3 +77,5 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 }
+
+

@@ -23,12 +23,12 @@ app.use((req, res, next) => {
 });
 
 // Prevent TRACE method to avoid security issues (XST attacks)
-app.use((req, res, next) => {
-  if (req.method === 'TRACE') {
-    return res.sendStatus(405);
-  }
-  next();
-});
+// app.use((req, res, next) => {
+//   if (req.method === 'TRACE') {
+//     return res.sendStatus(405);
+//   }
+//   next();
+// });
 
 
 //routes
