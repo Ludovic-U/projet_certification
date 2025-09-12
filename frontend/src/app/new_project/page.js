@@ -1,10 +1,13 @@
 "use client";
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, LogOut } from 'lucide-react';
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/utils";
+
+import {
+  Button,
+  Input
+} from "@/components/ui";
 
 const CreerNouveauProjet = () => {
   const [nomProjet, setNomProjet] = useState('');

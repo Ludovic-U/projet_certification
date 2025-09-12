@@ -6,7 +6,6 @@ const userRoutes = require('./routes/userRoutes');
 const cookieParser = require('cookie-parser')
 const { authenticateUser } = require('./middlewares/auth');
 const prisma = new PrismaClient();
-
 const app = express();
 
 //json 
@@ -15,7 +14,7 @@ app.use(cookieParser());
 
 //cors
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000'); // TODO: change to front url
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001'); // TODO: change to front url
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -30,17 +29,13 @@ app.use((req, res, next) => {
 //   next();
 // });
 
-
 //routes
 app.use('/api/user', userRoutes);
 app.use('/api/client',authenticateUser, clientRoutes);
 app.use('/api/me',authenticateUser,meRoutes);
 
-
 //start server
 const PORT = process.env.PORT 
-
 app.listen(PORT, () => {
-
     console.log(`Server is running on port ${PORT}`);
 } );

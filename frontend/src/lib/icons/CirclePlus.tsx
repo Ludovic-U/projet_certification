@@ -1,0 +1,12 @@
+"use client";
+
+import { FontAwesomeIcon, Icons } from "./icons";
+
+export const CirclePlus = () => (
+    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary group-hover:bg-primaryhover transition-colors duration-200 ease-in-out">
+        <FontAwesomeIcon
+        icon={Icons.plus}
+        className="text-light group-hover:text-lighthover"
+        size="xl"/>
+    </div>
+)

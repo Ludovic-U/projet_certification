@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme {
+
+/* TYPOGRAPHIE */
+  --font-oswald: var(--font-oswald), sans-serif;
+  --font-noto: var(--font-notosans), sans-serif;
+  --font-didact: var(--font-didactgothic), sans-serif;
+
+/* COULEURS */
+  --color-dark: #272727;
+  --color-darkhover: #3A3A3A;
+
+  --color-light: #f4f4f4;
+  --color-lighthover: #E0E0E0;
+
+  --color-grey50: #D8DEE5;
+  --color-grey100: #D2D8DF;
+  --color-grey200: #CCD1D8;
+  --color-grey300: #C0C5CB;
+  --color-grey400: #B5BAC0;
+  --color-grey500: #A8ACB2;
+  --color-grey: #9CA0A5;
+  --color-grey700: #8F9398;
+  --color-grey800: #828589;
+  --color-greydarker: #787B7F;
+
+  --color-primary50: #E8F0EB;
+  --color-primary100: #D3E0D5;
+  --color-primary200: #BFD1BF;
+  --color-primary300: #ACBFA9;
+  --color-primarylighter: #99B095;
+  --color-primary: #83A18F;
+  --color-primary600 : #6D8E76;
+  --color-primaryhover: #577A56;
+  --color-primary800: #466545;
+  --color-primary900: #354533;
+
+  --color-alertsuccess50: #F0F8E9;
+  --color-alertsuccess100: #D9F0B8;
+  --color-alertsuccess200: #BFE890;
+  --color-alertsuccess300: #A6E067;
+  --color-alertsuccess400: #8ED843;
+  --color-alertsuccess500: #78D122;
+  --color-alertsuccess: #64A338;
+  --color-alertsuccess700: #51812A;
+  --color-alertsuccess800: #3D5E21;
+  --color-alertsuccess900: #2A3C18;
+
+  --color-alertdanger50: #FDE7E3;
+  --color-alertdanger100: #F9C0B7;
+  --color-alertdanger200: #F59A8C;
+  --color-alertdanger300: #F17662;
+  --color-alertdanger400: #ED5341;
+  --color-alertdanger500: #EA2B21;
+  --color-alertdanger: #E03B24;
+  --color-alertdanger700: #B6301D;
+  --color-alertdanger800: #892318;
+  --color-alertdanger900: #5D170F;
+
+  --color-alertwarning50: #FFF5E6;
+  --color-alertwarning100: #FFE6B8;
+  --color-alertwarning200: #FFD98A;
+  --color-alertwarning300: #FFC85C;
+  --color-alertwarning400: #FFB32E;
+  --color-alertwarning500: #FFA100;
+  --color-alertwarning: #EF9300;
+  --color-alertwarning700: #C27000;
+  --color-alertwarning800: #915400;
+  --color-alertwarning900: #613900;
+
+  --color-alertinfo50: #E6EEF9;
+  --color-alertinfo100: #C3D6F2;
+  --color-alertinfo200: #A0BEEB;
+  --color-alertinfo300: #7DA6E4;
+  --color-alertinfo400: #5B8DDB;
+  --color-alertinfo500: #3975D2;
+  --color-alertinfo: #3865A3;
+  --color-alertinfo700: #2D4E7D;
+  --color-alertinfo800: #223957;
+  --color-alertinfo900: #162432;
+
+/* SHADOW */
+  --shadow-100: 0 2px 4px 0 rgba(39,39,39,0.25);
+  --shadow-200: 0 3px 6px 0 rgba(39,39,39,0.25);
+  --shadow-300: 0 4px 8px 0 rgba(39,39,39,0.25);
+  --shadow-400: 0 4px 10px 0 rgba(39,39,39,0.25);
+  --shadow-500base: 5px 4px 15px 0 rgba(39,39,39,0.25);
+  --shadow-600: 6px 6px 20px 0 rgba(39,39,39,0.25);
+  --shadow-700: 8px 8px 25px 0 rgba(39,39,39,0.25);
+  --shadow-800: 10px 12px 30px 0 rgba(39,39,39,0.25);
+}

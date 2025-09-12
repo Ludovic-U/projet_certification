@@ -1,113 +1,93 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
-import { Button } from "../components/ui/Button"
+import LoginForm from "@/components/forms/LoginForm";
 
 type LoginFormInputs = {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 };
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const handleClick = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      alert("Action terminée!");
-    }, 2000);
-  };
+    const [isLoading, setIsLoading] = useState(false);
+    const [apiError, setApiError] = useState<string>("");
 
-  const router = useRouter();
-  const api = axios.create({
-    baseURL: "http://localhost:4000/api/",
-    withCredentials: true
-  })
-
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginFormInputs>();
-  const onSubmit = (data: LoginFormInputs) => {
-    console.log("login data: ", data)
-    api.post('user/login', {
-      "email": data.email,
-      "password": data.password
-    })
-    .then(function (response) {
-      console.log( "Login successful, routerpush");
-      console.log( response);
-      // Redirect to the home page after successful login
-      router.push("/admin"); // TODO: check user role and redirect accordingly
-    })
-    .catch(function (error) {
-      console.log( "Login failed");
-      console.log( error);
-      // TODO: Handle error, show message to user
-      alert("Échec de la connexion. Veuillez vérifier vos identifiants. Erreur " + error.status);
+    const router = useRouter();
+    const api = axios.create({
+        baseURL: "http://localhost:4000/api/",
+        withCredentials: true,
     });
-  };
 
-  //   const {
-  //     register,
-  //     handleSubmit,
-  //     formState: { errors },
-  //   } = useForm<LoginFormInputs>();
+    const onSubmit = (data: LoginFormInputs) => {
+        setIsLoading(true);
+        setApiError("");
 
-  //  const onSubmit = (data: LoginFormInputs) => {
-  //    console.log("Login Data:", data);
-  //    // api.post('/login', data)
-  //  }  
+        console.log("login data: ", data);
 
-  return (
-    <main className="flex flex-col min-h-screen min-w-screen items-center justify-center bg-[#F4F4F4]">
-      <Button size="sm" variant="purple">
-        Bouton
-      </Button>
-      <Button variant="purple" loading>En chargement</Button>
-      <Button variant="blue" disabled>Désactivé</Button>
-      <hr className="pt-8"></hr>
+        api.post("user/login", {
+            email: data.email,
+            password: data.password,
+        })
+            .then(function (response) {
+                console.log("Login successful, routerpush");
+                console.log(response);
+                // Redirect to the home page after successful login
+                router.push("/admin"); // TODO: check user role and redirect accordingly
+            })
+            .catch(function (error) {
+                console.log("Login failed");
+                console.log(error);
+                setIsLoading(false);
 
-      
-      <section className="bg-red-500 flex flex-col text-center text-[#272727] w-[25vw] h-[50vh] rounded-xl">
+                let errorMessage =
+                    "Echec de la connexion. Veuillez véridier vos identifiants.";
 
-        <h1
-         className="">
-          BIENVENUE
-        </h1>
-        <p>Entrez vos identifiants pour vous connecter.</p>
-        
-        <form
-         onSubmit={handleSubmit(onSubmit)}
-         className="bg-pink-500 flex flex-col">
-          <input
-           {...register("email", {required: true})}
-           className="bg-orange-500"
-           type="email"
-           placeholder="bonjour@figuredeskills.fr"
-          />
-          {errors.email && <p>Entrez votre email pour vous connecter</p>}
+                if (error.response?.status == 401) {
+                    errorMessage = "Email ou mot de passe incorrect.";
+                } else if (error.response?.status == 429) {
+                    errorMessage =
+                        "Trop de tentatives. Veuillez réessayer plus tard.";
+                } else if (error.response?.status == 500) {
+                    errorMessage =
+                        "Erreur du serveur. Veuillez réessayer plus tard";
+                } else if (!error.response) {
+                    errorMessage =
+                        "Erreur de connexion. Vérifiez votre connexion internet.";
+                }
 
-          <input
-           {...register("password", {required: true})}
-           className="bg-green-500"
-           type="password"
-           placeholder="*********"
-          />
-          {errors.password && <p>Entrez votre mot de passe pour vous connecter</p>}
-        
-          <Button size="md" variant="blue" type="submit">
-            Se connecter
-          </Button>
-        </form>
-      </section>
-    </main>
-  );
+                setApiError(errorMessage);
+            });
+    };
+
+    return (
+        <div className="h-screen overflow-y-scroll justify-center bg-light flex flex-col items-center">
+            <section className="
+                        flex flex-col bg-white text-dark items-center justify-center
+                        w-full h-full
+                        md:w-[50%] md:h-fit
+                        lg:min-w-fit lg:max-w-[25vw]
+                        rounded-xl shadow-500base p-8">
+                <img
+                    src="/logo-sm.jpeg"
+                    className="rounded-full w-12 h-12"
+                    alt="logo"
+                />
+                <h1 className="cursor-default font-oswald font-medium text-2xl my-3">
+                    BIENVENUE
+                </h1>
+                <p className="cursor-default font-didact text-center text-greydarker text-lg mb-8">
+                    Entrez vos identifiants pour vous connecter.
+                </p>
+
+                <LoginForm
+                 onSubmit={onSubmit}
+                 isLoading={isLoading}
+                 apiError={apiError}
+                />
+            </section>
+        </div>
+    );
 }
-
-          //  <input type="submit" />
-          //  <Button variant="outline"
-          //  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
-          //  type="submit"
-          //  > Se connecter </Button>

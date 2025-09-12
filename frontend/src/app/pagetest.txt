@@ -1,0 +1,273 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { redirect } from "next/navigation";
+
+import LoginForm from "@/components/forms/LoginForm";
+
+import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
+
+import { Card } from "@/components/ui/Card";
+import { Pagination } from "@/components/ui/Pagination";
+import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui";
+import { RadioGroup } from "@/components/ui/RadioGroup";
+import { Toggle } from "@/components/ui/Toggle";
+import { faGear, faPlus, faEye, faChevronLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { Input } from "@/components/ui/Input";
+import { projectsList } from "@/components/ui/list.variants/projectsList";
+import { Radio } from "@/components/ui/Radio";
+
+type LoginFormInputs = {
+    email: string;
+    password: string;
+};
+
+export default function LoginPage() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [apiError, setApiError] = useState<string>("");
+
+const items = Array.from({ length: 20 }, (_, i) => `Élément ${i + 1}`);
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 5;
+const startIndex = (currentPage - 1) * itemsPerPage;
+const endIndex = startIndex + itemsPerPage;
+const visibleItems = items.slice(startIndex, endIndex);
+const totalPages = Math.ceil(items.length / itemsPerPage);
+
+    const router = useRouter();
+    const api = axios.create({
+        baseURL: "http://localhost:4000/api/",
+        withCredentials: true,
+    });
+
+    const onSubmit = (data: LoginFormInputs) => {
+        setIsLoading(true);
+        setApiError("");
+
+        console.log("login data: ", data);
+
+        api.post("user/login", {
+            email: data.email,
+            password: data.password,
+        })
+            .then(function (response) {
+                console.log("Login successful, routerpush");
+                console.log(response);
+                // Redirect to the home page after successful login
+                router.push("/admin"); // TODO: check user role and redirect accordingly
+            })
+            .catch(function (error) {
+                console.log("Login failed");
+                console.log(error);
+                setIsLoading(false);
+
+                let errorMessage =
+                    "Echec de la connexion. Veuillez véridier vos identifiants.";
+
+                if (error.response?.status == 401) {
+                    errorMessage = "Email ou mot de passe incorrect.";
+                } else if (error.response?.status == 429) {
+                    errorMessage =
+                        "Trop de tentatives. Veuillez réessayer plus tard.";
+                } else if (error.response?.status == 500) {
+                    errorMessage =
+                        "Erreur du serveur. Veuillez réessayer plus tard";
+                } else if (!error.response) {
+                    errorMessage =
+                        "Erreur de connexion. Vérifiez votre connexion internet.";
+                }
+
+                setApiError(errorMessage);
+            });
+    };
+
+    return (
+<>
+    <div className="flex gap-10 pt-10 bg-light items-center justify-center">
+        <Card
+        title="ideation"
+        description="Générer et structurer les idées initiales."
+        progress={40}
+        buttonLabel="ouvrir"
+        onButtonClick={() => console.log("ok")}/>
+
+        <Card
+        title="proposition des valeurs"
+        progress={90}
+        buttonLabel="voir"
+        onButtonClick={() => console.log("ok")}/>
+
+    </div>
+    
+     <div className="flex gap-5 pt-10 bg-light items-center justify-center">
+        <Card
+        title="ideation"
+        description="Générer et structurer les idées initiales."
+        progress={40}
+        color="#BFD1BF"
+        buttonLabel="ouvrir"
+        onButtonClick={() => console.log("ok")}/>
+
+        <Card
+        title="conception"
+        description="Définir et planifier les solutions."
+        progress={40}
+        color="#ACBFA9"
+        buttonLabel="ouvrir"
+        onButtonClick={() => console.log("ok")}/>
+
+        <Card
+        title="Pilotage"
+        description="Suivre l'avancement et coordonner l'équipe."
+        progress={40}
+        color="#83A18F"
+        buttonLabel="ouvrir"
+        onButtonClick={() => console.log("ok")}/>
+
+        <Card
+        title="Reporting"
+        description="Analyser les résultats et partager les bilans."
+        progress={40}
+        color="#6D8E76"
+        buttonLabel="ouvrir"
+        onButtonClick={() => console.log("ok")}/>        
+
+    </div>
+
+        <div className="flex flex-col w-screen items-center h-fit gap-10 py-8 bg-lighthover">
+            
+            <div className="flex flex-col gap-3">
+                <h2 className="text-center font-bold">Buttons</h2>
+                    <div className="flex gap-5 items-center">
+                        <h3>Simples</h3>
+                        <Button>Valider</Button>
+                        <Button variant="secondary" size="sm">Ouvrir</Button>
+                    </div>
+                    
+                    <div className="flex gap-5 items-center">
+                        <h3>Icons</h3>
+                        <Button variant="iconRound" size="smRound"><FontAwesomeIcon icon={faChevronLeft}/></Button>
+                        <Button variant="iconRoundClose" size="smRound"><FontAwesomeIcon icon={faXmark}/></Button>
+                        <Button size="sm"><FontAwesomeIcon icon={faGear}/>Paramètres</Button>
+                        <Button size="lg" className="text-start"> <CirclePlus/>Créer nouveau <br/> projet </Button>
+                    </div>
+
+                    <div className="flex gap-5 items-center">
+                        <h3>Effects</h3>
+                        <Button disabled>Disabled</Button>
+                        <Button loading size="sm">Connexion</Button>
+                    </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+                <h2 className="text-center font-bold">Checkbox</h2>
+                    <div className="flex gap-5 items-center">
+                        <h3>Tailles</h3>
+                        <Checkbox type="checkbox" size="sm" label="Small"/>
+                        <Checkbox size="default" label="Default"/>
+                        <Checkbox size="lg" label="Large"/>
+                    </div>
+
+                    <div className="flex gap-5 items-center">
+                        <h3>Disabled</h3>
+                        <Checkbox disabled label="Disabled"/>
+                        <Checkbox defaultChecked disabled label="Checked disabled"/>
+                    </div>
+
+                    <div className="flex gap-5 items-center">
+                        <h3>States</h3>
+                        <Checkbox defaultChecked label="Checked"/>
+                        <Checkbox label="Unchecked"/>
+                        <Checkbox aria-invalid="true" label="Invalid" disabled/>
+                    </div>
+            </div>
+
+            {/* <div className="flex flex-col gap-3">
+                <h2 className="text-center font-bold">Radio</h2>
+                <p>Selectionné : {selectedSize}</p>
+                    <div className="flex gap-5 items-center">
+                        <RadioGroup
+                         name="sizes"
+                         value={selectedSize}
+                         onValueChange={setSelectedSize}
+                         className="flex flex-col gap-2">
+                            <Radio value="small" label="Petit" helperText="Pour les petits articles" />
+                            <Radio value="medium" label="Moyen" helperText="Taille standard" />
+                            <Radio disabled value="large" label="Grand" helperText="Pour les grands articles" />
+                            <Radio value="extra large" label="Extra Grand" error="Erreur" disabled/>
+                         </RadioGroup>
+                    </div>
+            </div> */}
+
+            <div className="flex flex-col gap-3">
+                <h2 className="text-center font-bold">Toggle/Switch</h2>
+
+                    <div className="flex gap-5">
+                        <h3>Simples</h3>
+                        <Toggle/>
+                        <Toggle checked/>
+                    </div>
+
+                    <div className="flex gap-5">
+                        <h3>Avec Label</h3>
+                        <Toggle label="Option 1"/>
+                        <Toggle label="Option 2"/>
+                    </div>
+
+                    <div className="flex gap-5">
+                        <h3>Avec helperText et disabled</h3>
+                        <Toggle label="Option 3" helperText="Selectionne pour blabla"/>
+                        <Toggle disabled checked label="Option 4" helperText="Selectionne pour blabla"/>
+                        <Toggle disabled checked label="Option 5" helperText="Selectionne pour blabla"/>
+                    </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+                <h2 className="text-center font-bold">Tooltip</h2>
+                    <div className="flex gap-5 items-center">
+                        <h3>Haut</h3>
+                        <Tooltip content="Sélectionner pour blabla" position="top">
+                            <Toggle label="Option 3" helperText="Selectionne pour blabla"/>
+                        </Tooltip>
+                    </div>
+
+                    <div className="flex gap-5 items-center">
+                        <h3>Bas</h3>
+                        <Tooltip content="Sélectionner pour blabla" position="bottom">
+                            <Checkbox size="default" label="D'accord"/>
+                        </Tooltip>
+                    </div>
+                    <div className="flex gap-5 items-center">
+                        <h3>Droite</h3>
+                        <Tooltip content="Sélectionner pour blabla" position="right">
+                            <Checkbox size="default" label="D'accord"/>
+                        </Tooltip>
+                    </div>
+                    <div className="flex gap-5 items-center">
+                        <h3>Gauche</h3>
+                        <Tooltip content="Sélectionner pour blabla" position="left">
+                            <Input label="Label" type="text" placeholder="Placeholder" leftIcon={<span className="text-grey"><FontAwesomeIcon icon={faEye}/></span>}/>
+                        </Tooltip>
+                    </div>
+            </div>
+            <div className="p-4">
+                <ul className="mb-4 space-y-2">
+                    {visibleItems.map((item) => (
+                    <li key={item} className="p-2 border rounded">
+                        {item}
+                    </li>
+                    ))}
+                </ul>
+
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                />
+            </div>
+        </div>
+}
