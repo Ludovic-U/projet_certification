@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "../components/ui/header"
-
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { oswald, notoSans, didactGothic } from "./fonts";
 
 export const metadata: Metadata = {
   title: "F2S_APP",
@@ -25,9 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-
-      <html lang="frn">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>          
+      <html lang="fr">
+        <body className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>          
           <Header></Header>
           {children}
         </body>
