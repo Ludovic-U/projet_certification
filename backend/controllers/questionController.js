@@ -300,7 +300,7 @@ module.exports.getQuestionsByType = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getSubQuestions = async (req, res) => {
-  const questionIdParent = Number(req.params.questionIdParent);
+  const questionIdParent = Number(req.params.questionId);
   // Validate questionIdParent
   if (!validateId(questionIdParent, "questionIdParent", res)) return;
 

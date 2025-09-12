@@ -507,7 +507,7 @@ describe("Question Controller", () => {
    */
   describe("getSubQuestions", () => {
     beforeEach(() => {
-      req = { params: { questionIdParent: 1 } };
+      req = { params: { questionId: 1 } };
     });
 
     it("should fetch sub-questions and return 200 status", async () => {
@@ -520,14 +520,14 @@ describe("Question Controller", () => {
       await questionController.getSubQuestions(req, res, next);
 
       expect(questionService.getSubQuestions).toHaveBeenCalledWith(
-        Number(req.params.questionIdParent)
+        Number(req.params.questionId)
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockSubQuestions);
     });
 
     it("should return 400 for invalid parentId", async () => {
-      req.params.questionIdParent = "invalid";
+      req.params.questionId = "invalid";
       await invalidOrMissingStatus(
         questionController.getSubQuestions,
         req,

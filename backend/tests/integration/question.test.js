@@ -142,9 +142,7 @@ describe("Question Integration Tests", () => {
     });
 
     it("should return 404 status if question does not exist", async () => {
-      const res = await request(app).get(
-        `/api/question/get/${questionParent.questionId}/subquestion`
-      );
+      const res = await request(app).get(`/api/question/get/999/subquestion`);
 
       expect(res.status).toBe(404);
     });
