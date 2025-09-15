@@ -31,14 +31,17 @@ describe("Type Service", () => {
    */
   describe("createType", () => {
     it("should create and return a new type", async () => {
-      const mockTypeData = { label: "General" };
+      const mockTypeData = { label: "General", questions: [] };
       const mockCreatedType = { typeId: 1, ...mockTypeData };
 
       prisma.type.create.mockResolvedValue(mockCreatedType);
 
       const result = await typeService.createType(mockTypeData);
 
-      expect(prisma.type.create).toHaveBeenCalledWith({ data: mockTypeData });
+      expect(prisma.type.create).toHaveBeenCalledWith({
+        data: { label: mockTypeData.label, questions: undefined },
+        include: { questions: true },
+      });
       expect(result).toEqual(mockCreatedType);
     });
 
@@ -52,7 +55,10 @@ describe("Type Service", () => {
         "Database error"
       );
 
-      expect(prisma.type.create).toHaveBeenCalledWith({ data: mockTypeData });
+      expect(prisma.type.create).toHaveBeenCalledWith({
+        data: mockTypeData,
+        include: { questions: true },
+      });
     });
   });
 
@@ -100,7 +106,8 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: mockUpdatedData,
+        data: { questions: undefined },
+        include: { questions: true },
       });
       expect(result).toEqual(mockUpdatedType);
     });
@@ -119,7 +126,8 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: mockUpdatedData,
+        data: { questions: undefined },
+        include: { questions: true },
       });
     });
 
@@ -136,7 +144,8 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: mockUpdatedData,
+        data: { questions: undefined },
+        include: { questions: true },
       });
     });
   });

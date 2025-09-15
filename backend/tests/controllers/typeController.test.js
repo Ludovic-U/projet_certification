@@ -44,6 +44,7 @@ describe("Type Controller", () => {
 
       expect(typeService.createType).toHaveBeenCalledWith({
         label: req.body.label,
+        questions: [],
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockType);

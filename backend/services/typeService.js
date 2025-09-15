@@ -6,7 +6,20 @@ const { prisma } = require("../prisma/prismaClient");
  * @returns {Promise<Object>} The created type.
  */
 module.exports.createType = async (data) => {
-  return await prisma.type.create({ data });
+  const { questions, ...typeData } = data;
+
+  return await prisma.type.create({
+    data: {
+      ...typeData,
+      questions:
+        Array.isArray(questions) && questions.length > 0
+          ? {
+              connect: questions.map((questionId) => ({ questionId })),
+            }
+          : undefined,
+    },
+    include: { questions: true },
+  });
 };
 
 /**
@@ -25,10 +38,30 @@ module.exports.getAllTypes = async () => {
  * @throws {Error} If the type does not exist.
  */
 module.exports.updateType = async (typeId, data) => {
+  const { addQuestion, removeQuestion, typeData } = data;
+
   try {
     return await prisma.type.update({
       where: { typeId: typeId },
-      data,
+      data: {
+        ...typeData,
+        // Add / Remove questions
+        questions:
+          (Array.isArray(addQuestion) && addQuestion.length > 0) ||
+          (Array.isArray(removeQuestion) && removeQuestion.length > 0)
+            ? {
+                connect:
+                  Array.isArray(addQuestion) && addQuestion.length > 0
+                    ? addQuestion.map((questionId) => ({ questionId }))
+                    : undefined,
+                disconnect:
+                  Array.isArray(removeQuestion) && removeQuestion.length > 0
+                    ? removeQuestion.map((questionId) => ({ questionId }))
+                    : undefined,
+              }
+            : undefined,
+      },
+      include: { questions: true },
     });
   } catch (error) {
     if (error.code === "P2025") {

@@ -7,14 +7,17 @@ const { validateId } = require("./helpers/validateId");
  * - label: String
  */
 module.exports.createType = async (req, res) => {
-  const { label } = req.body;
+  const { label, questions } = req.body;
 
   if (!label) {
     return res.status(400).json({ error: "label is required" });
   }
 
   try {
-    const type = await typeService.createType({ label });
+    const type = await typeService.createType({
+      label,
+      questions: questions ?? [],
+    });
     res.status(201).json(type);
   } catch (error) {
     console.error("Error creating type:", error);
@@ -46,14 +49,18 @@ module.exports.updateType = async (req, res) => {
   // Validate typeId
   if (!validateId(typeId, "typeId", res)) return;
 
-  const { label } = req.body;
+  const { label, addQuestion, removeQuestion } = req.body;
 
   if (!label) {
     return res.status(400).json({ error: "label is required" });
   }
 
   try {
-    const type = await typeService.updateType(typeId, { label: label });
+    const type = await typeService.updateType(typeId, {
+      label,
+      addQuestion,
+      removeQuestion,
+    });
     res.status(200).json(type);
   } catch (error) {
     if (error.message === "Type not found") {
