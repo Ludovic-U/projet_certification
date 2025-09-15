@@ -21,6 +21,8 @@ module.exports.createQuestion = async (req, res) => {
     hasMultipleOpenResponse,
     shouldMultiply,
     questionIdParent,
+    types,
+    projects,
   } = req.body;
 
   // Check label or category to be not null
@@ -37,6 +39,8 @@ module.exports.createQuestion = async (req, res) => {
       hasMultipleOpenResponse: hasMultipleOpenResponse ?? false,
       shouldMultiply: shouldMultiply ?? false,
       questionIdParent: questionIdParent ?? null,
+      types: types ?? [],
+      projects: projects ?? [],
     });
     res.status(201).json(question);
   } catch (error) {
@@ -77,6 +81,10 @@ module.exports.updateQuestion = async (req, res) => {
     hasMultipleOpenResponse,
     shouldMultiply,
     questionIdParent,
+    addType,
+    removeType,
+    addProject,
+    removeProject,
   } = req.body;
 
   // Check label or category to be not null
@@ -93,6 +101,10 @@ module.exports.updateQuestion = async (req, res) => {
       hasMultipleOpenResponse,
       shouldMultiply,
       questionIdParent,
+      addType,
+      removeType,
+      addProject,
+      removeProject,
     });
     res.status(200).json(question);
   } catch (error) {

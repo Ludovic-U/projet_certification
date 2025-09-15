@@ -39,7 +39,10 @@ describe("Question Service", () => {
         numberOfSelectionableOpt: 0,
         isRelevant: true,
         hasMultipleOpenResponse: false,
+        shouldMultiply: false,
         questionIdParent: null,
+        types: [],
+        projects: [],
       };
       const mockCreatedQuestion = { questionId: 1, ...mockQuestionData };
 
@@ -48,7 +51,21 @@ describe("Question Service", () => {
       const result = await questionService.createQuestion(mockQuestionData);
 
       expect(prisma.question.create).toHaveBeenCalledWith({
-        data: mockQuestionData,
+        data: {
+          label: mockQuestionData.label,
+          category: mockQuestionData.category,
+          numberOfSelectionableOpt: mockQuestionData.numberOfSelectionableOpt,
+          isRelevant: mockQuestionData.isRelevant,
+          hasMultipleOpenResponse: mockQuestionData.hasMultipleOpenResponse,
+          shouldMultiply: mockQuestionData.shouldMultiply,
+          questionIdParent: mockQuestionData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
       expect(result).toEqual(mockCreatedQuestion);
     });
@@ -62,7 +79,16 @@ describe("Question Service", () => {
         "Invalid data"
       );
 
-      expect(prisma.question.create).toHaveBeenCalledWith({ data: {} });
+      expect(prisma.question.create).toHaveBeenCalledWith({
+        data: {
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
+      });
     });
 
     it("should throw an error if creation fails", async () => {
@@ -72,6 +98,7 @@ describe("Question Service", () => {
         numberOfSelectionableOpt: 0,
         isRelevant: true,
         hasMultipleOpenResponse: false,
+        shouldMultiply: false,
         questionIdParent: null,
       };
       const mockError = new Error("Database error");
@@ -83,7 +110,21 @@ describe("Question Service", () => {
       ).rejects.toThrow("Database error");
 
       expect(prisma.question.create).toHaveBeenCalledWith({
-        data: mockQuestionData,
+        data: {
+          label: mockQuestionData.label,
+          category: mockQuestionData.category,
+          numberOfSelectionableOpt: mockQuestionData.numberOfSelectionableOpt,
+          isRelevant: mockQuestionData.isRelevant,
+          hasMultipleOpenResponse: mockQuestionData.hasMultipleOpenResponse,
+          shouldMultiply: mockQuestionData.shouldMultiply,
+          questionIdParent: mockQuestionData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
     });
   });
@@ -147,6 +188,7 @@ describe("Question Service", () => {
         numberOfSelectionableOpt: 1,
         isRelevant: false,
         hasMultipleOpenResponse: true,
+        shouldMultiply: false,
         questionIdParent: null,
       };
       const mockUpdatedQuestion = { questionId: questionId, ...mockUpdateData };
@@ -160,7 +202,21 @@ describe("Question Service", () => {
 
       expect(prisma.question.update).toHaveBeenCalledWith({
         where: { questionId: questionId },
-        data: mockUpdateData,
+        data: {
+          label: mockUpdateData.label,
+          category: mockUpdateData.category,
+          numberOfSelectionableOpt: mockUpdateData.numberOfSelectionableOpt,
+          isRelevant: mockUpdateData.isRelevant,
+          hasMultipleOpenResponse: mockUpdateData.hasMultipleOpenResponse,
+          shouldMultiply: mockUpdateData.shouldMultiply,
+          questionIdParent: mockUpdateData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
       expect(result).toEqual(mockUpdatedQuestion);
     });
@@ -187,7 +243,21 @@ describe("Question Service", () => {
 
       expect(prisma.question.update).toHaveBeenCalledWith({
         where: { questionId },
-        data: mockUpdateData,
+        data: {
+          label: mockUpdateData.label,
+          category: mockUpdateData.category,
+          numberOfSelectionableOpt: mockUpdateData.numberOfSelectionableOpt,
+          isRelevant: mockUpdateData.isRelevant,
+          hasMultipleOpenResponse: mockUpdateData.hasMultipleOpenResponse,
+          shouldMultiply: mockUpdateData.shouldMultiply,
+          questionIdParent: mockUpdateData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
     });
 
@@ -212,7 +282,21 @@ describe("Question Service", () => {
 
       expect(prisma.question.update).toHaveBeenCalledWith({
         where: { questionId: questionId },
-        data: mockUpdateData,
+        data: {
+          label: mockUpdateData.label,
+          category: mockUpdateData.category,
+          numberOfSelectionableOpt: mockUpdateData.numberOfSelectionableOpt,
+          isRelevant: mockUpdateData.isRelevant,
+          hasMultipleOpenResponse: mockUpdateData.hasMultipleOpenResponse,
+          shouldMultiply: mockUpdateData.shouldMultiply,
+          questionIdParent: mockUpdateData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
     });
   });

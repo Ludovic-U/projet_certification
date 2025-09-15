@@ -59,6 +59,8 @@ describe("Question Controller", () => {
         hasMultipleOpenResponse: req.body.hasMultipleOpenResponse,
         shouldMultiply: req.body.shouldMultiply,
         questionIdParent: req.body.questionIdParent,
+        types: [],
+        projects: [],
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockQuestion);

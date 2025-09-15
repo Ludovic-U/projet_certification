@@ -6,7 +6,30 @@ const { prisma } = require("../prisma/prismaClient");
  * @returns {Promise<Object>} The created question.
  */
 module.exports.createQuestion = async (data) => {
-  return await prisma.question.create({ data });
+  const { types, projects, ...questionData } = data;
+
+  return await prisma.question.create({
+    data: {
+      ...questionData,
+      types:
+        Array.isArray(types) && types.length > 0
+          ? {
+              connect: types.map((id) => ({ id })),
+            }
+          : undefined,
+
+      projects:
+        Array.isArray(projects) && projects.length > 0
+          ? {
+              connect: projects.map((id) => ({ id })),
+            }
+          : undefined,
+    },
+    include: {
+      types: true,
+      projects: true,
+    },
+  });
 };
 
 /**
@@ -25,10 +48,49 @@ module.exports.getAllQuestions = async () => {
  * @throws {Error} If the question does not exist.
  */
 module.exports.updateQuestion = async (questionId, data) => {
+  const { addType, removeType, addProject, removeProject, ...questionData } =
+    data;
+
   try {
     return await prisma.question.update({
       where: { questionId: questionId },
-      data,
+      data: {
+        ...questionData,
+        // Add / Remove types
+        types:
+          (Array.isArray(addType) && addType.length > 0) ||
+          (Array.isArray(removeType) && removeType.length > 0)
+            ? {
+                connect:
+                  Array.isArray(addType) && addType.length > 0
+                    ? addType.map((id) => ({ id }))
+                    : undefined,
+                disconnect:
+                  Array.isArray(removeType) && removeType.length > 0
+                    ? removeType.map((id) => ({ id }))
+                    : undefined,
+              }
+            : undefined,
+        // Add / Remove projects
+        projects:
+          (Array.isArray(addProject) && addProject.length > 0) ||
+          (Array.isArray(removeProject) && removeProject.length > 0)
+            ? {
+                connect:
+                  Array.isArray(addProject) && addProject.length > 0
+                    ? addProject.map((id) => ({ id }))
+                    : undefined,
+                disconnect:
+                  Array.isArray(projectsToRemove) && removeProject.length > 0
+                    ? removeProject.map((id) => ({ id }))
+                    : undefined,
+              }
+            : undefined,
+      },
+      include: {
+        types: true,
+        projects: true,
+      },
     });
   } catch (error) {
     if (error.code === "P2025") {
