@@ -66,6 +66,28 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockQuestion);
     });
 
+    it("should create a question with types and return 201 status", async () => {
+      req.body.types = [1, 2];
+      const mockQuestion = { questionId: 1, ...req.body };
+      questionService.createQuestion.mockResolvedValue(mockQuestion);
+
+      await questionController.createQuestion(req, res, next);
+
+      expect(questionService.createQuestion).toHaveBeenCalledWith({
+        label: req.body.label,
+        category: req.body.category,
+        numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
+        isRelevant: req.body.isRelevant,
+        hasMultipleOpenResponse: req.body.hasMultipleOpenResponse,
+        shouldMultiply: req.body.shouldMultiply,
+        questionIdParent: req.body.questionIdParent,
+        types: req.body.types,
+        projects: [],
+      });
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(mockQuestion);
+    });
+
     it("should return 400 if a required field is missing", async () => {
       req.body.label = "";
       await invalidOrMissingStatus(
@@ -154,6 +176,36 @@ describe("Question Controller", () => {
           hasMultipleOpenResponse: req.body.hasMultipleOpenResponse,
           shouldMultiply: req.body.shouldMultiply,
           questionIdParent: req.body.questionIdParent,
+        }
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockUpdatedQuestion);
+    });
+
+    it("should update a question that add/remove type/project and return 200 status", async () => {
+      req.body.addType = [1, 2];
+      req.body.removeType = [3];
+      req.body.addProject = [4];
+      req.body.removeProject = [5];
+      const mockUpdatedQuestion = { questionId: 1, ...req.body };
+      questionService.updateQuestion.mockResolvedValue(mockUpdatedQuestion);
+
+      await questionController.updateQuestion(req, res, next);
+
+      expect(questionService.updateQuestion).toHaveBeenCalledWith(
+        Number(req.params.questionId),
+        {
+          label: req.body.label,
+          category: req.body.category,
+          numberOfSelectionableOpt: req.body.numberOfSelectionableOpt,
+          isRelevant: req.body.isRelevant,
+          hasMultipleOpenResponse: req.body.hasMultipleOpenResponse,
+          shouldMultiply: req.body.shouldMultiply,
+          questionIdParent: req.body.questionIdParent,
+          addType: req.body.addType,
+          removeType: req.body.removeType,
+          addProject: req.body.addProject,
+          removeProject: req.body.removeProject,
         }
       );
       expect(res.status).toHaveBeenCalledWith(200);

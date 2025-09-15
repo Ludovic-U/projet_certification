@@ -14,14 +14,14 @@ module.exports.createQuestion = async (data) => {
       types:
         Array.isArray(types) && types.length > 0
           ? {
-              connect: types.map((id) => ({ id })),
+              connect: types.map((typeId) => ({ typeId })),
             }
           : undefined,
 
       projects:
         Array.isArray(projects) && projects.length > 0
           ? {
-              connect: projects.map((id) => ({ id })),
+              connect: projects.map((projectId) => ({ projectId })),
             }
           : undefined,
     },
@@ -63,11 +63,11 @@ module.exports.updateQuestion = async (questionId, data) => {
             ? {
                 connect:
                   Array.isArray(addType) && addType.length > 0
-                    ? addType.map((id) => ({ id }))
+                    ? addType.map((typeId) => ({ typeId }))
                     : undefined,
                 disconnect:
                   Array.isArray(removeType) && removeType.length > 0
-                    ? removeType.map((id) => ({ id }))
+                    ? removeType.map((typeId) => ({ typeId }))
                     : undefined,
               }
             : undefined,
@@ -78,11 +78,11 @@ module.exports.updateQuestion = async (questionId, data) => {
             ? {
                 connect:
                   Array.isArray(addProject) && addProject.length > 0
-                    ? addProject.map((id) => ({ id }))
+                    ? addProject.map((projectId) => ({ projectId }))
                     : undefined,
                 disconnect:
-                  Array.isArray(projectsToRemove) && removeProject.length > 0
-                    ? removeProject.map((id) => ({ id }))
+                  Array.isArray(removeProject) && removeProject.length > 0
+                    ? removeProject.map((projectId) => ({ projectId }))
                     : undefined,
               }
             : undefined,

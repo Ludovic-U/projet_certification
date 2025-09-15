@@ -70,6 +70,31 @@ describe("Question Service", () => {
       expect(result).toEqual(mockCreatedQuestion);
     });
 
+    it("should create and return a new question with types/projects", async () => {
+      const mockQuestionData = {
+        label: "Question with relations",
+        category: "general",
+        types: [1, 2],
+        projects: [1],
+      };
+      const mockCreatedQuestion = { questionId: 1, ...mockQuestionData };
+
+      prisma.question.create.mockResolvedValue(mockCreatedQuestion);
+
+      const result = await questionService.createQuestion(mockQuestionData);
+
+      expect(prisma.question.create).toHaveBeenCalledWith({
+        data: {
+          label: mockQuestionData.label,
+          category: mockQuestionData.category,
+          types: { connect: [{ typeId: 1 }, { typeId: 2 }] },
+          projects: { connect: [{ projectId: 1 }] },
+        },
+        include: { types: true, projects: true },
+      });
+      expect(result).toEqual(mockCreatedQuestion);
+    });
+
     it("should handle empty data gracefully", async () => {
       const mockError = new Error("Invalid data");
 
@@ -212,6 +237,43 @@ describe("Question Service", () => {
           questionIdParent: mockUpdateData.questionIdParent,
           types: undefined,
           projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
+      });
+      expect(result).toEqual(mockUpdatedQuestion);
+    });
+
+    it("should update and return the updated question with adding/removing types/projects", async () => {
+      const questionId = 1;
+      const mockUpdateData = {
+        addType: [4],
+        removeType: [2],
+        addProject: [5],
+        removeProject: [3],
+      };
+      const mockUpdatedQuestion = { questionId: questionId, ...mockUpdateData };
+
+      prisma.question.update.mockResolvedValue(mockUpdatedQuestion);
+
+      const result = await questionService.updateQuestion(
+        questionId,
+        mockUpdateData
+      );
+
+      expect(prisma.question.update).toHaveBeenCalledWith({
+        where: { questionId: questionId },
+        data: {
+          types: {
+            connect: [{ typeId: 4 }],
+            disconnect: [{ typeId: 2 }],
+          },
+          projects: {
+            connect: [{ projectId: 5 }],
+            disconnect: [{ projectId: 3 }],
+          },
         },
         include: {
           types: true,
