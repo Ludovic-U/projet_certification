@@ -113,8 +113,8 @@ model Project {
   manager        User      @relation("ProjectManager", fields: [projectManager], references: [userId])
   actions        Action[]
 
-  types     ProjectType[]
-  questions ProjectQuestion[]
+  types     Type[] @relation("ProjectType")
+  questions Question[] @relation("ProjectQuestion")
   responses Response[]
 }
 
@@ -202,28 +202,8 @@ model Type {
   typeId Int    @id @default(autoincrement())
   label  String
 
-  questions TypeQuestion[]
-  projects  ProjectType[]
-}
-
-model ProjectType {
-  projectId Int
-  typeId    Int
-
-  project Project @relation(fields: [projectId], references: [projectId])
-  type    Type    @relation(fields: [typeId], references: [typeId])
-
-  @@id([projectId, typeId]) // Composite primary key
-}
-
-model TypeQuestion {
-  typeId     Int
-  questionId Int
-
-  question Question @relation(fields: [questionId], references: [questionId])
-  type     Type     @relation(fields: [typeId], references: [typeId])
-
-  @@id([questionId, typeId]) // Composite primary key
+  questions Question[] @relation("TypeQuestion")
+  projects  Project[] @relation("ProjectType")
 }
 
 // ==========================
@@ -239,10 +219,10 @@ model Question {
   shouldMultiply           Boolean?
   questionIdParent         Int?
 
-  types     TypeQuestion[]
+  types     Type[] @relation("TypeQuestion")
   options   Option[]
   responses Response[]
-  projects  ProjectQuestion[]
+  projects  Project[] @relation("ProjectQuestion")
 
   // Self relations
   parent   Question?  @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
@@ -274,14 +254,4 @@ model Response {
   // Self relations
   parent   Response?  @relation("ResponseHierarchy", fields: [responseIdParent], references: [responseId])
   children Response[] @relation("ResponseHierarchy")
-}
-
-model ProjectQuestion {
-  projectId  Int
-  questionId Int
-
-  project  Project  @relation(fields: [projectId], references: [projectId])
-  question Question @relation(fields: [questionId], references: [questionId])
-
-  @@id([projectId, questionId]) // Composite primary key
 }
