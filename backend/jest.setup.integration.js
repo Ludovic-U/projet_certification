@@ -16,11 +16,15 @@ beforeAll(async () => {
   return prisma.$connect();
 });
 
-// Clean questions table after each test
+// Clean all tables after each test
 afterEach(async () => {
-  await prisma.$executeRawUnsafe(
-    `TRUNCATE TABLE "Question" RESTART IDENTITY CASCADE;`
-  );
+  const tables = ["Question", "Response", "Type", "Option"];
+
+  for (const table of tables) {
+    await prisma.$executeRawUnsafe(
+      `TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE;`
+    );
+  }
 });
 
 // Disconnect after all tests

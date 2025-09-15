@@ -12,6 +12,11 @@ router.get("/get/:questionId/subquestion", questionController.getSubQuestions);
 router.get("/get/project/:projectId", questionController.getQuestionsByProject);
 router.get("/get/type/:typeId", questionController.getQuestionsByType);
 
+router.get(
+  "/get/category/:category",
+  questionController.getQuestionsByCategory
+);
+
 router.patch("/update/:questionId", questionController.updateQuestion);
 
 router.delete("/delete/:questionId", questionController.deleteQuestion);

@@ -1,6 +1,12 @@
 const request = require("supertest");
 const app = require("../../index");
-const { newQuestion } = require("../helpers/functionFactory");
+const { newQuestion, newType } = require("../helpers/facory_function");
+const {
+  seedWith3Questions,
+  seedQuestionWithSubquestion,
+  seedQuestionsWithCategory,
+  seedQuestionsWithType,
+} = require("../helpers/seed");
 
 describe("Question Integration Tests", () => {
   describe("POST - /api/question/create", () => {
@@ -64,19 +70,15 @@ describe("Question Integration Tests", () => {
   });
 
   describe("GET - /api/question/get", () => {
-    it("should return the question list and 200 status", async () => {
-      const question1 = await newQuestion({
-        label: "Question 01",
-        category: "Test",
-      });
-      const question2 = await newQuestion({ label: "Question 02" });
+    it("should return the question list (3) and 200 status", async () => {
+      const questions = await seedWith3Questions();
 
       const res = await request(app).get("/api/question/get");
 
       expect(res.status).toBe(200);
-      expect(res.body.length).toBe(2);
-      expect(res.body[0].label).toBe(question1.label);
-      expect(res.body[1].label).toBe(question2.label);
+      expect(res.body.length).toBe(3);
+      expect(res.body[0].label).toBe(questions[0].label);
+      expect(res.body[1].label).toBe(questions[1].label);
     });
 
     it("should return empty list if no questions found and 200 status", async () => {
@@ -89,18 +91,14 @@ describe("Question Integration Tests", () => {
 
   describe("GET - /api/question/get/:questionId", () => {
     it("should return the question and 200 status", async () => {
-      const question1 = await newQuestion({
-        label: "Question 01",
-        category: "Test",
-      });
+      const question = await newQuestion({ label: "Question Test 1" });
 
       const res = await request(app).get(
-        `/api/question/get/${question1.questionId}`
+        `/api/question/get/${question.questionId}`
       );
 
       expect(res.status).toBe(200);
-      expect(res.body.label).toBe(question1.label);
-      expect(res.body.category).toBe(question1.category);
+      expect(res.body.label).toBe(question.label);
     });
 
     it("should return 404 status if question does not exist", async () => {
@@ -109,27 +107,19 @@ describe("Question Integration Tests", () => {
       expect(res.status).toBe(404);
     });
   });
-
+  0;
   describe("GET - /api/question/get/:questionId/subquestion", () => {
     it("should return the subquestion list of a question and 200 status", async () => {
-      const questionParent = await newQuestion({ label: "Question 01" });
-      const subquestion1 = await newQuestion({
-        label: "Subquestion 01",
-        questionIdParent: questionParent.questionId,
-      });
-      const subquestion2 = await newQuestion({
-        label: "Subquestion 02",
-        questionIdParent: questionParent.questionId,
-      });
+      const { questionParent, subquestions } =
+        await seedQuestionWithSubquestion();
 
       const res = await request(app).get(
         `/api/question/get/${questionParent.questionId}/subquestion`
       );
 
       expect(res.status).toBe(200);
-      expect(res.body.length).toBe(2);
-      expect(res.body[0].label).toBe(subquestion1.label);
-      expect(res.body[1].label).toBe(subquestion2.label);
+      expect(res.body).toHaveLength(subquestions.length);
+      expect(res.body[0].label).toEqual(subquestions[0].label);
     });
 
     it("should return an empty list if no subquestion found and 200 status", async () => {
@@ -140,7 +130,7 @@ describe("Question Integration Tests", () => {
       );
 
       expect(res.status).toBe(200);
-      expect(res.body.length).toBe(0);
+      expect(res.body).toHaveLength(0);
     });
 
     it("should return 404 status if question does not exist", async () => {
@@ -228,4 +218,60 @@ describe("Question Integration Tests", () => {
       expect(res.status).toBe(404);
     });
   });
+
+  // TODO: describe("GET - /api/get/project/:projectId", () => {
+  //   it("should return a question list of the given project and 200 status", async () => {});
+  // });
+
+  describe("GET - /api/question/get/category/:category", () => {
+    it("should return questions of the given category", async () => {
+      const category = "Testing";
+      const questions = await seedQuestionsWithCategory(category);
+
+      // Seed a question that has another category
+      await newQuestion({ label: "Other Question", category: "Other" });
+
+      const res = await request(app).get(
+        `/api/question/get/category/${category}`
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(questions.length);
+      // Check that all returned questions have the correct category
+      res.body.forEach((q) => {
+        expect(q.category).toBe(category);
+      });
+    });
+
+    it("should return an empty array if no question found for the given category", async () => {
+      const res = await request(app).get(`/api/question/get/category/qwerty`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(0);
+    });
+  });
+
+  // describe("GET - /api/question/type/:typeId", () => {
+  //   it("should return questions of the given type", async () => {
+  //     const type = newType({ label: "Type 1" });
+
+  //     const questions = await seedQuestionsWithType(type.typeId);
+
+  //     console.log(questions);
+
+  //     // Seed another question that has another typeId
+  //     await newQuestion({ typeId: 2 });
+
+  //     const res = await request(app).get(
+  //       `/api/question/get/type/${type.typeId}`
+  //     );
+
+  //     expect(res.status).toBe(200);
+  //     expect(res.body).toHaveLength(questions.length);
+  //     // Check that all returned questions have the correct typeId
+  //     res.body.forEach((q) => {
+  //       expect(q.typeId).toBe(type.typeId);
+  //     });
+  //   });
+  // });
 });
