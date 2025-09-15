@@ -1,8 +1,6 @@
 "use client";
-import React from "react";
-import { Button } from "@/components/ui";
-import { CreateUserButton } from "@/components/ui/createUser";
-import { ArrowLeft } from "lucide-react";
+
+import { CreateUserButton } from "@/components/ui/old/createUser";
 
 const HRPage = () => {
   return (

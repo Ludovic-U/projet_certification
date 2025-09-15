@@ -18,11 +18,6 @@ export default function LoginPage() {
 
     const router = useRouter();
 
-    // const api = axios.create({ //  TODO: move to a central api file
-    //     baseURL: "http://localhost:4000/api/",
-    //     withCredentials: true,
-    // });
-
     const onSubmit = (data: LoginFormInputs) => {
         setIsLoading(true);
         setApiError("");
@@ -37,7 +32,7 @@ export default function LoginPage() {
                 console.log("Login successful, routerpush");
                 console.log(response);
                 // Redirect to the home page after successful login
-                router.push("/admin"); // TODO: check user role and redirect accordingly
+                router.push("/home"); // TODO: check user role and redirect accordingly
             })
             .catch(function (error) {
                 console.log("Login failed");

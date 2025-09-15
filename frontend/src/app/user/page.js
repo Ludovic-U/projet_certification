@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input } from "@/components/ui"
 
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, User, Mail, Lock, Briefcase, Users, ListChecks } from 'lucide-react';
+import { Label } from "@/components/ui/old/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/old/select"
+import { User, Mail, Lock, Users, ListChecks } from 'lucide-react';
 import { cn } from "@/utils/utils"
 
 const roles = ['Directeur', 'Chef de projet', 'Contributeur', 'Trésorier', 'RH'];

@@ -5,8 +5,8 @@ import { ListProps } from "./list.types"
 
 export const List = <T extends { id: string | number }>({ data, columns }: ListProps<T>) => {
     return (
-        <div className="w-full overflow-x-scroll font-noto">
-            <table className="w-full table-fixed border-separate border-spacing-y-5 select-none">
+        <div className="w-full flex flex-col items-center overflow-x-scroll font-noto">
+            <table className="w-[90%] table-fixed border-separate border-spacing-y-5 select-none">
                 <thead className="text-xs capitalize text-center font-noto text-greydarker">
                     <tr>
                         {columns.map((col) => (

@@ -30,7 +30,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
 
                 {/* Logo + Titre */}
                 <Link
-                 href="/"
+                 href="/home"
                  className={`flex mt-2 h-12 w-full flex-row items-center
                             ${isCollapsed ? "justify-center" : "md:justify-start md:px-6 spase-x-3"}`}
                  >
@@ -46,17 +46,6 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                     )}
                 
                 </Link>
-
-                <Button
-                    variant="secondary"
-                    className={`mx-4 ${isCollapsed ? "px-2 py-2" : "w-auto px-4 py-2"} text-sm`}
-                    onClick={() => {api_backend.post("user/logout")
-                        .then(() => { window.location.href = "/"  // TODO: Redirect to login page after logout
-                        }) 
-                    }}
-                >
-                    Déconnexion
-                </Button>
 
                 {/* Boucle sur SIDENAV_ITEMS et crée un MenuItem pour chaque item. */}
                 <div className={`flex flex-col space-y-2 md:px-6 ${isCollapsed ? "items-center px-0" : ""}`}>

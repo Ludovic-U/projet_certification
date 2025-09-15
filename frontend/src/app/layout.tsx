@@ -1,3 +1,4 @@
+// Définit la structure HTML de base, configure les polices personnalisées, applique les styles globaux, enveloppe toute l'app dans ClientLayout.
 import type { Metadata } from "next";
 import "../styles/globals.css";
 import { oswald, notoSans, didactGothic } from "./fonts";
@@ -18,7 +19,6 @@ export default function RootLayout({
       <html lang="fr" className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>
         <body className="bg-light">
           <ClientLayout>{children}</ClientLayout>
-          {/* {children} */}
         </body>
       </html>
   );
