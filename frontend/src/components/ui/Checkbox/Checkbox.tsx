@@ -46,6 +46,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                         ref={ref}
                         id={inputId}
                         disabled={disabled}
+                        checked={checked}
+                        onChange={handleChange}
                         aria-invalid={!!error}
                         aria-describedby={
                             error
@@ -67,7 +69,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
                     {label && (
                         <span
-                            className="peer-aria-invalid:text-alertdanger
+                            className="whitespace-nowrap peer-aria-invalid:text-alertdanger
                                     peer-disabled:cursor-default peer-disabled:opacity-50"
                         >
                             {label}

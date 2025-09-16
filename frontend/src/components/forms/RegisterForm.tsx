@@ -25,14 +25,14 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
             <div className="flex gap-3">
                 <Input
                 {...register("username", {required: "Le nom est requis"})}
-                label="Nom :"
+                label="Nom"
                 placeholder="Nom"
                 error={errors.username?.message}
                 />
 
                 <Input
                 {...register("email", {required: "L'adresse mail est requise"})}
-                label="Email :"
+                label="Email"
                 placeholder="figure2@skills.fr"
                 error={errors.email?.message}
                 />

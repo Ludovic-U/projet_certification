@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader, Button } from "@/components/ui";
+import { PageHeader, Button, Card, Checkbox, Input } from "@/components/ui";
 import { Modal } from "@/components/ui"
 import { RegisterForm } from "@/components/forms/RegisterForm";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
@@ -13,7 +13,7 @@ export default function BuildingPage() {
     return (
         <div className="h-full">
             <PageHeader title="Display des components" description="app/building/components/page.tsx"/>
-            <section className="bg-white flex flex-col gap-5 items-center">
+            <section className="flex flex-col gap-5 items-center">
 
                 <div className="p-3 border w-fit flex flex-col gap-4">
                     <h2 className="font-oswald text-center text-2xl">Button :</h2>
@@ -54,8 +54,27 @@ export default function BuildingPage() {
                     </div>
                 </div>
 
-                <div className="p-3 border w-fit flex gap-4">
-                    <h2 className="font-oswald text-2xl">A venir :</h2>
+                <div className="p-3 border w-fit flex flex-col gap-4">
+                    <h2 className="font-oswald text-2xl text-center">Card :</h2>
+                    <div className="flex gap-3 items-center">
+                        <Card title="Titre" color="#99B095" progress={0} buttonLabel="Voir"></Card>
+                        <Card title="Titre" description="Description optionnelle plus ou moins longue." color="#83A18F" progress={50} buttonLabel="Voir"></Card>
+                        <Card title="Titre" color="#6D8E76" progress={100} buttonLabel="Voir"></Card>
+                    </div>
+                </div>
+
+                <div className="p-3 border w-fit flex flex-col gap-4">
+                    <h2 className="font-oswald text-2xl text-center">Checkbox :</h2>
+                    <Checkbox label="Simple Checkbox"/>
+                    <Checkbox label="Controlled checkbox" disabled checked={true} helperText="Ce checkbox est checked=true et disabled"/>
+                    <Checkbox label="Avec Erreur" error="Vous devez cocher cette case"/>
+                </div>
+
+                <div className="p-3 border w-fit flex flex-col gap-4">
+                    <h2 className="font-oswald text-2xl text-center">Input :</h2>
+                    <Input label="Simple input"/>
+                    <Input label="Input" placeholder="Placeholder"/>
+                    <Input label="Input avec icon" placeholder="Placeholder" leftIcon={<FontAwesomeIcon icon={Icons.calendar}/>}/>
                 </div>
 
                 <div className="p-3 border w-fit flex gap-4">
