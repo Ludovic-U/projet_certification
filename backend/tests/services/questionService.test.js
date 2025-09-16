@@ -473,12 +473,11 @@ describe("Question Service", () => {
       const projectId = 1;
       const mockProject = {
         projectId,
-        questions: [{ questionId: 1, text: "Project question 1" }],
+        questions: [{ questionId: 1 }],
         types: [
           {
-            projectTypes: [
-              { questions: [{ questionId: 2, text: "Type question 1" }] },
-            ],
+            typeId: 1,
+            questions: [{ questionId: 2 }],
           },
         ],
       };
@@ -493,18 +492,12 @@ describe("Question Service", () => {
           questions: true,
           types: {
             include: {
-              projectTypes: {
-                where: { projectId },
-                include: { questions: true },
-              },
+              questions: true,
             },
           },
         },
       });
-      expect(result).toEqual([
-        { questionId: 1, text: "Project question 1" },
-        { questionId: 2, text: "Type question 1" },
-      ]);
+      expect(result).toEqual([{ questionId: 1 }, { questionId: 2 }]);
     });
 
     it("should return an empty array if no questions found", async () => {
@@ -524,10 +517,7 @@ describe("Question Service", () => {
           questions: true,
           types: {
             include: {
-              projectTypes: {
-                where: { projectId },
-                include: { questions: true },
-              },
+              questions: true,
             },
           },
         },
@@ -559,10 +549,7 @@ describe("Question Service", () => {
           questions: true,
           types: {
             include: {
-              projectTypes: {
-                where: { projectId },
-                include: { questions: true },
-              },
+              questions: true,
             },
           },
         },
@@ -587,6 +574,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findMany).toHaveBeenCalledWith({
         where: { category: category },
+        include: { types: true, projects: true },
       });
       expect(result).toEqual(mockQuestions);
     });
@@ -600,6 +588,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findMany).toHaveBeenCalledWith({
         where: { category: category },
+        include: { types: true, projects: true },
       });
       expect(result).toEqual([]);
     });
@@ -616,6 +605,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findMany).toHaveBeenCalledWith({
         where: { category: category },
+        include: { types: true, projects: true },
       });
     });
   });

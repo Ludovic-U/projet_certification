@@ -185,15 +185,12 @@ module.exports.getQuestionById = async (questionId) => {
  */
 module.exports.getQuestionsByProject = async (projectId) => {
   const projectWithQuestions = await prisma.project.findUnique({
-    where: { projectId: projectId },
+    where: { projectId },
     include: {
-      questions: true, // Specific questions
+      questions: true, // Direct relation between Project and Question
       types: {
         include: {
-          projectTypes: {
-            where: { projectId },
-            include: { questions: true }, // Questions via type
-          },
+          questions: true, // Direct relation between Type and Question
         },
       },
     },
@@ -202,14 +199,15 @@ module.exports.getQuestionsByProject = async (projectId) => {
   if (!projectWithQuestions) {
     throw new Error("Project not found");
   }
-  // Flatten and combine questions
-  const typeQuestions = projectWithQuestions.types.flatMap((type) =>
-    type.projectTypes.flatMap((pt) => pt.questions)
+
+  // Gather questions from both direct project relation and via types
+  const typeQuestions = projectWithQuestions.types.flatMap(
+    (type) => type.questions
   );
 
   const allQuestions = [...projectWithQuestions.questions, ...typeQuestions];
 
-  // Optionally remove duplicates
+  // Deduplicate by questionId
   const questions = Array.from(
     new Map(allQuestions.map((q) => [q.questionId, q])).values()
   );
@@ -228,6 +226,7 @@ module.exports.getQuestionsByProject = async (projectId) => {
 module.exports.getQuestionsByCategory = async (category) => {
   return await prisma.question.findMany({
     where: { category: category },
+    include: { types: true, projects: true },
   });
 };
 
