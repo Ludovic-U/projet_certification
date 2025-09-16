@@ -54,9 +54,25 @@ module.exports.newResponse = async ({
   return response;
 };
 
-module.exports.newType = async ({ label = "Default Type" }) => {
+module.exports.newType = async ({
+  label = "Default Type",
+  projects = [],
+  questions = [],
+}) => {
   const type = await global.prisma.type.create({
-    data: { label },
+    data: {
+      label,
+      projects: projects.length
+        ? { connect: projects.map((projectId) => ({ projectId })) }
+        : undefined,
+      questions: questions.length
+        ? { connect: questions.map((questonId) => ({ questonId })) }
+        : undefined,
+    },
+    include: {
+      projects: true,
+      questions: true,
+    },
   });
 
   return type;
@@ -68,4 +84,26 @@ module.exports.newOption = async ({ label = "Default Option", questionId }) => {
   });
 
   return option;
+};
+
+// TODO: Still WIP
+module.exports.newProject = async ({
+  projectName = "Default ProjectName",
+  types = [],
+  questions = [],
+}) => {
+  const project = await global.prisma.project.create({
+    data: {
+      projectName,
+      types: types.length
+        ? { connect: types.map((typeId) => ({ typeId })) }
+        : undefined,
+      questions: questions.length
+        ? { connect: questions.map((questonId) => ({ questonId })) }
+        : undefined,
+    },
+    include: { types: true, questions: true },
+  });
+
+  return project;
 };

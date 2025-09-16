@@ -1,6 +1,11 @@
 const request = require("supertest");
 const app = require("../../index");
-const { newQuestion, newType } = require("../helpers/facory_function");
+const questionService = require("../../services/questionService");
+const {
+  newQuestion,
+  newType,
+  newProject,
+} = require("../helpers/facory_function");
 const {
   seedWith3Questions,
   seedQuestionWithSubquestion,
@@ -9,6 +14,10 @@ const {
 } = require("../helpers/seed");
 
 describe("Question Integration Tests", () => {
+  beforeEach(() => {
+    console.error = jest.fn();
+  });
+
   describe("POST - /api/question/create", () => {
     it("should create a question and return 201 status", async () => {
       const payload = {
@@ -108,6 +117,26 @@ describe("Question Integration Tests", () => {
       expect(res.status).toBe(400);
       expect(res.body).toEqual({ error: "label and category are required" });
     });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "createQuestion")
+        .mockRejectedValue(new Error("Database error"));
+
+      const payload = {
+        label: "Broken Question",
+        category: "testing",
+      };
+
+      const res = await request(app).post("/api/question/create").send(payload);
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.createQuestion.mockRestore();
+    });
   });
 
   describe("GET - /api/question/get", () => {
@@ -128,6 +157,21 @@ describe("Question Integration Tests", () => {
       expect(res.status).toBe(200);
       expect(res.body.length).toBe(0);
     });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "getAllQuestions")
+        .mockRejectedValue(new Error("Database error"));
+
+      const res = await request(app).get("/api/question/get");
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.getAllQuestions.mockRestore();
+    });
   });
 
   describe("GET - /api/question/get/:questionId", () => {
@@ -147,8 +191,23 @@ describe("Question Integration Tests", () => {
 
       expect(res.status).toBe(404);
     });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "getQuestionById")
+        .mockRejectedValue(new Error("Database error"));
+
+      const res = await request(app).get("/api/question/get/1");
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.getQuestionById.mockRestore();
+    });
   });
-  0;
+
   describe("GET - /api/question/get/:questionId/subquestion", () => {
     it("should return the subquestion list of a question and 200 status", async () => {
       const { questionParent, subquestions } =
@@ -178,6 +237,21 @@ describe("Question Integration Tests", () => {
       const res = await request(app).get(`/api/question/get/999/subquestion`);
 
       expect(res.status).toBe(404);
+    });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "getSubQuestions")
+        .mockRejectedValue(new Error("Database error"));
+
+      const res = await request(app).get("/api/question/get/1/subquestion");
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.getSubQuestions.mockRestore();
     });
   });
 
@@ -276,6 +350,28 @@ describe("Question Integration Tests", () => {
 
       expect(res.status).toBe(404);
     });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "updateQuestion")
+        .mockRejectedValue(new Error("Database error"));
+
+      const payload = {
+        label: "new label",
+        category: "new category",
+      };
+
+      const res = await request(app)
+        .patch("/api/question/update/1")
+        .send(payload);
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.updateQuestion.mockRestore();
+    });
   });
 
   describe("DELETE - /api/question/delete/:questionId", () => {
@@ -301,10 +397,36 @@ describe("Question Integration Tests", () => {
 
       expect(res.status).toBe(404);
     });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "deleteQuestion")
+        .mockRejectedValue(new Error("Database error"));
+
+      const res = await request(app).delete("/api/question/delete/1");
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.deleteQuestion.mockRestore();
+    });
   });
 
-  // TODO: describe("GET - /api/get/project/:projectId", () => {
-  //   it("should return a question list of the given project and 200 status", async () => {});
+  // TODO: Need possibility to create a project
+  // describe("GET - /api/question/get/project/:projectId", () => {
+  //   it("should return a question list of the given project and 200 status", async () => {
+  //     const questions = await seedQuestionsWithType();
+  //     const project = await newProject({ types: [1] });
+  //     const question = await newQuestion({ projects: [project.projectId] });
+
+  //     const res = await request(app).get(
+  //       `/api/question/get/project/${project.projectId}`
+  //     );
+
+  //     expect(res.status).toBe(200);
+  //   });
   // });
 
   describe("GET - /api/question/get/category/:category", () => {
@@ -332,6 +454,21 @@ describe("Question Integration Tests", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(0);
+    });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "getQuestionsByCategory")
+        .mockRejectedValue(new Error("Database error"));
+
+      const res = await request(app).get("/api/question/get/category/qwert");
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.getQuestionsByCategory.mockRestore();
     });
   });
 
@@ -370,6 +507,21 @@ describe("Question Integration Tests", () => {
       const res = await request(app).get("/api/question/get/type/999");
 
       expect(res.status).toBe(404);
+    });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "getQuestionsByType")
+        .mockRejectedValue(new Error("Database error"));
+
+      const res = await request(app).get("/api/question/get/type/1");
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.getQuestionsByType.mockRestore();
     });
   });
 });
