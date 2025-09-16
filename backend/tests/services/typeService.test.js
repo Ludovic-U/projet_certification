@@ -31,7 +31,7 @@ describe("Type Service", () => {
    */
   describe("createType", () => {
     it("should create and return a new type", async () => {
-      const mockTypeData = { label: "General", questions: [] };
+      const mockTypeData = { label: "General", questions: [], projects: [] };
       const mockCreatedType = { typeId: 1, ...mockTypeData };
 
       prisma.type.create.mockResolvedValue(mockCreatedType);
@@ -39,14 +39,18 @@ describe("Type Service", () => {
       const result = await typeService.createType(mockTypeData);
 
       expect(prisma.type.create).toHaveBeenCalledWith({
-        data: { label: mockTypeData.label, questions: undefined },
-        include: { questions: true },
+        data: {
+          label: mockTypeData.label,
+          questions: undefined,
+          projects: undefined,
+        },
+        include: { questions: true, projects: true },
       });
       expect(result).toEqual(mockCreatedType);
     });
 
     it("should create and return a new type with associated question", async () => {
-      const mockTypeData = { label: "General", questions: [1] };
+      const mockTypeData = { label: "General", questions: [1], projects: [] };
       const mockCreatedType = { typeId: 1, ...mockTypeData };
 
       prisma.type.create.mockResolvedValue(mockCreatedType);
@@ -57,8 +61,9 @@ describe("Type Service", () => {
         data: {
           label: mockTypeData.label,
           questions: { connect: [{ questionId: 1 }] },
+          projects: undefined,
         },
-        include: { questions: true },
+        include: { questions: true, projects: true },
       });
       expect(result).toEqual(mockCreatedType);
     });
@@ -75,7 +80,7 @@ describe("Type Service", () => {
 
       expect(prisma.type.create).toHaveBeenCalledWith({
         data: mockTypeData,
-        include: { questions: true },
+        include: { questions: true, projects: true },
       });
     });
   });
@@ -124,8 +129,8 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: { questions: undefined },
-        include: { questions: true },
+        data: { questions: undefined, projects: undefined },
+        include: { questions: true, projects: true },
       });
       expect(result).toEqual(mockUpdatedType);
     });
@@ -146,8 +151,9 @@ describe("Type Service", () => {
             connect: [{ questionId: 2 }],
             disconnect: [{ questionId: 1 }],
           },
+          projects: undefined,
         },
-        include: { questions: true },
+        include: { questions: true, projects: true },
       });
       expect(result).toEqual(mockUpdatedType);
     });
@@ -166,8 +172,8 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: { questions: undefined },
-        include: { questions: true },
+        data: { questions: undefined, projects: undefined },
+        include: { questions: true, projects: true },
       });
     });
 
@@ -184,8 +190,8 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: { questions: undefined },
-        include: { questions: true },
+        data: { questions: undefined, projects: undefined },
+        include: { questions: true, projects: true },
       });
     });
   });
@@ -252,6 +258,7 @@ describe("Type Service", () => {
 
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
+        include: { questions: true, projects: true },
       });
       expect(result).toEqual(mockType);
     });
@@ -276,6 +283,7 @@ describe("Type Service", () => {
 
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
+        include: { questions: true, projects: true },
       });
     });
   });

@@ -45,6 +45,7 @@ describe("Type Controller", () => {
       expect(typeService.createType).toHaveBeenCalledWith({
         label: req.body.label,
         questions: [],
+        projects: [],
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockType);
@@ -61,6 +62,7 @@ describe("Type Controller", () => {
       expect(typeService.createType).toHaveBeenCalledWith({
         label: req.body.label,
         questions: req.body.questions,
+        projects: [],
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockType);

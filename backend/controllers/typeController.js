@@ -9,13 +9,14 @@ const { validateId } = require("./helpers/validateId");
  * @param {Object} req.body - Request payload.
  * @param {string} req.body.label - The name of the type (required).
  * @param {Array} [req.body.questions=[]] - A list of question identifiers associated with the type.
+ * @param {Array} [req.body.projects=[]] - A list of project identifiers associated with the type.
  * @returns {Promise<void>} Sends:
  *  - 201: Created, returns the created type object.
  *  - 400: Missing required fields ('label').
  *  - 500: Internal server error.
  */
 module.exports.createType = async (req, res) => {
-  const { label, questions } = req.body;
+  const { label, questions, projects } = req.body;
 
   if (!label) {
     return res.status(400).json({ error: "label is required" });
@@ -25,6 +26,7 @@ module.exports.createType = async (req, res) => {
     const type = await typeService.createType({
       label,
       questions: questions ?? [],
+      projects: projects ?? [],
     });
     res.status(201).json(type);
   } catch (error) {
@@ -63,6 +65,8 @@ module.exports.getAllTypes = async (_, res) => {
  * @param {string} req.body.label - The updated type name.
  * @param {Array} [req.body.addQuestion] - Questions to add.
  * @param {Array} [req.body.removeQuestion] - Questions to remove.
+ * @param {Array} [req.body.addProject] - Projects to add.
+ * @param {Array} [req.body.removeProject] - Projects to remove.
  * @returns {Promise<void>} Sends:
  *  - 200: OK, returns the updated type.
  *  - 404: Type not found.
@@ -73,7 +77,8 @@ module.exports.updateType = async (req, res) => {
   // Validate typeId
   if (!validateId(typeId, "typeId", res)) return;
 
-  const { label, addQuestion, removeQuestion } = req.body;
+  const { label, addQuestion, removeQuestion, addProject, removeProject } =
+    req.body;
 
   if (!label) {
     return res.status(400).json({ error: "label is required" });
@@ -84,6 +89,8 @@ module.exports.updateType = async (req, res) => {
       label,
       addQuestion,
       removeQuestion,
+      addProject,
+      removeProject,
     });
     res.status(200).json(type);
   } catch (error) {

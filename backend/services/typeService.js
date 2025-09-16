@@ -8,10 +8,11 @@ const { prisma } = require("../prisma/prismaClient");
  * @param {Object} data - The type data to create.
  * @param {string} data.label - The type name.
  * @param {Array<number>} [data.questions] - question IDs to associate.
- * @returns {Promise<Object>} The created type, including related questions.
+ * @param {Array<number>} [data.projects] - project IDs to associate.
+ * @returns {Promise<Object>} The created type, including related questions and projects.
  */
 module.exports.createType = async (data) => {
-  const { questions, ...typeData } = data;
+  const { questions, projects, ...typeData } = data;
 
   return await prisma.type.create({
     data: {
@@ -22,8 +23,14 @@ module.exports.createType = async (data) => {
               connect: questions.map((questionId) => ({ questionId })),
             }
           : undefined,
+      projects:
+        Array.isArray(projects) && projects.length > 0
+          ? {
+              connect: projects.map((projectId) => ({ projectId })),
+            }
+          : undefined,
     },
-    include: { questions: true },
+    include: { questions: true, projects: true },
   });
 };
 
@@ -48,11 +55,14 @@ module.exports.getAllTypes = async () => {
  * @param {string} [data.label] - Updated type name.
  * @param {Array<number>} [data.addQuestion] - Question IDs to connect.
  * @param {Array<number>} [data.removeQuestion] - Question IDs to disconnect.
- * @returns {Promise<Object>} The updated type, including related questions.
+ * @param {Array<number>} [data.addProject] - Project IDs to connect.
+ * @param {Array<number>} [data.removeProject] - Project IDs to disconnect.
+ * @returns {Promise<Object>} The updated type, including related questions and projects.
  * @throws {Error} If the type does not exist.
  */
 module.exports.updateType = async (typeId, data) => {
-  const { addQuestion, removeQuestion, typeData } = data;
+  const { addQuestion, removeQuestion, addProject, removeProject, typeData } =
+    data;
 
   try {
     return await prisma.type.update({
@@ -74,8 +84,23 @@ module.exports.updateType = async (typeId, data) => {
                     : undefined,
               }
             : undefined,
+        // Add / Remove projects
+        projects:
+          (Array.isArray(addProject) && addProject.length > 0) ||
+          (Array.isArray(removeProject) && removeProject.length > 0)
+            ? {
+                connect:
+                  Array.isArray(addProject) && addProject.length > 0
+                    ? addProject.map((projectId) => ({ projectId }))
+                    : undefined,
+                disconnect:
+                  Array.isArray(removeProject) && removeProject.length > 0
+                    ? removeProject.map((projectId) => ({ projectId }))
+                    : undefined,
+              }
+            : undefined,
       },
-      include: { questions: true },
+      include: { questions: true, projects: true },
     });
   } catch (error) {
     if (error.code === "P2025") {
@@ -113,13 +138,13 @@ module.exports.deleteType = async (typeId) => {
  * @async
  * @function getTypeById
  * @param {number} typeId - The ID of the type to retrieve.
- * @returns {Promise<Object>} The found type, including questions.
+ * @returns {Promise<Object>} The found type, including questions and projects.
  * @throws {Error} If the type does not exist.
  */
 module.exports.getTypeById = async (typeId) => {
   const type = await prisma.type.findUnique({
     where: { typeId: typeId },
-    include: { questions: true },
+    include: { questions: true, projects: true },
   });
 
   if (!type) {
