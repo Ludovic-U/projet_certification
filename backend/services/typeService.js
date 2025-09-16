@@ -2,8 +2,13 @@ const { prisma } = require("../prisma/prismaClient");
 
 /**
  * Create a new type.
+ *
+ * @async
+ * @function createType
  * @param {Object} data - The type data to create.
- * @returns {Promise<Object>} The created type.
+ * @param {string} data.label - The type name.
+ * @param {Array<number>} [data.questions] - question IDs to associate.
+ * @returns {Promise<Object>} The created type, including related questions.
  */
 module.exports.createType = async (data) => {
   const { questions, ...typeData } = data;
@@ -24,7 +29,10 @@ module.exports.createType = async (data) => {
 
 /**
  * Get all types.
- * @returns {Promise<Array>} List of all types.
+ *
+ * @async
+ * @function getAllTypes
+ * @returns {Promise<Array<Object>>} List of all types.
  */
 module.exports.getAllTypes = async () => {
   return await prisma.type.findMany({});
@@ -32,9 +40,15 @@ module.exports.getAllTypes = async () => {
 
 /**
  * Update a type by ID.
+ *
+ * @async
+ * @function updateType
  * @param {number} typeId - The ID of the type to update.
- * @param {Object} data - The data to update.
- * @returns {Promise<Object>} The updated type.
+ * @param {Object} data - The fields to update.
+ * @param {string} [data.label] - Updated type name.
+ * @param {Array<number>} [data.addQuestion] - Question IDs to connect.
+ * @param {Array<number>} [data.removeQuestion] - Question IDs to disconnect.
+ * @returns {Promise<Object>} The updated type, including related questions.
  * @throws {Error} If the type does not exist.
  */
 module.exports.updateType = async (typeId, data) => {
@@ -72,7 +86,10 @@ module.exports.updateType = async (typeId, data) => {
 };
 
 /**
- * Delete a type by ID.
+ * Delete a question by ID.
+ *
+ * @async
+ * @function deleteType
  * @param {number} typeId - The ID of the type to delete.
  * @returns {Promise<Object>} The deleted type.
  * @throws {Error} If the type does not exist.
@@ -92,13 +109,17 @@ module.exports.deleteType = async (typeId) => {
 
 /**
  * Get a type by ID.
+ *
+ * @async
+ * @function getTypeById
  * @param {number} typeId - The ID of the type to retrieve.
- * @returns {Promise<Object>} The found type.
+ * @returns {Promise<Object>} The found type, including questions.
  * @throws {Error} If the type does not exist.
  */
 module.exports.getTypeById = async (typeId) => {
   const type = await prisma.type.findUnique({
     where: { typeId: typeId },
+    include: { questions: true },
   });
 
   if (!type) {

@@ -7,7 +7,7 @@ const { validateId } = require("./helpers/validateId");
  * @async
  * @function createResponse
  * @param {Object} req.body - Request payload.
- * @param {String} [req.body.label=null] - The text of the response.
+ * @param {String|null} [req.body.label=null] - The text of the response.
  * @param {number} req.body.projectId - The ID of the associated project (required).
  * @param {number} req.body.questionId - The ID of the associated question (required).
  * @param {number|null} [req.body.optionId=null] - The ID of the assiocated option.
