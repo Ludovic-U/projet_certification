@@ -1,12 +1,11 @@
 const express = require("express");
-const { PrismaClient } = require("@prisma/client");
 const clientRoutes = require("./routes/clientRoutes");
 const meRoutes = require("./routes/meRoutes");
 const userRoutes = require("./routes/userRoutes");
 const questionRoutes = require("./routes/questionRoutes");
+const responseRoute = require("./routes/responseRoutes");
 const cookieParser = require("cookie-parser");
 const { authenticateUser } = require("./middlewares/auth");
-const prisma = new PrismaClient();
 const app = express();
 
 //json
@@ -36,6 +35,7 @@ app.use("/api/client", authenticateUser, clientRoutes);
 app.use("/api/me", authenticateUser, meRoutes);
 
 app.use("/api/question", questionRoutes);
+app.use("/api/response", responseRoute);
 
 module.exports = app; // export the app instance
 
