@@ -9,5 +9,4 @@ export interface ButtonProps
             children?: ReactNode;
             asChild?: boolean;
             loading?: boolean;
-            icon?: ReactNode;
         }

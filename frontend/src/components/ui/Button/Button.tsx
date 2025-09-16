@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/utils/utils";
 
-import { buttonVariants, ButtonProps, LoadingSpinner } from "@/components/ui";
+import { buttonVariants, ButtonProps } from "@/components/ui";
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     (
@@ -17,7 +17,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             loading = false,
             children,
             disabled,
-            icon,
             ...props
         },
         ref
@@ -37,11 +36,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             >
                 {loading && (
                     <>
-                        <LoadingSpinner />
                         <span className="sr-only">Chargement ...</span>
                     </>
                 )}
-                {icon && <span className="size=4">{icon}</span>}
                 {children}
             </Comp>
         );

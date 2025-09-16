@@ -3,6 +3,7 @@ export * from "./Card";
 export * from "./Checkbox";
 export * from "./Input";
 export * from "./LoadingSpinner";
+export * from "./Modal"
 export * from "./Pagination";
 export * from "./ProgressBar";
 export * from "./Radio";

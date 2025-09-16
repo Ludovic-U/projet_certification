@@ -36,7 +36,7 @@ export const clientsList: Column<Client>[] = [
           key: "actions",
           label: "Actions",
           render: () => (
-            <Button size="sm" variant="iconPrimary">
+            <Button size="sm" variant="primary">
                 <FontAwesomeIcon icon={Icons.gear} />
                 Paramètres
             </Button>

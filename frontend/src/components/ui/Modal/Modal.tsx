@@ -2,25 +2,21 @@ import React, {useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { ModalProps } from "./modal.types";
 
-import { FontAwesomeIcon, Icons } from "@/lib/icons";
+import { FontAwesomeIcon, Icons } from "@/lib/icons"
+import { Button } from "@/components/ui";
 
 const Modal: React.FC<ModalProps> = ({
-    isOpen,
-    onClose,
-    onCancel,
-    onConfirm,
+    modal,
     title,
     description,
     children,
-    cancelText,
-    confirmText,
 }) => {
     const modalRef = useRef<HTMLDivElement>(null);
     const previousActiveElement = useRef<HTMLElement | null>(null);
 
     // Gestion de l'ouverture/fermeture du modal
     useEffect(() => {
-        if (isOpen) {
+        if (modal.isOpen) {
             // stocke l'élément actif avant d'ouvrir le modal
             previousActiveElement.current = document.activeElement as HTMLElement;
             // Bloque le scroll du body
@@ -41,16 +37,16 @@ const Modal: React.FC<ModalProps> = ({
         return () => {
             document.body.style.overflow = "";
         };
-    }, [isOpen]);
+    }, [modal.isOpen]);
 
     // Gestion des touches du clavier
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (!isOpen) return;
+            if (!modal.isOpen) return;
 
             if (event.key === 'Escape') {
                 event.preventDefault();
-                onClose();
+                modal.closeModal();
             }
 
             // Gestion du focus trap (tab et shift+tab) pour que si tab dans form, last elem renvoie au premier et inversement
@@ -75,21 +71,44 @@ const Modal: React.FC<ModalProps> = ({
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
+    }, [modal.isOpen, modal.closeModal]);
 
     // Gestion du click en dehors du modal
     const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
         if (event.target === event.currentTarget) {
-            onClose();
+            modal.closeModal();
         }
     };
-    if (!isOpen) return null
+
+    if (!modal.isOpen) return null
 
     const modalContent = (
         <div
-         className="">
-
+         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 transition-opacity duration-200 ease-out"
+          onClick={handleBackdropClick}>
+            <div className="bg-light rounded-xl min-w-[400px] text-dark flex flex-col shadow-500base">
+                
+                {/* Header */}
+                <div className="flex flex-col px-6 py-4">
+                    <div className="flex justify-between items-center">
+                        <h2 className="font-oswald text-2xl">{title}</h2>
+                        <Button variant="secondary" size="icon"
+                         onClick={modal.closeModal} aria-label="Fermer">
+                            <FontAwesomeIcon icon={Icons.xmark}/>
+                        </Button>
+                    </div>
+                    {description && <p className="font-didact text-greydarker text-lg">{description}</p>}
+                </div>
+                
+                {/* Contenu */}
+                <div className="flex-1 px-6 py-4 flex flex-col items-center">
+                    {children}
+                </div>               
+            </div>
         </div>
-    )
+    );
+    return createPortal(modalContent, document.body);
+};
 
-}
+export default Modal;
+export { Modal };

@@ -20,8 +20,8 @@ export const Pagination: React.FC<PaginationProps> = ({
     return (
         <div className={`flex items-center gap-1 ${className || ""}`}>
             <Button
-             variant="pagination"
-             size="pagination"
+             variant="secondary"
+             size="icon"
              disabled={currentPage === 1}
              onClick={() => onPageChange(currentPage - 1)}
             >
@@ -31,16 +31,16 @@ export const Pagination: React.FC<PaginationProps> = ({
             {pages.map((page) => (
                 <Button
                  key={page}
-                 variant={page === currentPage ? "paginationActive" : "pagination"}
-                 size="pagination"
+                 variant={page === currentPage ? "primary" : "primaryBorder"}
+                 size="icon"
                  onClick={() => onPageChange(page)}>
                     {page}
                 </Button>
             ))}
 
             <Button
-             variant="pagination"
-             size="pagination"
+             variant="secondary"
+             size="icon"
              disabled={currentPage === totalPages}
              onClick={() => onPageChange(currentPage + 1)}
             >

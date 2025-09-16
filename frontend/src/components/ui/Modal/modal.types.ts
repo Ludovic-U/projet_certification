@@ -1,17 +1,10 @@
 import { ReactNode } from "react";
+import { useModal } from "@/hooks"
 
 export interface ModalProps {
     // contrôle l'affichage du modal
-    isOpen: boolean;
-    // fonction appelé pour fermer le modal
-    onClose: () => void;
-    // fonction appelée lors du clic sur le bouton annuler
-    onCancel?: () => void;
-    // function appelée lors du clic sur le bouton valider
-    onConfirm: () => void;
+    modal: ReturnType<typeof useModal>;
     title: string;
     description?: string;
     children: ReactNode;
-    cancelText?: string;
-    confirmText?: string;
 }

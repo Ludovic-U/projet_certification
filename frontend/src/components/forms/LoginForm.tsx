@@ -19,8 +19,8 @@ interface LoginFormProps {
 
 export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormProps) {
     const { register, handleSubmit, formState: { errors }, watch } = useForm<LoginFormInputs>();
+    
     const [showPassword, setShowPassword] = useState(false);
-
     const passwordValue = watch("password");
 
     return (
