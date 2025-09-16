@@ -3,9 +3,16 @@ const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new option.
- * Expects the following fields in req.body:
- * - label: String
- * - questionId: Number
+ *
+ * @async
+ * @function createOption
+ * @param {Object} req.body - Request payload.
+ * @param {String} req.body.label - The text of the option (required).
+ * @param {number} req.body.questionId - The ID of the associated question (required).
+ * @returns {promise<void>} Sends:
+ *  - 201: Created, returns the created response object.
+ *  - 400: Missing required fields ('label').
+ *  - 500: Internal server error.
  */
 module.exports.createOption = async (req, res) => {
   const { label, questionId } = req.body;
@@ -25,8 +32,18 @@ module.exports.createOption = async (req, res) => {
 
 /**
  * Update an option by ID.
- * Expects optionId in req.params and updated fields in req.body.
- * Responds with the updated option.
+ *
+ * @async
+ * @function updateOption
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.optionId - The ID of the option to update.
+ * @param {Object} req.body - Request payload.
+ * @param {String} req.body.label - The text of the option.
+ * @param {number} req.body.questionId - The ID of the associated question.
+ * @returns {promise<void>} Sends:
+ *  - 200: OK, returns the updated option.
+ *  - 404: Option not found.
+ *  - 500: Internal server error.
  */
 module.exports.updateOption = async (req, res) => {
   const optionId = Number(req.params.optionId);
@@ -56,8 +73,15 @@ module.exports.updateOption = async (req, res) => {
 
 /**
  * Delete an option by ID.
- * Expects optionId in req.params.
- * Responds with the option object.
+ *
+ * @async
+ * @function deleteOption
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.optionId - The ID of the option to delete.
+ * @returns {Promise<void>} Sends:
+ * - 204: No Content, option deleted successfully.
+ * - 404: Option not found.
+ * - 500: Internal server error.
  */
 module.exports.deleteOption = async (req, res) => {
   const optionId = Number(req.params.optionId);
@@ -78,8 +102,15 @@ module.exports.deleteOption = async (req, res) => {
 
 /**
  * Get an option by ID.
- * Expects optionId in req.params.
- * Responds with the option object.
+ *
+ * @async
+ * @function getOptionById
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.optionId - The ID of the option to fetch.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns the option object.
+ * - 404: Option not found.
+ * - 500: Internal server error.
  */
 module.exports.getOptionById = async (req, res) => {
   const optionId = Number(req.params.optionId);
@@ -99,9 +130,16 @@ module.exports.getOptionById = async (req, res) => {
 };
 
 /**
- * Get options by question.
- * Expects questionId in req.params.
- * Responds with an array of options.
+ * Get options by question ID.
+ *
+ * @async
+ * @function getOptionsByQuestion
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.questionId - The question ID to filter options by.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns an array of options for the given question.
+ * - 404: Question not found.
+ * - 500: Internal server error.
  */
 module.exports.getOptionsByQuestion = async (req, res) => {
   const questionId = Number(req.params.questionId);

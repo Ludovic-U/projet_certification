@@ -3,14 +3,23 @@ const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new question.
- * Expects the following fields in req.body:
- * - label: String
- * - category: String
- * - numberOfSelectionableOpt: Number (optional)
- * - isRelevant: Boolean (optional)
- * - hasMultipleOpenResponse: Boolean (optional)
- * - shouldMultiply: Boolean (optional)
- * - questionIdParent: Number (optional)
+ *
+ * @async
+ * @function createQuestion
+ * @param {Object} req.body - Request payload.
+ * @param {string} req.body.label - The text of the question (required).
+ * @param {string} req.body.category - The category this question belongs to (required).
+ * @param {number} [req.body.numberOfSelectionableOpt=null] - Maximum number of selectable options.
+ * @param {boolean} [req.body.isRelevant=false] - Whether the question is considered relevant.
+ * @param {boolean} [req.body.hasMultipleOpenResponse=false] - Whether the question allows multiple open responses.
+ * @param {boolean} [req.body.shouldMultiply=false] - Indicates if the question should be multiplied.
+ * @param {number|null} [req.body.questionIdParent=null] - The ID of the parent question if this is a sub-question.
+ * @param {Array} [req.body.types=[]] - A list of type identifiers associated with the question.
+ * @param {Array} [req.body.projects=[]] - A list of project identifiers associated with the question.
+ * @returns {Promise<void>} Sends:
+ * - 201: Created, returns the created question object.
+ * - 400: Missing required fields (`label` or `category`).
+ * - 500: Internal server error.
  */
 module.exports.createQuestion = async (req, res) => {
   const {
@@ -51,7 +60,12 @@ module.exports.createQuestion = async (req, res) => {
 
 /**
  * Get all questions.
- * Responds with an array of all questions.
+ *
+ * @async
+ * @function getAllQuestions
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns an array of questions.
+ * - 500: Internal server error.
  */
 module.exports.getAllQuestions = async (_, res) => {
   try {
@@ -65,8 +79,27 @@ module.exports.getAllQuestions = async (_, res) => {
 
 /**
  * Update a question by ID.
- * Expects questionId in req.params and updated fields in req.body.
- * Responds with the updated question.
+ *
+ * @async
+ * @function updateQuestion
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.questionId - The ID of the question to update.
+ * @param {Object} req.body - Request payload with updated fields.
+ * @param {string} req.body.label - The updated question text.
+ * @param {string} req.body.category - The updated question category.
+ * @param {number} [req.body.numberOfSelectionableOpt] - Maximum number of selectable options.
+ * @param {boolean} [req.body.isRelevant] - Whether the question is relevant.
+ * @param {boolean} [req.body.hasMultipleOpenResponse] - Whether multiple open responses are allowed.
+ * @param {boolean} [req.body.shouldMultiply] - Whether the question should be multiplied.
+ * @param {number|null} [req.body.questionIdParent] - Parent question ID if it's a sub-question.
+ * @param {Array} [req.body.addType] - Types to add.
+ * @param {Array} [req.body.removeType] - Types to remove.
+ * @param {Array} [req.body.addProject] - Projects to add.
+ * @param {Array} [req.body.removeProject] - Projects to remove.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns the updated question.
+ * - 404: Question not found.
+ * - 500: Internal server error.
  */
 module.exports.updateQuestion = async (req, res) => {
   const questionId = Number(req.params.questionId);
@@ -118,8 +151,15 @@ module.exports.updateQuestion = async (req, res) => {
 
 /**
  * Delete a question by ID.
- * Expects questionId in req.params.
- * Responds with 204 No Content on success.
+ *
+ * @async
+ * @function deleteQuestion
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.questionId - The ID of the question to delete.
+ * @returns {Promise<void>} Sends:
+ * - 204: No Content, question deleted successfully.
+ * - 404: Question not found.
+ * - 500: Internal server error.
  */
 module.exports.deleteQuestion = async (req, res) => {
   const questionId = Number(req.params.questionId);
@@ -140,8 +180,15 @@ module.exports.deleteQuestion = async (req, res) => {
 
 /**
  * Get a question by ID.
- * Expects questionId in req.params.
- * Responds with the question object.
+ *
+ * @async
+ * @function getQuestionById
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.questionId - The ID of the question to fetch.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns the question object.
+ * - 404: Question not found.
+ * - 500: Internal server error.
  */
 module.exports.getQuestionById = async (req, res) => {
   const questionId = Number(req.params.questionId);
@@ -161,9 +208,16 @@ module.exports.getQuestionById = async (req, res) => {
 };
 
 /**
- * Get questions by project.
- * Expects projectId in req.params.
- * Responds with an array of questions for the given project.
+ * Get questions by project ID.
+ *
+ * @async
+ * @function getQuestionsByProject
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.projectId - The project ID to filter questions by.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns an array of questions for the given project.
+ * - 404: Project not found.
+ * - 500: Internal server error.
  */
 module.exports.getQuestionsByProject = async (req, res) => {
   const projectId = Number(req.params.projectId);
@@ -184,8 +238,14 @@ module.exports.getQuestionsByProject = async (req, res) => {
 
 /**
  * Get questions by category.
- * Expects category in req.params.
- * Responds with an array of questions in the given category.
+ *
+ * @async
+ * @function getQuestionsByCategory
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.category - The category to filter questions by.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns an array of questions in the given category.
+ * - 500: Internal server error.
  */
 module.exports.getQuestionsByCategory = async (req, res) => {
   const { category } = req.params;
@@ -199,9 +259,16 @@ module.exports.getQuestionsByCategory = async (req, res) => {
 };
 
 /**
- * Get questions by type.
- * Expects typeId in req.params.
- * Responds with an array of questions for the given type.
+ * Get questions by type ID.
+ *
+ * @async
+ * @function getQuestionsByType
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.typeId - The type ID to filter questions by.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns an array of questions for the given type.
+ * - 404: Type not found.
+ * - 500: Internal server error.
  */
 module.exports.getQuestionsByType = async (req, res) => {
   const typeId = Number(req.params.typeId);
@@ -222,8 +289,15 @@ module.exports.getQuestionsByType = async (req, res) => {
 
 /**
  * Get subquestions by parent question ID.
- * Expects questionIdParent in req.params.
- * Responds with an array of subquestions.
+ *
+ * @async
+ * @function getSubQuestions
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.questionIdParent - The parent question ID to fetch subquestions for.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns an array of subquestions.
+ * - 404: Parent question not found.
+ * - 500: Internal server error.
  */
 module.exports.getSubQuestions = async (req, res) => {
   const questionIdParent = Number(req.params.questionIdParent);
