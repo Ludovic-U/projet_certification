@@ -36,6 +36,29 @@ module.exports.loginPost = async (req, res) => {
     }
 };
 
+module.exports.logout = async (req, res) => {
+    console.log("Logging out user...");
+    const token = req.cookies.token;
+    if (token) {
+        const payload = verifyJWT(token);
+        const userId = payload.userId;
+
+        //delete every session of the user
+        try {
+            await deleteSessions(userId);
+        } catch (error) {
+            res.status(500).json({ error: 'Error logging out' });
+        }
+        
+    }
+    console.log("User logged out, clearing cookie.");
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+    });
+}
+
 module.exports.registerPost = async (req, res) => { // TODO : a refaire
     const { clientId } = req.params;
     const token = req.cookies.token;
@@ -93,26 +116,6 @@ module.exports.registerPost = async (req, res) => { // TODO : a refaire
     }
 };
 
-
-module.exports.logout = async (req, res) => {
-    console.log("Logging out user...");
-    const crypto = require('crypto');
-    const token = req.cookies.token;
-    if (token) {
-        const payload = verifyJWT(token);
-        const userId = payload.userId;
-
-        //delete every session of the user 
-        await deleteSessions(userId);
-    }
-    console.log("User logged out, clearing cookie.");
-    res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-    });
-}
-
 // forgot password request, sends email with reset link
 module.exports.forgotPasswordPost = async (req, res) => {
     const { email } = req.body;
@@ -121,6 +124,7 @@ module.exports.forgotPasswordPost = async (req, res) => {
     }
     try {
         requestPasswordReset(email);
+        res.status(200).json({ message: 'email sent if the email is registered' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error processing request' });

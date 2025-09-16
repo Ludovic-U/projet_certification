@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 
 module.exports.createClient = async (req, res) => {
-    user = req.user;
+    user = req.user; // assuming req.user is populated by authentication middleware
     if (!user.permissisons.includes('client:create:any')){
         throw new Error('createClient : Unauthorized');
     }
@@ -35,6 +35,6 @@ module.exports.getClients = async (req, res) => { //TODO: appeler clientService
         const clients = await prisma.client.findMany();
        return clients
     } catch (error) {
-        throw new Error('Error fetching clients', error.message);
+        res.status(500).json({ error : `Error fetching clients ${error.message}` });
     }
 }

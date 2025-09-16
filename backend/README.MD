@@ -10,69 +10,15 @@
    * **CORS (Cross-Origin Resource Sharing)** : Permet d'autoriser toutes les origines et méthodes pour les requêtes entrantes, en définissant les en-têtes appropriés.
 
 ### 2. Routes :
+- GET [`api/me`](./documentation/controllers_docs.md#get-apime) : prend le cookie de session renvoie un objet utilisateur 
 
-* `/api/user` : Routes relatives à l'authentification et à l'enregistrement des utilisateurs.
+- POST [`api/user/login`](./documentation/controllers_docs.md#post-apiuserlogin) : vérifie mdp et email, créé une session de connection, puis renvoie un cookie
+- POST [`api/user/logout`](./documentation/controllers_docs.md#post-apiuserlogout) : prend le cookie de session et supprime les sessions de l'utilisateur
+- POST [`api/user/:clientName/register`](./documentation/controllers_docs.md#post-apiuser:clientNamelogout) : créer un utilisateur et le lie au client
+- POST [`api/user/forgot-password`](./documentation/controllers_docs.md#post-apiuserforgot-password) : envoie un lien de reset de mdp, contenant un token à usage unique, à un email.
+- POST [`api/user/reset-password`](./documentation/controllers_docs.md#post-apiuserreset-password) : consomme le token à usage unique, change le mdp, 
 
-* `/api/client` : Routes relatives à la gestion des clients. L'accès est protégé par l'authentification JWT.
 
-* `/api/me` : Routes pour récupérer les informations de l'utilisateur authentifié. Accessible uniquement aux utilisateurs authentifiés.
-
-## Routes d'Authentification
-### 1. POST  `/login` :
-
-* **Description** : Permet de se connecter à l'application avec l'email/nom d'utilisateur et le mot de passe. Un jeton JWT est renvoyé dans le cookie si la connexion est réussie.
-
-* **Corps de la Requête** :
-    ```json
-    {
-      "email": "utilisateur@example.com",
-      "password": "motdepasse"
-    }
-    ```
-* **Réponses** :
-
-  * `200 OK` : Connexion réussie.
-
-  * `401 Unauthorized` : Identifiants incorrects.
-
-### 2. POST `/:clientId/register`
-
-* **Description** : Permet d'enregistrer un nouvel utilisateur et de l'associer à un client spécifique. Cette route est protégée et nécessite des permissions d'administrateur ou de responsable pour le client spécifié.
-
-* **Paramètres de la Requête** :
-
-  * `clientId` : L'ID du client auquel associer le nouvel utilisateur.
-
-* **Corps de la Requête** :
-    ```json
-    {
-      "username": "nouvelutilisateur",
-      "firstname": "Prénom",
-      "lastname": "Nom",
-      "email": "nouvelutilisateur@example.com",
-      "password": "motdepasse",
-      "manager": true,
-      "position": "Poste",
-      "role": "nomDuRôle"
-    }
-     ```
-* **Réponses** :
-
-  * `201 Created` : Utilisateur créé avec succès.
-
-  * `401 Unauthorized` : Aucun jeton fourni ou utilisateur non autorisé.
-
-  * `403 Forbidden` : Permissions insuffisantes (l'utilisateur n'est pas un administrateur ou un responsable pour ce client).
-
-### 3. POST `/logout` :
-
-* **Description** : Permet de déconnecter l'utilisateur en supprimant le jeton JWT du cookie.
-
-* **Réponses** :
-
-  * `200 OK` : Déconnexion réussie.
-
-  * `401 Unauthorized` : Aucun jeton fourni.
 
 ## Routes Client
 ### 1. POST `/create` :
@@ -150,13 +96,3 @@ Le serveur utilise ***Express*** pour le traitement des requêtes et est configu
 
 Le serveur écoute sur le port spécifié dans ***process.env.PORT***.
 
-## Liste des routes
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur

@@ -6,7 +6,7 @@
     "@prisma/client": "^6.6.0",
     "@radix-ui/react-slot": "^1.2.3",
     "browserslist": "^4.25.4",
-    "caniuse-lite": "^1.0.30001739",
+    "caniuse-lite": "^1.0.30001741",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

@@ -45,4 +45,5 @@ module.exports.createSession = async (userId, tokenHash, req = null, durationHou
 
 module.exports.deleteSessions = async (userId) => {
     await prisma.userSession.deleteMany({ where: { userId } });
+    
 }
