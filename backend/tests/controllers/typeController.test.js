@@ -50,6 +50,22 @@ describe("Type Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockType);
     });
 
+    it("should create a type with associated question and return 201 status", async () => {
+      req.body.questions = [1];
+      const mockType = { typeId: 1, ...req.body };
+
+      typeService.createType.mockResolvedValue(mockType);
+
+      await typeController.createType(req, res, next);
+
+      expect(typeService.createType).toHaveBeenCalledWith({
+        label: req.body.label,
+        questions: req.body.questions,
+      });
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(mockType);
+    });
+
     it("should return 400 if a required field is missing", async () => {
       req.body.label = "";
       await invalidOrMissingStatus(
@@ -122,6 +138,27 @@ describe("Type Controller", () => {
       expect(typeService.updateType).toHaveBeenCalledWith(
         Number(req.params.typeId),
         { label: req.body.label }
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockUpdatedType);
+    });
+
+    it("should update a type with add/remove associated question and return 200 status", async () => {
+      req.body.addQuestion = [2];
+      req.body.removeQuestion = [1];
+      const mockUpdatedType = { typeId: 1, ...req.body };
+
+      typeService.updateType.mockResolvedValue(mockUpdatedType);
+
+      await typeController.updateType(req, res, next);
+
+      expect(typeService.updateType).toHaveBeenCalledWith(
+        Number(req.params.typeId),
+        {
+          label: req.body.label,
+          addQuestion: req.body.addQuestion,
+          removeQuestion: req.body.removeQuestion,
+        }
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockUpdatedType);
