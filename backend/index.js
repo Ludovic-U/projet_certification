@@ -3,7 +3,9 @@ const clientRoutes = require("./routes/clientRoutes");
 const meRoutes = require("./routes/meRoutes");
 const userRoutes = require("./routes/userRoutes");
 const questionRoutes = require("./routes/questionRoutes");
-const responseRoute = require("./routes/responseRoutes");
+const responseRoutes = require("./routes/responseRoutes");
+const typeRoutes = require("./routes/typeRoutes");
+const optionRoutes = require("./routes/optionRoutes");
 const cookieParser = require("cookie-parser");
 const { authenticateUser } = require("./middlewares/auth");
 const app = express();
@@ -35,7 +37,9 @@ app.use("/api/client", authenticateUser, clientRoutes);
 app.use("/api/me", authenticateUser, meRoutes);
 
 app.use("/api/question", questionRoutes);
-app.use("/api/response", responseRoute);
+app.use("/api/response", responseRoutes);
+app.use("/api/type", typeRoutes);
+app.use("/api/option", optionRoutes);
 
 module.exports = app; // export the app instance
 
