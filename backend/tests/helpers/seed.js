@@ -39,14 +39,16 @@ module.exports.seedQuestionsWithCategory = async (category) => {
   return questions;
 };
 
-// module.exports.seedQuestionsWithType = async (typeId) => {
-//   const questions = [];
-//   for (let i = 0; i < 2; i++) {
-//     const question = await facoryFunction.newQuestion({
-//       label: `Question ${i + 1}`,
-//       typeId: typeId,
-//     });
-//     questions.push(question);
-//   }
-//   return questions;
-// };
+module.exports.seedQuestionsWithType = async () => {
+  const type = await facoryFunction.newType({ label: "Type1" });
+
+  const questions = [];
+  for (let i = 0; i < 2; i++) {
+    const question = await facoryFunction.newQuestion({
+      label: `Question ${i + 1}`,
+      types: [type.typeId],
+    });
+    questions.push(question);
+  }
+  return questions;
+};

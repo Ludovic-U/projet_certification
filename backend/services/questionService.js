@@ -242,7 +242,14 @@ module.exports.getQuestionsByCategory = async (category) => {
 module.exports.getQuestionsByType = async (typeId) => {
   const typeWithQuestions = await prisma.type.findUnique({
     where: { typeId: typeId },
-    include: { questions: true },
+    include: {
+      questions: {
+        include: {
+          types: true,
+          projects: true,
+        },
+      },
+    },
   });
 
   if (!typeWithQuestions) {

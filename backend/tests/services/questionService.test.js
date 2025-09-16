@@ -630,7 +630,14 @@ describe("Question Service", () => {
 
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        include: { questions: true },
+        include: {
+          questions: {
+            include: {
+              types: true,
+              projects: true,
+            },
+          },
+        },
       });
       expect(result).toEqual([
         { questionId: 1, label: "Question 1" },
@@ -651,7 +658,14 @@ describe("Question Service", () => {
 
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        include: { questions: true },
+        include: {
+          questions: {
+            include: {
+              types: true,
+              projects: true,
+            },
+          },
+        },
       });
       expect(result).toEqual([]);
     });
@@ -676,7 +690,14 @@ describe("Question Service", () => {
 
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        include: { questions: true },
+        include: {
+          questions: {
+            include: {
+              types: true,
+              projects: true,
+            },
+          },
+        },
       });
     });
   });

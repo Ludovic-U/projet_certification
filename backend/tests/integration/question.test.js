@@ -29,6 +29,8 @@ describe("Question Integration Tests", () => {
         hasMultipleOpenResponse: false,
         shouldMultiply: false,
         questionIdParent: null,
+        projects: [],
+        types: [],
       });
 
       // Verify it actually exists in the DB
@@ -38,6 +40,45 @@ describe("Question Integration Tests", () => {
 
       expect(questionInDb).not.toBeNull();
       expect(questionInDb.label).toBe(payload.label);
+    });
+
+    it("should create a question with type and return 201 status", async () => {
+      const type = await newType({ label: "Type1" });
+
+      const payload = {
+        label: "Integration Test Question",
+        category: "testing",
+        types: [type.typeId],
+      };
+
+      const res = await request(app).post("/api/question/create").send(payload);
+
+      expect(res.status).toBe(201);
+      expect(res.body).toMatchObject({
+        label: payload.label,
+        category: payload.category,
+        numberOfSelectionableOpt: null,
+        isRelevant: false,
+        hasMultipleOpenResponse: false,
+        shouldMultiply: false,
+        questionIdParent: null,
+      });
+      expect(res.body.types).toEqual([
+        {
+          typeId: type.typeId,
+          label: type.label,
+        },
+      ]);
+
+      // Verify it actually exists in the DB
+      const questionInDb = await global.prisma.question.findUnique({
+        where: { questionId: res.body.questionId },
+        include: { projects: true, types: true },
+      });
+
+      expect(questionInDb).not.toBeNull();
+      expect(questionInDb.label).toBe(payload.label);
+      expect(questionInDb.types.map((t) => t.typeId)).toContain(type.typeId);
     });
 
     it("should return 400 status if label is missing", async () => {
@@ -157,6 +198,49 @@ describe("Question Integration Tests", () => {
       expect(res.body.label).toBe(newData.label);
     });
 
+    it("should update for adding a type to an existing question and return 200", async () => {
+      const type = await newType({ label: "Type1" });
+
+      const question = await newQuestion();
+      const newData = {
+        label: question.label,
+        category: question.category,
+        addType: [type.typeId],
+      };
+
+      const res = await request(app)
+        .patch(`/api/question/update/${question.questionId}`)
+        .send(newData);
+
+      expect(res.status).toBe(200);
+      expect(res.body.questionId).toBe(question.questionId);
+      expect(res.body.types).toEqual([
+        {
+          typeId: type.typeId,
+          label: type.label,
+        },
+      ]);
+    });
+
+    it("should update for removing a type to an existing question and return 200", async () => {
+      const type = await newType({ label: "Type1" });
+
+      const question = await newQuestion({ types: [type.typeId] });
+      const newData = {
+        label: question.label,
+        category: question.category,
+        removeType: [type.typeId],
+      };
+
+      const res = await request(app)
+        .patch(`/api/question/update/${question.questionId}`)
+        .send(newData);
+
+      expect(res.status).toBe(200);
+      expect(res.body.questionId).toBe(question.questionId);
+      expect(res.body.types).toEqual([]);
+    });
+
     it("should return 400 status if new label data is empty", async () => {
       const question = await newQuestion();
       const newData = {
@@ -251,27 +335,41 @@ describe("Question Integration Tests", () => {
     });
   });
 
-  // describe("GET - /api/question/type/:typeId", () => {
-  //   it("should return questions of the given type", async () => {
-  //     const type = newType({ label: "Type 1" });
+  describe("GET - /api/question/type/:typeId", () => {
+    it("should return questions of the given type", async () => {
+      const typeId = 1;
 
-  //     const questions = await seedQuestionsWithType(type.typeId);
+      const questions = await seedQuestionsWithType();
 
-  //     console.log(questions);
+      // Seed another question that has another type
+      const otherType = await newType({ label: "Type2" });
+      await newQuestion({ types: [otherType.typeId] });
 
-  //     // Seed another question that has another typeId
-  //     await newQuestion({ typeId: 2 });
+      const res = await request(app).get(`/api/question/get/type/${typeId}`);
 
-  //     const res = await request(app).get(
-  //       `/api/question/get/type/${type.typeId}`
-  //     );
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(questions.length);
+      // Check that all returned questions have the correct typeId
+      res.body.forEach((q) => {
+        expect(q.types).toEqual([{ typeId: typeId, label: "Type1" }]);
+      });
+    });
 
-  //     expect(res.status).toBe(200);
-  //     expect(res.body).toHaveLength(questions.length);
-  //     // Check that all returned questions have the correct typeId
-  //     res.body.forEach((q) => {
-  //       expect(q.typeId).toBe(type.typeId);
-  //     });
-  //   });
-  // });
+    it("should return an empty list if no questions found for the given type", async () => {
+      const type = await newType({ label: "Type1" });
+
+      const res = await request(app).get(
+        `/api/question/get/type/${type.typeId}`
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(0);
+    });
+
+    it("should return 404 status if type does not exist", async () => {
+      const res = await request(app).get("/api/question/get/type/999");
+
+      expect(res.status).toBe(404);
+    });
+  });
 });
