@@ -66,7 +66,7 @@ module.exports.newType = async ({
         ? { connect: projects.map((projectId) => ({ projectId })) }
         : undefined,
       questions: questions.length
-        ? { connect: questions.map((questonId) => ({ questonId })) }
+        ? { connect: questions.map((questionId) => ({ questionId })) }
         : undefined,
     },
     include: {

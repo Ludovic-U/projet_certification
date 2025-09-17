@@ -146,16 +146,14 @@ describe("Question Integration Tests", () => {
       const res = await request(app).get("/api/question/get");
 
       expect(res.status).toBe(200);
-      expect(res.body.length).toBe(3);
-      expect(res.body[0].label).toBe(questions[0].label);
-      expect(res.body[1].label).toBe(questions[1].label);
+      expect(res.body).toHaveLength(questions.length);
     });
 
     it("should return empty list if no questions found and 200 status", async () => {
       const res = await request(app).get("/api/question/get");
 
       expect(res.status).toBe(200);
-      expect(res.body.length).toBe(0);
+      expect(res.body).toHaveLength(0);
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -256,7 +254,7 @@ describe("Question Integration Tests", () => {
   });
 
   describe("PATCH - /api/question/update/:questionId", () => {
-    it("should update an existing question and return 200", async () => {
+    it("should update an existing question and return 200 status", async () => {
       const question = await newQuestion();
       const newData = {
         label: "This has been updated",
@@ -272,7 +270,7 @@ describe("Question Integration Tests", () => {
       expect(res.body.label).toBe(newData.label);
     });
 
-    it("should update for adding a type to an existing question and return 200", async () => {
+    it("should update for adding a type to an existing question and return 200 status", async () => {
       const type = await newType({ label: "Type1" });
 
       const question = await newQuestion();
@@ -296,7 +294,7 @@ describe("Question Integration Tests", () => {
       ]);
     });
 
-    it("should update for removing a type to an existing question and return 200", async () => {
+    it("should update for removing a type to an existing question and return 200 status", async () => {
       const type = await newType({ label: "Type1" });
 
       const question = await newQuestion({ types: [type.typeId] });

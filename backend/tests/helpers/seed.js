@@ -52,3 +52,12 @@ module.exports.seedQuestionsWithType = async () => {
   }
   return questions;
 };
+
+module.exports.seedWith3types = async () => {
+  const types = [];
+  for (let i = 0; i < 3; i++) {
+    const type = await facoryFunction.newType({ label: `Type ${i + 1}` });
+    types.push(type);
+  }
+  return types;
+};
