@@ -57,9 +57,9 @@ export default function BuildingPage() {
                 <div className="p-3 border w-fit flex flex-col gap-4">
                     <h2 className="font-oswald text-2xl text-center">Card :</h2>
                     <div className="flex gap-3 items-center">
-                        <Card title="Titre" color="#99B095" progress={0} buttonLabel="Voir"></Card>
-                        <Card title="Titre" description="Description optionnelle plus ou moins longue." color="#83A18F" progress={50} buttonLabel="Voir"></Card>
-                        <Card title="Titre" color="#6D8E76" progress={100} buttonLabel="Voir"></Card>
+                        <Card title="Titre" color="#99B095" progress={0} buttonLabel="Voir"/>
+                        <Card title="Titre" description="Description optionnelle." color="#83A18F" progress={50} buttonLabel="Voir"/>
+                        <Card title="Titre" description="Description optionnelle" color="#6D8E76" progress={100}/>
                     </div>
                 </div>
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Button } from "@/components/ui";
 
 import { useModal } from "@/hooks"
+import { FontAwesomeIcon, Icons} from "@/lib/icons";
 
 export default function BuildingPage() {
     const modal = useModal();
