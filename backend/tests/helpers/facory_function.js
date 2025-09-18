@@ -16,7 +16,7 @@
  * @param {Array<string>} [params.options=[]] - Array of option labels to create with the question.
  * @returns {Promise<Object>} Resolves to the created question object, including connected projects, types, and options.
  */
-module.exports.newQuestion = async ({
+async function newQuestion({
   label = "Default Question",
   category = "Default",
   numberOfSelectionableOpt = null,
@@ -27,7 +27,7 @@ module.exports.newQuestion = async ({
   projects = [],
   types = [],
   options = [],
-} = {}) => {
+} = {}) {
   const question = await global.prisma.question.create({
     data: {
       label,
@@ -55,7 +55,7 @@ module.exports.newQuestion = async ({
   });
 
   return question;
-};
+}
 
 /**
  * Helper function to create a new Response in the database.
@@ -70,13 +70,13 @@ module.exports.newQuestion = async ({
  * @param {string|null} [params.responseIdParent=null] - Optional parent response ID.
  * @returns {Promise<Object>} Resolves to the created response object.
  */
-module.exports.newResponse = async ({
+async function newResponse({
   label = "Default Repsonse",
   projectId,
   questionId,
   optionId = null,
   responseIdParent = null,
-}) => {
+}) {
   const response = await global.prisma.response.create({
     data: {
       label,
@@ -88,7 +88,7 @@ module.exports.newResponse = async ({
   });
 
   return response;
-};
+}
 
 /**
  * Helper function to create a new Type in the database, optionally connecting to projects and questions.
@@ -101,11 +101,11 @@ module.exports.newResponse = async ({
  * @param {Array<string>} [params.questions=[]] - Array of question IDs to connect.
  * @returns {Promise<Object>} Resolves to the created type object, including connected projects and questions.
  */
-module.exports.newType = async ({
+async function newType({
   label = "Default Type",
   projects = [],
   questions = [],
-}) => {
+}) {
   const type = await global.prisma.type.create({
     data: {
       label,
@@ -123,7 +123,7 @@ module.exports.newType = async ({
   });
 
   return type;
-};
+}
 
 /**
  * Helper function to create a new Option in the database.
@@ -135,20 +135,20 @@ module.exports.newType = async ({
  * @param {string} params.questionId - The question ID this option belongs to.
  * @returns {Promise<Object>} Resolves to the created option object.
  */
-module.exports.newOption = async ({ label = "Default Option", questionId }) => {
+async function newOption({ label = "Default Option", questionId }) {
   const option = await global.prisma.option.create({
     data: { label, questionId },
   });
 
   return option;
-};
+}
 
 // TODO: Still WIP
-module.exports.newProject = async ({
+async function newProject({
   projectName = "Default ProjectName",
   types = [],
   questions = [],
-}) => {
+}) {
   const project = await global.prisma.project.create({
     data: {
       projectName,
@@ -163,4 +163,6 @@ module.exports.newProject = async ({
   });
 
   return project;
-};
+}
+
+module.exports = { newQuestion, newResponse, newType, newOption, newProject };

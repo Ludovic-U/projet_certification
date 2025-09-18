@@ -7,7 +7,7 @@ const facoryFunction = require("./facory_function");
  * @function seedWith3Questions
  * @returns {Promise<Array<Object>>} Resolves to an array of 3 created question objects.
  */
-module.exports.seedWith3Questions = async () => {
+async function seedWith3Questions() {
   const questions = [];
   for (let i = 0; i < 3; i++) {
     const question = await facoryFunction.newQuestion({
@@ -16,7 +16,7 @@ module.exports.seedWith3Questions = async () => {
     questions.push(question);
   }
   return questions;
-};
+}
 
 /**
  * Seeds the database with a parent question and 2 subquestions.
@@ -27,7 +27,7 @@ module.exports.seedWith3Questions = async () => {
  *  - questionParent: The parent question object.
  *  - subquestions: Array of 2 created subquestion objects linked to the parent.
  */
-module.exports.seedQuestionWithSubquestion = async () => {
+async function seedQuestionWithSubquestion() {
   const questionParent = await facoryFunction.newQuestion({
     label: "Question with subquestions",
   });
@@ -41,7 +41,7 @@ module.exports.seedQuestionWithSubquestion = async () => {
     subquestions.push(subquestion);
   }
   return { questionParent, subquestions };
-};
+}
 
 /**
  * Seeds the database with 2 questions under a specific category.
@@ -51,7 +51,7 @@ module.exports.seedQuestionWithSubquestion = async () => {
  * @param {string} category - The category to assign to the created questions.
  * @returns {Promise<Array<Object>>} Resolves to an array of 2 created question objects with the specified category.
  */
-module.exports.seedQuestionsWithCategory = async (category) => {
+async function seedQuestionsWithCategory(category) {
   const questions = [];
   for (let i = 0; i < 2; i++) {
     const question = await facoryFunction.newQuestion({
@@ -61,7 +61,7 @@ module.exports.seedQuestionsWithCategory = async (category) => {
     questions.push(question);
   }
   return questions;
-};
+}
 
 /**
  * Seeds the database with a type and 2 questions associated with that type.
@@ -70,7 +70,7 @@ module.exports.seedQuestionsWithCategory = async (category) => {
  * @function seedQuestionsWithType
  * @returns {Promise<Array<Object>>} Resolves to an array of 2 created question objects linked to the created type.
  */
-module.exports.seedQuestionsWithType = async () => {
+async function seedQuestionsWithType() {
   const type = await facoryFunction.newType({ label: "Type1" });
 
   const questions = [];
@@ -82,7 +82,7 @@ module.exports.seedQuestionsWithType = async () => {
     questions.push(question);
   }
   return questions;
-};
+}
 
 /**
  * Seeds the database with 3 standalone types.
@@ -91,14 +91,14 @@ module.exports.seedQuestionsWithType = async () => {
  * @function seedWith3types
  * @returns {Promise<Array<Object>>} Resolves to an array of 3 created type objects.
  */
-module.exports.seedWith3types = async () => {
+async function seedWith3types() {
   const types = [];
   for (let i = 0; i < 3; i++) {
     const type = await facoryFunction.newType({ label: `Type ${i + 1}` });
     types.push(type);
   }
   return types;
-};
+}
 
 /**
  * Seeds the database with a question that has 2 options.
@@ -109,9 +109,18 @@ module.exports.seedWith3types = async () => {
  *  - question: The created question object.
  *  - options: Array of created option objects linked to the question.
  */
-module.exports.seedQuestionWithOptions = async () => {
+async function seedQuestionWithOptions() {
   const question = await facoryFunction.newQuestion({
     options: ["Opt1", "Opt2"],
   });
   return { question, options: question.options };
+}
+
+module.exports = {
+  seedWith3Questions,
+  seedQuestionWithSubquestion,
+  seedQuestionsWithCategory,
+  seedQuestionsWithType,
+  seedWith3types,
+  seedQuestionWithOptions,
 };
