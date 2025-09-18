@@ -61,3 +61,10 @@ module.exports.seedWith3types = async () => {
   }
   return types;
 };
+
+module.exports.seedQuestionWithOptions = async () => {
+  const question = await facoryFunction.newQuestion({
+    options: ["Opt1", "Opt2"],
+  });
+  return { question, options: question.options };
+};

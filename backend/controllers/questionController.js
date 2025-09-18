@@ -16,6 +16,7 @@ const { validateId } = require("./helpers/validateId");
  * @param {number|null} [req.body.questionIdParent=null] - The ID of the parent question if this is a sub-question.
  * @param {Array} [req.body.types=[]] - A list of type identifiers associated with the question.
  * @param {Array} [req.body.projects=[]] - A list of project identifiers associated with the question.
+ * @param {Array} [req.body.options=[]] - A list of option identifiers associated with the question.
  * @returns {Promise<void>} Sends:
  * - 201: Created, returns the created question object.
  * - 400: Missing required fields (`label` or `category`).
@@ -32,6 +33,7 @@ module.exports.createQuestion = async (req, res) => {
     questionIdParent,
     types,
     projects,
+    options,
   } = req.body;
 
   // Check label or category to be not null
@@ -50,6 +52,7 @@ module.exports.createQuestion = async (req, res) => {
       questionIdParent: questionIdParent ?? null,
       types: types ?? [],
       projects: projects ?? [],
+      options: options ?? [],
     });
     res.status(201).json(question);
   } catch (error) {

@@ -8,6 +8,7 @@ module.exports.newQuestion = async ({
   questionIdParent = null,
   projects = [],
   types = [],
+  options = [],
 } = {}) => {
   const question = await global.prisma.question.create({
     data: {
@@ -24,10 +25,14 @@ module.exports.newQuestion = async ({
       types: types.length
         ? { connect: types.map((typeId) => ({ typeId })) }
         : undefined,
+      options: options?.length
+        ? { create: options.map((label) => ({ label })) }
+        : undefined,
     },
     include: {
       projects: true,
       types: true,
+      options: true,
     },
   });
 

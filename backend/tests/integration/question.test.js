@@ -188,6 +188,7 @@ describe("Question Integration Tests", () => {
       const res = await request(app).get("/api/question/get/999");
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Question not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -231,10 +232,11 @@ describe("Question Integration Tests", () => {
       expect(res.body).toHaveLength(0);
     });
 
-    it("should return 404 status if question does not exist", async () => {
+    it("should return 404 status if parent question does not exist", async () => {
       const res = await request(app).get(`/api/question/get/999/subquestion`);
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "QuestionParent not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -347,6 +349,7 @@ describe("Question Integration Tests", () => {
         .send({ label: "a", category: "b" });
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Question not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -394,6 +397,7 @@ describe("Question Integration Tests", () => {
       const res = await request(app).delete("/api/question/delete/999");
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Question not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -505,6 +509,7 @@ describe("Question Integration Tests", () => {
       const res = await request(app).get("/api/question/get/type/999");
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Type not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {

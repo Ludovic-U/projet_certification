@@ -15,10 +15,11 @@ const { prisma } = require("../prisma/prismaClient");
  * @param {number|null} [data.questionIdParent] - Parent question ID if this is a sub-question.
  * @param {Array<number>} [data.types] - Type IDs to associate.
  * @param {Array<number>} [data.projects] - Project IDs to associate.
- * @returns {Promise<Object>} The created question, including related types and projects.
+ * @param {Array<number>} [data.options] - Option IDs to associate.
+ * @returns {Promise<Object>} The created question, including related types, projects and options.
  */
 module.exports.createQuestion = async (data) => {
-  const { types, projects, ...questionData } = data;
+  const { types, projects, options, ...questionData } = data;
 
   return await prisma.question.create({
     data: {
@@ -36,10 +37,15 @@ module.exports.createQuestion = async (data) => {
               connect: projects.map((projectId) => ({ projectId })),
             }
           : undefined,
+
+      options: options?.length
+        ? { create: options.map((label) => ({ label })) }
+        : undefined,
     },
     include: {
       types: true,
       projects: true,
+      options: true,
     },
   });
 };

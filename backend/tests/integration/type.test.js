@@ -152,6 +152,7 @@ describe("Type Integration Tests", () => {
       const res = await request(app).get("/api/type/get/999");
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Type not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -249,6 +250,7 @@ describe("Type Integration Tests", () => {
         .send({ label: "test" });
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Type not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -289,6 +291,7 @@ describe("Type Integration Tests", () => {
       const res = await request(app).delete("/api/type/delete/999");
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Type not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
