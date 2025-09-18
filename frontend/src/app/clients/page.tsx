@@ -5,10 +5,10 @@ import { useState } from "react";
 import {
     PageHeader,
     Button,
-    List,
+    Table,
     Input,
     Pagination,
-    clientsList
+    clientsList,
  } from "@/components/ui";
  import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
 
@@ -47,7 +47,7 @@ export default function ClientsPage() {
                         </span>
                      }/>
                 </div>
-                <List<typeof currentData[0]>
+                <Table<typeof currentData[0]>
                  data={currentData}
                  columns={clientsList}/>
                  {totalPages > 1 && (

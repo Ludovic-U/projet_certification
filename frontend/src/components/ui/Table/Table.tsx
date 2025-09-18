@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { ListProps } from "./list.types"
+import { TableProps } from "./table.types"
 
-export const List = <T extends { id: string | number }>({ data, columns }: ListProps<T>) => {
+export const Table = <T extends { id: string | number }>({ data, columns }: TableProps<T>) => {
     return (
             <div className="flex flex-col items-center overflow-x-scroll font-noto">
                 <table className="w-full px-8 table-fixed border-separate border-spacing-y-5 select-none">

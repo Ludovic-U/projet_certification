@@ -16,7 +16,9 @@ import { Button } from "@/components/ui";
     <FontAwesomeIcon icon={Icons.xmark}/>
 </Button>
 ```
-![Aperçu des boutons](../../../../public/docs/Button.png)
+<p align=center>
+    <img src="../../../../public/docs/Button.png" alt="Aperçu des boutons" >
+</p>
 
 ## API/Props
 
@@ -28,7 +30,7 @@ import { Button } from "@/components/ui";
 | **asChild**  | boolean                                                                    | false      | Rend le bouton en tant que wrapper autour d'un autre élément (ex. &lt;a&gt;)                   |
 | **disabled** | boolean                                                                    | -          | Désactive le bouton (désactive les interactions)                                         |
 | **children** | ReactNode                                                                  | -          | Contenu du bouton (texte, icone, etc.)                                                   |
-| **...props** | Toutes les props valides d'un &lt;button&gt; natif                               | -          | Toutes les autres props sont transmises à l'élément racine (onClick, type, aria-*, etc.) |
+| **...props** | Toutes les props valides d'un &lt;button&gt; natif                               | -          | Toutes les autres props sont transmises à l'élément (onClick, type, aria-*, etc.) |
 
 ### Remarques :
 - Lorsque **loading** est à **true**, le bouton est considéré comme désactivé (**disabled**).

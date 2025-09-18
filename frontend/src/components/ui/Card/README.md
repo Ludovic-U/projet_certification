@@ -13,7 +13,9 @@ import { Card } from "@/components/ui";
 <Card title="Titre" description="Description optionnelle" color="#6D8E76" progress={100}/>
 
 ```
-![Aperçu des cards](../../../../public/docs/Card.png)
+<p align=center>
+    <img src="../../../../public/docs/Card.png" alt="Aperçu des cards" >
+</p>
 
 ## API/Props
 
@@ -26,7 +28,7 @@ import { Card } from "@/components/ui";
 | **buttonLabel**   | string     | -          | Texte affiché sur le bouton. Si buttonLabel n'est pas fourni, le bouton n'est pas affiché |
 | **onButtonClick** | () => void | -          | Callback déclenché au clic du bouton                                             |
 | **color**         | string     | "#88B081"  | Couleur principale qui s'applique à la barre de progression et au bouton                       |
-| **className**     | string     | -          | Classes CSS supplémentaires pour personnaliser le style du composant             |
+| **className**     | string     | -          | Classes CSS supplémentaires pour personnaliser le style selon le contexte             |
 
 
 ### Remarques :

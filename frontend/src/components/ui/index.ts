@@ -9,5 +9,5 @@ export * from "./ProgressBar";
 export * from "./Radio";
 export * from "./Toggle";
 export * from "./Tooltip";
-export * from "./List";
+export * from "./Table";
 export * from "./PageHeader"

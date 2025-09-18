@@ -7,7 +7,7 @@ export interface Column<T> {
     className?: string;
 }
 
-export interface ListProps<T> {
+export interface TableProps<T> {
     data: T[];
     columns: Column<T>[];
 }
