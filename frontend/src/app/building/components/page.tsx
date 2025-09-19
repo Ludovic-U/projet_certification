@@ -1,7 +1,8 @@
 "use client";
 
-import { PageHeader, Button, Card, Checkbox, Input, LoadingSpinner, Radio, RadioGroup } from "@/components/ui";
+import { PageHeader, Button, Card, Checkbox, Input, LoadingSpinner, Radio, RadioGroup, Toggle } from "@/components/ui";
 import { Modal } from "@/components/ui"
+import React from "react";
 import { RegisterForm } from "@/components/forms/RegisterForm";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
@@ -9,6 +10,7 @@ import { useModal } from "@/hooks"
 
 export default function BuildingPage() {
     const modal = useModal();
+    const [enable, setEnabled] = React.useState(false);
 
     return (
         <div className="h-full">
@@ -139,6 +141,22 @@ export default function BuildingPage() {
                                 <Radio label="Option A" value="optionA" error="Sélection obligatoire"/>
                                 <Radio label="Option B" value="optionB" helperText="Choisissez selon vos préférences"/>
                             </RadioGroup>                        
+                    </div>
+                    <div className="p-3 border w-fit h-fit flex gap-3">
+                        <h2 className="font-oswald text-2xl">Toggle :</h2>
+                        <div className="space-y-3">
+                            <Toggle defaultChecked={true} label="Activer la notification" helperText="Recevoir des alertes par email"/>
+                        
+                            <Toggle
+                            checked={enable}
+                            onCheckedChange={setEnabled}
+                            label="Mode sombre"
+                            helperText="Basculer l'apparence de l'interface"
+                            />
+                        
+                            <Toggle disabled label="Option désactivée"></Toggle>                            
+                        </div>
+
                     </div>
                 </div>
             </section>
