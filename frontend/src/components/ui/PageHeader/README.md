@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/ui";
 ```
 
 <p align=center>
-    <img src="../../../../public/docs/PageHeader.png" alt="Aperçu des boutons" >
+    <img src="../../../../public/docs/PageHeader.png" alt="Aperçu du page header" >
 </p>
 
 ## API/Props
