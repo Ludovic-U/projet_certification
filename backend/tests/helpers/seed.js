@@ -88,7 +88,30 @@ async function seedQuestionsWithType() {
     });
     questions.push(question);
   }
-  return questions;
+  return { type, questions };
+}
+
+async function seedProjectWithQuestions() {
+  const { project, question } = await seedWithProjectAndQuestion();
+  const { type, questions } = await seedQuestionsWithType();
+
+  // Linked project and type
+  await global.prisma.type.update({
+    where: { typeId: type.typeId },
+    data: {
+      projects: {
+        connect: { projectId: project.projectId },
+      },
+    },
+  });
+
+  // Refecth the project to have question and type tied
+  const newProject = await global.prisma.project.findUnique({
+    where: { projectId: project.projectId },
+    include: { questions: true, types: true },
+  });
+
+  return { project: newProject, question, typeQuestions: questions };
 }
 
 /**
@@ -128,10 +151,19 @@ async function seedWithProjectAndQuestion() {
   // Created a project manually via prisma studio for test
   // Temporary until we can create a project ourself
   // Fetch the project to get the projectId
-  const project = await global.prisma.project.findUnique({
+  const Newproject = await global.prisma.project.findUnique({
     where: { projectId: 1 },
   });
-  const question = await facoryFunction.newQuestion();
+  const question = await facoryFunction.newQuestion({
+    projects: [Newproject.projectId],
+  });
+
+  // Refecth the project to have question tied
+  const project = await global.prisma.project.findUnique({
+    where: { projectId: Newproject.projectId },
+    include: { questions: true },
+  });
+
   return { project, question };
 }
 
@@ -188,4 +220,5 @@ module.exports = {
   seedProjectWithResponses,
   seeResponseWithSubresponse,
   seedWithProjectAndQuestion,
+  seedProjectWithQuestions,
 };

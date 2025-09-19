@@ -7,6 +7,7 @@ const {
   seedQuestionWithSubquestion,
   seedQuestionsWithCategory,
   seedQuestionsWithType,
+  seedProjectWithQuestions,
 } = require("../helpers/seed");
 
 describe("Question Integration Tests", () => {
@@ -413,20 +414,40 @@ describe("Question Integration Tests", () => {
     });
   });
 
-  // TODO: Need possibility to create a project
-  // describe("GET - /api/question/get/project/:projectId", () => {
-  //   it("should return a question list of the given project and 200 status", async () => {
-  //     const questions = await seedQuestionsWithType();
-  //     const project = await newProject({ types: [1] });
-  //     const question = await newQuestion({ projects: [project.projectId] });
+  describe("GET - /api/question/get/project/:projectId", () => {
+    it("should return a question list of the given project and 200 status", async () => {
+      const { project, question, typeQuestions } =
+        await seedProjectWithQuestions();
 
-  //     const res = await request(app).get(
-  //       `/api/question/get/project/${project.projectId}`
-  //     );
+      const res = await request(app).get(
+        `/api/question/get/project/${project.projectId}`
+      );
 
-  //     expect(res.status).toBe(200);
-  //   });
-  // });
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength([question, ...typeQuestions].length);
+    });
+
+    it("should return 404 status if project does not exist", async () => {
+      const res = await request(app).get("/api/question/get/project/999");
+
+      expect(res.status).toBe(404);
+    });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(questionService, "getQuestionsByProject")
+        .mockRejectedValue(new Error("Database error"));
+
+      const res = await request(app).get("/api/question/get/project/1");
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      questionService.getQuestionsByProject.mockRestore();
+    });
+  });
 
   describe("GET - /api/question/get/category/:category", () => {
     it("should return questions of the given category", async () => {
@@ -473,21 +494,21 @@ describe("Question Integration Tests", () => {
 
   describe("GET - /api/question/type/:typeId", () => {
     it("should return questions of the given type", async () => {
-      const typeId = 1;
-
-      const questions = await seedQuestionsWithType();
+      const { type, questions } = await seedQuestionsWithType();
 
       // Seed another question that has another type
       const otherType = await newType({ label: "Type2" });
       await newQuestion({ types: [otherType.typeId] });
 
-      const res = await request(app).get(`/api/question/get/type/${typeId}`);
+      const res = await request(app).get(
+        `/api/question/get/type/${type.typeId}`
+      );
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(questions.length);
       // Check that all returned questions have the correct typeId
       res.body.forEach((q) => {
-        expect(q.types).toEqual([{ typeId: typeId, label: "Type1" }]);
+        expect(q.types).toEqual([{ typeId: type.typeId, label: "Type1" }]);
       });
     });
 
