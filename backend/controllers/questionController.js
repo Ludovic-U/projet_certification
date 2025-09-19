@@ -36,7 +36,7 @@ module.exports.createQuestion = async (req, res) => {
     options,
   } = req.body;
 
-  // Check label or category to be not null
+  // Check label or category to be not null or empty
   if (!label || !category) {
     return res.status(400).json({ error: "label and category are required" });
   }
@@ -123,8 +123,8 @@ module.exports.updateQuestion = async (req, res) => {
     removeProject,
   } = req.body;
 
-  // Check label or category to be not null
-  if (!label || !category) {
+  // Check label or category to be not empty
+  if (label === "" || category === "") {
     return res.status(400).json({ error: "label and category are required" });
   }
 

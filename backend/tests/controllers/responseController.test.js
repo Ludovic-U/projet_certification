@@ -61,6 +61,17 @@ describe("Response Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockResponse);
     });
 
+    it("should return 400 if a required field is missing", async () => {
+      req.body.label = "";
+      await invalidOrMissingStatus(
+        responseController.createResponse,
+        req,
+        res,
+        responseService.createResponse,
+        "label is required"
+      );
+    });
+
     it("should handle service errors and return 500 status", async () => {
       await internalServerErrorStatus(
         responseController.createResponse,
@@ -117,6 +128,17 @@ describe("Response Controller", () => {
         res,
         responseService.updateResponse,
         "Invalid responseId"
+      );
+    });
+
+    it("should return 400 if a required field is missing", async () => {
+      req.body.label = "";
+      await invalidOrMissingStatus(
+        responseController.updateResponse,
+        req,
+        res,
+        responseService.updateResponse,
+        "label is required"
       );
     });
 

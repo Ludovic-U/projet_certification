@@ -17,6 +17,7 @@ const { validateId } = require("./helpers/validateId");
 module.exports.createOption = async (req, res) => {
   const { label, questionId } = req.body;
 
+  // Checl label to not be null or empty
   if (!label) {
     return res.status(400).json({ error: "label is required" });
   }
@@ -52,7 +53,8 @@ module.exports.updateOption = async (req, res) => {
 
   const { label, questionId } = req.body;
 
-  if (!label) {
+  // Check label to not be empty
+  if (label === "") {
     return res.status(400).json({ error: "label is required" });
   }
 

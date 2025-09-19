@@ -18,6 +18,7 @@ const { validateId } = require("./helpers/validateId");
 module.exports.createType = async (req, res) => {
   const { label, questions, projects } = req.body;
 
+  // Check label to not be null or empty
   if (!label) {
     return res.status(400).json({ error: "label is required" });
   }
@@ -80,7 +81,8 @@ module.exports.updateType = async (req, res) => {
   const { label, addQuestion, removeQuestion, addProject, removeProject } =
     req.body;
 
-  if (!label) {
+  // Check label to not be empty
+  if (label === "") {
     return res.status(400).json({ error: "label is required" });
   }
 

@@ -7,7 +7,7 @@ const { validateId } = require("./helpers/validateId");
  * @async
  * @function createResponse
  * @param {Object} req.body - Request payload.
- * @param {String|null} [req.body.label=null] - The text of the response.
+ * @param {String|null} req.body.label - The text of the response (required).
  * @param {number} req.body.projectId - The ID of the associated project (required).
  * @param {number} req.body.questionId - The ID of the associated question (required).
  * @param {number|null} [req.body.optionId=null] - The ID of the assiocated option.
@@ -19,9 +19,14 @@ const { validateId } = require("./helpers/validateId");
 module.exports.createResponse = async (req, res) => {
   const { label, projectId, questionId, optionId, responseIdParent } = req.body;
 
+  // Check label to not be null or empty
+  if (!label) {
+    return res.status(400).json({ error: "label is required" });
+  }
+
   try {
     const response = await responseService.createResponse({
-      label: label ?? null,
+      label,
       projectId,
       questionId,
       optionId: optionId ?? null,
@@ -58,6 +63,11 @@ module.exports.updateResponse = async (req, res) => {
   if (!validateId(responseId, "responseId", res)) return;
 
   const { label, projectId, questionId, optionId, responseIdParent } = req.body;
+
+  // Check label to not be empty
+  if (label === "") {
+    return res.status(400).json({ error: "label is required" });
+  }
 
   try {
     const response = await responseService.updateResponse(responseId, {
