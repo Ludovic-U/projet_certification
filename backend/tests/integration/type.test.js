@@ -242,6 +242,7 @@ describe("Type Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "label is required" });
     });
 
     it("should return 404 status if type does not exist", async () => {

@@ -322,6 +322,7 @@ describe("Question Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "label and category are required" });
     });
 
     it("should return 400 status if new category data is empty", async () => {
@@ -336,6 +337,7 @@ describe("Question Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "label and category are required" });
     });
 
     it("should return 404 status if question does not exist", async () => {

@@ -89,6 +89,7 @@ describe("Response Integration Tests", () => {
       const res = await request(app).post("/api/response/create").send(payload);
 
       expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "label is required" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -238,6 +239,7 @@ describe("Response Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "label is required" });
     });
 
     it("should return 404 status if response does not exist", async () => {
