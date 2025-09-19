@@ -25,7 +25,7 @@ const Page = () => {
 }
 ```
 <p align=center>
-    <img src="../../../../public/docs/Modal.gif" alt="Aperçu des boutons" >
+    <img src="../../../../public/docs/Modal.gif" alt="Aperçu du modal à son ouverture/fermeture" >
 </p>
 
 ## API/Props
