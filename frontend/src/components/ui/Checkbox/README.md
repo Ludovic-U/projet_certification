@@ -21,17 +21,17 @@ import { Checkbox } from "@/components/ui";
 </p>
 
 ## API/Props
-| **Prop**            | **Type**                                                              | **Défaut** | **Description**                                                           |
-|---------------------|-----------------------------------------------------------------------|------------|---------------------------------------------------------------------------|
-| **label**           | string                                                                | -          | Texte affiché à côté de la case                                           |
-| **error**           | string                                                                | -          | Message d'erreur, affiché sous la case, déclenche l'état **aria-invalid** |
-| **helperText**      | string                                                                | -          | Message d'aide affiché sous la case (si pas d'erreur)                     |
-| **checked**         | boolean                                                               | -          | Etat coché de la case                                                     |
-| **onCheckedChange** | (checked: boolean) => void                                            | -          | Callback, déclenché lors du changement de valeur de la case               |
-| **size**            | "sm" \| "default" \| "lg"                                             | "default"  | Taille de la case et du label                                             |
-| **disabled**        | boolean                                                               | false      | Désactive la case et la rend transparente avec le label                   |
-| **className**       | string                                                                | -          | Classes CSS supplémentaires pour personnaliser le style selon le contexte |
-| **...props**        | Toutes les props valides d'un &lt;input&gt; natif sauf size | -          | Toutes les autres props sont transmises à l'élément (type, value, id, etc.)         |
+| **Prop**            | **Type**                                                    | **Défaut** | **Requis** | **Description**                                                             |
+|---------------------|-------------------------------------------------------------|:----------:|:----------:|-----------------------------------------------------------------------------|
+| **label**           | string                                                      |      -     |      -     | Texte affiché à côté de la case                                             |
+| **error**           | string                                                      |      -     |      -     | Message d'erreur, affiché sous la case, déclenche l'état   **aria-invalid** |
+| **helperText**      | string                                                      |            |      -     | Message d'aide affiché sous la case (si pas d'erreur)                       |
+| **checked**         | boolean                                                     |      -     |      -     | Etat coché de la case                                                       |
+| **onCheckedChange** | (checked: boolean) => void                                  |      -     |      -     | Callback, déclenché lors du changement de valeur de la case                 |
+| **size**            | "sm" \| "default" \| "lg"                                   |  "default" |      -     | Taille de la case et du label                                               |
+| **disabled**        | boolean                                                     |    false   |      -     | Désactive la case et la rend transparente avec le label                     |
+| **className**       | string                                                      |      -     |      -     | Classes CSS supplémentaires pour personnaliser le style selon le contexte   |
+| **...props**        | Toutes les props valides d'un &lt;input&gt; natif sauf size |      -     |      -     | Toutes les autres props sont transmises à l'élément (type, value, id, etc.) |
 
 ### Remarques :
 - Les messages **error** et **helperText** sont accessibles via **aria-describedby** pour les lecteurs d'écran.
