@@ -212,7 +212,7 @@ describe("Question Integration Tests", () => {
       );
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(subquestions.length);
+      expect(res.body).toHaveLength(questionParent.children.length);
       expect(res.body[0].questionIdParent).toEqual(questionParent.questionId);
     });
 

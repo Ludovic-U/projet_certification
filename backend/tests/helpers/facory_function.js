@@ -51,6 +51,7 @@ async function newQuestion({
       projects: true,
       types: true,
       options: true,
+      children: true,
     },
   });
 

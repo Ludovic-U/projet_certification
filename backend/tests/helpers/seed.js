@@ -28,7 +28,7 @@ async function seedWith3Questions() {
  *  - subquestions: Array of 2 created subquestion objects linked to the parent.
  */
 async function seedQuestionWithSubquestion() {
-  const questionParent = await facoryFunction.newQuestion({
+  const question = await facoryFunction.newQuestion({
     label: "Question with subquestions",
   });
 
@@ -36,10 +36,17 @@ async function seedQuestionWithSubquestion() {
   for (let i = 0; i < 2; i++) {
     const subquestion = await facoryFunction.newQuestion({
       label: `Subquestion ${i + 1}`,
-      questionIdParent: questionParent.questionId,
+      questionIdParent: question.questionId,
     });
     subquestions.push(subquestion);
   }
+
+  // Refecth the question parent to have children
+  const questionParent = await global.prisma.question.findUnique({
+    where: { questionId: question.questionId },
+    include: { children: true },
+  });
+
   return { questionParent, subquestions };
 }
 

@@ -78,10 +78,18 @@ describe("Response Integration Tests", () => {
       expect(responseInDb.label).toBe(payload.label);
     });
 
-    // TODO: after modify the controller/service
-    // it("should return 400 status if label is missing or empty", () => {
+    it("should return 400 status if label is missing or empty", async () => {
+      const { project, question } = await seedWithProjectAndQuestion();
+      const payload = {
+        label: "",
+        projectId: project.projectId,
+        questionId: question.questionId,
+      };
 
-    // });
+      const res = await request(app).post("/api/response/create").send(payload);
+
+      expect(res.status).toBe(400);
+    });
 
     it("should return 500 status if prisma throws an error", async () => {
       // Mock service to throw
@@ -217,9 +225,20 @@ describe("Response Integration Tests", () => {
     });
 
     // TODO: after modify the controller/service
-    // it("should return 400 status if label is missing or empty", () => {
+    it("should return 400 status if label is missing or empty", async () => {
+      const { project, question } = await seedWithProjectAndQuestion();
+      const response = await newResponse({
+        projectId: project.projectId,
+        questionId: question.questionId,
+      });
+      const newData = { label: "" };
 
-    // });
+      const res = await request(app)
+        .patch(`/api/response/update/${response.responseId}`)
+        .send(newData);
+
+      expect(res.status).toBe(400);
+    });
 
     it("should return 404 status if response does not exist", async () => {
       const res = await request(app)
