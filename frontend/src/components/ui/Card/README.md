@@ -18,18 +18,15 @@ import { Card } from "@/components/ui";
 </p>
 
 ## API/Props
-
-
-| **Prop**          | **Type**   | **Défaut** | **Description**                                                                  |
-|-------------------|------------|------------|----------------------------------------------------------------------------------|
-| **title**         | string     | -          | Titre de la card                                                                 |
-| **description**   | string     | -          | Description optionnelle                                                          |
-| **progress**      | number     | 0          | Valeur de la barre de progression (0 à 100)                                      |
-| **buttonLabel**   | string     | -          | Texte affiché sur le bouton. Si buttonLabel n'est pas fourni, le bouton n'est pas affiché |
-| **onButtonClick** | () => void | -          | Callback déclenché au clic du bouton                                             |
-| **color**         | string     | "#88B081"  | Couleur principale qui s'applique à la barre de progression et au bouton                       |
-| **className**     | string     | -          | Classes CSS supplémentaires pour personnaliser le style selon le contexte             |
-
+| **Prop**      | **Type**   | **Défaut** | **Requis** | **Description**                                                                           |
+|---------------|------------|:----------:|:----------:|-------------------------------------------------------------------------------------------|
+| title         | string     |      -     |      ✅     | Titre de la card                                                                          |
+| description   | string     |      -     |      -     | Description optionnelle                                                                   |
+| progress      | number     |      0     |      -     | Valeur de la barre de progression                                                         |
+| buttonLabel   | string     |      -     |      -     | Texte affiché sur le bouton. Si buttonLabel n'est pas fourni, le bouton n'est pas affiché |
+| onButtonClick | () => void |      -     |      -     | Callback déclenché au clic du bouton                                                      |
+| color         | string     |  "#88B081" |      -     | Couleur principale qui s'applique à la barre de progression et au bouton                  |
+| className     | string     |      -     |      -     | Classes CSS supplémentaires pour personnaliser le style selon le contexte                 |
 
 ### Remarques :
 - La carte affiche automatiquement la barre de progression avec le pourcentage indiqué dans **progress**.
