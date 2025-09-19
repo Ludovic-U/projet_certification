@@ -22,15 +22,15 @@ import { Button } from "@/components/ui";
 
 ## API/Props
 
-| **Prop** | **Type**                                                                   | **Défaut** | **Description**                                                                          |
-|----------|----------------------------------------------------------------------------|------------|------------------------------------------------------------------------------------------|
-| **variant**  | "primary" \| "secondary" \| "primaryBorder" \| "secondaryBorder" \| "icon" | "primary"  | Variant visuel du bouton (couleur de fond, bordure, etc)                                 |
-| **size**     | "xs" \| "sm" \| "md" \| "icon"                                             | "md"       | Taille du bouton                                                                         |
-| **loading**  | boolean                                                                    | false      | Affiche un état de chargement et désactive le bouton                                     |
-| **asChild**  | boolean                                                                    | false      | Rend le bouton en tant que wrapper autour d'un autre élément (ex. &lt;a&gt;)                   |
-| **disabled** | boolean                                                                    | -          | Désactive le bouton (désactive les interactions)                                         |
-| **children** | ReactNode                                                                  | -          | Contenu du bouton (texte, icone, etc.)                                                   |
-| **...props** | Toutes les props valides d'un &lt;button&gt; natif                               | -          | Toutes les autres props sont transmises à l'élément (onClick, type, aria-*, etc.) |
+| **Prop**     | **Type**                                                                   | **Défaut** | **Requis** | **Description**                                                                   |
+|--------------|----------------------------------------------------------------------------|:----------:|:----------:|-----------------------------------------------------------------------------------|
+| **variant**  | "primary" \| "secondary" \| "primaryBorder" \| "secondaryBorder" \| "icon" |  "primary" |      -     | Variant visuel du bouton (couleur de fond, bordure, etc)                          |
+| **size**     | "xs" \| "sm" \| "md" \| "icon"                                             |    "md"    |      -     | Taille du bouton                                                                  |
+| **loading**  | boolean                                                                    |    false   |      -     | Affiche un état de chargement et désactive le bouton                              |
+| **asChild**  | boolean                                                                    |    false   |      -     | Rend le bouton en tant que wrapper autour d'un autre élément (ex. &lt;a&gt;)      |
+| **disabled** | boolean                                                                    |      -     |      -     | Désactive le bouton (désactive les interactions)                                  |
+| **children** | ReactNode                                                                  |      -     |      -     | Contenu du bouton (texte, icone, etc.)                                            |
+| **...props** | Toutes les props valides d'un &lt;button&gt; natif                         |      -     |      -     | Toutes les autres props sont transmises à l'élément (onClick, type, aria-*, etc.) |
 
 ### Remarques :
 - Lorsque **loading** est à **true**, le bouton est considéré comme désactivé (**disabled**).
