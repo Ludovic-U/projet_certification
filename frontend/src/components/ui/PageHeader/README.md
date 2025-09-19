@@ -16,11 +16,11 @@ import { PageHeader } from "@/components/ui";
 </p>
 
 ## API/Props
-| **Prop**        | **Type** | **Description**                                                           |
-|-----------------|----------|---------------------------------------------------------------------------|
-| **title**       | string   | Titre principal affiché en &lt;h1&gt;                                     |
-| **description** | string   | Texte secondaire sous le titre, utile pour donner du contexte.            |
-| **className**   | string   | Classes CSS supplémentaires pour personnaliser le style selon le contexte |
+| **Prop**        | **Type** | **Requis** | **Description**                                                           |
+|-----------------|----------|:----------:|---------------------------------------------------------------------------|
+| **title**       | string   |      ✅     | Titre principal affiché en &lt;h1&                                        |
+| **description** | string   |      -     | Texte secondaire sous le titre, utile pour donner du contexte             |
+| **className**   | string   |      -     | Classes CSS supplémentaires pour personnaliser le style selon le contexte |
 
 ## Bonnes pratiques
 
