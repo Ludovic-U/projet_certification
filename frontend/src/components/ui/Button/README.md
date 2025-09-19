@@ -1,6 +1,15 @@
 # Button
 Le composant **'Button'** permet de créer des boutons interactifs, avec différents styles, tailles et états. Il est construit sur une balise native **&lt;button&gt;** ou un composant enfant (via asChild).
 
+## Structure
+- [**Button.tsx**](./Button.tsx)
+    - Composant principal, forwardRef vers **&lt;button&gt;** ou le composant enfant.
+    - Gère les états **loading**, **disabled**, et la propagation des props natives.
+- [**button.types.tsx**](./button.types.ts)
+    - Définition des props TypeScript
+- [**button.variants.tsx**](./button.variants.ts.ts)
+    - Définition des variantes visuelles avec **class-variance-authority (CVA)**.
+
 ## Usage
 
 ```tsx
