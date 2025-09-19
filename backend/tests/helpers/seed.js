@@ -181,7 +181,7 @@ async function seedProjectWithResponses() {
   return { project, question, responses };
 }
 
-async function seeResponseWithSubresponse() {
+async function seedResponseWithSubresponse() {
   // Created a project manually via prisma studio for test
   // Temporary until we can create a project ourself
   // Fetch the project to get the projectId
@@ -218,7 +218,7 @@ module.exports = {
   seedWith3types,
   seedQuestionWithOptions,
   seedProjectWithResponses,
-  seeResponseWithSubresponse,
+  seedResponseWithSubresponse,
   seedWithProjectAndQuestion,
   seedProjectWithQuestions,
 };

@@ -82,6 +82,7 @@ module.exports.getResponsesByQuestionOfProject = async (
   projectId,
   questionId
 ) => {
+  //TODO: need prisma query rework ---> then change services tests
   const projectWithQuestions = await prisma.response.findMany({
     where: { projectId: projectId, questionId: questionId },
   });

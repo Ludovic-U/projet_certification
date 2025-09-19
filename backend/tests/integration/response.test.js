@@ -1,11 +1,11 @@
 const request = require("supertest");
 const app = require("../../index");
 const responseService = require("../../services/responseService");
-const { newResponse } = require("../helpers/facory_function");
+const { newResponse, newQuestion } = require("../helpers/facory_function");
 const {
   seedQuestionWithOptions,
   seedProjectWithResponses,
-  seeResponseWithSubresponse,
+  seedResponseWithSubresponse,
   seedWithProjectAndQuestion,
 } = require("../helpers/seed");
 
@@ -157,9 +157,39 @@ describe("Response Integration Tests", () => {
     });
   });
 
+  describe("GET - /api/response/get/project/:projectId/question/:questionId", () => {
+    it("should return the response of a question from a given project and 200 status", async () => {
+      const { project, question } = await seedWithProjectAndQuestion();
+      await newResponse({
+        projectId: project.projectId,
+        questionId: question.questionId,
+      });
+
+      const res = await request(app).get(
+        `/api/response/get/project/${project.projectId}/question/${question.questionId}`
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body[0].projectId).toBe(project.projectId);
+      expect(res.body[0].questionId).toBe(question.questionId);
+    });
+
+    // it("should return 404 status if project does not exist", async () => {
+    //   const question = await newQuestion();
+
+    //   const res = await request(app).get(
+    //     `/api/response/get/project/999/question/${question.questionId}`
+    //   );
+
+    //   console.log(res.body);
+
+    //   expect(res.status).toBe(404);
+    // });
+  });
+
   describe("GET - /api/response/get/:responseId/subresponse", () => {
     it("should return the subresponse list of a response and 200 status", async () => {
-      const { responseParent, _ } = await seeResponseWithSubresponse();
+      const { responseParent, _ } = await seedResponseWithSubresponse();
 
       const res = await request(app).get(
         `/api/response/get/${responseParent.responseId}/subresponse`
