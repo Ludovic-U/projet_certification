@@ -30,18 +30,18 @@ import { Input } from "@/components/ui";
 </p>
 
 ## API/Props
-| Prop       | Type                                        | Défaut | Description                                                                                        |
-|------------|---------------------------------------------|--------|----------------------------------------------------------------------------------------------------|
-| label      | string                                      | -      | Texte du label, affiché au dessus du champ                                                         |
-| error      | string                                      | -      | Message d'erreur, déclenche l'état **aria-invalid** et le style **variant="error"**                |
-| helperText | string                                      | -      | Texte d'aide affiché sous le champ, ignoré si error est défini                                     |
-| leftIcon   | ReactNode                                   | -      | Icône ou élément affiché à gauche dans l'input                                                     |
-| rightIcon  | ReactNode                                   | -      | Icône ou élément affiché à droite dans l'input                                                     |
-| loading    | boolean                                     | false  | Affiche un spinner de chargement à droite et désactive l'input                                     |
-| variant    | "error" \| "success"                        | -      | Variante visuelle (rouge et vert)                                                                  |
-| disabled   | boolean                                     | false  | Désactive l'input                                                                                  |
-| className  | string                                      | -      | Classes CSS supplémentaires pour personnaliser le style selon le contexte                          |
-| ...props   | Toutes les props valides d'un &lt;input&gt; natif | -      | Toutes les autres props sont transmises à l'élément (placeholder, required, onChange, etc.) |
+| **Prop**       | **Type**                                                    | **Défaut** | **Requis** | **Description**                                                                       |
+|----------------|-------------------------------------------------------------|:----------:|:----------:|---------------------------------------------------------------------------------------|
+| **label**      | string                                                      |      -     |      -     | Texte du label, affiché au dessus du champ                                            |
+| **error**      | string                                                      |      -     |      -     | Message d'erreur, déclenche l'état   aria-invalid   et le style   **variant="error"** |
+| **helperText** | string                                                      |            |      -     | Texte d'aide affiché sous le champ, ignoré si error est défini                        |
+| **leftIcon**   | ReactNode                                                   |      -     |      -     | Icône ou élément affiché à gauche dans l'input                                        |
+| **rightIcon**  | ReactNode                                                   |      -     |      -     | Icône ou élément affiché à droite dans l'input                                        |
+| **loading**    | boolean                                                     |    false   |      -     | Affiche un spinner de chargement à droite et désactive l'input                        |
+| **variant**    | "error" \| "success"                                        |      -     |      -     | Variante visuelle (rouge et vert)                                                     |
+| **disabled**   | boolean                                                     |    false   |      -     | Désactive l'input                                                                     |
+| **className**  | string                                                      |      -     |      -     | Classes CSS supplémentaires pour personnaliser le style selon le contexte             |
+| **...props**   | Toutes les props valides d'un &lt;input&gt; natif sauf size |      -     |      -     | Toutes les autres props sont transmises à l'élément (type, value, id, etc.)           |
 
 ### Remarques :
 - Les labels sont associés à l'input via **htmlFor** et l'id généré automatiquement (**useId**), pour l'accessibilité.
