@@ -29,12 +29,12 @@ const Page = () => {
 </p>
 
 ## API/Props
-| Prop        | Type                        | Description                                         |
-|-------------|-----------------------------|-----------------------------------------------------|
-| modal       | ReturnType<typeof useModal> | Contrôle l'ouverture et la fermeture du modal       |
-| title       | string                      | Titre affiché en haut du modal                      |
-| description | string (optionnel)          | Description ou texte d'introduction sous le titre   |
-| children    | ReactNode                   | Contenu du modal : texte, formulaire, boutons, etc. |
+| **Prop**        | **Type**   | **Requis** | **Description**                                     |
+|-----------------|------------|:----------:|-----------------------------------------------------|
+| **modal**       | ReturnType |      ✅     | Contrôle l'ouverture et la fermeture du modal       |
+| **title**       | string     |      ✅     | Titre affiché en haut du modal                      |
+| **description** | string     |      -     | Description ou texte d'introduction sous le titre   |
+| **children**    | ReactNode  |      ✅     | Contenu du modal : texte, formulaire, boutons, etc. |
 
 ### Remarques :
 - Le modal utilise un **focus trap** pour que le focus reste à l'intérieur du modal lors de la navigation au clavier (Tab / Shift+Tab).
