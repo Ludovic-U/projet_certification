@@ -351,7 +351,7 @@ describe("Response Controller", () => {
   describe("getSubResponses", () => {
     beforeEach(() => {
       req = {
-        params: { responseIdParent: 1 },
+        params: { responseId: 1 },
       };
     });
 
@@ -366,14 +366,14 @@ describe("Response Controller", () => {
       await responseController.getSubResponses(req, res, next);
 
       expect(responseService.getSubResponses).toHaveBeenCalledWith(
-        Number(req.params.responseIdParent)
+        Number(req.params.responseId)
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockSubResponses);
     });
 
     it("should return 400 for invalid parentId", async () => {
-      req.params.responseIdParent = "invalid";
+      req.params.responseId = "invalid";
       await invalidOrMissingStatus(
         responseController.getSubResponses,
         req,

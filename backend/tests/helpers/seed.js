@@ -116,6 +116,61 @@ async function seedQuestionWithOptions() {
   return { question, options: question.options };
 }
 
+//TODO: Modify later
+async function seedWithProjectAndQuestion() {
+  // Created a project manually via prisma studio for test
+  // Temporary until we can create a project ourself
+  // Fetch the project to get the projectId
+  const project = await global.prisma.project.findUnique({
+    where: { projectId: 1 },
+  });
+  const question = await facoryFunction.newQuestion();
+  return { project, question };
+}
+
+async function seedProjectWithResponses() {
+  const { project, question } = await seedWithProjectAndQuestion();
+  const responses = [];
+  for (let i = 0; i < 3; i++) {
+    const response = await facoryFunction.newResponse({
+      label: `Response${i + 1}`,
+      projectId: project.projectId,
+      questionId: question.questionId,
+    });
+    responses.push(response);
+  }
+  return { project, question, responses };
+}
+
+async function seeResponseWithSubresponse() {
+  // Created a project manually via prisma studio for test
+  // Temporary until we can create a project ourself
+  // Fetch the project to get the projectId
+  const project = await global.prisma.project.findUnique({
+    where: { projectId: 1 },
+  });
+  const { questionParent, subquestions } = await seedQuestionWithSubquestion();
+  const response = await facoryFunction.newResponse({
+    label: "Response of QuestionParent",
+    projectId: project.projectId,
+    questionId: questionParent.questionId,
+  });
+  const subresponse = await facoryFunction.newResponse({
+    label: "Response of Subquestion",
+    projectId: project.projectId,
+    questionId: subquestions[0].questionId,
+    responseIdParent: response.responseId,
+  });
+
+  // Refecth the response parent to have children
+  const responseParent = await global.prisma.response.findUnique({
+    where: { responseId: response.responseId },
+    include: { children: true },
+  });
+
+  return { responseParent, subresponse };
+}
+
 module.exports = {
   seedWith3Questions,
   seedQuestionWithSubquestion,
@@ -123,4 +178,7 @@ module.exports = {
   seedQuestionsWithType,
   seedWith3types,
   seedQuestionWithOptions,
+  seedProjectWithResponses,
+  seeResponseWithSubresponse,
+  seedWithProjectAndQuestion,
 };

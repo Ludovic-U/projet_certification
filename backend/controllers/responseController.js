@@ -179,14 +179,14 @@ module.exports.getResponsesByProject = async (req, res) => {
  * @async
  * @function getSubResponses
  * @param {Object} req.params - Request params.
- * @param {string} req.params.responseIdParent - The parent response ID to fetch subresponses for.
+ * @param {string} req.params.responseId - The parent response ID to fetch subresponses for.
  * @returns {Promise<void>} Sends:
  * - 200: OK, returns an array of subresponses.
  * - 404: Parent response not found.
  * - 500: Internal server error.
  */
 module.exports.getSubResponses = async (req, res) => {
-  const responseIdParent = Number(req.params.responseIdParent);
+  const responseIdParent = Number(req.params.responseId);
   // Validate reponseIdParent
   if (!validateId(responseIdParent, "responseIdParent", res)) return;
 

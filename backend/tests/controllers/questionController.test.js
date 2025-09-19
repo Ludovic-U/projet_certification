@@ -61,6 +61,7 @@ describe("Question Controller", () => {
         questionIdParent: req.body.questionIdParent,
         types: [],
         projects: [],
+        options: [],
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockQuestion);
@@ -83,6 +84,7 @@ describe("Question Controller", () => {
         questionIdParent: req.body.questionIdParent,
         types: req.body.types,
         projects: [],
+        options: [],
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockQuestion);

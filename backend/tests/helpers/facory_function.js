@@ -72,7 +72,7 @@ async function newQuestion({
  */
 async function newResponse({
   label = "Default Repsonse",
-  projectId,
+  projectId = null,
   questionId,
   optionId = null,
   responseIdParent = null,
@@ -85,6 +85,7 @@ async function newResponse({
       optionId,
       responseIdParent,
     },
+    include: { children: true },
   });
 
   return response;

@@ -1,11 +1,7 @@
 const request = require("supertest");
 const app = require("../../index");
 const questionService = require("../../services/questionService");
-const {
-  newQuestion,
-  newType,
-  newProject,
-} = require("../helpers/facory_function");
+const { newQuestion, newType } = require("../helpers/facory_function");
 const {
   seedWith3Questions,
   seedQuestionWithSubquestion,
@@ -209,8 +205,7 @@ describe("Question Integration Tests", () => {
 
   describe("GET - /api/question/get/:questionId/subquestion", () => {
     it("should return the subquestion list of a question and 200 status", async () => {
-      const { questionParent, subquestions } =
-        await seedQuestionWithSubquestion();
+      const { questionParent, _ } = await seedQuestionWithSubquestion();
 
       const res = await request(app).get(
         `/api/question/get/${questionParent.questionId}/subquestion`
@@ -218,7 +213,7 @@ describe("Question Integration Tests", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(subquestions.length);
-      expect(res.body[0].label).toEqual(subquestions[0].label);
+      expect(res.body[0].questionIdParent).toEqual(questionParent.questionId);
     });
 
     it("should return an empty list if no subquestion found and 200 status", async () => {

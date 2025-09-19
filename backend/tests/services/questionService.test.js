@@ -43,6 +43,7 @@ describe("Question Service", () => {
         questionIdParent: null,
         types: [],
         projects: [],
+        options: [],
       };
       const mockCreatedQuestion = { questionId: 1, ...mockQuestionData };
 
@@ -61,10 +62,12 @@ describe("Question Service", () => {
           questionIdParent: mockQuestionData.questionIdParent,
           types: undefined,
           projects: undefined,
+          options: undefined,
         },
         include: {
           types: true,
           projects: true,
+          options: true,
         },
       });
       expect(result).toEqual(mockCreatedQuestion);
@@ -76,6 +79,7 @@ describe("Question Service", () => {
         category: "general",
         types: [1, 2],
         projects: [1],
+        options: [],
       };
       const mockCreatedQuestion = { questionId: 1, ...mockQuestionData };
 
@@ -89,8 +93,9 @@ describe("Question Service", () => {
           category: mockQuestionData.category,
           types: { connect: [{ typeId: 1 }, { typeId: 2 }] },
           projects: { connect: [{ projectId: 1 }] },
+          options: undefined,
         },
-        include: { types: true, projects: true },
+        include: { types: true, projects: true, options: true },
       });
       expect(result).toEqual(mockCreatedQuestion);
     });
@@ -108,10 +113,12 @@ describe("Question Service", () => {
         data: {
           types: undefined,
           projects: undefined,
+          options: undefined,
         },
         include: {
           types: true,
           projects: true,
+          options: true,
         },
       });
     });
@@ -145,10 +152,12 @@ describe("Question Service", () => {
           questionIdParent: mockQuestionData.questionIdParent,
           types: undefined,
           projects: undefined,
+          options: undefined,
         },
         include: {
           types: true,
           projects: true,
+          options: true,
         },
       });
     });
