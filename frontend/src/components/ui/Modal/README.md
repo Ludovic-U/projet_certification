@@ -38,7 +38,7 @@ const Page = () => {
 
 ### Remarques :
 - Le modal utilise un **focus trap** pour que le focus reste à l'intérieur du modal lors de la navigation au clavier (Tab / Shift+Tab).
-- Le modal peut-être fermé en cliquant sur le **fond**(backdrop), en appuyant sur **échap** ou grâce au **bouton** en haut à droite.
+- Le modal peut, par défaut, être fermé en cliquant sur le **fond**(backdrop), en appuyant sur **échap** ou grâce au **bouton** en haut à droite.
 - Le scroll du body est bloqué pendant que le modal est ouvert pour éviter tout décalage de la page.
 - Le modal est rendu via **createPortal** dans le body pour superposer correctement le contenu.
 - Les boutons et le contenu sont entièrement personnalisables via les props **children**.
