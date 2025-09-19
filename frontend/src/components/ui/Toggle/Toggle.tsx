@@ -63,7 +63,7 @@ export const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
                     />
                 </span>
                 {label && <span className="text-base font-noto">{label}</span>}
-                {helperText && <p className="text-sm font-didact text-greydarker">{helperText}</p>}
+                {helperText && <p className="font-didact text-greydarker">{helperText}</p>}
             </label>
         );
     }
