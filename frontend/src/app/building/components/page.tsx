@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader, Button, Card, Checkbox, Input, LoadingSpinner } from "@/components/ui";
+import { PageHeader, Button, Card, Checkbox, Input, LoadingSpinner, Radio, RadioGroup } from "@/components/ui";
 import { Modal } from "@/components/ui"
 import { RegisterForm } from "@/components/forms/RegisterForm";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
@@ -96,27 +96,50 @@ export default function BuildingPage() {
                         </div>
                     </div>
                     
-                    <div className="p-3 h-fit border flex flex-col gap-6">
-                        <h2 className="font-oswald text-2xl text-center">LoadingSpiner :</h2>
-                        <div className="flex flex-col gap-5 items-center">
-                            <LoadingSpinner/>
-                            <Button disabled>
+                    <div className="flex flex-col gap-8">
+                        <div className="p-3 h-fit border flex flex-col gap-6">
+                            <h2 className="font-oswald text-2xl text-center">LoadingSpiner :</h2>
+                            <div className="flex flex-col gap-5 items-center">
                                 <LoadingSpinner/>
-                                Connexion...
-                            </Button>
+                                <Button disabled>
+                                    <LoadingSpinner/>
+                                    Connexion...
+                                </Button>
+                            </div>
                         </div>
+                        <div className="p-3 border w-fit h-fit flex gap-4">
+                            <h2 className="font-oswald text-2xl">Modal :</h2>
+                            <Button onClick={modal.openModal}>Ouvrir</Button>
+                            <Modal
+                            modal={modal}
+                            title="Créer un nouveau projet"
+                            description="Description de la section">
+                                <p>children</p>
+                            </Modal>                    
+                        </div>                        
                     </div>
                 </div>
 
-                <div className="p-3 border w-fit h-fit flex gap-4">
-                    <h2 className="font-oswald text-2xl">Modal :</h2>
-                    <Button onClick={modal.openModal}>Ouvrir</Button>
-                    <Modal
-                     modal={modal}
-                     title="Créer un nouveau projet"
-                     description="Description de la section">
-                        <p>children</p>
-                    </Modal>                    
+                <div className="flex gap-10">
+                    <div className="p-3 border w-fit h-fit flex gap-4">
+                        <h2 className="font-oswald text-2xl">Radio :</h2>
+                            <RadioGroup
+                            name="choix"
+                            defaultValue="option1"
+                            className="space-y-3"
+                            onValueChange={(val) => console.log(val)}>
+                                <Radio label="Option 1" value="option1"/>
+                                <Radio label="Option 2" value="option2"/>
+                                <Radio label="Option 3" value="option3" disabled/>
+                            </RadioGroup>                        
+                            <RadioGroup
+                            name="choix2"
+                            className="space-y-3"
+                            onValueChange={(val) => console.log(val)}>
+                                <Radio label="Option A" value="optionA" error="Sélection obligatoire"/>
+                                <Radio label="Option B" value="optionB" helperText="Choisissez selon vos préférences"/>
+                            </RadioGroup>                        
+                    </div>
                 </div>
             </section>
         </div>
