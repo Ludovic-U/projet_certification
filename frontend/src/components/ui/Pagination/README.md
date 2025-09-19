@@ -19,7 +19,7 @@ export default function Page() {
 ```
 
 <p align=center>
-    <img src="../../../../public/docs/Pagination.gif" alt="Aperçu des boutons" >
+    <img src="../../../../public/docs/Pagination.gif" alt="Aperçu des boutons de la pagination" >
 </p>
 
 ## API/Props
