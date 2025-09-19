@@ -23,12 +23,12 @@ export default function Page() {
 </p>
 
 ## API/Props
-| Prop         | Type                   | Requis | Description                                                                   |
-|--------------|------------------------|:------:|-------------------------------------------------------------------------------|
-| currentPage  | number                 |    ✅   | Numéro de la page actuellement sélectionnée                                   |
-| totalPages   | number                 |    ✅   | Nombre total de pages disponibles                                             |
-| onPageChange | (page: number) => void |    ✅   | Fonction appelée lors d'un clic sur une page ou sur les flèches de navigation |
-| className    | string                 |    -   | Classes CSS supplémentaires pour personnaliser le style selon le contexte     |
+| **Prop**         | **Type**               | **Requis** | **Description**                                                               |
+|------------------|------------------------|:----------:|-------------------------------------------------------------------------------|
+| **currentPage**  | number                 |      ✅     | Numéro de la page actuellement sélectionnée                                   |
+| **totalPages**   | number                 |      ✅     | Texte secondaire sous le titre, utile pour donner du contexte                 |
+| **onPageChange** | (page: number) => void |      ✅     | Fonction appelée lors d'un clic sur une page ou sur les flèches de navigation |
+| **className**    | string                 |      -     | Classes CSS supplémentaires pour personnaliser le style selon le contexte     |
 
 ### Remarques
 - Les boutons **précédent** et **suivant** sont désactivé si currentPage === 1 ou totalPages.
