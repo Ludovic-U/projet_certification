@@ -1,3 +1,0 @@
-<ProgressBar value={40} color="#88B081" showLabel />
-<ProgressBar value={70} color="#74966E" size="lg" showLabel/>
-<ProgressBar value={95} color="#577153" size="sm" showLabel/>
