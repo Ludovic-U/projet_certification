@@ -3,10 +3,10 @@ Le composant **'Button'** permet de créer des boutons interactifs, avec différ
 
 ## Structure
 - [**Button.tsx**](./Button.tsx)
-    - Composant principal, forwardRef vers **&lt;button&gt;** ou le composant enfant.
-    - Gère les états **loading**, **disabled**, et la propagation des props natives.
+    - Composant principal, **forwardRef** vers &lt;button&gt; ou le composant enfant.
+    - Gère les états **loading**, **disabled**, et la propagation des props.
 - [**button.types.tsx**](./button.types.ts)
-    - Définition des props TypeScript
+    - Définition des props TypeScript.
 - [**button.variants.tsx**](./button.variants.ts.ts)
     - Définition des variantes visuelles avec **class-variance-authority (CVA)**.
 
@@ -36,15 +36,15 @@ import { Button } from "@/components/ui";
 | **variant**  | "primary" \| "secondary" \| "primaryBorder" \| "secondaryBorder" \| "icon" |  "primary" |      -     | Variant visuel du bouton (couleur de fond, bordure, etc)                          |
 | **size**     | "xs" \| "sm" \| "md" \| "icon"                                             |    "md"    |      -     | Taille du bouton                                                                  |
 | **loading**  | boolean                                                                    |    false   |      -     | Affiche un état de chargement et désactive le bouton                              |
-| **asChild**  | boolean                                                                    |    false   |      -     | Rend le bouton en tant que wrapper autour d'un autre élément (ex. &lt;a&gt;)      |
-| **disabled** | boolean                                                                    |      -     |      -     | Désactive le bouton (désactive les interactions)                                  |
+| **asChild**  | boolean                                                                    |    false   |      -     | Rend le bouton en tant que wrapper autour d'un autre élément (ex. &lt;a&gt; prendra l'apparence d'un Button)      |
+| **disabled** | boolean                                                                    |      -     |      -     | Désactive les interactions avec le bouton et joue sur l'opacité                                  |
 | **children** | ReactNode                                                                  |      -     |      -     | Contenu du bouton (texte, icone, etc.)                                            |
 | **...props** | Toutes les props valides d'un &lt;button&gt; natif                         |      -     |      -     | Toutes les autres props sont transmises à l'élément (onClick, type, aria-*, etc.) |
 
 ### Remarques :
 - Lorsque **loading** est à **true**, le bouton est considéré comme désactivé (**disabled**).
 - Si **asChild={true}**, alors le composant enfant gère les props **type** ou **disabled**.
-- Le ref est forwarded vers l'élément &lt;button&gt; ou le composant enfant, pour permettre le focus ou les manipulations via ref.
+- Le **ref** est transmis (forwarded) vers l'élément &lt;button&gt; (ou l'élément enfant) afin de pouvoir gérer le focus et d'autres manipulations via le DOM.
 
 ## Variants visuels
 
@@ -58,7 +58,7 @@ import { Button } from "@/components/ui";
 
 ## Bonnes pratiques
 
-1. Utilisez le bouton avec **loading** pour indiquer des actions en cours (par exemple lors d'une soumission de formulaire).
-2. Privilégiez les variantes **primary** pour les actions principales, et les variantes "secondary" ou "Border" pour les actions secondaires ou "non-invasives".
-3. En contexte de lien (&lt;a&gt; ou navigation), utilisez **asChild** pour appliquer le style du bouton sans casser le comportement du lien natif.
-4. Assurez-vous que le texte du bouton reste compréhensible et accessible, même en état **loading**.
+1. Utiliser le bouton avec **loading** pour indiquer des actions en cours (par exemple lors d'une soumission de formulaire).
+2. Privilégier les variantes **primary** pour les actions principales, et les variantes "secondary" ou "Border" pour les actions secondaires ou "non-invasives".
+3. En contexte de lien (&lt;a&gt; ou navigation), utiliser **asChild** pour appliquer le style du bouton sans casser le comportement du lien natif.
+4. S'assurer que le texte du bouton reste compréhensible et accessible, même en état **loading**.
