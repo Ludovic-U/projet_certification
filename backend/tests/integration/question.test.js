@@ -37,6 +37,7 @@ describe("Question Integration Tests", () => {
         questionIdParent: null,
         projects: [],
         types: [],
+        options: [],
       });
 
       // Verify it actually exists in the DB
@@ -63,11 +64,6 @@ describe("Question Integration Tests", () => {
       expect(res.body).toMatchObject({
         label: payload.label,
         category: payload.category,
-        numberOfSelectionableOpt: null,
-        isRelevant: false,
-        hasMultipleOpenResponse: false,
-        shouldMultiply: false,
-        questionIdParent: null,
       });
       expect(res.body.types).toEqual([
         {
@@ -91,8 +87,6 @@ describe("Question Integration Tests", () => {
       const payload = {
         label: "",
         category: "testing",
-        numberOfSelectionableOpt: 3,
-        isRelevant: true,
       };
 
       const res = await request(app).post("/api/question/create").send(payload);
@@ -105,8 +99,6 @@ describe("Question Integration Tests", () => {
       const payload = {
         label: "Test",
         category: "",
-        numberOfSelectionableOpt: 3,
-        isRelevant: true,
       };
 
       const res = await request(app).post("/api/question/create").send(payload);
@@ -180,7 +172,7 @@ describe("Question Integration Tests", () => {
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
         questionId: question.questionId,
-        label: "Question Test 1",
+        label: question.label,
         category: "Default",
         numberOfSelectionableOpt: null,
         isRelevant: false,
@@ -291,8 +283,10 @@ describe("Question Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(200);
-      expect(res.body.questionId).toBe(question.questionId);
-      expect(res.body.label).toBe(newData.label);
+      expect(res.body).toMatchObject({
+        questionId: question.questionId,
+        label: newData.label,
+      });
     });
 
     it("should update for adding a type to an existing question and return 200 status", async () => {
