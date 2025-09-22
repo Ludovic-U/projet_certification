@@ -177,6 +177,7 @@ describe("Question Service", () => {
           isRelevant: true,
           hasMultipleOpenResponse: false,
           questionIdParent: null,
+          types: [],
         },
         {
           questionId: 2,
@@ -186,6 +187,7 @@ describe("Question Service", () => {
           isRelevant: false,
           hasMultipleOpenResponse: true,
           questionIdParent: null,
+          types: [],
         },
       ];
 
@@ -193,7 +195,9 @@ describe("Question Service", () => {
 
       const result = await questionService.getAllQuestions();
 
-      expect(prisma.question.findMany).toHaveBeenCalled();
+      expect(prisma.question.findMany).toHaveBeenCalledWith({
+        include: { types: true },
+      });
       expect(result).toEqual(mockQuestions);
     });
 
@@ -206,7 +210,9 @@ describe("Question Service", () => {
         "Database error"
       );
 
-      expect(prisma.question.findMany).toHaveBeenCalled();
+      expect(prisma.question.findMany).toHaveBeenCalledWith({
+        include: { types: true },
+      });
     });
   });
 

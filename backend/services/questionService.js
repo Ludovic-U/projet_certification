@@ -58,7 +58,7 @@ module.exports.createQuestion = async (data) => {
  * @returns {Promise<Array<Object>>} List of all questions.
  */
 module.exports.getAllQuestions = async () => {
-  return await prisma.question.findMany();
+  return await prisma.question.findMany({ include: { types: true } });
 };
 
 /**
