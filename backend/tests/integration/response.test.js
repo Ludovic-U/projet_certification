@@ -134,6 +134,13 @@ describe("Response Integration Tests", () => {
       expect(res.body).toHaveLength(0);
     });
 
+    it("should return 400 status if invalid projectId", async () => {
+      const res = await request(app).get("/api/response/get/project/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid projectId" });
+    });
+
     it("should return 404 status if project does not exist", async () => {
       const res = await request(app).get("/api/response/get/project/999");
 
@@ -183,6 +190,15 @@ describe("Response Integration Tests", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(0);
+    });
+
+    it("should return 400 status if Invalid projectId", async () => {
+      const res = await request(app).get(
+        `/api/response/get/project/abc/question/1`
+      );
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid projectId" });
     });
 
     it("should return 404 status if project does not exist", async () => {
@@ -252,6 +268,13 @@ describe("Response Integration Tests", () => {
       expect(res.body).toHaveLength(0);
     });
 
+    it("should return 400 status if invalid responseIdParent", async () => {
+      const res = await request(app).get(`/api/response/get/abc/subresponse`);
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid responseId" });
+    });
+
     it("should return 404 status if parent response does not exist", async () => {
       const res = await request(app).get(`/api/response/get/999/subresponse`);
 
@@ -308,6 +331,15 @@ describe("Response Integration Tests", () => {
       expect(res.body).toEqual({ error: "label is required" });
     });
 
+    it("should return 400 status if invalid responseId", async () => {
+      const res = await request(app)
+        .patch("/api/response/update/abc")
+        .send({ label: "a" });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid responseId" });
+    });
+
     it("should return 404 status if response does not exist", async () => {
       const res = await request(app)
         .patch("/api/response/update/999")
@@ -357,6 +389,13 @@ describe("Response Integration Tests", () => {
       });
 
       expect(responseInDb).toBeNull();
+    });
+
+    it("should return 400 status if invalid responseId", async () => {
+      const res = await request(app).delete("/api/response/delete/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid responseId" });
     });
 
     it("should return 404 status if response does not exist", async () => {
