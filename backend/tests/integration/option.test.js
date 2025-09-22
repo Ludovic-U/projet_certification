@@ -72,6 +72,12 @@ describe("Option Integration Tests", () => {
       expect(res.body.questionId).toBe(question.questionId);
     });
 
+    it("should return 400 status if invalid optionId", async () => {
+      const res = await request(app).get("/api/option/get/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid optionId" });
+    });
     it("should return 404 status if option does not exist", async () => {
       const res = await request(app).get("/api/option/get/999");
 
@@ -108,6 +114,13 @@ describe("Option Integration Tests", () => {
       res.body.forEach((o) => {
         expect(o.questionId).toBe(question.questionId);
       });
+    });
+
+    it("should return 400 status if invalid questionId", async () => {
+      const res = await request(app).get("/api/option/get/question/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid questionId" });
     });
 
     it("should return 404 status if the question does not exist", async () => {
@@ -158,6 +171,16 @@ describe("Option Integration Tests", () => {
 
       expect(res.status).toBe(400);
       expect(res.body).toEqual({ error: "label is required" });
+    });
+
+    it("should return 400 if invalid optionId", async () => {
+      const question = await newQuestion();
+      const res = await request(app)
+        .patch("/api/option/update/abc")
+        .send({ label: "newOpt", questionId: question.questionId });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid optionId" });
     });
 
     it("should return 404 if option does not exist", async () => {
@@ -215,6 +238,13 @@ describe("Option Integration Tests", () => {
       });
 
       expect(questionInDb.options).toHaveLength(options.length - 1);
+    });
+
+    it("should return 400 status if invalid optionId", async () => {
+      const res = await request(app).delete("/api/option/delete/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid optionId" });
     });
 
     it("should return 404 status if option does not exist", async () => {
