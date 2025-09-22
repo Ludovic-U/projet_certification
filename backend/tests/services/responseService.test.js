@@ -209,47 +209,82 @@ describe("Response Service", () => {
     it("should return responses for the given question of a project", async () => {
       const projectId = 1;
       const questionId = 1;
-      const mockResponses = [
-        {
-          responseId: 1,
-          label: "Answer 01",
-          projectId: 1,
-          questionId: 1,
-        },
-        {
-          responseId: 2,
-          label: "Answer 02",
-          projectId: 1,
-          questionId: 1,
-        },
-      ];
+      const mockProject = {
+        questions: [
+          {
+            responses: [
+              {
+                responseId: 1,
+                label: "Answer 01",
+                projectId: 1,
+                questionId: 1,
+              },
+              {
+                responseId: 2,
+                label: "Answer 02",
+                projectId: 1,
+                questionId: 1,
+              },
+            ],
+          },
+        ],
+      };
 
-      prisma.response.findMany.mockResolvedValue(mockResponses);
+      prisma.project.findUnique.mockResolvedValue(mockProject);
 
       const result = await responseService.getResponsesByQuestionOfProject(
         projectId,
         questionId
       );
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { projectId: projectId, questionId: questionId },
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
+        where: { projectId: projectId },
+        select: {
+          questions: {
+            where: { questionId: questionId },
+            select: { responses: true },
+          },
+        },
       });
-      expect(result).toEqual(mockResponses);
+      expect(result).toEqual(mockProject.questions[0].responses);
     });
 
-    it("should return an empty array if no responses match the QuestionId", async () => {
-      const projectId = 1;
-      const questionId = 999;
+    it("should throw an error if project does not exist", async () => {
+      prisma.project.findUnique.mockResolvedValue(null);
 
-      prisma.response.findMany.mockResolvedValue([]);
+      await expect(
+        responseService.getResponsesByQuestionOfProject(999, 1)
+      ).rejects.toThrow("Project not found");
+    });
+
+    it("should throw an error if question does not exist", async () => {
+      prisma.project.findUnique.mockResolvedValue({ questions: [] });
+
+      await expect(
+        responseService.getResponsesByQuestionOfProject(1, 999)
+      ).rejects.toThrow("Question not found");
+    });
+
+    it("should return an empty array if no responses found for the question", async () => {
+      const projectId = 1;
+      const questionId = 1;
+      const mockProject = { questions: [{ responses: [] }] };
+
+      prisma.project.findUnique.mockResolvedValue(mockProject);
 
       const result = await responseService.getResponsesByQuestionOfProject(
         projectId,
         questionId
       );
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { projectId: projectId, questionId: questionId },
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
+        where: { projectId: projectId },
+        select: {
+          questions: {
+            where: { questionId: questionId },
+            select: { responses: true },
+          },
+        },
       });
       expect(result).toEqual([]);
     });
@@ -259,14 +294,20 @@ describe("Response Service", () => {
       const questionId = 1;
       const mockError = new Error("Database error");
 
-      prisma.response.findMany.mockRejectedValue(mockError);
+      prisma.project.findUnique.mockRejectedValue(mockError);
 
       await expect(
         responseService.getResponsesByQuestionOfProject(projectId, questionId)
       ).rejects.toThrow("Database error");
 
-      expect(prisma.response.findMany).toHaveBeenCalledWith({
-        where: { projectId: projectId, questionId: questionId },
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
+        where: { projectId: projectId },
+        select: {
+          questions: {
+            where: { questionId: questionId },
+            select: { responses: true },
+          },
+        },
       });
     });
   });

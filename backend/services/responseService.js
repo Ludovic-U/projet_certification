@@ -83,11 +83,31 @@ module.exports.getResponsesByQuestionOfProject = async (
   questionId
 ) => {
   //TODO: need prisma query rework ---> then change services tests
-  const projectWithQuestions = await prisma.response.findMany({
-    where: { projectId: projectId, questionId: questionId },
+  // const projectWithQuestions = await prisma.response.findMany({
+  //   where: { projectId: projectId, questionId: questionId },
+  // });
+
+  // Test
+  const project = await prisma.project.findUnique({
+    where: { projectId: projectId },
+    select: {
+      questions: {
+        where: { questionId: questionId },
+        select: { responses: true },
+      },
+    },
   });
 
-  return projectWithQuestions;
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  const question = project.questions[0];
+  if (!question) {
+    throw new Error("Question not found");
+  }
+
+  return question.responses;
 };
 
 /**

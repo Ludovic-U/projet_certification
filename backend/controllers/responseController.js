@@ -146,7 +146,9 @@ module.exports.getResponsesByQuestionOfProject = async (req, res) => {
     );
     return res.status(200).json(responses);
   } catch (error) {
-    if (error.message === "Project or Question not found") {
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: error.message });
+    } else if (error.message === "Question not found") {
       return res.status(404).json({ error: error.message });
     }
     console.error("Error fetching response:", error);
