@@ -148,6 +148,13 @@ describe("Type Integration Tests", () => {
       expect(res.body.label).toBe(type.label);
     });
 
+    it("should return 400 status if invalid typeId", async () => {
+      const res = await request(app).get("/api/type/get/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid typeId" });
+    });
+
     it("should return 404 status if type does not exist", async () => {
       const res = await request(app).get("/api/type/get/999");
 
@@ -245,6 +252,15 @@ describe("Type Integration Tests", () => {
       expect(res.body).toEqual({ error: "label is required" });
     });
 
+    it("should return 400 status if invalid typeId", async () => {
+      const res = await request(app)
+        .patch("/api/type/update/abc")
+        .send({ label: "test" });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid typeId" });
+    });
+
     it("should return 404 status if type does not exist", async () => {
       const res = await request(app)
         .patch("/api/type/update/999")
@@ -286,6 +302,13 @@ describe("Type Integration Tests", () => {
       });
 
       expect(typeInDb).toBeNull();
+    });
+
+    it("should return 400 status if invalid typeId", async () => {
+      const res = await request(app).delete("/api/type/delete/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid typeId" });
     });
 
     it("should return 404 status if type does not exist", async () => {
