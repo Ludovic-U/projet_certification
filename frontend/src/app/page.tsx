@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import LoginForm from "@/components/forms/LoginForm";
 import api_backend from "@/api/axiosInstance";
+import { useUser } from "@/context/UserContext";
 
 type LoginFormInputs = {
     email: string;
@@ -18,45 +19,55 @@ export default function LoginPage() {
 
     const router = useRouter();
 
-    const onSubmit = (data: LoginFormInputs) => {
+    // accès au contexte (UserContext.tsx)
+    const { setUser } = useUser();
+
+    const onSubmit =  async (data: LoginFormInputs) => {
         setIsLoading(true);
         setApiError("");
 
-        console.log("login data: ", data);
+        try {
+            console.log("Login data: ", data)
 
-        api_backend.post("user/login", {
-            email: data.email,
-            password: data.password,
-        })
-            .then(function (response) {
-                console.log("Login successful, routerpush");
-                console.log(response);
-                // Redirect to the home page after successful login
-                router.push("/home"); // TODO: check user role and redirect accordingly
-            })
-            .catch(function (error) {
-                console.log("Login failed");
-                console.log(error);
-                setIsLoading(false);
-
-                let errorMessage =
-                    "Echec de la connexion. Veuillez véridier vos identifiants.";
-
-                if (error.response?.status == 401) {
-                    errorMessage = "Email ou mot de passe incorrect.";
-                } else if (error.response?.status == 429) {
-                    errorMessage =
-                        "Trop de tentatives. Veuillez réessayer plus tard.";
-                } else if (error.response?.status == 500) {
-                    errorMessage =
-                        "Erreur du serveur. Veuillez réessayer plus tard";
-                } else if (!error.response) {
-                    errorMessage =
-                        "Erreur de connexion. Vérifiez votre connexion internet.";
-                }
-
-                setApiError(errorMessage);
+            // Login
+            await api_backend.post("user/login", {
+                email: data.email,
+                password: data.password,
             });
+
+            console.log("Login successful")
+
+            // Récupère l'utilisateur connecté
+            const res = await api_backend.get("me");
+            setUser(res.data.user);
+
+            // TODO : routes selon rôle
+            const roles = res.data.user.roles || [];
+            // redirection selon le rôle
+            // if (roles.includes("superadmin")) {
+            if (res.data.user) {
+                router.push("/home");
+            } else {
+                router.push("/clients");
+            }
+        } catch (error: any) {
+            console.log ("Login failed", error);
+            setIsLoading(false);
+
+            let errorMessage = "Echec de la connexion. Veuillez vérifier vos identifiants.";
+
+            if (error.response?.status == 401) {
+                errorMessage = "Email ou mot de passe incorrect.";
+            } else if (error.response?.status == 429) {
+                errorMessage = "Trop de tentatives. Veuillez réessayer plus tard.";
+            } else if (error.response?.status == 500) {
+                "Erreur du serveur. Veuillez réessayer plus tard."
+            } else if (!error.response) {
+                errorMessage = "Erreur de connexion. Vérifiez votre connexion internet.";
+            }
+
+            setApiError(errorMessage);
+        }
     };
 
     return (

@@ -20,6 +20,7 @@ import { Tooltip } from "@components/ui";
 - **top** → au dessus de l'élément
 - **left** → à gauche
 - **right** → à droite
+- **leftBottom** → en bas à gauche
 - **rightMenu** → variante de **right** avec plus d'espace (utile pour les menus latéraux)
 <p align=left>
     <img src="../../../../public/docs/Tooltip.png" alt="Aperçu des boutons switch" >
@@ -29,7 +30,7 @@ import { Tooltip } from "@components/ui";
 | **Prop**      | **Type**                                              | **Défaut** | **Requis** | **Description**                                                           |
 |---------------|-------------------------------------------------------|:----------:|:---------:|---------------------------------------------------------------------------|
 | **content**   | string                                                |      -     |     ✅     | Texte affiché dans le tooltip                                             |
-| **position**  | "top" \| "bottom" \| "left" \| "right" \| "rightMenu" |  "bottom"  |     -     | Position du tooltip par rapport à l'élément                               |
+| **position**  | "top" \| "bottom" \| "leftBottom" \| "left" \| "right" \| "rightMenu" |  "bottom"  |     -     | Position du tooltip par rapport à l'élément                               |
 | **children**  | React.ReactNode                                       |      -     |     ✅     | Elément(s) déclencheur(s) du tooltip                                      |
 | **className** | string                                                |      -     |     -     | Classes CSS supplémentaires pour personnaliser le style selon le contexte |
 
