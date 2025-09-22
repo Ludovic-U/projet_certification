@@ -120,17 +120,6 @@ describe("Response Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockUpdatedResponse);
     });
 
-    it("should return 400 for invalid responseId", async () => {
-      req.params.responseId = "invalid";
-      await invalidOrMissingStatus(
-        responseController.updateResponse,
-        req,
-        res,
-        responseService.updateResponse,
-        "Invalid responseId"
-      );
-    });
-
     it("should return 400 if a required field is missing", async () => {
       req.body.label = "";
       await invalidOrMissingStatus(
@@ -182,17 +171,6 @@ describe("Response Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(204);
       expect(res.send).toHaveBeenCalled();
-    });
-
-    it("should return 400 for invalid responseId", async () => {
-      req.params.responseId = "invalid";
-      await invalidOrMissingStatus(
-        responseController.deleteResponse,
-        req,
-        res,
-        responseService.deleteResponse,
-        "Invalid responseId"
-      );
     });
 
     it("should return 404 if Response not found", async () => {
@@ -251,28 +229,6 @@ describe("Response Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockReponses);
-    });
-
-    it("should return 400 for invalid projectId", async () => {
-      req.params.projectId = "invalid";
-      await invalidOrMissingStatus(
-        responseController.getResponsesByQuestionOfProject,
-        req,
-        res,
-        responseService.getResponsesByQuestionOfProject,
-        "Invalid projectId"
-      );
-    });
-
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-      await invalidOrMissingStatus(
-        responseController.getResponsesByQuestionOfProject,
-        req,
-        res,
-        responseService.getResponsesByQuestionOfProject,
-        "Invalid questionId"
-      );
     });
 
     it("should return 404 if project not found", async () => {
@@ -346,17 +302,6 @@ describe("Response Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockReponses);
     });
 
-    it("should return 400 for invalid projectId", async () => {
-      req.params.projectId = "invalid";
-      await invalidOrMissingStatus(
-        responseController.getResponsesByProject,
-        req,
-        res,
-        responseService.getResponsesByProject,
-        "Invalid projectId"
-      );
-    });
-
     it("should return 404 if project not found", async () => {
       await notFoundStatus(
         responseController.getResponsesByProject,
@@ -402,17 +347,6 @@ describe("Response Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockSubResponses);
-    });
-
-    it("should return 400 for invalid parentId", async () => {
-      req.params.responseId = "invalid";
-      await invalidOrMissingStatus(
-        responseController.getSubResponses,
-        req,
-        res,
-        responseService.getSubResponses,
-        "Invalid responseIdParent"
-      );
     });
 
     it("should return 404 if responseIdParent not found", async () => {

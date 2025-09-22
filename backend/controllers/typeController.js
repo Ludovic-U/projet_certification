@@ -1,5 +1,4 @@
 const typeService = require("../services/typeService");
-const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new type.
@@ -74,9 +73,7 @@ module.exports.getAllTypes = async (_, res) => {
  *  - 500: Internal server error.
  */
 module.exports.updateType = async (req, res) => {
-  const typeId = Number(req.params.typeId);
-  // Validate typeId
-  if (!validateId(typeId, "typeId", res)) return;
+  const { typeId } = req.params;
 
   const { label, addQuestion, removeQuestion, addProject, removeProject } =
     req.body;
@@ -117,9 +114,7 @@ module.exports.updateType = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.deleteType = async (req, res) => {
-  const typeId = Number(req.params.typeId);
-  // Validate typeId
-  if (!validateId(typeId, "typeId", res)) return;
+  const { typeId } = req.params;
 
   try {
     await typeService.deleteType(typeId);
@@ -146,9 +141,7 @@ module.exports.deleteType = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getTypeById = async (req, res) => {
-  const typeId = Number(req.params.typeId);
-  // Validate typeId
-  if (!validateId(typeId, "typeId", res)) return;
+  const { typeId } = req.params;
 
   try {
     const type = await typeService.getTypeById(typeId);

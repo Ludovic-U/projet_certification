@@ -214,17 +214,6 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockUpdatedQuestion);
     });
 
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-      await invalidOrMissingStatus(
-        questionController.updateQuestion,
-        req,
-        res,
-        questionService.updateQuestion,
-        "Invalid questionId"
-      );
-    });
-
     it("should return 400 if a required field is missing", async () => {
       req.body.label = "";
       await invalidOrMissingStatus(
@@ -276,17 +265,6 @@ describe("Question Controller", () => {
       expect(res.send).toHaveBeenCalled();
     });
 
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-      await invalidOrMissingStatus(
-        questionController.deleteQuestion,
-        req,
-        res,
-        questionService.deleteQuestion,
-        "Invalid questionId"
-      );
-    });
-
     it("should return 404 if question not found", async () => {
       await notFoundStatus(
         questionController.deleteQuestion,
@@ -326,17 +304,6 @@ describe("Question Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockQuestion);
-    });
-
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-      await invalidOrMissingStatus(
-        questionController.getQuestionById,
-        req,
-        res,
-        questionService.getQuestionById,
-        "Invalid questionId"
-      );
     });
 
     it("should return 404 if question not found", async () => {
@@ -382,17 +349,6 @@ describe("Question Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockQuestions);
-    });
-
-    it("should return 400 for invalid projectId", async () => {
-      req.params.projectId = "invalid";
-      await invalidOrMissingStatus(
-        questionController.getQuestionsByProject,
-        req,
-        res,
-        questionService.getQuestionsByProject,
-        "Invalid projectId"
-      );
     });
 
     it("should return 404 if project not found", async () => {
@@ -473,17 +429,6 @@ describe("Question Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockQuestions);
     });
 
-    it("should return 400 for invalid typeId", async () => {
-      req.params.typeId = "invalid";
-      await invalidOrMissingStatus(
-        questionController.getQuestionsByType,
-        req,
-        res,
-        questionService.getQuestionsByType,
-        "Invalid typeId"
-      );
-    });
-
     it("should return 404 if type not found", async () => {
       await notFoundStatus(
         questionController.getQuestionsByType,
@@ -526,17 +471,6 @@ describe("Question Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockSubQuestions);
-    });
-
-    it("should return 400 for invalid parentId", async () => {
-      req.params.questionId = "invalid";
-      await invalidOrMissingStatus(
-        questionController.getSubQuestions,
-        req,
-        res,
-        questionService.getSubQuestions,
-        "Invalid questionIdParent"
-      );
     });
 
     it("should return 404 if parent question not found", async () => {

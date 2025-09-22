@@ -166,17 +166,6 @@ describe("Type Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockUpdatedType);
     });
 
-    it("should return 400 for invalid typeId", async () => {
-      req.params.typeId = "invalid";
-      await invalidOrMissingStatus(
-        typeController.updateType,
-        req,
-        res,
-        typeService.updateType,
-        "Invalid typeId"
-      );
-    });
-
     it("should return 400 if a required field is missing", async () => {
       req.body.label = "";
       await invalidOrMissingStatus(
@@ -228,17 +217,6 @@ describe("Type Controller", () => {
       expect(res.send).toHaveBeenCalled();
     });
 
-    it("should return 400 for invalid typeId", async () => {
-      req.params.typeId = "invalid";
-      await invalidOrMissingStatus(
-        typeController.deleteType,
-        req,
-        res,
-        typeService.deleteType,
-        "Invalid typeId"
-      );
-    });
-
     it("should return 404 if type not found", async () => {
       await notFoundStatus(
         typeController.deleteType,
@@ -279,17 +257,6 @@ describe("Type Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockType);
-    });
-
-    it("should return 400 for invalid typeId", async () => {
-      req.params.typeId = "invalid";
-      await invalidOrMissingStatus(
-        typeController.getTypeById,
-        req,
-        res,
-        typeService.getTypeById,
-        "Invalid typeId"
-      );
     });
 
     it("should return 404 if type not found", async () => {

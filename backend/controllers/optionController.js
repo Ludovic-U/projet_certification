@@ -1,5 +1,4 @@
 const optionService = require("../services/optionService");
-const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new option.
@@ -47,9 +46,7 @@ module.exports.createOption = async (req, res) => {
  *  - 500: Internal server error.
  */
 module.exports.updateOption = async (req, res) => {
-  const optionId = Number(req.params.optionId);
-  // Validate optionId
-  if (!validateId(optionId, "optionId", res)) return;
+  const { optionId } = req.params;
 
   const { label, questionId } = req.body;
 
@@ -86,9 +83,7 @@ module.exports.updateOption = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.deleteOption = async (req, res) => {
-  const optionId = Number(req.params.optionId);
-  // Validate optionId
-  if (!validateId(optionId, "optionId", res)) return;
+  const { optionId } = req.params;
 
   try {
     await optionService.deleteOption(optionId);
@@ -115,9 +110,7 @@ module.exports.deleteOption = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getOptionById = async (req, res) => {
-  const optionId = Number(req.params.optionId);
-  // Validate optionId
-  if (!validateId(optionId, "optionId", res)) return;
+  const { optionId } = req.params;
 
   try {
     const option = await optionService.getOptionById(optionId);
@@ -144,9 +137,7 @@ module.exports.getOptionById = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getOptionsByQuestion = async (req, res) => {
-  const questionId = Number(req.params.questionId);
-  // Validate questionId
-  if (!validateId(questionId, "questionId", res)) return;
+  const { questionId } = req.params;
 
   try {
     const options = await optionService.getOptionsByQuestion(questionId);

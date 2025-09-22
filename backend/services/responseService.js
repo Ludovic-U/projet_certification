@@ -6,7 +6,7 @@ const { prisma } = require("../prisma/prismaClient");
  * @async
  * @function createResponse
  * @param {Object} data - The response data to create.
- * @param {string|null} [data.label=null] - The response text.
+ * @param {string} data.label - The response text.
  * @param {string} data.projectId - The ID of the associated project.
  * @param {number} data.questionId - The ID of the associated question.
  * @param {number|null} [data.optionId=null] - The ID of the associated option.
@@ -24,7 +24,7 @@ module.exports.createResponse = async (data) => {
  * @function updateResponse
  * @param {number} responseId - The ID of the response to update.
  * @param {Object} data - The fields to update.
- * @param {string|null} [data.label] - Updated repsonse text.
+ * @param {string} data.label - Updated repsonse text.
  * @param {string} [data.projectId] - Updated the associated project ID.
  * @param {number} [data.questionId] - Updated the associated question ID.
  * @param {number|null} [data.optionId] - Updated the associated option ID.

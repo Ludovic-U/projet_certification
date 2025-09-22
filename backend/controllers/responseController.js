@@ -1,5 +1,4 @@
 const responseService = require("../services/responseService");
-const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new response.
@@ -7,7 +6,7 @@ const { validateId } = require("./helpers/validateId");
  * @async
  * @function createResponse
  * @param {Object} req.body - Request payload.
- * @param {String|null} req.body.label - The text of the response (required).
+ * @param {String} req.body.label - The text of the response (required).
  * @param {number} req.body.projectId - The ID of the associated project (required).
  * @param {number} req.body.questionId - The ID of the associated question (required).
  * @param {number|null} [req.body.optionId=null] - The ID of the assiocated option.
@@ -58,9 +57,7 @@ module.exports.createResponse = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.updateResponse = async (req, res) => {
-  const responseId = Number(req.params.responseId);
-  // Validate reponseId
-  if (!validateId(responseId, "responseId", res)) return;
+  const { responseId } = req.params;
 
   const { label, projectId, questionId, optionId, responseIdParent } = req.body;
 
@@ -100,9 +97,7 @@ module.exports.updateResponse = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.deleteResponse = async (req, res) => {
-  const responseId = Number(req.params.responseId);
-  // Validate responseId
-  if (!validateId(responseId, "responseId", res)) return;
+  const { responseId } = req.params;
 
   try {
     await responseService.deleteResponse(responseId);
@@ -130,14 +125,7 @@ module.exports.deleteResponse = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getResponsesByQuestionOfProject = async (req, res) => {
-  const projectId = Number(req.params.projectId);
-  const questionId = Number(req.params.questionId);
-  // Validate projectId and questionId
-  if (
-    !validateId(projectId, "projectId", res) ||
-    !validateId(questionId, "questionId", res)
-  )
-    return;
+  const { projectId, questionId } = req.params;
 
   try {
     const responses = await responseService.getResponsesByQuestionOfProject(
@@ -169,9 +157,7 @@ module.exports.getResponsesByQuestionOfProject = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getResponsesByProject = async (req, res) => {
-  const projectId = Number(req.params.projectId);
-  // Validate projectId
-  if (!validateId(projectId, "projectId", res)) return;
+  const { projectId } = req.params;
 
   try {
     const responses = await responseService.getResponsesByProject(projectId);
@@ -198,13 +184,11 @@ module.exports.getResponsesByProject = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getSubResponses = async (req, res) => {
-  const responseIdParent = Number(req.params.responseId);
-  // Validate reponseIdParent
-  if (!validateId(responseIdParent, "responseIdParent", res)) return;
+  const { responseId } = req.params;
 
   try {
     const subResponses = await responseService.getSubResponses(
-      parseInt(responseIdParent)
+      parseInt(responseId)
     );
     res.status(200).json(subResponses);
   } catch (error) {

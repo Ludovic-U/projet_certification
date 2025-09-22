@@ -97,17 +97,6 @@ describe("Option Controller", () => {
       expect(res.json).toHaveBeenCalledWith(mockUpdateOption);
     });
 
-    it("should return 400 for invalid optionId", async () => {
-      req.params.optionId = "invalid";
-      await invalidOrMissingStatus(
-        optionController.updateOption,
-        req,
-        res,
-        optionService.updateOption,
-        "Invalid optionId"
-      );
-    });
-
     it("should return 400 if a required field is missing", async () => {
       req.body.label = "";
       await invalidOrMissingStatus(
@@ -159,17 +148,6 @@ describe("Option Controller", () => {
       expect(res.send).toHaveBeenCalled();
     });
 
-    it("should return 400 for invalid optionId", async () => {
-      req.params.optionId = "invalid";
-      await invalidOrMissingStatus(
-        optionController.deleteOption,
-        req,
-        res,
-        optionService.deleteOption,
-        "Invalid optionId"
-      );
-    });
-
     it("should return 404 if option not found", async () => {
       await notFoundStatus(
         optionController.deleteOption,
@@ -210,17 +188,6 @@ describe("Option Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockOption);
-    });
-
-    it("should return 400 for invalid questionId", async () => {
-      req.params.optionId = "invalid";
-      await invalidOrMissingStatus(
-        optionController.getOptionById,
-        req,
-        res,
-        optionService.getOptionById,
-        "Invalid optionId"
-      );
     });
 
     it("should return 404 if option not found", async () => {
@@ -266,17 +233,6 @@ describe("Option Controller", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockOptions);
-    });
-
-    it("should return 400 for invalid questionId", async () => {
-      req.params.questionId = "invalid";
-      await invalidOrMissingStatus(
-        optionController.getOptionsByQuestion,
-        req,
-        res,
-        optionService.getOptionsByQuestion,
-        "Invalid questionId"
-      );
     });
 
     it("should return 404 if question not found", async () => {

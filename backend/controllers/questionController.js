@@ -1,5 +1,4 @@
 const questionService = require("../services/questionService");
-const { validateId } = require("./helpers/validateId");
 
 /**
  * Create a new question.
@@ -105,9 +104,7 @@ module.exports.getAllQuestions = async (_, res) => {
  * - 500: Internal server error.
  */
 module.exports.updateQuestion = async (req, res) => {
-  const questionId = Number(req.params.questionId);
-  // Validate questionId
-  if (!validateId(questionId, "questionId", res)) return;
+  const { questionId } = req.params;
 
   const {
     label,
@@ -165,9 +162,7 @@ module.exports.updateQuestion = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.deleteQuestion = async (req, res) => {
-  const questionId = Number(req.params.questionId);
-  // Validate questionId
-  if (!validateId(questionId, "questionId", res)) return;
+  const { questionId } = req.params;
 
   try {
     await questionService.deleteQuestion(questionId);
@@ -194,9 +189,7 @@ module.exports.deleteQuestion = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getQuestionById = async (req, res) => {
-  const questionId = Number(req.params.questionId);
-  // Validate questionId
-  if (!validateId(questionId, "questionId", res)) return;
+  const { questionId } = req.params;
 
   try {
     const question = await questionService.getQuestionById(questionId);
@@ -223,9 +216,7 @@ module.exports.getQuestionById = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getQuestionsByProject = async (req, res) => {
-  const projectId = Number(req.params.projectId);
-  // Validate projectId
-  if (!validateId(projectId, "projectId", res)) return;
+  const { projectId } = req.params;
 
   try {
     const questions = await questionService.getQuestionsByProject(projectId);
@@ -252,6 +243,7 @@ module.exports.getQuestionsByProject = async (req, res) => {
  */
 module.exports.getQuestionsByCategory = async (req, res) => {
   const { category } = req.params;
+
   try {
     const questions = await questionService.getQuestionsByCategory(category);
     res.status(200).json(questions);
@@ -274,9 +266,7 @@ module.exports.getQuestionsByCategory = async (req, res) => {
  * - 500: Internal server error.
  */
 module.exports.getQuestionsByType = async (req, res) => {
-  const typeId = Number(req.params.typeId);
-  // Validate typeId
-  if (!validateId(typeId, "typeId", res)) return;
+  const { typeId } = req.params;
 
   try {
     const questions = await questionService.getQuestionsByType(typeId);
@@ -296,21 +286,16 @@ module.exports.getQuestionsByType = async (req, res) => {
  * @async
  * @function getSubQuestions
  * @param {Object} req.params - Request params.
- * @param {string} req.params.questionIdParent - The parent question ID to fetch subquestions for.
+ * @param {string} req.params.questionId - The parent question ID to fetch subquestions for.
  * @returns {Promise<void>} Sends:
  * - 200: OK, returns an array of subquestions.
  * - 404: Parent question not found.
  * - 500: Internal server error.
  */
 module.exports.getSubQuestions = async (req, res) => {
-  const questionIdParent = Number(req.params.questionId);
-  // Validate questionIdParent
-  if (!validateId(questionIdParent, "questionIdParent", res)) return;
-
+  const { questionId } = req.params;
   try {
-    const subQuestions = await questionService.getSubQuestions(
-      questionIdParent
-    );
+    const subQuestions = await questionService.getSubQuestions(questionId);
     res.status(200).json(subQuestions);
   } catch (error) {
     if (error.message === "QuestionParent not found") {
