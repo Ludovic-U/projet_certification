@@ -2,9 +2,31 @@
 
 
 ### GET `/api/me`
-arguments : requête, response
+GET `/` :
 
-reponse : `{}`
+* **Description** : Récupère les informations de l'utilisateur actuellement authentifié.
+
+* **Réponses** :
+    * **exemple** :
+        ```json
+        {
+        "user": {
+            "userId": 3,
+            "roles": [
+             "admin_client"
+            ],
+            "permissions": [],
+            "clientId": 2,
+            "position": null,
+            "iat": 1744114310,
+            "exp": 1744200710
+            }
+         }
+        ```
+
+`200` OK → : Retourne les données de l'utilisateur.
+
+`401` Unauthorized → : Si l'utilisateur n'est pas authentifié.
 
 # userController
 
@@ -44,7 +66,7 @@ Aucun.
 
 #
 
-### POST `/:clientName/register`
+### POST `api/user/register`
 
  **Description** : Permet d'enregistrer un nouvel utilisateur et de l'associer à un client spécifique. Cette route est protégée et nécessite des permissions d'administrateur ou de responsable pour le client spécifié.
 
@@ -56,6 +78,7 @@ Aucun.
 
 ```json
 {
+    "clientName": "exempleClient",
     "username": "nouvelutilisateur",
     "firstname": "Prénom",
     "lastname": "Nom",
@@ -118,3 +141,59 @@ Réinitialise le mot de passe d’un utilisateur à partir d’un token de réin
 `400` Bad Request → { "error": "Password does not meet security requirements" }
 
 `500` Internal Server Error → { "error": "Internal server error" }
+
+
+# clientController
+### POST `api/client/create` :
+
+* **Description** : Crée un nouveau client. Accessible uniquement par les administrateurs.
+
+* **Corps de la Requête**:
+    ```json
+    {
+    "name": "Nom du Client",
+    "type": "Type du Client",
+    "desc": "Description du client"
+    }
+    ```
+* **Réponses** :
+
+   * **201 Created** : Client créé avec succès.
+
+   * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
+
+   * **500 Internal Server Error** : Erreur lors de la création du client.
+
+### GET `api/client/get` :
+
+* **Description** : Récupère la liste de tous les clients. Accessible uniquement par les administrateurs.
+
+* **Réponses** :
+
+    * **200 OK** : Retourne la liste des clients.
+
+    * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
+
+    * **500 Internal Server Error** : Erreur lors de la récupération des clients.
+
+
+# projectController
+### POST ### POST `api/projet/create` :
+
+* **Description** : Crée un nouveau projet. Accessible uniquement par les administrateurs et admin client.
+
+* **Corps de la Requête**:
+    ```json
+    {
+    "name": "Nom du Client",
+    "type": "Type du Client",
+    "desc": "Description du client"
+    }
+    ```
+* **Réponses** :
+
+   * **201 Created** : Projet créé avec succès.
+
+   * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
+
+   * **500 Internal Server Error** : Erreur lors de la création du client.

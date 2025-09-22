@@ -14,72 +14,19 @@
 
 - POST [`api/user/login`](./documentation/controllers_docs.md#post-apiuserlogin) : vérifie mdp et email, créé une session de connection, puis renvoie un cookie
 - POST [`api/user/logout`](./documentation/controllers_docs.md#post-apiuserlogout) : prend le cookie de session et supprime les sessions de l'utilisateur
-- POST [`api/user/:clientName/register`](./documentation/controllers_docs.md#post-apiuser:clientNamelogout) : créer un utilisateur et le lie au client
+- POST [`api/user/register`](./documentation/controllers_docs.md#post-apiuserclientnameregister) : créer un utilisateur et le lie au client
 - POST [`api/user/forgot-password`](./documentation/controllers_docs.md#post-apiuserforgot-password) : envoie un lien de reset de mdp, contenant un token à usage unique, à un email.
-- POST [`api/user/reset-password`](./documentation/controllers_docs.md#post-apiuserreset-password) : consomme le token à usage unique, change le mdp, 
+- POST [`api/user/reset-password`](./documentation/controllers_docs.md#post-apiuserreset-password) : consomme le token à usage unique, change le mdp.
+- POST [`api/client/create`](./documentation/controllers_docs.md#post-apiclientcreate) : créer un nouveau client
+- GET [`api/client/get`](./documentation/controllers_docs.md#post-apiclientget) : retourne la liste de tout les clients
+- POST [`api/project/:clientName/create`](./documentation/controllers_docs.md#post-apiclientcreate) : créer un nouveau client
+- GET [`api/client/:clientName/get`](./documentation/controllers_docs.md#post-apiclientget) : retourne la liste de tout les clients
+- 
 
 
 
-## Routes Client
-### 1. POST `/create` :
 
-* **Description** : Crée un nouveau client. Accessible uniquement par les administrateurs.
 
-* **Corps de la Requête**:
-    ```json
-    {
-    "name": "Nom du Client",
-    "type": "Type du Client",
-    "desc": "Description du client"
-    }
-    ```
-* **Réponses** :
-
-   * **201 Created** : Client créé avec succès.
-
-   * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
-
-   * **500 Internal Server Error** : Erreur lors de la création du client.
-
-### 2. GET `/get` :
-
-* **Description** : Récupère la liste de tous les clients. Accessible uniquement par les administrateurs.
-
-* **Réponses** :
-
-    * **200 OK** : Retourne la liste des clients.
-
-    * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
-
-    * **500 Internal Server Error** : Erreur lors de la récupération des clients.
-
-## Routes Me
-### 1. GET `/` :
-
-* **Description** : Récupère les informations de l'utilisateur actuellement authentifié.
-
-* **Réponses** :
-    * **exemple** :
-        ```json
-        {
-        "user": {
-            "userId": 3,
-            "roles": [
-             "manager"
-            ],
-            "permissions": [],
-            "clientId": 2,
-            "isManager": false,
-            "position": null,
-            "iat": 1744114310,
-            "exp": 1744200710
-            }
-         }
-        ```
-
-    * **200 OK** : Retourne les données de l'utilisateur.
-
-    * **401 Unauthorized** : Si l'utilisateur n'est pas authentifié.
 
 ## Middleware
 * `authenticateUser`
