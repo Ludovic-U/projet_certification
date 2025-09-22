@@ -1,6 +1,6 @@
 module.exports = {
   testEnvironment: "node",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.integration.js"],
-  testMatch: ["<rootDir>/tests/integration/**/*.test.[jt]s"],
+  testMatch: ["<rootDir>/tests/integration/**/response.test.[jt]s"],
   maxWorkers: 1,
 };

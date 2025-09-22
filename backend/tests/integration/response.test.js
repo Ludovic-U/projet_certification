@@ -160,7 +160,7 @@ describe("Response Integration Tests", () => {
   describe("GET - /api/response/get/project/:projectId/question/:questionId", () => {
     it("should return the response of a question from a given project and 200 status", async () => {
       const { project, question } = await seedWithProjectAndQuestion();
-      await newResponse({
+      const response = await newResponse({
         projectId: project.projectId,
         questionId: question.questionId,
       });
@@ -170,21 +170,58 @@ describe("Response Integration Tests", () => {
       );
 
       expect(res.status).toBe(200);
+      expect(res.body[0].label).toBe(response.label);
       expect(res.body[0].projectId).toBe(project.projectId);
       expect(res.body[0].questionId).toBe(question.questionId);
     });
 
-    // it("should return 404 status if project does not exist", async () => {
-    //   const question = await newQuestion();
+    it("should return an empty array if no response(s) found for the given question of a project and 200 status", async () => {
+      const { project, question } = await seedWithProjectAndQuestion();
+      const res = await request(app).get(
+        `/api/response/get/project/${project.projectId}/question/${question.questionId}`
+      );
 
-    //   const res = await request(app).get(
-    //     `/api/response/get/project/999/question/${question.questionId}`
-    //   );
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(0);
+    });
 
-    //   console.log(res.body);
+    it("should return 404 status if project does not exist", async () => {
+      const question = await newQuestion();
 
-    //   expect(res.status).toBe(404);
-    // });
+      const res = await request(app).get(
+        `/api/response/get/project/999/question/${question.questionId}`
+      );
+
+      expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Project not found" });
+    });
+
+    it("should return 404 status if question does not exist", async () => {
+      const { project, _ } = await seedWithProjectAndQuestion();
+      const res = await request(app).get(
+        `/api/response/get/project/${project.projectId}/question/999`
+      );
+
+      expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Question not found" });
+    });
+
+    it("should return 500 status if prisma throws an error", async () => {
+      // Mock service to throw
+      jest
+        .spyOn(responseService, "getResponsesByQuestionOfProject")
+        .mockRejectedValue(new Error("Database error"));
+
+      const res = await request(app).get(
+        "/api/response/get/project/1/question/1"
+      );
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "Internal server error" });
+
+      // Restore original implementation
+      responseService.getResponsesByQuestionOfProject.mockRestore();
+    });
   });
 
   describe("GET - /api/response/get/:responseId/subresponse", () => {
@@ -255,7 +292,6 @@ describe("Response Integration Tests", () => {
       expect(res.body.label).toBe(newData.label);
     });
 
-    // TODO: after modify the controller/service
     it("should return 400 status if label is missing or empty", async () => {
       const { project, question } = await seedWithProjectAndQuestion();
       const response = await newResponse({
