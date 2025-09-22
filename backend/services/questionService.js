@@ -169,7 +169,7 @@ module.exports.deleteQuestion = async (questionId) => {
 module.exports.getQuestionById = async (questionId) => {
   const question = await prisma.question.findUnique({
     where: { questionId: questionId },
-    include: { projects: true, types: true },
+    include: { projects: true, types: true, options: true, children: true },
   });
 
   if (!question) {

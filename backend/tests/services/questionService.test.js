@@ -444,7 +444,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
-        include: { projects: true, types: true },
+        include: { projects: true, types: true, options: true, children: true },
       });
       expect(result).toEqual(mockQuestion);
     });
@@ -469,7 +469,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
-        include: { projects: true, types: true },
+        include: { projects: true, types: true, options: true, children: true },
       });
     });
   });

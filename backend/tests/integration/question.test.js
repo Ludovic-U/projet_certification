@@ -178,7 +178,27 @@ describe("Question Integration Tests", () => {
       );
 
       expect(res.status).toBe(200);
-      expect(res.body.label).toBe(question.label);
+      expect(res.body).toMatchObject({
+        questionId: question.questionId,
+        label: "Question Test 1",
+        category: "Default",
+        numberOfSelectionableOpt: null,
+        isRelevant: false,
+        hasMultipleOpenResponse: false,
+        shouldMultiply: false,
+        questionIdParent: null,
+        projects: [],
+        types: [],
+        options: [],
+        children: [],
+      });
+    });
+
+    it("should return 400 status if invalid questionId", async () => {
+      const res = await request(app).get("/api/question/get/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid questionId" });
     });
 
     it("should return 404 status if question does not exist", async () => {
@@ -226,6 +246,13 @@ describe("Question Integration Tests", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(0);
+    });
+
+    it("should return 400 status if invalid questionIdParent", async () => {
+      const res = await request(app).get(`/api/question/get/abc/subquestion`);
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid questionId" });
     });
 
     it("should return 404 status if parent question does not exist", async () => {
@@ -341,6 +368,15 @@ describe("Question Integration Tests", () => {
       expect(res.body).toEqual({ error: "label and category are required" });
     });
 
+    it("should return 400 status if invalid questionId", async () => {
+      const res = await request(app)
+        .patch("/api/question/update/abc")
+        .send({ label: "a", category: "b" });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid questionId" });
+    });
+
     it("should return 404 status if question does not exist", async () => {
       const res = await request(app)
         .patch("/api/question/update/999")
@@ -391,6 +427,13 @@ describe("Question Integration Tests", () => {
       expect(questionInDb).toBeNull();
     });
 
+    it("should return 400 status if Invalid questionId", async () => {
+      const res = await request(app).delete("/api/question/delete/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid questionId" });
+    });
+
     it("should return 404 status if question does not exist", async () => {
       const res = await request(app).delete("/api/question/delete/999");
 
@@ -427,10 +470,18 @@ describe("Question Integration Tests", () => {
       expect(res.body).toHaveLength([question, ...typeQuestions].length);
     });
 
+    it("should return 400 status if invalid projectId", async () => {
+      const res = await request(app).get("/api/question/get/project/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid projectId" });
+    });
+
     it("should return 404 status if project does not exist", async () => {
       const res = await request(app).get("/api/question/get/project/999");
 
       expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Project not found" });
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -521,6 +572,13 @@ describe("Question Integration Tests", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(0);
+    });
+
+    it("should return 400 status if invalid typeId", async () => {
+      const res = await request(app).get("/api/question/get/type/abc");
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: "Invalid typeId" });
     });
 
     it("should return 404 status if type does not exist", async () => {
