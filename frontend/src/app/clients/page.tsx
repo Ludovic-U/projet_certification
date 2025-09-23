@@ -21,6 +21,12 @@ export default function ClientsPage() {
         { id: 4, name: "Société Delta", sector: "Industrie", contact: "Emma Leroy" },
         { id: 5, name: "Entreprise Epsilon", sector: "Santé", contact: "Lucas Bernard" },
         { id: 6, name: "Startup Zeta", sector: "Éducation", contact: "Clara Dubois" },
+        {id : 7, name: "Entreprise Alpha", sector: "Finance", contact: "Jean Dupont"},
+        { id: 8, name: "Startup Beta", sector: "Tech", contact: "Alice Martin" },
+        { id: 9, name: "Agence Gamma", sector: "Marketing", contact: "Paul Durand" },
+        { id: 10, name: "Société Delta", sector: "Industrie", contact: "Emma Leroy" },
+        { id: 11, name: "Entreprise Epsilon", sector: "Santé", contact: "Lucas Bernard" },
+        { id: 12, name: "Startup Zeta", sector: "Éducation", contact: "Clara Dubois" },
     ]
 
     const itemsPerPage = 6;
@@ -32,23 +38,9 @@ export default function ClientsPage() {
     );
 
     return (
-        <div className="h-full">
+        <div className="h-full flex flex-col">
             <PageHeader title="Liste des clients" description="Consultez la liste des clients et accèdez aux détails."/>
-            <section className="flex flex-col">
-                {/* <div className="w-[90%] self-center flex items-center justify-between">
-                    <Button>
-                        <CirclePlus/>
-                        Ajouter un <br />nouveau client
-                    </Button>
-                    <Input
-                     placeholder="Rechercher un client"
-                     leftIcon={
-                        <span>
-                            <FontAwesomeIcon icon={Icons.search}/>
-                        </span>
-                     }/>
-                </div> */}
-
+            <section className="flex flex-col flex-1 justify-center items-center">
                 <TableResponsive<typeof currentData[0]>
                  data={currentData}
                  columns={clientsList}/>      

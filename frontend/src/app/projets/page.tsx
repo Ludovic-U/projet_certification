@@ -8,7 +8,8 @@ import {
     Table,
     Input,
     Pagination,
-    projectsList
+    projectsList,
+    TableResponsive
  } from "@/components/ui";
  import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
 
@@ -36,7 +37,7 @@ export default function ProjectsPage() {
         { id: 20, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
     ];
     
-    const itemsPerPage = 5;
+    const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = Math.ceil(projects.length / itemsPerPage);
     const currentData = projects.slice(
@@ -44,22 +45,13 @@ export default function ProjectsPage() {
         currentPage * itemsPerPage
     );
     return (
-        <div className="h-full">
+        <div className="h-full flex flex-col">
             <PageHeader title="Liste des projets" description="Consultez la liste des projets et accèdez aux détails"/>
-            <section className="flex flex-col">
-                <div className="w-[90%] self-center flex items-center justify-between">
-                    <Button>
-                        <CirclePlus/>
-                        Créer un <br />nouveau projet
-                    </Button>
-                    <Input
-                     placeholder="Rechercher un projet"
-                     leftIcon={
-                        <span>
-                            <FontAwesomeIcon icon={Icons.search}/>
-                        </span>
-                     }/>
-                </div>
+            <section className="flex flex-col flex-1 justify-center items-center">
+                <TableResponsive<typeof currentData[0]>
+                 data={currentData}
+                 columns={projectsList}/>
+
                 <Table<typeof currentData[0]>
                  data={currentData}
                  columns={projectsList}/>
