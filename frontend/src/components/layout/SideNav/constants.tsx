@@ -13,14 +13,19 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         ],
     },
     {
+        title: "Projets",
+        path: "/projets",
+        icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>
+    },
+    {
         title: "Clients",
         path: "/clients",
         icon: <FontAwesomeIcon icon={Icons.userTie}/>
     },
     {
-        title: "Projets",
-        path: "/projets",
-        icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>
+        title: "Contributeurs",
+        path: "/users",
+        icon: <FontAwesomeIcon icon={Icons.userTie}/>
     },
     {
         title: "Questions",
@@ -28,14 +33,20 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         icon: <FontAwesomeIcon icon={Icons.question}/>
     },
     {
-        title: "Listes",
-        path: "/finance",
-        icon: <FontAwesomeIcon icon={Icons.list}/>,
+        title: "Paramètres",
+        path: "/parametres",
+        icon: <FontAwesomeIcon icon={Icons.gear}/>
+    },
+    {
+        title: "Vue d'ensemble",
+        path: "/vue_ensemble",
+        icon: <FontAwesomeIcon icon={Icons.tableCells}/>,
         subMenu: true,
         subMenuItems: [
-            { title: "Clients", path:"/clients", icon: <FontAwesomeIcon icon={Icons.users}/>},
-            { title: "Projets", path:"/projets", icon: <FontAwesomeIcon icon={Icons.briefcase}/>},
-            { title: "Questions", path:"/questions", icon: <FontAwesomeIcon icon={Icons.question}/>},
+            { title: "Ideation", path:"/ideation", icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+            { title: "Conception", path:"/conception", icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
+            { title: "Pilotage", path:"/pilotage", icon: <FontAwesomeIcon icon={Icons.compass}/>},
+            { title: "Reporting", path:"/reporting", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
         ],
     },
 ]

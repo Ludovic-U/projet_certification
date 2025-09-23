@@ -65,7 +65,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                 {/* Bouton pour ouvrir ou fermer la sidenav avec toggleCollapse */}
                 <button
                  onClick={toggleCollapse}
-                 className="absolute top-14 -right-4 cursor-pointer h-8 w-8 text-dark border border-dark bg-light rounded-full hover:bg-lighthover hover:text-darkhover transition-colors">
+                 className="absolute top-14 -right-4 cursor-pointer h-8 w-8 text-dark border border-dark bg-light rounded-full hover:bg-lighthover hover:text-darkhover transition-all">
                     <FontAwesomeIcon icon={isCollapsed ? Icons.chevronRight : Icons.chevronLeft}
                      className="text-md text-dark"/>
                 </button>
@@ -110,7 +110,7 @@ const MenuItem = (
             // Contenu graphique de base (icône dans carré centré)
             <div
              className={`cursor-pointer flex items-center justify-center h-10 w-10 rounded-lg transition hover:bg-lighthover hover:text-primary
-                    ${pathname.includes(item.path) ? "bg-light text-primary" : ""}
+                    ${pathname.includes(item.path) ? "text-primary" : ""}
                     ${childActive && !parentActive ? "text-primary" : ""}`}
             >
                 {item.icon}
@@ -176,16 +176,16 @@ const MenuItem = (
                         cursor-pointer flex w-full flex-row items-center justify-between transition p-2 rounded-lg
                         hover:bg-lighthover hover:text-primary
                         ${pathname.includes(item.path) ? "bg-light text-primary" : ""}
-                        ${childActive && !parentActive ? "text-primary" : ""}`}
+                        ${childActive && !parentActive ? "text-primary200" : ""}`}
                     >
                         <div className="flex flex-row space-x-4 items-center">
                             {item.icon}
-                            <span className="font-base text-lg flex">{item.title}</span>
+                            <span className="font-base flex">{item.title}</span>
                         </div>
 
                         {/* chevron pour ouvrir/fermer le submenu*/}
                         <div className={`${isSubMenuOpen ? 'rotate-180' : ""} flex`}>
-                            <FontAwesomeIcon className="text-md" icon={Icons.chevronDown}></FontAwesomeIcon>
+                            <FontAwesomeIcon className="text-sm" icon={Icons.chevronDown}></FontAwesomeIcon>
                         </div>
                     </button>
 
@@ -194,14 +194,14 @@ const MenuItem = (
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out
                                         ${isSubMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
                             {/* Liste des liens enfants (submenu), l'item actif est surlignée si son path correspond */}
-                            <div className="my-2 ml-2 flex flex-col space-y-5 text-primary200 w-fit p-2">
+                            <div className="my-2 ml-2 flex flex-col space-y-5 text-lighthover w-fit p-2">
                                 {item.subMenuItems?.map((subItem, idx) => {
                                     return (
                                         <Link
                                         key={idx}
                                         href={subItem.path}
-                                        className={`flex gap-3 text-md items-center p-2 rounded-lg transition
-                                                    ${subItem.path === pathname ? 'bg-light font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
+                                        className={`flex gap-3 items-center p-2 rounded-lg transition
+                                                    ${subItem.path === pathname ? 'font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
                                         >
                                             <span className="flex gap-3 items-center">{subItem.icon}{subItem.title}</span>
                                         </Link>
@@ -216,10 +216,10 @@ const MenuItem = (
                 <Link
                  href={item.path}
                  className={`flex flex-row space-x-4 items-center p-2 rounded-lg hover:bg-lighthover hover:text-primary
-                    ${item.path === pathname ? 'text-primary bg-light font-semibold cursor-default' : ''}`}
+                    ${item.path === pathname ? 'text-primary font-semibold cursor-default hover:bg-transparent' : ''}`}
                 >
                     {item.icon}
-                    <span className="flex font-base text-lg">{item.title}</span>
+                    <span className="flex font-base">{item.title}</span>
                 </Link>
             )}
         </div>
