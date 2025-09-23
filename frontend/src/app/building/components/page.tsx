@@ -3,7 +3,7 @@
 import { PageHeader, Button, Card, Checkbox, Input, LoadingSpinner, Radio, RadioGroup, Toggle } from "@/components/ui";
 import { Modal } from "@/components/ui"
 import React from "react";
-import { RegisterForm } from "@/components/forms/RegisterForm";
+import { RegisterForm } from "@/components/forms/Register";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 import { useModal } from "@/hooks"

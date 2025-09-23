@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 // import axios from "axios";
 
-import LoginForm from "@/components/forms/LoginForm";
+import LoginForm from "@/components/forms/Login";
 import api_backend from "@/api/axiosInstance";
 import { useUser } from "@/context/UserContext";
 
