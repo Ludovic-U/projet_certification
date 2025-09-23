@@ -13,6 +13,19 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         ],
     },
     {
+        title: "Projet Lambda",
+        path: "/modif",
+        icon: <FontAwesomeIcon icon={Icons.briefcase}/>,
+        subMenu: true,
+        subMenuItems: [
+            { title: "Vue d'ensemble", path:"/vue_ensemble", icon: <FontAwesomeIcon icon={Icons.tableCells}/>},
+            { title: "Ideation", path:"/ideation", icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+            { title: "Conception", path:"/conception", icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
+            { title: "Pilotage", path:"/pilotage", icon: <FontAwesomeIcon icon={Icons.compass}/>},
+            { title: "Reporting", path:"/reporting", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
+        ],
+    },
+    {
         title: "Projets",
         path: "/projets",
         icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>
@@ -36,17 +49,5 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         title: "Paramètres",
         path: "/parametres",
         icon: <FontAwesomeIcon icon={Icons.gear}/>
-    },
-    {
-        title: "Vue d'ensemble",
-        path: "/vue_ensemble",
-        icon: <FontAwesomeIcon icon={Icons.tableCells}/>,
-        subMenu: true,
-        subMenuItems: [
-            { title: "Ideation", path:"/ideation", icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
-            { title: "Conception", path:"/conception", icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
-            { title: "Pilotage", path:"/pilotage", icon: <FontAwesomeIcon icon={Icons.compass}/>},
-            { title: "Reporting", path:"/reporting", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
-        ],
     },
 ]
