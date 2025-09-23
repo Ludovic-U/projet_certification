@@ -17,7 +17,7 @@ export default function BuildingPage() {
             <PageHeader title="Display des components" description="app/building/components/page.tsx"/>
             <section className="flex flex-col gap-5 items-center">
 
-                <div className="flex gap-10">
+                <div className="flex flex-col md:flex-row gap-10">
                     <div className="p-3 border w-fit flex flex-col gap-4">
                         <h2 className="font-oswald text-center text-2xl">Button :</h2>
                         <div className="flex items-center gap-4">

@@ -3,8 +3,6 @@
 import { PageHeader, TableResponsive, clientsList} from "@/components/ui";
 import React from "react";
 import { useState } from "react";
-import { useModal } from "@/hooks"
-import { FontAwesomeIcon, Icons} from "@/lib/icons";
 
 export default function BuildingPage() {
     const clients = [

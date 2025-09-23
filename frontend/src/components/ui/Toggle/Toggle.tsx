@@ -37,7 +37,7 @@ export const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
              )}
                        // className="flex items-center gap-2 cursor-pointer select-none"
             >
-                <span className="group relative inline-flex h-6 w-11 rounded-full bg-background border group-hover:bg-lighthover transition-colors duration-200">
+                <span className="group relative inline-flex min-h-6 min-w-11 rounded-full bg-background border group-hover:bg-lighthover transition-colors duration-200">
                     <Input
                      ref={ref}
                      type="checkbox"
