@@ -11,7 +11,7 @@ const typeService = require("../services/typeService");
  * @param {Array} [req.body.projects=[]] - A list of project identifiers associated with the type.
  * @returns {Promise<void>} Sends:
  *  - 201: Created, returns the created type object.
- *  - 400: Missing required fields ('label').
+ *  - 400: Missing required field ('label').
  *  - 500: Internal server error.
  */
 module.exports.createType = async (req, res) => {
@@ -69,6 +69,7 @@ module.exports.getAllTypes = async (_, res) => {
  * @param {Array} [req.body.removeProject] - Projects to remove.
  * @returns {Promise<void>} Sends:
  *  - 200: OK, returns the updated type.
+ *  - 400: Missing required field ('label').
  *  - 404: Type not found.
  *  - 500: Internal server error.
  */

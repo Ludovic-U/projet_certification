@@ -1,10 +1,30 @@
 /**
  * @fileoverview
  * Unit tests for the Option Controller.
- * Covers all controller endpoints: create, read, update, delete, and query by various parameters.
- * Uses Jest and mocks the optionService layer.
+ *
+ * @module optionController.test
+ *
+ * @description
+ * Tests all controller endpoints:
+ *  - createOption
+ *  - getOption(s)
+ *  - updateOption
+ *  - deleteOption
+ *  - query by various parameters
+ *
+ * Uses Jest and mocks:
+ *  - optionService layer
+ *
+ * @example
+ * // Run all tests for this controller
+ * // npx jest optionController.test.js
+ *
+ * @tests
+ * - Creating a option with valid/invalid payloads
+ * - Fetching options by ID or filters
+ * - Updating options
+ * - Deleting options
  */
-
 const optionController = require("../../controllers/optionController");
 const optionService = require("../../services/optionService");
 const { createMockResponse } = require("../helpers/responseHelper");

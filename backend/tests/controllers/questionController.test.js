@@ -1,10 +1,30 @@
 /**
  * @fileoverview
  * Unit tests for the Question Controller.
- * Covers all controller endpoints: create, read, update, delete, and query by various parameters.
- * Uses Jest and mocks the questionService layer and mock validateId function.
+ *
+ * @module questionController.test
+ *
+ * @description
+ * Tests all controller endpoints:
+ *  - createQuestion
+ *  - getQuestion(s)
+ *  - updateQuestion
+ *  - deleteQuestion
+ *  - query by various parameters
+ *
+ * Uses Jest and mocks:
+ *  - questionService layer
+ *
+ * @example
+ * // Run all tests for this controller
+ * // npx jest questionController.test.js
+ *
+ * @tests
+ * - Creating a question with valid/invalid payloads
+ * - Fetching questions by ID or filters
+ * - Updating questions
+ * - Deleting questions
  */
-
 const questionController = require("../../controllers/questionController");
 const questionService = require("../../services/questionService");
 const { createMockResponse } = require("../helpers/responseHelper");

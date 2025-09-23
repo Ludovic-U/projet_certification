@@ -1,3 +1,30 @@
+/**
+ * @fileoverview
+ * Integration tests for the Type model.
+ *
+ * @module type.test
+ *
+ * @description
+ * Tests the Type model with a test database, covering:
+ *  - Creating a type record
+ *  - Reading type(s) from the database
+ *  - Updating type records
+ *  - Deleting type records
+ *  - Relations with other models
+ *
+ * Uses Supertest and a test database setup.
+ *
+ * @example
+ * // Run all integration tests for the Type model
+ * // npx jest type.test.js
+ *
+ * @tests
+ * - Successfully creating a type in the database
+ * - Fetching type by ID and filters
+ * - Updating type fields and saving changes
+ * - Deleting a type and ensuring it no longer exists
+ * - Validating relational integrity with linked models
+ */
 const request = require("supertest");
 const app = require("../../index");
 const typeService = require("../../services/typeService");

@@ -18,7 +18,7 @@ const questionService = require("../services/questionService");
  * @param {Array} [req.body.options=[]] - A list of option identifiers associated with the question.
  * @returns {Promise<void>} Sends:
  * - 201: Created, returns the created question object.
- * - 400: Missing required fields (`label` or `category`).
+ * - 400: Missing required field (`label` or `category`).
  * - 500: Internal server error.
  */
 module.exports.createQuestion = async (req, res) => {

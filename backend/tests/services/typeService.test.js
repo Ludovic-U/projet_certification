@@ -1,10 +1,31 @@
 /**
  * @fileoverview
  * Unit tests for the Type Service.
- * Covers CRUD operations and query methods for types.
- * Uses Jest and mocks the prismaClient and checkIdExistence function.
+ *
+ * @module typeService.test
+ *
+ * @description
+ * Tests all service methods related to types, including:
+ *  - createType
+ *  - getType(s)
+ *  - updateType
+ *  - deleteType
+ *  - query methods by various parameters
+ *
+ * Uses Jest and mocks:
+ *  - prismaClient to simulate database operations
+ *
+ * @example
+ * // Run all tests for this service
+ * // npx jest typeService.test.js
+ *
+ * @tests
+ * - Creating a type with valid/invalid payloads
+ * - Fetching types by ID or filters
+ * - Updating types
+ * - Deleting types
+ * - Handling errors thrown by the database client
  */
-
 const typeService = require("../../services/typeService");
 const { prisma } = require("../../prisma/prismaClient");
 

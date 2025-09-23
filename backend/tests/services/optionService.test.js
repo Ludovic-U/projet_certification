@@ -1,10 +1,31 @@
 /**
  * @fileoverview
  * Unit tests for the Option Service.
- * Covers CRUD operations and query methods for options.
- * Uses Jest and mocks the prismaClient and checkIdExistence function.
+ *
+ * @module optionService.test
+ *
+ * @description
+ * Tests all service methods related to options, including:
+ *  - createOption
+ *  - getOption(s)
+ *  - updateOption
+ *  - deleteOption
+ *  - query methods by various parameters
+ *
+ * Uses Jest and mocks:
+ *  - prismaClient to simulate database operations
+ *
+ * @example
+ * // Run all tests for this service
+ * // npx jest optionService.test.js
+ *
+ * @tests
+ * - Creating a option with valid/invalid payloads
+ * - Fetching options by ID or filters
+ * - Updating options
+ * - Deleting options
+ * - Handling errors thrown by the database client
  */
-
 const optionService = require("../../services/optionService");
 const { prisma } = require("../../prisma/prismaClient");
 

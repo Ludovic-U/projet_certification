@@ -1,10 +1,30 @@
 /**
  * @fileoverview
  * Unit tests for the Type Controller.
- * Covers all controller endpoints: create, read, update, delete, and query by various parameters.
- * Uses Jest and mocks the typeService layer.
+ *
+ * @module typeController.test
+ *
+ * @description
+ * Tests all controller endpoints:
+ *  - createType
+ *  - getType(s)
+ *  - updateType
+ *  - deleteType
+ *  - query by various parameters
+ *
+ * Uses Jest and mocks:
+ *  - typeService layer
+ *
+ * @example
+ * // Run all tests for this controller
+ * // npx jest typeController.test.js
+ *
+ * @tests
+ * - Creating a type with valid/invalid payloads
+ * - Fetching types by ID or filters
+ * - Updating types
+ * - Deleting types
  */
-
 const typeController = require("../../controllers/typeController");
 const typeService = require("../../services/typeService");
 const { createMockResponse } = require("../helpers/responseHelper");

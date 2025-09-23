@@ -1,3 +1,30 @@
+/**
+ * @fileoverview
+ * Integration tests for the Option model.
+ *
+ * @module response.test
+ *
+ * @description
+ * Tests the Option model with a test database, covering:
+ *  - Creating a option record
+ *  - Reading option(s) from the database
+ *  - Updating option records
+ *  - Deleting option records
+ *  - Relations with other models
+ *
+ * Uses Supertest and a test database setup.
+ *
+ * @example
+ * // Run all integration tests for the Option model
+ * // npx jest option.test.js
+ *
+ * @tests
+ * - Successfully creating a option in the database
+ * - Fetching option by ID and filters
+ * - Updating option fields and saving changes
+ * - Deleting a option and ensuring it no longer exists
+ * - Validating relational integrity with linked models
+ */
 const request = require("supertest");
 const app = require("../../index");
 const optionService = require("../../services/optionService");

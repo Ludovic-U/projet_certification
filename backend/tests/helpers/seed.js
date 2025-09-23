@@ -167,6 +167,16 @@ async function seedWithProjectAndQuestion() {
   return { project, question };
 }
 
+/**
+ * Seeds a project along with a question and multiple responses.
+ *
+ * @async
+ * @function seedProjectWithResponses
+ * @returns {Promise<Object>} Returns an object containing:
+ *  - project: The created project object.
+ *  - question: The created question object associated with the project.
+ *  - responses: An array of 3 response objects linked to the project and question.
+ */
 async function seedProjectWithResponses() {
   const { project, question } = await seedWithProjectAndQuestion();
   const responses = [];

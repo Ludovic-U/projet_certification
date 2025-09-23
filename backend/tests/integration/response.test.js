@@ -1,3 +1,30 @@
+/**
+ * @fileoverview
+ * Integration tests for the Response model.
+ *
+ * @module response.test
+ *
+ * @description
+ * Tests the Response model with a test database, covering:
+ *  - Creating a response record
+ *  - Reading response(s) from the database
+ *  - Updating response records
+ *  - Deleting response records
+ *  - Relations with other models
+ *
+ * Uses Supertest and a test database setup.
+ *
+ * @example
+ * // Run all integration tests for the Response model
+ * // npx jest response.test.js
+ *
+ * @tests
+ * - Successfully creating a response in the database
+ * - Fetching response by ID and filters
+ * - Updating response fields and saving changes
+ * - Deleting a response and ensuring it no longer exists
+ * - Validating relational integrity with linked models
+ */
 const request = require("supertest");
 const app = require("../../index");
 const responseService = require("../../services/responseService");

@@ -1,3 +1,30 @@
+/**
+ * @fileoverview
+ * Integration tests for the Question model.
+ *
+ * @module question.test
+ *
+ * @description
+ * Tests the Question model with a test database, covering:
+ *  - Creating a question record
+ *  - Reading question(s) from the database
+ *  - Updating question records
+ *  - Deleting question records
+ *  - Relations with other models
+ *
+ * Uses Supertest and a test database setup.
+ *
+ * @example
+ * // Run all integration tests for the Question model
+ * // npx jest question.test.js
+ *
+ * @tests
+ * - Successfully creating a question in the database
+ * - Fetching question by ID and filters
+ * - Updating question fields and saving changes
+ * - Deleting a question and ensuring it no longer exists
+ * - Validating relational integrity with linked models
+ */
 const request = require("supertest");
 const app = require("../../index");
 const questionService = require("../../services/questionService");

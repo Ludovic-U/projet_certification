@@ -9,8 +9,8 @@ const optionService = require("../services/optionService");
  * @param {String} req.body.label - The text of the option (required).
  * @param {number} req.body.questionId - The ID of the associated question (required).
  * @returns {promise<void>} Sends:
- *  - 201: Created, returns the created response object.
- *  - 400: Missing required fields ('label').
+ *  - 201: Created, returns the created option object.
+ *  - 400: Missing required field ('label').
  *  - 500: Internal server error.
  */
 module.exports.createOption = async (req, res) => {
@@ -42,6 +42,7 @@ module.exports.createOption = async (req, res) => {
  * @param {number} req.body.questionId - The ID of the associated question.
  * @returns {promise<void>} Sends:
  *  - 200: OK, returns the updated option.
+ *  - 400: Missing required field ('label').
  *  - 404: Option not found.
  *  - 500: Internal server error.
  */

@@ -8,11 +8,11 @@ const { prisma } = require("../prisma/prismaClient");
  * @param {Object} data - The question data to create.
  * @param {string} data.label - The question text.
  * @param {string} data.category - The category of the question.
- * @param {number|null} [data.numberOfSelectionableOpt] - Max number of selectable options.
+ * @param {number|null} [data.numberOfSelectionableOpt=null] - Max number of selectable options.
  * @param {boolean} [data.isRelevant=false] - Whether the question is relevant.
  * @param {boolean} [data.hasMultipleOpenResponse=false] - Whether multiple open responses are allowed.
  * @param {boolean} [data.shouldMultiply=false] - Whether the question should be multiplied.
- * @param {number|null} [data.questionIdParent] - Parent question ID if this is a sub-question.
+ * @param {number|null} [data.questionIdParent=null] - Parent question ID if this is a sub-question.
  * @param {Array<number>} [data.types] - Type IDs to associate.
  * @param {Array<number>} [data.projects] - Project IDs to associate.
  * @param {Array<number>} [data.options] - Option IDs to associate.
@@ -55,7 +55,7 @@ module.exports.createQuestion = async (data) => {
  *
  * @async
  * @function getAllQuestions
- * @returns {Promise<Array<Object>>} List of all questions.
+ * @returns {Promise<Array<Object>>} List of all questions, including related types.
  */
 module.exports.getAllQuestions = async () => {
   return await prisma.question.findMany({ include: { types: true } });
@@ -68,17 +68,17 @@ module.exports.getAllQuestions = async () => {
  * @function updateQuestion
  * @param {number} questionId - The ID of the question to update.
  * @param {Object} data - The fields to update.
- * @param {string} [data.label] - Updated question text.
- * @param {string} [data.category] - Updated question category.
- * @param {number|null} [data.numberOfSelectionableOpt] - Updated max selectable options.
- * @param {boolean} [data.isRelevant] - Updated relevance flag.
- * @param {boolean} [data.hasMultipleOpenResponse] - Updated open response flag.
- * @param {boolean} [data.shouldMultiply] - Updated multiplication flag.
- * @param {number|null} [data.questionIdParent] - Updated parent question ID.
- * @param {Array<number>} [data.addType] - Type IDs to connect.
- * @param {Array<number>} [data.removeType] - Type IDs to disconnect.
- * @param {Array<number>} [data.addProject] - Project IDs to connect.
- * @param {Array<number>} [data.removeProject] - Project IDs to disconnect.
+ * @param {string} data.label - Updated question text.
+ * @param {string} data.category - Updated question category.
+ * @param {number} data.numberOfSelectionableOpt - Updated max selectable options.
+ * @param {boolean} data.isRelevant - Updated relevance flag.
+ * @param {boolean} data.hasMultipleOpenResponse - Updated open response flag.
+ * @param {boolean} data.shouldMultiply - Updated multiplication flag.
+ * @param {number} data.questionIdParent - Updated parent question ID.
+ * @param {Array<number>} data.addType - Type IDs to connect.
+ * @param {Array<number>} data.removeType - Type IDs to disconnect.
+ * @param {Array<number>} data.addProject - Project IDs to connect.
+ * @param {Array<number>} data.removeProject - Project IDs to disconnect.
  * @returns {Promise<Object>} The updated question, including related types and projects.
  * @throws {Error} If the question does not exist.
  */
@@ -163,7 +163,7 @@ module.exports.deleteQuestion = async (questionId) => {
  * @async
  * @function getQuestionById
  * @param {number} questionId - The ID of the question to retrieve.
- * @returns {Promise<Object>} The found question, including projects and types.
+ * @returns {Promise<Object>} The found question, including projects, types, options and children.
  * @throws {Error} If the question does not exist.
  */
 module.exports.getQuestionById = async (questionId) => {
@@ -227,7 +227,7 @@ module.exports.getQuestionsByProject = async (projectId) => {
  * @async
  * @function getQuestionsByCategory
  * @param {string} category - The category name.
- * @returns {Promise<Array<Object>>} List of questions in the category.
+ * @returns {Promise<Array<Object>>} List of questions in the category, including projects and types.
  */
 module.exports.getQuestionsByCategory = async (category) => {
   return await prisma.question.findMany({
@@ -242,7 +242,7 @@ module.exports.getQuestionsByCategory = async (category) => {
  * @async
  * @function getQuestionsByType
  * @param {number} typeId - The type ID.
- * @returns {Promise<Array<Object>>} List of questions with the given type.
+ * @returns {Promise<Array<Object>>} List of questions with the given type, including there projects and types.
  * @throws {Error} If the type does not exist.
  */
 module.exports.getQuestionsByType = async (typeId) => {

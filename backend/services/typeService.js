@@ -52,11 +52,11 @@ module.exports.getAllTypes = async () => {
  * @function updateType
  * @param {number} typeId - The ID of the type to update.
  * @param {Object} data - The fields to update.
- * @param {string} [data.label] - Updated type name.
- * @param {Array<number>} [data.addQuestion] - Question IDs to connect.
- * @param {Array<number>} [data.removeQuestion] - Question IDs to disconnect.
- * @param {Array<number>} [data.addProject] - Project IDs to connect.
- * @param {Array<number>} [data.removeProject] - Project IDs to disconnect.
+ * @param {string} data.label - Updated type name.
+ * @param {Array<number>} data.addQuestion - Question IDs to connect.
+ * @param {Array<number>} data.removeQuestion - Question IDs to disconnect.
+ * @param {Array<number>} data.addProject - Project IDs to connect.
+ * @param {Array<number>} data.removeProject - Project IDs to disconnect.
  * @returns {Promise<Object>} The updated type, including related questions and projects.
  * @throws {Error} If the type does not exist.
  */

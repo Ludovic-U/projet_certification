@@ -1,10 +1,31 @@
 /**
  * @fileoverview
  * Unit tests for the Response Service.
- * Covers CRUD operations and query methods for responses.
- * Uses Jest and mocks the prismaClient.
+ *
+ * @module responseService.test
+ *
+ * @description
+ * Tests all service methods related to responses, including:
+ *  - createResponse
+ *  - getResponse(s)
+ *  - updateResponse
+ *  - deleteResponse
+ *  - query methods by various parameters
+ *
+ * Uses Jest and mocks:
+ *  - prismaClient to simulate database operations
+ *
+ * @example
+ * // Run all tests for this service
+ * // npx jest responseService.test.js
+ *
+ * @tests
+ * - Creating a response with valid/invalid payloads
+ * - Fetching responses by ID or filters
+ * - Updating responses
+ * - Deleting responses
+ * - Handling errors thrown by the database client
  */
-
 const responseService = require("../../services/responseService");
 const { prisma } = require("../../prisma/prismaClient");
 

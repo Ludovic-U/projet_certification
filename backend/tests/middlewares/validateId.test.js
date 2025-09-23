@@ -1,3 +1,26 @@
+/**
+ * @fileoverview
+ * Unit tests for the `validateId` middleware.
+ *
+ * @module validateId.test
+ *
+ * @description
+ * Tests the behavior of the `validateId` middleware to ensure it:
+ *  - Converts valid numeric route parameters to integers.
+ *  - Calls `next()` when the parameter is valid.
+ *  - Returns a 400 status with an error message when the parameter is missing, zero, negative, or not a number.
+ *
+ * @example
+ * // Run the tests with Jest
+ * // npx jest validateId.test.js
+ *
+ * @tests
+ * - Converts string ID to number and calls `next()`.
+ * - Returns 400 for non-integer strings.
+ * - Returns 400 for negative numbers.
+ * - Returns 400 for zero.
+ * - Returns 400 if the parameter is missing.
+ */
 const { validateId } = require("../../middlewares/validateId");
 
 describe("validateId middleware", () => {

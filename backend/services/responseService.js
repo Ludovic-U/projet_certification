@@ -25,10 +25,10 @@ module.exports.createResponse = async (data) => {
  * @param {number} responseId - The ID of the response to update.
  * @param {Object} data - The fields to update.
  * @param {string} data.label - Updated repsonse text.
- * @param {string} [data.projectId] - Updated the associated project ID.
- * @param {number} [data.questionId] - Updated the associated question ID.
- * @param {number|null} [data.optionId] - Updated the associated option ID.
- * @param {number"null} [data.responseIdParent] - Updated parent repsonse ID.
+ * @param {string} data.projectId - Updated the associated project ID.
+ * @param {number} data.questionId - Updated the associated question ID.
+ * @param {number} data.optionId - Updated the associated option ID.
+ * @param {number} data.responseIdParent - Updated parent repsonse ID.
  * @returns {Promise<Object>} The updated response.
  * @throws {Error} If the response does not exist.
  */

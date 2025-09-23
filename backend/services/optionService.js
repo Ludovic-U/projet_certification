@@ -8,7 +8,7 @@ const { prisma } = require("../prisma/prismaClient");
  * @param {Object} data - The option data to create.
  * @param {string} data.label - The option text.
  * @param {string} data.questionId - The ID of the associated question.
- * @returns {Promise<Object>} The created response.
+ * @returns {Promise<Object>} The created option.
  */
 module.exports.createOption = async (data) => {
   return await prisma.option.create({ data });
@@ -21,8 +21,8 @@ module.exports.createOption = async (data) => {
  * @function updateOption
  * @param {number} optionId - The ID of the option to update.
  * @param {Object} data - The fields to update.
- * @param {string} [data.label] - Updated option text.
- * @param {string} [data.questionId] - Updated the associated question ID.
+ * @param {string} data.label - Updated option text.
+ * @param {string} data.questionId - Updated the associated question ID.
  * @returns {Promise<Object>} The updated option.
  * @throws {Error} If the option does not exist.
  */

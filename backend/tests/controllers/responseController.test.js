@@ -1,10 +1,30 @@
 /**
  * @fileoverview
  * Unit tests for the Response Controller.
- * Covers all controller endpoints: create, read, update, delete, and query by various parameters.
- * Uses Jest and mocks the responseService layer.
+ *
+ * @module responseController.test
+ *
+ * @description
+ * Tests all controller endpoints:
+ *  - createResponse
+ *  - getResponse(s)
+ *  - updateResponse
+ *  - deleteResponse
+ *  - query by various parameters
+ *
+ * Uses Jest and mocks:
+ *  - ResponseService layer
+ *
+ * @example
+ * // Run all tests for this controller
+ * // npx jest responseController.test.js
+ *
+ * @tests
+ * - Creating a response with valid/invalid payloads
+ * - Fetching responses by ID or filters
+ * - Updating responses
+ * - Deleting responses
  */
-
 const responseController = require("../../controllers/responseController");
 const responseService = require("../../services/responseService");
 const { createMockResponse } = require("../helpers/responseHelper");

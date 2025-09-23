@@ -13,6 +13,7 @@ const responseService = require("../services/responseService");
  * @param {number"null} [req.body.responseIdParent=null] - The ID of the parent response if this is a sub-response.
  * @returns {promise<void>} Sends:
  *  - 201: Created, returns the created response object.
+ *  - 400: Missing required field ('label').
  *  - 500: Internal server error.
  */
 module.exports.createResponse = async (req, res) => {
@@ -53,6 +54,7 @@ module.exports.createResponse = async (req, res) => {
  * @param {number} req.body.responseIdParent - Parent response ID if it's a sub-response.
  * @returns {Promise<void} Sends:
  * - 200: OK, returns the updated response.
+ * - 400: Missing required field ('label').
  * - 404: Response not found.
  * - 500: Internal server error.
  */
