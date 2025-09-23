@@ -2,18 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
 import { useUser } from "@/context/UserContext";
-import useScroll from "@/hooks/useScroll";
 import { cn } from "@/utils/utils";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { Button, Tooltip } from "@/components/ui";
 
 const Header = () => {
-    // scrolled = true si l'user a scrollé de plus de 5px, false sinon
-    const scrolled = useScroll(5);
-    // Recupère le segment de la route selectionnée, par ex "/projects"
-    const selectedLayout = useSelectedLayoutSegment();
     const { signOut } = useUser()
 
     return (

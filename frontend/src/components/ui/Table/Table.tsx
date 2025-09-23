@@ -5,7 +5,8 @@ import { TableProps } from "./table.types"
 
 export const Table = <T extends { id: string | number }>({ data, columns }: TableProps<T>) => {
     return (
-            <div className="flex flex-col items-center overflow-x-scroll font-noto">
+        <div className="hidden md:block font-noto">
+            <div className="flex flex-col items-center overflow-x-scroll">
                 <table className="w-full px-8 table-fixed border-separate border-spacing-y-5 select-none">
                     <thead className="text-xs capitalize text-center font-noto text-greydarker">
                         <tr>
@@ -30,5 +31,6 @@ export const Table = <T extends { id: string | number }>({ data, columns }: Tabl
                     </tbody>
                 </table>
             </div>
+        </div>
     );
 };

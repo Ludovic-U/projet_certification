@@ -6,6 +6,7 @@ import {
     PageHeader,
     Button,
     Table,
+    TableResponsive,
     Input,
     Pagination,
     clientsList,
@@ -22,7 +23,7 @@ export default function ClientsPage() {
         { id: 6, name: "Startup Zeta", sector: "Éducation", contact: "Clara Dubois" },
     ]
 
-    const itemsPerPage = 5;
+    const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = Math.ceil(clients.length / itemsPerPage);
     const currentData = clients.slice(
@@ -34,7 +35,7 @@ export default function ClientsPage() {
         <div className="h-full">
             <PageHeader title="Liste des clients" description="Consultez la liste des clients et accèdez aux détails."/>
             <section className="flex flex-col">
-                <div className="w-[90%] self-center flex items-center justify-between">
+                {/* <div className="w-[90%] self-center flex items-center justify-between">
                     <Button>
                         <CirclePlus/>
                         Ajouter un <br />nouveau client
@@ -46,7 +47,12 @@ export default function ClientsPage() {
                             <FontAwesomeIcon icon={Icons.search}/>
                         </span>
                      }/>
-                </div>
+                </div> */}
+
+                <TableResponsive<typeof currentData[0]>
+                 data={currentData}
+                 columns={clientsList}/>      
+
                 <Table<typeof currentData[0]>
                  data={currentData}
                  columns={clientsList}/>
