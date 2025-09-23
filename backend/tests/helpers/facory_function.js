@@ -77,7 +77,7 @@ async function newResponse({
   questionId,
   optionId = null,
   responseIdParent = null,
-}) {
+} = {}) {
   const response = await global.prisma.response.create({
     data: {
       label,
@@ -107,7 +107,7 @@ async function newType({
   label = "Default Type",
   projects = [],
   questions = [],
-}) {
+} = {}) {
   const type = await global.prisma.type.create({
     data: {
       label,
@@ -137,7 +137,7 @@ async function newType({
  * @param {string} params.questionId - The question ID this option belongs to.
  * @returns {Promise<Object>} Resolves to the created option object.
  */
-async function newOption({ label = "Default Option", questionId }) {
+async function newOption({ label = "Default Option", questionId } = {}) {
   const option = await global.prisma.option.create({
     data: { label, questionId },
   });
@@ -145,15 +145,18 @@ async function newOption({ label = "Default Option", questionId }) {
   return option;
 }
 
-// TODO: Still WIP
 async function newProject({
   projectName = "Default ProjectName",
+  projectManager,
+  clientId,
   types = [],
   questions = [],
-}) {
+} = {}) {
   const project = await global.prisma.project.create({
     data: {
       projectName,
+      projectManager,
+      clientId,
       types: types.length
         ? { connect: types.map((typeId) => ({ typeId })) }
         : undefined,
@@ -167,4 +170,38 @@ async function newProject({
   return project;
 }
 
-module.exports = { newQuestion, newResponse, newType, newOption, newProject };
+async function newClient({
+  clientName = "Default Client",
+  clientType = "Default Type",
+  description = "Default desc.",
+} = {}) {
+  const client = await global.prisma.client.create({
+    data: { clientName, clientType, description },
+  });
+
+  return client;
+}
+
+async function newUser({
+  firstname = "Default Firstname",
+  lastname = "Default Lastname",
+  username = "Default Username",
+  email = "test@gmail.com",
+  password = "123456",
+} = {}) {
+  const User = await global.prisma.user.create({
+    data: { firstname, lastname, username, email, password },
+  });
+
+  return User;
+}
+
+module.exports = {
+  newQuestion,
+  newResponse,
+  newType,
+  newOption,
+  newProject,
+  newClient,
+  newUser,
+};

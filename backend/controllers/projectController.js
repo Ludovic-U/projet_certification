@@ -2,14 +2,15 @@
 // TODO: Added missing methods
 
 const projectService = require("../services/projectService");
-const { validateId } = require("./helpers/validateId");
 
 module.exports.createProject = async (req, res) => {
-  const { projectName, types, questions } = req.body;
+  const { projectName, projectManager, clientId, types, questions } = req.body;
 
   try {
     const project = await projectService.createProject({
       projectName,
+      projectManager,
+      clientId,
       types: types ?? [],
       questions: questions ?? [],
     });
@@ -33,9 +34,7 @@ module.exports.getAllProjects = async (_, res) => {
 // TODO: update
 
 module.exports.deleteProject = async (req, res) => {
-  const projectId = Number(req.params.projectId);
-  // Validate projectId
-  if (!validateId(projectId, "projectId", res)) return;
+  const { projectId } = req.params;
 
   try {
     await projectService.deleteProject(projectId);
@@ -50,9 +49,7 @@ module.exports.deleteProject = async (req, res) => {
 };
 
 module.exports.getProjectById = async (req, res) => {
-  const projectId = Number(req.params.projectId);
-  // Validate projectId
-  if (!validateId(projectId, "projectId", res)) return;
+  const { projectId } = req.params;
 
   try {
     const project = await projectService.getProjectById(projectId);

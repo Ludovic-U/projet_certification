@@ -34,6 +34,7 @@ const {
   seedProjectWithResponses,
   seedResponseWithSubresponse,
   seedWithProjectAndQuestion,
+  seedProjectWithClientAndManager,
 } = require("../helpers/seed");
 
 describe("Response Integration Tests", () => {
@@ -71,12 +72,7 @@ describe("Response Integration Tests", () => {
     });
 
     it("should create a response that is an option from a question and return 201 status", async () => {
-      // Created a project manually via prisma studio for test
-      // Temporary until we can create a project ourself
-      // Fetch the project to get the projectId
-      const project = await global.prisma.project.findUnique({
-        where: { projectId: 1 },
-      });
+      const { project } = await seedProjectWithClientAndManager();
       const { question, options } = await seedQuestionWithOptions();
       const payload = {
         label: options[0].label,
@@ -155,7 +151,10 @@ describe("Response Integration Tests", () => {
     });
 
     it("should return empty list if no responses found and 200 status", async () => {
-      const res = await request(app).get("/api/response/get/project/1");
+      const { project } = await seedProjectWithClientAndManager();
+      const res = await request(app).get(
+        `/api/response/get/project/${project.projectId}`
+      );
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(0);

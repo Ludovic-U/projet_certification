@@ -18,7 +18,15 @@ beforeAll(async () => {
 
 // Clean all tables after each test
 afterEach(async () => {
-  const tables = ["Question", "Response", "Type", "Option"];
+  const tables = [
+    "Question",
+    "Response",
+    "Type",
+    "Option",
+    "Client",
+    "User",
+    "Project",
+  ];
 
   for (const table of tables) {
     await prisma.$executeRawUnsafe(

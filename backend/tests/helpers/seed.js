@@ -146,25 +146,19 @@ async function seedQuestionWithOptions() {
   return { question, options: question.options };
 }
 
-//TODO: Modify later
 async function seedWithProjectAndQuestion() {
-  // Created a project manually via prisma studio for test
-  // Temporary until we can create a project ourself
-  // Fetch the project to get the projectId
-  const Newproject = await global.prisma.project.findUnique({
-    where: { projectId: 1 },
-  });
+  const { project } = await seedProjectWithClientAndManager();
   const question = await facoryFunction.newQuestion({
-    projects: [Newproject.projectId],
+    projects: [project.projectId],
   });
 
   // Refecth the project to have question tied
-  const project = await global.prisma.project.findUnique({
-    where: { projectId: Newproject.projectId },
+  const fetchProject = await global.prisma.project.findUnique({
+    where: { projectId: project.projectId },
     include: { questions: true },
   });
 
-  return { project, question };
+  return { project: fetchProject, question };
 }
 
 /**
@@ -192,12 +186,7 @@ async function seedProjectWithResponses() {
 }
 
 async function seedResponseWithSubresponse() {
-  // Created a project manually via prisma studio for test
-  // Temporary until we can create a project ourself
-  // Fetch the project to get the projectId
-  const project = await global.prisma.project.findUnique({
-    where: { projectId: 1 },
-  });
+  const { project } = await seedProjectWithClientAndManager();
   const { questionParent, subquestions } = await seedQuestionWithSubquestion();
   const response = await facoryFunction.newResponse({
     label: "Response of QuestionParent",
@@ -220,6 +209,17 @@ async function seedResponseWithSubresponse() {
   return { responseParent, subresponse };
 }
 
+async function seedProjectWithClientAndManager() {
+  const client = await facoryFunction.newClient();
+  const user = await facoryFunction.newUser();
+  const project = await facoryFunction.newProject({
+    projectManager: user.userId,
+    clientId: client.clientId,
+  });
+
+  return { client, user, project };
+}
+
 module.exports = {
   seedWith3Questions,
   seedQuestionWithSubquestion,
@@ -231,4 +231,5 @@ module.exports = {
   seedResponseWithSubresponse,
   seedWithProjectAndQuestion,
   seedProjectWithQuestions,
+  seedProjectWithClientAndManager,
 };
