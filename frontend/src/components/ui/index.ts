@@ -10,4 +10,4 @@ export * from "./Radio";
 export * from "./Toggle";
 export * from "./Tooltip";
 export * from "./Table";
-export * from "./PageHeader"
+export * from "./PageHeader";

@@ -54,25 +54,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         fetchMe();
     }, []);
 
-    // Redirection automatique si user = null
-    useEffect(() => {
-        if (!loading && user === null) {
-            router.push("/")
-        }
-    }, [user, loading]);
-
     // Deconnecte l'utilisateur
     const signOut = async () => {
         console.log("signOut appelé")
+        console.log("URL finale:", api_backend.defaults.baseURL + "user/logout");
         try {
             const res = await api_backend.post("user/logout");
             console.log("Logout réponse API: ", res);
             setUser(null);
             console.log("User déconnecté")
-        } catch (error) {
-            console.error("Erreur lors du logout :", error)
+            window.location.href = "/";
+        } catch (error: any) {
+            console.error("Erreur lors du logout :", error.response || error?.message || error)
         }
     }
+
+    // Redirection automatique si user = null
+    useEffect(() => {
+        if (!loading && user === null) {
+            router.replace("/");
+        }
+    }, [user, loading]);
 
     // Le provider fournit les valeurs à tous ses composents enfants.
     return (
