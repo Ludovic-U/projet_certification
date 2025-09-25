@@ -26,9 +26,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
             <div
              className={cn(
-                "absolute z-50 px-3 py-1.5 bg-[rgba(39,39,39,0.6)] text-light font-noto text-sm rounded-lg shadow-500base opacity-0 invisible transition-all duration-200",
+                "absolute z-50 px-3 py-1.5 opacity-0 invisible transition-all duration-200",
+                "bg-[rgba(39,39,39,0.6)] rounded-lg shadow-500base",
+                "font-noto text-light text-sm",
                 "group-hover opacity-100 group-hover:visible",
-                "max-w-xs overflow-x-hidden text-ellipsis whitespace-nowrap",
+                "max-w-[250px] truncate",
                 positionClasses,
                 className
              )}

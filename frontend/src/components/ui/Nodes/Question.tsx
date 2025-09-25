@@ -1,37 +1,19 @@
 "use client"
 
-import { Handle, NodeProps, Position } from "@xyflow/react"
-import { AlignCenter } from "lucide-react";
+import { Node, NodeProps, ViewportPortal } from "@xyflow/react"
 import { useState } from "react"
+import { Tooltip } from "@/components/ui"
 
-type QuestionNodeData = {
-    answered?: boolean;
-    label?: string;
-};
+type QuestionNodeData = Node<{ answered: boolean }, 'answered'>;
 
-export function QuestionNode({data}: NodeProps) {
-    const nodeData = data as QuestionNodeData;
-    const [answered, setAnswered] = useState(nodeData.answered ?? false);
+export function QuestionNode({ data }: NodeProps<QuestionNodeData>) {
+    const qst = "Question fictive à propos du secteur de l'entreprise ?"
 
     return (
-        <div
-         onClick={() => setAnswered(!answered)} className="cursor-pointer">
-            {answered ? (
-                <div className="bg-dark h-4 w-4 rounded-full transition-all"/>
-            ) : (
-                <div className="bg-transparent border-dark border-3 h-4 w-4 rounded-full transition-all"/>
-            )}
-            {/* <Handle
-             type="source"
-             position={Position.Bottom}
-             isConnectable={false}
-             style={{
-                width: 0,
-                height: 0,
-                background: "transparent",
-                border: "none",
-             }}/> */}
-        </div>
+        <Tooltip content={qst} position="right">
+            <div className="bg-dark h-4 w-4 rounded-full transition-all"/>
+        </Tooltip>
 
+        // <div className="bg-transparent border-dark border-3 h-4 w-4 rounded-full transition-all"/>
     )
 }
