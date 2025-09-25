@@ -2,11 +2,11 @@
 
 import { PageHeader, Button, Card, Checkbox, Input, LoadingSpinner, Radio, RadioGroup, Toggle } from "@/components/ui";
 import { Modal } from "@/components/ui"
+import { useModal } from "@/hooks"
 import React from "react";
-import { RegisterForm } from "@/components/forms/Register";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
-import { useModal } from "@/hooks"
+
 
 export default function BuildingPage() {
     const modal = useModal();

@@ -90,8 +90,8 @@ const Modal: React.FC<ModalProps> = ({
                 
                 {/* Header */}
                 <div className="flex flex-col px-6 py-4">
-                    <div className="flex justify-between items-center">
-                        <h2 className="font-oswald text-2xl">{title}</h2>
+                    <div className="flex justify-between items-center gap-5">
+                        <h2 className="font-oswald text-2xl wrap-anywhere">{title}</h2>
                         <Button variant="secondary" size="icon"
                          onClick={modal.closeModal} aria-label="Fermer">
                             <FontAwesomeIcon icon={Icons.xmark}/>

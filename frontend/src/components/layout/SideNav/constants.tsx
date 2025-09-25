@@ -8,7 +8,8 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         icon: <FontAwesomeIcon icon={Icons.penRuler}/>,
         subMenu: true,
         subMenuItems: [
-            { title: "Page", path:"/building", icon: <FontAwesomeIcon icon={Icons.users}/>},
+            { title: "Page Test", path:"/building", icon: <FontAwesomeIcon icon={Icons.users}/>},
+            { title: "Tree", path:"/building/build-tree", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
             { title: "Components", path:"/building/components", icon: <FontAwesomeIcon icon={Icons.users}/>},
         ],
     },
