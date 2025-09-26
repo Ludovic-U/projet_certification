@@ -47,7 +47,6 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
                 })}
                 label="Email"
                 labelBg="bg-white"
-                autoComplete="off"
                 type="email"
                 placeholder="bonjour@figuredeskills.fr"
                 error={errors.email?.message}
@@ -68,7 +67,6 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
                 })}
                 label="Mot de passe"
                 labelBg="bg-white"
-                autoComplete="off"
                 type={showPassword ? "text" : "password"}
                 placeholder="•••••••"
                 error={errors.password?.message}

@@ -28,7 +28,6 @@ export default function LoginPage() {
 
         try {
             console.log("Login data: ", data)
-
             // Login
             await api_backend.post("user/login", {
                 email: data.email,
@@ -51,12 +50,13 @@ export default function LoginPage() {
                 router.push("/clients");
             }
         } catch (error: any) {
-            console.log ("Login failed", error);
+            console.log ("Login failed", error.response);
             setIsLoading(false);
 
-            let errorMessage = "Echec de la connexion. Veuillez vérifier vos identifiants.";
+            let errorMessage = "Echec de connexion.";
+            
 
-            if (error.response?.status == 401) {
+            if (error.response?.status == 500) {
                 errorMessage = "Email ou mot de passe incorrect.";
             } else if (error.response?.status == 429) {
                 errorMessage = "Trop de tentatives. Veuillez réessayer plus tard.";

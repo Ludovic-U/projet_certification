@@ -58,6 +58,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
                     <input
                         type={type}
+                        autoComplete="off"
+                        spellCheck="false"
+                        autoCorrect="off"
                         className={cn(
                             inputVariants({ variant: effectiveVariant }),
                             leftIcon && "pl-10",
@@ -94,7 +97,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 {error && (
                     <p
                         id={`${inputId}-error`}
-                        className="mt-2 text-base text-alertdanger font-didact cursor-default"
+                        className="m-2 text-base text-alertdanger font-didact cursor-default"
                         role="alert"
                     >
                         {error}
