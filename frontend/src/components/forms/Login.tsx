@@ -34,7 +34,7 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
 
             <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-8 w-[70%]"
+            className="flex flex-col gap-10 w-[70%]"
             >
 
                 <Input
@@ -45,7 +45,9 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
                     message: "Adresse email invalide",
                     },
                 })}
-                label="Email :"
+                label="Email"
+                labelBg="bg-white"
+                autoComplete="off"
                 type="email"
                 placeholder="bonjour@figuredeskills.fr"
                 error={errors.email?.message}
@@ -64,7 +66,9 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
                     message: "Le mot de passe doit contenir au moins 3 caractères",
                     },
                 })}
-                label="Mot de passe :"
+                label="Mot de passe"
+                labelBg="bg-white"
+                autoComplete="off"
                 type={showPassword ? "text" : "password"}
                 placeholder="•••••••"
                 error={errors.password?.message}
@@ -94,7 +98,7 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
                 size="md"
                 type="submit"
                 disabled={isLoading}
-                className="mt-6 self-center">
+                className="self-center">
                     {isLoading ? "Connexion..." : "Se connecter"}
                 </Button>
             </form>

@@ -12,6 +12,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type = "text",
             variant,
             label,
+            labelBg,
             error,
             helperText,
             leftIcon,
@@ -30,11 +31,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         const isDisabled = disabled || loading;
 
         return (
+    <div>
             <div className="relative">
                 {label && (
+                    <div className="absolute z-20 -top-3.5 left-3">
+                    <div className={cn(
+                        "absolute h-0.5 w-full top-3/5",
+                        labelBg ?? "bg-light"
+                    )}/>
                     <label
                         htmlFor={inputId}
-                        className="absolute -top-2.5 left-3 bg-light px-1 text-dark font-didact text-sm"
+                        className={cn(
+                            "relative px-1 text-dark font-didact text-sm",
+                            labelBg ?? "bg-light"
+                        )}
                     >
                         {props.required && (
                             <span className="text-alertdanger mr-1 font-bold text-xl">
@@ -43,14 +53,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         )}
                         {label}
                     </label>
+                    </div>
                 )}
-
-                {/* <div className="relative"> */}
-                    {leftIcon && (
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-grey">
-                            {leftIcon}
-                        </div>
-                    )}
 
                     <input
                         type={type}
@@ -74,12 +78,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         {...props}
                     />
 
+                    {leftIcon && (
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-grey">
+                            {leftIcon}
+                        </div>
+                    )}
+
                     {(rightIcon || loading) && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-grey">
                             {loading ? <LoadingSpinner /> : rightIcon}
                         </div>
                     )}
-                {/* </div> */}
+</div>
 
                 {error && (
                     <p
