@@ -10,20 +10,14 @@ export default function CreateProjectForm() {
 
     return (
         <>
-            <form action="" className=" max-w-130 flex flex-col items-center gap-5">
-                <div className="flex flex-col gap-3 px-8 justify-center">
-                    <Input
-                    label="Titre du projet"
-                    placeholder="ex. Blabla"
-                    />
-                    <Input
-                    label="Secteur"
-                    placeholder="ex. Blabla"
-                    />
+            <form className="flex flex-col items-center select-none">
+                <div className="flex flex-col gap-6 items-center">
+                    <Input label="Titre"/>
+                    <Input label="Admin du projet"/>
+                    <Input label="Description"/>
+                    <Input type="date" className="text-greydarker" label="Date de début"/>
                 </div>
-
-
-                <Button className="my-3">Valider</Button>
+                <Button type="submit" className="mt-8">Créer</Button>
             </form>
         </>
     )

@@ -13,16 +13,21 @@ import {
     Tooltip
 } from "@/components/ui";
 import CreateClientForm from "@/components/forms/CreateClient";
+import CreateUserForm from "@/components/forms/CreateUser";
 
 import { Modal } from "@/components/ui"
 import { useModal } from "@/hooks"
 import React from "react";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
+import CreateProjectForm from "@/components/forms/CreateProject";
 
 
 
 export default function BuildingPage() {
-    const modal = useModal();
+    const clientModal = useModal();
+    const userModal = useModal();
+    const projectModal = useModal();
+
     const [enable, setEnabled] = React.useState(false);
 
     return (
@@ -124,11 +129,11 @@ export default function BuildingPage() {
                         </div>
                         <div className="p-3 border w-fit h-fit flex gap-4">
                             <h2 className="font-oswald text-2xl">Modal :</h2>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-3">
                                 <div>
-                                    <Tooltip content="Ajouter un client" position="rightTop">
+                                    <Tooltip content="Ajouter un client" position="right">
                                         <Button
-                                         onClick={modal.openModal}
+                                         onClick={clientModal.openModal}
                                          size="sm">
                                             <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
                                                 <FontAwesomeIcon icon={Icons.plus}/>
@@ -136,10 +141,44 @@ export default function BuildingPage() {
                                             Nouveau client
                                         </Button>
                                     </Tooltip>
-                                    <Modal modal={modal}
+                                    <Modal modal={clientModal}
                                      title="AJOUTER UN CLIENT"
                                      description="Entrez les informations du nouveau client">
                                         <CreateClientForm/>
+                                    </Modal>
+                                </div>
+                                <div>
+                                    <Tooltip content="Ajouter un utilisateur" position="right">
+                                        <Button
+                                         onClick={userModal.openModal}
+                                         size="sm">
+                                            <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={Icons.plus}/>
+                                            </div>
+                                            Nouvel utilisateur
+                                        </Button>
+                                    </Tooltip>
+                                    <Modal modal={userModal}
+                                     title="AJOUTER UN UTILISATEUR"
+                                     description="Entrez les informations du nouvel utilisateur">
+                                        <CreateUserForm/>
+                                    </Modal>
+                                </div>
+                                <div>
+                                    <Tooltip content="Ajouter un projet" position="right">
+                                        <Button
+                                         onClick={projectModal.openModal}
+                                         size="sm">
+                                            <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={Icons.plus}/>
+                                            </div>
+                                            Nouveau projet
+                                        </Button>
+                                    </Tooltip>
+                                    <Modal modal={projectModal}
+                                     title="AJOUTER UN PROJET"
+                                     description="Entrez les informations du nouveau projet">
+                                        <CreateProjectForm/>
                                     </Modal>
                                 </div>
                             </div>
