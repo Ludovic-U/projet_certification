@@ -42,7 +42,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     <label
                         htmlFor={inputId}
                         className={cn(
-                            "relative px-1 text-dark font-didact text-sm",
+                            "relative px-1 text-greydarker font-didact text-sm",
                             labelBg ?? "bg-light"
                         )}
                     >

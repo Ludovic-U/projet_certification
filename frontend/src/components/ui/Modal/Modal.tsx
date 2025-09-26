@@ -87,19 +87,24 @@ const Modal: React.FC<ModalProps> = ({
         <div
          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 transition-opacity duration-200 ease-out"
           onClick={handleBackdropClick}>
-            <div className="bg-light rounded-xl text-dark flex flex-col shadow-500base px-8 py-4">
+            <div className="relative bg-light rounded-xl text-dark flex flex-col shadow-500base px-8 py-4">
                 
-                {/* Header */}
-                <div className="flex">
-                    <div className="flex flex-col items-center">
-                        <h2 className="font-oswald text-2xl wrap-anywhere">{title}</h2>
-                        {description && <p className="font-didact text-greydarker text-lg">{description}</p>}
-                    </div>
+                <Button
+                 className="absolute top-2 right-2"
+                 size="iconS"
+                 variant="secondary"
+                 onClick={modal.closeModal}>
+                    <FontAwesomeIcon icon={Icons.xmark}/>
+                </Button>
 
+                {/* Header */}
+                <div className="flex flex-col items-center">
+                    <h2 className="font-oswald text-2xl wrap-anywhere">{title}</h2>
+                    {description && <p className="font-didact text-greydarker text-lg">{description}</p>}
                 </div>
                 
                 {/* Contenu */}
-                <div className="flex-1 px-6 py-4 flex flex-col items-center">
+                <div className="mt-8 flex flex-col items-center">
                     {children}
                 </div>               
             </div>

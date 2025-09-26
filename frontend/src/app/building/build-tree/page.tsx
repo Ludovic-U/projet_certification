@@ -13,7 +13,7 @@ import { PageHeader, Button, Modal } from "@/components/ui";
 import { QuestionNode } from "@/components/ui/Nodes/Question";
 import { LeafNode } from "@/components/ui/Nodes/Leaf";
 
-import Question from "@/components/forms/QuestionForm";
+import Question from "@/components/forms/Answer";
 
 
 export default function BuildingPage() {
