@@ -471,7 +471,13 @@ describe("Question Service", () => {
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
-        include: { projects: true, types: true, options: true, children: true },
+        include: {
+          responses: true,
+          projects: true,
+          types: true,
+          options: true,
+          children: { include: { responses: true } },
+        },
       });
       expect(result).toEqual(mockQuestion);
     });
@@ -496,7 +502,13 @@ describe("Question Service", () => {
 
       expect(prisma.question.findUnique).toHaveBeenCalledWith({
         where: { questionId: questionId },
-        include: { projects: true, types: true, options: true, children: true },
+        include: {
+          responses: true,
+          projects: true,
+          types: true,
+          options: true,
+          children: { include: { responses: true } },
+        },
       });
     });
   });
@@ -525,10 +537,10 @@ describe("Question Service", () => {
       expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
         include: {
-          questions: true,
+          questions: { include: { responses: true } },
           types: {
             include: {
-              questions: true,
+              questions: { include: { responses: true } },
             },
           },
         },
@@ -550,10 +562,10 @@ describe("Question Service", () => {
       expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
         include: {
-          questions: true,
+          questions: { include: { responses: true } },
           types: {
             include: {
-              questions: true,
+              questions: { include: { responses: true } },
             },
           },
         },
@@ -582,10 +594,10 @@ describe("Question Service", () => {
       expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
         include: {
-          questions: true,
+          questions: { include: { responses: true } },
           types: {
             include: {
-              questions: true,
+              questions: { include: { responses: true } },
             },
           },
         },

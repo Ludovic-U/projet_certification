@@ -263,7 +263,7 @@ describe("Response Service", () => {
         select: {
           questions: {
             where: { questionId: questionId },
-            select: { responses: true },
+            select: { responses: { include: { children: true } } },
           },
         },
       });
@@ -303,7 +303,7 @@ describe("Response Service", () => {
         select: {
           questions: {
             where: { questionId: questionId },
-            select: { responses: true },
+            select: { responses: { include: { children: true } } },
           },
         },
       });
@@ -326,7 +326,7 @@ describe("Response Service", () => {
         select: {
           questions: {
             where: { questionId: questionId },
-            select: { responses: true },
+            select: { responses: { include: { children: true } } },
           },
         },
       });

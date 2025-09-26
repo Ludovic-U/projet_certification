@@ -87,7 +87,7 @@ module.exports.getResponsesByQuestionOfProject = async (
     select: {
       questions: {
         where: { questionId: questionId },
-        select: { responses: true },
+        select: { responses: { include: { children: true } } },
       },
     },
   });

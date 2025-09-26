@@ -163,13 +163,19 @@ module.exports.deleteQuestion = async (questionId) => {
  * @async
  * @function getQuestionById
  * @param {number} questionId - The ID of the question to retrieve.
- * @returns {Promise<Object>} The found question, including projects, types, options and children.
+ * @returns {Promise<Object>} The found question, including responses, projects, types, options and children.
  * @throws {Error} If the question does not exist.
  */
 module.exports.getQuestionById = async (questionId) => {
   const question = await prisma.question.findUnique({
     where: { questionId: questionId },
-    include: { projects: true, types: true, options: true, children: true },
+    include: {
+      responses: true,
+      projects: true,
+      types: true,
+      options: true,
+      children: { include: { responses: true } },
+    },
   });
 
   if (!question) {
@@ -186,17 +192,17 @@ module.exports.getQuestionById = async (questionId) => {
  * @async
  * @function getQuestionsByProject
  * @param {number} projectId - The project ID.
- * @returns {Promise<Array<Object>>} List of questions for the project.
+ * @returns {Promise<Array<Object>>} List of questions for the project, including there responses.
  * @throws {Error} If the project does not exist.
  */
 module.exports.getQuestionsByProject = async (projectId) => {
   const projectWithQuestions = await prisma.project.findUnique({
     where: { projectId },
     include: {
-      questions: true, // Direct relation between Project and Question
+      questions: { include: { responses: true } }, // Direct relation between Project and Question
       types: {
         include: {
-          questions: true, // Direct relation between Type and Question
+          questions: { include: { responses: true } }, // Direct relation between Type and Question
         },
       },
     },
