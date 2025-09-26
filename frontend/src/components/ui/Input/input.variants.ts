@@ -6,8 +6,8 @@ export const inputVariants = cva(
         "bg-background border border-dark",
         "px-3 py-2 ",
         "text-base font-noto text-dark",
-        "hover:bg-lighthover",
-        "focus:outline focus:outline-primary focus:border-primary",
+        "hover:border-dashed hover:border-primary",
+        "focus:outline-none focus:border-solid focus:border-primary",
     ],
     {
         variants: {

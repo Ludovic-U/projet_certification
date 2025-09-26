@@ -30,22 +30,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         const isDisabled = disabled || loading;
 
         return (
-            <div>
+            <div className="relative">
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="inline-flex text-dark mb-2 font-didact text-base"
+                        className="absolute -top-2.5 left-3 bg-light px-1 text-dark font-didact text-sm"
                     >
                         {props.required && (
                             <span className="text-alertdanger mr-1 font-bold text-xl">
                                 *
                             </span>
                         )}
-                        {label} :
+                        {label}
                     </label>
                 )}
 
-                <div className="relative">
+                {/* <div className="relative"> */}
                     {leftIcon && (
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-grey">
                             {leftIcon}
@@ -79,7 +79,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                             {loading ? <LoadingSpinner /> : rightIcon}
                         </div>
                     )}
-                </div>
+                {/* </div> */}
 
                 {error && (
                     <p

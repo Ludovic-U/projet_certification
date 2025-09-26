@@ -6,7 +6,7 @@ import { useState, useCallback } from "react";
 import { ReactFlow, ControlButton, Controls } from "@xyflow/react"
 import '@xyflow/react/dist/style.css';
 
-import { PageHeader, Button, Modal } from "@/components/ui";
+import { PageHeader, Button, Modal, Input } from "@/components/ui";
 import { QuestionNode } from "@/components/ui/Nodes/Question";
 import { LeafNode } from "@/components/ui/Nodes/Leaf";
 import { Icons, FontAwesomeIcon } from "@/lib/icons";
@@ -21,12 +21,25 @@ export default function BuildingPage() {
             <PageHeader title="Page de build" description="app/building/page.tsx"/>
             <section className="flex-1 flex flex-col items-center justify-center">
                 <Button onClick={modal.openModal}>Ouvrir</Button>
-                    <Modal
+                    <Modal modal={modal}
+                     title="AJOUTER UN CLIENT"
+                     description="Entrez les informations du nouveau client">
+                        <div className="w-full flex flex-col gap-4">
+                            <Input label="Nom"/>
+                            <Input label="Type"/>
+                            <Input label="Description"/>
+                        </div>
+                        <Button className="mt-5">Créer</Button>
+                    </Modal>
+
+
+
+                    {/* <Modal
                      modal={modal}
                      title="Qu'en est-il de telle situation ?">
                         <textarea className="border rounded-lg h-40 w-70 p-2 resize-none"/>
                         <Button className="mt-5">Valider</Button>
-                    </Modal>
+                    </Modal> */}
 
 
                 {/* <div className="bg-pink-300 w-[80%] h-[70%]">
