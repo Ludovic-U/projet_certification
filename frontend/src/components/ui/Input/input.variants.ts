@@ -12,8 +12,8 @@ export const inputVariants = cva(
     {
         variants: {
             variant: {
-                error: "border-alertdanger bg-alertdanger50",
-                success: "border-alertsuccess bg-alertsuccess50",
+                error: "border-alertdanger",
+                success: "border-alertsuccess",
             },
         },
     }
