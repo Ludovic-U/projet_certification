@@ -1,0 +1,184 @@
+const request = require("supertest");
+const app = require("../../index");
+const { seedProjectWithClientAndManager } = require("../helpers/seed");
+
+describe("Admin Flow", () => {
+  let project;
+
+  beforeEach(async () => {
+    // Seed db with a Client, a User (Manager) and a project
+    const seeded = await seedProjectWithClientAndManager();
+    project = seeded.project;
+  });
+
+  it("should Allow admin to manage questions", async () => {
+    // Admin creates a new type
+    const createdType = await request(app)
+      .post("/api/type/create")
+      .send({ label: "General" });
+    expect(createdType.status).toBe(201);
+
+    // Admin create a type-specific question
+    const createdTypeQuestion = await request(app)
+      .post("/api/question/create")
+      .send({
+        label: "A general question",
+        category: "Idea",
+        types: [createdType.body.typeId],
+      });
+    expect(createdTypeQuestion.status).toBe(201);
+
+    // Admin links the type to the project
+    const updatedType = await request(app)
+      .patch(`/api/type/update/${createdType.body.typeId}`)
+      .send({ label: createdType.body.label, addProject: [project.projectId] });
+    expect(updatedType.status).toBe(200);
+
+    // Admin creates a project-specific question
+    const createdProjectQuestion = await request(app)
+      .post("/api/question/create")
+      .send({
+        label: "Question 01",
+        category: "Idea",
+        projects: [project.projectId],
+      });
+    expect(createdProjectQuestion.status).toBe(201);
+
+    // System: fetch all project questions
+    const allquestionsFromProject = await request(app).get(
+      `/api/question/get/project/${project.projectId}`
+    );
+    expect(allquestionsFromProject.status).toBe(200);
+    expect(allquestionsFromProject.body).toHaveLength(2);
+    expect(allquestionsFromProject.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "A general question",
+          category: "Idea",
+        }),
+        expect.objectContaining({ label: "Question 01", category: "Idea" }),
+      ])
+    );
+
+    // Admin update the type-specific question
+    const updatedTypeQuestion = await request(app)
+      .patch(`/api/question/update/${createdTypeQuestion.body.questionId}`)
+      .send({
+        label: "Updated Question Label",
+        category: createdTypeQuestion.body.category,
+      });
+    expect(updatedTypeQuestion.status).toBe(200);
+    expect(updatedTypeQuestion.body.label).toBe("Updated Question Label");
+
+    // Admin delete the project-specific question
+    const deletedProjectQuestion = await request(app).delete(
+      `/api/question/delete/${createdProjectQuestion.body.questionId}`
+    );
+    expect(deletedProjectQuestion.status).toBe(204);
+
+    // System: try fetching the deleted project-specific question
+    const checkDeletedProjectQuestion = await request(app).get(
+      `/api/question/get/${createdProjectQuestion.body.questionId}`
+    );
+    expect(checkDeletedProjectQuestion.status).toBe(404);
+
+    // System: fetch all project questions atfer changes
+    const refetchAllQuestions = await request(app).get(
+      `/api/question/get/project/${project.projectId}`
+    );
+    expect(refetchAllQuestions.status).toBe(200);
+    expect(refetchAllQuestions.body).toHaveLength(1);
+    expect(refetchAllQuestions.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Updated Question Label",
+          category: "Idea",
+        }),
+      ])
+    );
+  });
+
+  it("should allow admin to create a question with subquestions and options", async () => {
+    // Admin create a new question
+    const createdQuestion = await request(app)
+      .post("/api/question/create")
+      .send({
+        label: "Question 01",
+        category: "Idea",
+      });
+    expect(createdQuestion.status).toBe(201);
+
+    // Admin create a new subquestion
+    const createdSubquestion1 = await request(app)
+      .post("/api/question/create")
+      .send({
+        label: "Subquestion 01 of Question 01",
+        category: "Idea",
+        questionIdParent: createdQuestion.body.questionId,
+      });
+    expect(createdSubquestion1.status).toBe(201);
+
+    // Admin create a new subquestion that will have 2 option
+    const createdSubquestion2 = await request(app)
+      .post("/api/question/create")
+      .send({
+        label: "Subquestion 02 of Question 01",
+        category: "Idea",
+        numberOfSelectionableOpt: 1,
+        questionIdParent: createdQuestion.body.questionId,
+      });
+    expect(createdSubquestion2.status).toBe(201);
+
+    // Admin create 2 new options for the subquestion
+    const option1 = await request(app).post("/api/option/create").send({
+      label: "Option 01 of Subquestion 02",
+      questionId: createdSubquestion2.body.questionId,
+    });
+    expect(option1.status).toBe(201);
+
+    const option2 = await request(app).post("/api/option/create").send({
+      label: "Option 02 of Subquestion 02",
+      questionId: createdSubquestion2.body.questionId,
+    });
+    expect(option2.status).toBe(201);
+
+    // System: fetch the first question
+    const firstQuestion = await request(app).get(
+      `/api/question/get/${createdQuestion.body.questionId}`
+    );
+    expect(firstQuestion.status).toBe(200);
+    expect(firstQuestion.body.label).toBe("Question 01");
+
+    // System: fetch the first question subquestions
+    const allSubquestions = await request(app).get(
+      `/api/question/get/${firstQuestion.body.questionId}/subquestion`
+    );
+    expect(allSubquestions.status).toBe(200);
+    expect(allSubquestions.body).toHaveLength(2);
+    expect(allSubquestions.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: "Subquestion 01 of Question 01" }),
+        expect.objectContaining({ label: "Subquestion 02 of Question 01" }),
+      ])
+    );
+
+    // System: fetch the subquestion with options
+    const subquestionWithOptions = await request(app).get(
+      `/api/question/get/${allSubquestions.body[1].questionId}`
+    );
+    expect(subquestionWithOptions.status).toBe(200);
+    expect(subquestionWithOptions.body.options).toHaveLength(2);
+    expect(subquestionWithOptions.body.options).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Option 01 of Subquestion 02",
+          questionId: createdSubquestion2.body.questionId,
+        }),
+        expect.objectContaining({
+          label: "Option 02 of Subquestion 02",
+          questionId: createdSubquestion2.body.questionId,
+        }),
+      ])
+    );
+  });
+});

@@ -5,9 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:integration": "NODE_ENV=test npx jest --config jest.config.integration.js",
-    "test:scenario": "NODE_ENV=test npx jest --config jest.config.scenario.js",
+    "test:userflow": "NODE_ENV=test npx jest --config jest.config.userflow.js",
     "test:controllers": "npx jest tests/controllers",
     "test:services": "npx jest tests/services",
+    "test:all": "npm run test:controllers && npm run test:services && npm run test:integration && npm run test:userflow",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
