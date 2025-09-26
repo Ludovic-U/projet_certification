@@ -117,8 +117,8 @@ export default function BuildingPage() {
                             title="Créer un nouveau projet"
                             description="Description de la section">
                                 <p>children</p>
-                            </Modal>                    
-                        </div>                        
+                            </Modal>
+                        </div>
                     </div>
                 </div>
 

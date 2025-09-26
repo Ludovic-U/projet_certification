@@ -52,14 +52,7 @@ export default function BuildingPage() {
     // ];
 
     const modal = useModal();
-
-    // <Button onClick={modal.openModal}>Ouvrir</Button>
-    // <Modal
-    // modal={modal}
-    // title="Créer un nouveau projet"
-    // description="Description de la section">
-    //     <p>children</p>
-    // </Modal>    
+    const qst = "Pouvez-vous expliquer ces obstacles aussi simplement que possible ?"
 
     return (
         <div className="h-full flex flex-col">
@@ -81,10 +74,10 @@ export default function BuildingPage() {
                             {/* <Controls/> */}
                         </ReactFlow>
                         <Modal
-                         modal={modal}
-                         title="Question à propos de oui non ou bien je ne sais pas, voilà quoi ?"
-                         description="Répondre pour débloquer plus de questions.">
-                            <Question/>
+                        modal={modal}
+                        title={qst}>
+                            <textarea className="border rounded-lg h-40 w-70 p-2 resize-none"/>
+                            <Button className="mt-5">Valider</Button>
                         </Modal>
                     </div>
                 </div>
