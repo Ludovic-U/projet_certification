@@ -4,17 +4,30 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-module.exports.hasPermissionTo = (userPermissions, permission) => {
-  // Check if the user has a role that grants the permission
-    if ( userPermissions.includes(permission)) {
-      return true; // User has the permission 
-    }  
+// Exemple d’utilisation
+// checkPermission(user, "project:create:any");
+// checkPermission(user, ["project:create:any", "project:create:org"]); 
 
-  return false; // User does not have the permission
-}
+module.exports.checkPermission = (user, permissionsRequired) => {
+  if (!user || !user.permissions) {
+    throw new Error('checkPermission: no user or no permissions');
+  }
 
+  // Normalise en tableau
+  const requiredList = Array.isArray(permissionsRequired)
+    ? permissionsRequired
+    : [permissionsRequired];
 
+  // Vérifie si au moins une des permissions est présente
+  const hasAtLeastOne = requiredList.some(p => user.permissions.includes(p));
 
+  if (!hasAtLeastOne) {
+    var error = new Error(`Unauthorized - requires one of: ${requiredList.join(', ')}`);
+    error.status = 403; // Forbidden
+  
+    throw error;
+  }
+};
 
 
 

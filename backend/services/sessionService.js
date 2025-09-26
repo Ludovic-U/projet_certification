@@ -29,6 +29,7 @@ module.exports.extendSession = async (sessionId, additionalHours = sessionDurati
       expiresAt: newExpirationDate
     }
   });
+  console.log(`Session ${sessionId} extended to ${newExpirationDate}`)
 };
 
 module.exports.createSession = async (userId, tokenHash, req = null, durationHours = sessionDurationHours) => {

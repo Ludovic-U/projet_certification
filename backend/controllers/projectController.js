@@ -17,7 +17,7 @@ const { validateId } = require('./helpers/validateId');
  *  "clientId": 1
  * }
  * */
-module.exports.createProject = async (req, res) => {
+module.exports.createProjectPost = async (req, res) => {
     const { name, description, clientId } = req.body;
     if (!name || !clientId) {
         return res.status(400).json({ error: "name and clientId are required" });
@@ -44,7 +44,7 @@ module.exports.createProject = async (req, res) => {
  *  "description": "Updated description"
  * }    
  * */
-module.exports.updateProject = async (req, res) => {
+module.exports.updateProjectPost = async (req, res) => {
     const projectId = Number(req.params.projectId);
     // Validate projectId
     if (!validateId(projectId, "projectId", res)) return;  
@@ -73,7 +73,7 @@ module.exports.updateProject = async (req, res) => {
  * Expects projectId in req.params.
  * Responds with the deleted project object.
  * */   
-module.exports.deleteProject = async (req, res) => {
+module.exports.deleteProjectPost = async (req, res) => {
     const projectId = Number(req.params.projectId); 
     // Validate projectId
     if (!validateId(projectId, "projectId", res)) return;

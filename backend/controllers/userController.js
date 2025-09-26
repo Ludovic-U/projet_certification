@@ -140,7 +140,7 @@ module.exports.resetPasswordPost = async (req, res) => {
   }
 
   try {
-    await userService.resetPassword(token, newPassword);
+    await resetPassword(token, newPassword);
     return res.json({ message: 'Password reset successful' });
   } catch (err) {
     if (err.message === 'Invalid token') {
