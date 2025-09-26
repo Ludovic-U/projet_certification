@@ -1,6 +1,19 @@
 "use client";
 
-import { PageHeader, Button, Card, Checkbox, Input, LoadingSpinner, Radio, RadioGroup, Toggle } from "@/components/ui";
+import {
+    PageHeader,
+    Button,
+    Card,
+    Checkbox,
+    Input,
+    LoadingSpinner,
+    Radio,
+    RadioGroup,
+    Toggle,
+    Tooltip
+} from "@/components/ui";
+import CreateClientForm from "@/components/forms/CreateClient";
+
 import { Modal } from "@/components/ui"
 import { useModal } from "@/hooks"
 import React from "react";
@@ -111,13 +124,26 @@ export default function BuildingPage() {
                         </div>
                         <div className="p-3 border w-fit h-fit flex gap-4">
                             <h2 className="font-oswald text-2xl">Modal :</h2>
-                            <Button onClick={modal.openModal}>Ouvrir</Button>
-                            <Modal
-                            modal={modal}
-                            title="Créer un nouveau projet"
-                            description="Description de la section">
-                                <p>children</p>
-                            </Modal>
+                            <div className="flex flex-col">
+                                <div>
+                                    <Tooltip content="Ajouter un client" position="rightTop">
+                                        <Button
+                                         onClick={modal.openModal}
+                                         size="sm">
+                                            <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={Icons.plus}/>
+                                            </div>
+                                            Nouveau client
+                                        </Button>
+                                    </Tooltip>
+                                    <Modal modal={modal}
+                                     title="AJOUTER UN CLIENT"
+                                     description="Entrez les informations du nouveau client">
+                                        <CreateClientForm/>
+                                    </Modal>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>

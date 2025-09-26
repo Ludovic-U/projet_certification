@@ -17,7 +17,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
         left: "right-full top-1/2 -translate-y-1/2 mr-2",
         right: "left-full top-1/2 -translate-y-1/2 ml-2",
         rightMenu: "left-full top-1/2 -translate-y-1/2 ml-4",
-        leftBottom: "top-full right-0 mt-2"
+        leftTop: "bottom-full right-1/2 mb-1",
+        rightTop: "bottom-full left-1/2 mb-1",
+        leftBottom: "top-full right-1/2 mt-1",
+        rightBottom: "top-full left-1/2 mt-1",
+
     }[position];
 
     return (
