@@ -10,10 +10,16 @@ import {
     Input,
     Pagination,
     clientsList,
- } from "@/components/ui";
- import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
+    Tooltip,
+    Modal
+} from "@/components/ui";
+import CreateClientForm from "@/components/forms/CreateClient";
+
+import { useModal } from "@/hooks";
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 export default function ClientsPage() {
+    const modal = useModal()
     const clients = [
         {id : 1, name: "Entreprise Alpha", sector: "Finance", contact: "Jean Dupont"},
         { id: 2, name: "Startup Beta", sector: "Tech", contact: "Alice Martin" },
@@ -40,11 +46,37 @@ export default function ClientsPage() {
     return (
         <div className="h-full flex flex-col">
             <PageHeader title="Liste des clients" description="Consultez la liste des clients et accèdez aux détails."/>
+
             <section className="flex flex-col flex-1 justify-center items-center">
+                <div className="w-[95%] self-center flex justify-between gap-5">
+                    <div>
+                        <Tooltip content="Ajouter un client" position="rightBottom">
+                            <Button
+                            onClick={modal.openModal}
+                            size="sm">
+                                <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
+                                    <FontAwesomeIcon icon={Icons.plus}/>
+                                </div>
+                                Nouveau client
+                            </Button>
+                        </Tooltip>
+                        <Modal modal={modal}
+                        title="AJOUTER UN CLIENT"
+                        description="Entrez les informations du nouveau client">
+                            <CreateClientForm/>
+                        </Modal>
+                    </div>
+                    <div>
+                        <Input
+                        type="search"
+                        leftIcon={<FontAwesomeIcon icon={Icons.search}/>}
+                        placeholder="Recherchez un client..."/>
+                    </div>
+                </div>
+                
                 <TableResponsive<typeof currentData[0]>
                  data={currentData}
-                 columns={clientsList}/>      
-
+                 columns={clientsList}/>
                 <Table<typeof currentData[0]>
                  data={currentData}
                  columns={clientsList}/>

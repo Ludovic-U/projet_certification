@@ -85,7 +85,7 @@ const Modal: React.FC<ModalProps> = ({
 
     const modalContent = (
         <div
-         className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 transition-opacity duration-200 ease-out"
+         className="fixed select-none inset-0 bg-black/70 flex items-center justify-center z-50 p-4 transition-opacity duration-200 ease-out"
           onClick={handleBackdropClick}>
             <div className="relative bg-light rounded-xl text-dark flex flex-col shadow-500base px-8 py-4">
                 
