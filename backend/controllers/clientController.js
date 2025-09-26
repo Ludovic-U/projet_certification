@@ -18,7 +18,7 @@ module.exports.getClientById = async (req, res) => {
     const clientId = Number(req.params.clientId);  
     console.log("clientId:", clientId);
     if (isNaN(clientId)) {
-         res.status(400).json({ error: "Invalid clientId" });
+         res.status(400).json({ error: "Client not found" });
     }   
     try {
         const client = await getClientById(user, clientId);
@@ -40,7 +40,7 @@ module.exports.createClientPost = async (req, res) => {
     }
     try {
         await createClient(user, name, type, desc);
-        res.status(201).json("client created");
+        res.status(200).json({message: "client created"});
     } catch (error) {
         console.error('Error creating client:', error);
         res.status(500).json({ error: 'Internal server error' });

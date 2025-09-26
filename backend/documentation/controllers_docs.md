@@ -158,11 +158,11 @@ Réinitialise le mot de passe d’un utilisateur à partir d’un token de réin
     ```
 * **Réponses** :
 
-   * **201 Created** : Client créé avec succès.
+   `200` Created → {message: "client created"}
 
-   * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
+   `400` Forbidden → { error: "Missing required fields: name and type" }
 
-   * **500 Internal Server Error** : Erreur lors de la création du client.
+   `500` Internal Server Error → { error: 'Internal server error' }
 
 ### GET `api/client/get` :
 
@@ -170,11 +170,36 @@ Réinitialise le mot de passe d’un utilisateur à partir d’un token de réin
 
 * **Réponses** :
 
-    * **200 OK** : Retourne la liste des clients.
+    `200` OK → Retourne la liste des clients.
 
-    * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
+    `403` Forbidden → Si l'utilisateur n'est pas un administrateur.
 
-    * **500 Internal Server Error** : Erreur lors de la récupération des clients.
+    `500` Internal Server Error → Erreur lors de la récupération des clients.
+
+### GET `api/client/getById/:clientId` :
+
+* **Description** : Récupère un client avec son id.
+
+* **Réponses** :
+
+    `200` OK → Retourne le client. exemple:
+
+    ```json
+    {
+    "clientId": 1,
+    "clientName": "LambdaSARL",
+    "clientType": "Example",
+    "description": "Un exemple de client",
+    "createdAt": "2025-08-14T12:31:16.970Z"
+    }
+
+    ```
+
+    `400` Forbidden → { error: "Client not found" }
+
+    `404` Not Found → { error: "Client not found" }
+
+    `500` Internal Server Error → { error: 'Internal server error' }
 
 
 # projectController
@@ -185,9 +210,7 @@ Réinitialise le mot de passe d’un utilisateur à partir d’un token de réin
 * **Corps de la Requête**:
     ```json
     {
-    "name": "Nom du Client",
-    "type": "Type du Client",
-    "desc": "Description du client"
+    
     }
     ```
 * **Réponses** :

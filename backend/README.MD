@@ -17,10 +17,9 @@
 - POST [`api/user/register`](./documentation/controllers_docs.md#post-apiuserclientnameregister) : créer un utilisateur et le lie au client
 - POST [`api/user/forgot-password`](./documentation/controllers_docs.md#post-apiuserforgot-password) : envoie un lien de reset de mdp, contenant un token à usage unique, à un email.
 - POST [`api/user/reset-password`](./documentation/controllers_docs.md#post-apiuserreset-password) : consomme le token à usage unique, change le mdp.
-- POST [`api/client/create`](./documentation/controllers_docs.md#post-apiclientcreate) : créer un nouveau client
 - GET [`api/client/get`](./documentation/controllers_docs.md#post-apiclientget) : retourne la liste de tout les clients
-- POST [`api/project/:clientName/create`](./documentation/controllers_docs.md#post-apiclientcreate) : créer un nouveau client
-- GET [`api/client/:clientName/get`](./documentation/controllers_docs.md#post-apiclientget) : retourne la liste de tout les clients
+- GET [`api/client/getById/:clientId`](./documentation/controllers_docs.md#post-apiclientget) : retourne un seul client
+- POST [`api/client/create`](./documentation/controllers_docs.md#post-apiclientcreate) : créer un nouveau client
 - 
 
 
