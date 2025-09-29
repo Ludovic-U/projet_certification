@@ -2,8 +2,16 @@ const { prisma } = require("../prisma/prismaClient");
 
 /**
  * Create a new response.
+ *
+ * @async
+ * @function createResponse
  * @param {Object} data - The response data to create.
- * @returns {Promise<Oject>} The created response.
+ * @param {string|null} [data.label=null] - The response text.
+ * @param {string} data.projectId - The ID of the associated project.
+ * @param {number} data.questionId - The ID of the associated question.
+ * @param {number|null} [data.optionId=null] - The ID of the associated option.
+ * @param {number"null} [data.responseIdParent=null] - Parent response ID if this is a sub-response.
+ * @returns {Promise<Object>} The created response.
  */
 module.exports.createResponse = async (data) => {
   return await prisma.response.create({ data });
@@ -11,10 +19,18 @@ module.exports.createResponse = async (data) => {
 
 /**
  * Update a response by ID.
+ *
+ * @async
+ * @function updateResponse
  * @param {number} responseId - The ID of the response to update.
- * @param {Object} data - The data to update.
- * @returns {Promise<Object>} THe updated response.
- * @throws {Error} If the response does not exist
+ * @param {Object} data - The fields to update.
+ * @param {string|null} [data.label] - Updated repsonse text.
+ * @param {string} [data.projectId] - Updated the associated project ID.
+ * @param {number} [data.questionId] - Updated the associated question ID.
+ * @param {number|null} [data.optionId] - Updated the associated option ID.
+ * @param {number"null} [data.responseIdParent] - Updated parent repsonse ID.
+ * @returns {Promise<Object>} The updated response.
+ * @throws {Error} If the response does not exist.
  */
 module.exports.updateResponse = async (responseId, data) => {
   try {
@@ -32,6 +48,9 @@ module.exports.updateResponse = async (responseId, data) => {
 
 /**
  * Delete a response by ID.
+ *
+ * @async
+ * @function deleteResponse
  * @param {number} responseId - The ID of the response to delete.
  * @returns {Promise<Object>} The deleted response.
  * @throws {Error} If the response does not exist.
@@ -50,10 +69,14 @@ module.exports.deleteResponse = async (responseId) => {
 };
 
 /**
- * Get responses by question of a project.
- * @param {number} projectId - The project ID.
- * @param {number} questionId - The Question ID.
- * @returns {Promise<Array>} List of responses.
+ * Get responses by question ID of project ID.
+ *
+ * @async
+ * @function getResponsesByQuestionOfProject
+ * @param {number} projectId -The ID of the project to retrieve.
+ * @param {number} questionId - The ID of the question to retrieve.
+ * @returns {Promise<Array<Object>>} List of response for the question of a project.
+ * @throws {Error} If the project or question does not exist.
  */
 module.exports.getResponsesByQuestionOfProject = async (
   projectId,
@@ -67,10 +90,13 @@ module.exports.getResponsesByQuestionOfProject = async (
 };
 
 /**
- * Get responses by project.
+ * Get all responses related to a specific project.
+ *
+ * @async
+ * @function getResponsesByProject
  * @param {number} projectId - The project ID.
- * @returns {Promise<Array>} List of responses.
- * @throws {Error} If project does not exist.
+ * @returns {Promise<Array<Object>>} List of responses for the project.
+ * @throws {Error} If the project does not exist.
  */
 module.exports.getResponsesByProject = async (projectId) => {
   const projectWithResponses = await prisma.project.findUnique({
@@ -86,9 +112,13 @@ module.exports.getResponsesByProject = async (projectId) => {
 };
 
 /**
- * Get subReponses by parent response ID.
+ * Get all subresponses for a parent response.
+ *
+ * @async
+ * @function getSubResponses
  * @param {number} responseIdParent - The parent response ID.
- * @returns {Promise<Array>} List of subresponses.
+ * @returns {Promise<Array<Object>>} List of subresponses.
+ * @throws {Error} If the parent response does not exist.
  */
 module.exports.getSubResponses = async (responseIdParent) => {
   const responseParent = await prisma.response.findUnique({

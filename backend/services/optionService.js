@@ -2,8 +2,13 @@ const { prisma } = require("../prisma/prismaClient");
 
 /**
  * Create a new option.
+ *
+ * @async
+ * @function createOption
  * @param {Object} data - The option data to create.
- * @returns {Promise<Object>} The created option.
+ * @param {string} data.label - The option text.
+ * @param {string} data.questionId - The ID of the associated question.
+ * @returns {Promise<Object>} The created response.
  */
 module.exports.createOption = async (data) => {
   return await prisma.option.create({ data });
@@ -11,8 +16,13 @@ module.exports.createOption = async (data) => {
 
 /**
  * Update an option by ID.
+ *
+ * @async
+ * @function updateOption
  * @param {number} optionId - The ID of the option to update.
- * @param {Object} data - The data to update.
+ * @param {Object} data - The fields to update.
+ * @param {string} [data.label] - Updated option text.
+ * @param {string} [data.questionId] - Updated the associated question ID.
  * @returns {Promise<Object>} The updated option.
  * @throws {Error} If the option does not exist.
  */
@@ -29,6 +39,9 @@ module.exports.updateOption = async (optionId, data) => {
 
 /**
  * Delete an option by ID.
+ *
+ * @async
+ * @function deleteOption
  * @param {number} optionId - The ID of the option to delete.
  * @return {Promise<Object>} The deleted option.
  * @throws {Error} If the option does not exist.
@@ -46,6 +59,9 @@ module.exports.deleteOption = async (optionId) => {
 
 /**
  * Get an option by ID.
+ *
+ * @async
+ * @function getOptionById
  * @param {number} optionId - The ID of the option to retrieve.
  * @returns {Promise<Object>} The found option.
  * @throws {Error} If the option does not exist.
@@ -63,9 +79,13 @@ module.exports.getOptionById = async (optionId) => {
 };
 
 /**
- * Get all options by question.
+ * Get all options by question ID.
+ *
+ * @async
+ * @function getOptionsByQuestion
  * @param { number} questionId - The question ID.
  * @returns {Promise<Array>} List of options.
+ * @throws {Error} If the question does not exist.
  */
 module.exports.getOptionsByQuestion = async (questionId) => {
   const questionWithOptions = await prisma.question.findUnique({

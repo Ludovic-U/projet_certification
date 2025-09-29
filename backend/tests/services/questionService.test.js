@@ -39,7 +39,10 @@ describe("Question Service", () => {
         numberOfSelectionableOpt: 0,
         isRelevant: true,
         hasMultipleOpenResponse: false,
+        shouldMultiply: false,
         questionIdParent: null,
+        types: [],
+        projects: [],
       };
       const mockCreatedQuestion = { questionId: 1, ...mockQuestionData };
 
@@ -48,7 +51,46 @@ describe("Question Service", () => {
       const result = await questionService.createQuestion(mockQuestionData);
 
       expect(prisma.question.create).toHaveBeenCalledWith({
-        data: mockQuestionData,
+        data: {
+          label: mockQuestionData.label,
+          category: mockQuestionData.category,
+          numberOfSelectionableOpt: mockQuestionData.numberOfSelectionableOpt,
+          isRelevant: mockQuestionData.isRelevant,
+          hasMultipleOpenResponse: mockQuestionData.hasMultipleOpenResponse,
+          shouldMultiply: mockQuestionData.shouldMultiply,
+          questionIdParent: mockQuestionData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
+      });
+      expect(result).toEqual(mockCreatedQuestion);
+    });
+
+    it("should create and return a new question with types/projects", async () => {
+      const mockQuestionData = {
+        label: "Question with relations",
+        category: "general",
+        types: [1, 2],
+        projects: [1],
+      };
+      const mockCreatedQuestion = { questionId: 1, ...mockQuestionData };
+
+      prisma.question.create.mockResolvedValue(mockCreatedQuestion);
+
+      const result = await questionService.createQuestion(mockQuestionData);
+
+      expect(prisma.question.create).toHaveBeenCalledWith({
+        data: {
+          label: mockQuestionData.label,
+          category: mockQuestionData.category,
+          types: { connect: [{ typeId: 1 }, { typeId: 2 }] },
+          projects: { connect: [{ projectId: 1 }] },
+        },
+        include: { types: true, projects: true },
       });
       expect(result).toEqual(mockCreatedQuestion);
     });
@@ -62,7 +104,16 @@ describe("Question Service", () => {
         "Invalid data"
       );
 
-      expect(prisma.question.create).toHaveBeenCalledWith({ data: {} });
+      expect(prisma.question.create).toHaveBeenCalledWith({
+        data: {
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
+      });
     });
 
     it("should throw an error if creation fails", async () => {
@@ -72,6 +123,7 @@ describe("Question Service", () => {
         numberOfSelectionableOpt: 0,
         isRelevant: true,
         hasMultipleOpenResponse: false,
+        shouldMultiply: false,
         questionIdParent: null,
       };
       const mockError = new Error("Database error");
@@ -83,7 +135,21 @@ describe("Question Service", () => {
       ).rejects.toThrow("Database error");
 
       expect(prisma.question.create).toHaveBeenCalledWith({
-        data: mockQuestionData,
+        data: {
+          label: mockQuestionData.label,
+          category: mockQuestionData.category,
+          numberOfSelectionableOpt: mockQuestionData.numberOfSelectionableOpt,
+          isRelevant: mockQuestionData.isRelevant,
+          hasMultipleOpenResponse: mockQuestionData.hasMultipleOpenResponse,
+          shouldMultiply: mockQuestionData.shouldMultiply,
+          questionIdParent: mockQuestionData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
     });
   });
@@ -147,6 +213,7 @@ describe("Question Service", () => {
         numberOfSelectionableOpt: 1,
         isRelevant: false,
         hasMultipleOpenResponse: true,
+        shouldMultiply: false,
         questionIdParent: null,
       };
       const mockUpdatedQuestion = { questionId: questionId, ...mockUpdateData };
@@ -160,7 +227,58 @@ describe("Question Service", () => {
 
       expect(prisma.question.update).toHaveBeenCalledWith({
         where: { questionId: questionId },
-        data: mockUpdateData,
+        data: {
+          label: mockUpdateData.label,
+          category: mockUpdateData.category,
+          numberOfSelectionableOpt: mockUpdateData.numberOfSelectionableOpt,
+          isRelevant: mockUpdateData.isRelevant,
+          hasMultipleOpenResponse: mockUpdateData.hasMultipleOpenResponse,
+          shouldMultiply: mockUpdateData.shouldMultiply,
+          questionIdParent: mockUpdateData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
+      });
+      expect(result).toEqual(mockUpdatedQuestion);
+    });
+
+    it("should update and return the updated question with adding/removing types/projects", async () => {
+      const questionId = 1;
+      const mockUpdateData = {
+        addType: [4],
+        removeType: [2],
+        addProject: [5],
+        removeProject: [3],
+      };
+      const mockUpdatedQuestion = { questionId: questionId, ...mockUpdateData };
+
+      prisma.question.update.mockResolvedValue(mockUpdatedQuestion);
+
+      const result = await questionService.updateQuestion(
+        questionId,
+        mockUpdateData
+      );
+
+      expect(prisma.question.update).toHaveBeenCalledWith({
+        where: { questionId: questionId },
+        data: {
+          types: {
+            connect: [{ typeId: 4 }],
+            disconnect: [{ typeId: 2 }],
+          },
+          projects: {
+            connect: [{ projectId: 5 }],
+            disconnect: [{ projectId: 3 }],
+          },
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
       expect(result).toEqual(mockUpdatedQuestion);
     });
@@ -187,7 +305,21 @@ describe("Question Service", () => {
 
       expect(prisma.question.update).toHaveBeenCalledWith({
         where: { questionId },
-        data: mockUpdateData,
+        data: {
+          label: mockUpdateData.label,
+          category: mockUpdateData.category,
+          numberOfSelectionableOpt: mockUpdateData.numberOfSelectionableOpt,
+          isRelevant: mockUpdateData.isRelevant,
+          hasMultipleOpenResponse: mockUpdateData.hasMultipleOpenResponse,
+          shouldMultiply: mockUpdateData.shouldMultiply,
+          questionIdParent: mockUpdateData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
     });
 
@@ -212,7 +344,21 @@ describe("Question Service", () => {
 
       expect(prisma.question.update).toHaveBeenCalledWith({
         where: { questionId: questionId },
-        data: mockUpdateData,
+        data: {
+          label: mockUpdateData.label,
+          category: mockUpdateData.category,
+          numberOfSelectionableOpt: mockUpdateData.numberOfSelectionableOpt,
+          isRelevant: mockUpdateData.isRelevant,
+          hasMultipleOpenResponse: mockUpdateData.hasMultipleOpenResponse,
+          shouldMultiply: mockUpdateData.shouldMultiply,
+          questionIdParent: mockUpdateData.questionIdParent,
+          types: undefined,
+          projects: undefined,
+        },
+        include: {
+          types: true,
+          projects: true,
+        },
       });
     });
   });
@@ -327,12 +473,11 @@ describe("Question Service", () => {
       const projectId = 1;
       const mockProject = {
         projectId,
-        questions: [{ questionId: 1, text: "Project question 1" }],
+        questions: [{ questionId: 1 }],
         types: [
           {
-            projectTypes: [
-              { questions: [{ questionId: 2, text: "Type question 1" }] },
-            ],
+            typeId: 1,
+            questions: [{ questionId: 2 }],
           },
         ],
       };
@@ -347,18 +492,12 @@ describe("Question Service", () => {
           questions: true,
           types: {
             include: {
-              projectTypes: {
-                where: { projectId },
-                include: { questions: true },
-              },
+              questions: true,
             },
           },
         },
       });
-      expect(result).toEqual([
-        { questionId: 1, text: "Project question 1" },
-        { questionId: 2, text: "Type question 1" },
-      ]);
+      expect(result).toEqual([{ questionId: 1 }, { questionId: 2 }]);
     });
 
     it("should return an empty array if no questions found", async () => {
@@ -378,10 +517,7 @@ describe("Question Service", () => {
           questions: true,
           types: {
             include: {
-              projectTypes: {
-                where: { projectId },
-                include: { questions: true },
-              },
+              questions: true,
             },
           },
         },
@@ -413,10 +549,7 @@ describe("Question Service", () => {
           questions: true,
           types: {
             include: {
-              projectTypes: {
-                where: { projectId },
-                include: { questions: true },
-              },
+              questions: true,
             },
           },
         },
@@ -441,6 +574,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findMany).toHaveBeenCalledWith({
         where: { category: category },
+        include: { types: true, projects: true },
       });
       expect(result).toEqual(mockQuestions);
     });
@@ -454,6 +588,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findMany).toHaveBeenCalledWith({
         where: { category: category },
+        include: { types: true, projects: true },
       });
       expect(result).toEqual([]);
     });
@@ -470,6 +605,7 @@ describe("Question Service", () => {
 
       expect(prisma.question.findMany).toHaveBeenCalledWith({
         where: { category: category },
+        include: { types: true, projects: true },
       });
     });
   });

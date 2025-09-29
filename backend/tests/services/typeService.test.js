@@ -31,14 +31,40 @@ describe("Type Service", () => {
    */
   describe("createType", () => {
     it("should create and return a new type", async () => {
-      const mockTypeData = { label: "General" };
+      const mockTypeData = { label: "General", questions: [], projects: [] };
       const mockCreatedType = { typeId: 1, ...mockTypeData };
 
       prisma.type.create.mockResolvedValue(mockCreatedType);
 
       const result = await typeService.createType(mockTypeData);
 
-      expect(prisma.type.create).toHaveBeenCalledWith({ data: mockTypeData });
+      expect(prisma.type.create).toHaveBeenCalledWith({
+        data: {
+          label: mockTypeData.label,
+          questions: undefined,
+          projects: undefined,
+        },
+        include: { questions: true, projects: true },
+      });
+      expect(result).toEqual(mockCreatedType);
+    });
+
+    it("should create and return a new type with associated question", async () => {
+      const mockTypeData = { label: "General", questions: [1], projects: [] };
+      const mockCreatedType = { typeId: 1, ...mockTypeData };
+
+      prisma.type.create.mockResolvedValue(mockCreatedType);
+
+      const result = await typeService.createType(mockTypeData);
+
+      expect(prisma.type.create).toHaveBeenCalledWith({
+        data: {
+          label: mockTypeData.label,
+          questions: { connect: [{ questionId: 1 }] },
+          projects: undefined,
+        },
+        include: { questions: true, projects: true },
+      });
       expect(result).toEqual(mockCreatedType);
     });
 
@@ -52,7 +78,10 @@ describe("Type Service", () => {
         "Database error"
       );
 
-      expect(prisma.type.create).toHaveBeenCalledWith({ data: mockTypeData });
+      expect(prisma.type.create).toHaveBeenCalledWith({
+        data: mockTypeData,
+        include: { questions: true, projects: true },
+      });
     });
   });
 
@@ -100,7 +129,31 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: mockUpdatedData,
+        data: { questions: undefined, projects: undefined },
+        include: { questions: true, projects: true },
+      });
+      expect(result).toEqual(mockUpdatedType);
+    });
+
+    it("should update with add/remove an assiociated question and return the updated type", async () => {
+      const typeId = 1;
+      const mockUpdatedData = { addQuestion: [2], removeQuestion: [1] };
+      const mockUpdatedType = { typeId: typeId, ...mockUpdatedData };
+
+      prisma.type.update.mockResolvedValue(mockUpdatedType);
+
+      const result = await typeService.updateType(typeId, mockUpdatedData);
+
+      expect(prisma.type.update).toHaveBeenCalledWith({
+        where: { typeId: typeId },
+        data: {
+          questions: {
+            connect: [{ questionId: 2 }],
+            disconnect: [{ questionId: 1 }],
+          },
+          projects: undefined,
+        },
+        include: { questions: true, projects: true },
       });
       expect(result).toEqual(mockUpdatedType);
     });
@@ -119,7 +172,8 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: mockUpdatedData,
+        data: { questions: undefined, projects: undefined },
+        include: { questions: true, projects: true },
       });
     });
 
@@ -136,7 +190,8 @@ describe("Type Service", () => {
 
       expect(prisma.type.update).toHaveBeenCalledWith({
         where: { typeId: typeId },
-        data: mockUpdatedData,
+        data: { questions: undefined, projects: undefined },
+        include: { questions: true, projects: true },
       });
     });
   });
@@ -203,6 +258,7 @@ describe("Type Service", () => {
 
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
+        include: { questions: true, projects: true },
       });
       expect(result).toEqual(mockType);
     });
@@ -227,6 +283,7 @@ describe("Type Service", () => {
 
       expect(prisma.type.findUnique).toHaveBeenCalledWith({
         where: { typeId: typeId },
+        include: { questions: true, projects: true },
       });
     });
   });
