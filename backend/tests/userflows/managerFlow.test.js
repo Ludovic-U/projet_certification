@@ -16,7 +16,7 @@
  *
  * @example
  * // Run all integration tests for the Manager Flow
- * // npx jest managerFlow.test.js
+ * // NODE_ENV=test npx jest --config jest.config.userflow.js tests/userflows/managerFlow.test.js
  *
  * @tests
  * - Allowing a Manager to:

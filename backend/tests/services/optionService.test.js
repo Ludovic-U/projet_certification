@@ -17,7 +17,7 @@
  *
  * @example
  * // Run all tests for this service
- * // npx jest optionService.test.js
+ * // npx jest tests/services/optionService.test.js
  *
  * @tests
  * - Creating a option with valid/invalid payloads

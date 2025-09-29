@@ -16,7 +16,7 @@
  *
  * @example
  * // Run all integration tests for the Type model
- * // npx jest type.test.js
+ * //  NODE_ENV=test npx jest --config jest.config.integration.js tests/integration/type.test.js
  *
  * @tests
  * - Successfully creating a type in the database

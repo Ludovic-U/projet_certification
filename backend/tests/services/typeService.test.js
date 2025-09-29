@@ -17,7 +17,7 @@
  *
  * @example
  * // Run all tests for this service
- * // npx jest typeService.test.js
+ * // npx jest tests/services/typeService.test.js
  *
  * @tests
  * - Creating a type with valid/invalid payloads

@@ -12,7 +12,7 @@
  *
  * @example
  * // Run the tests with Jest
- * // npx jest validateId.test.js
+ * // npx jest tests/middlewares/validateId.test.js
  *
  * @tests
  * - Converts string ID to number and calls `next()`.

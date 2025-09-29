@@ -17,7 +17,7 @@
  *
  * @example
  * // Run all tests for this controller
- * // npx jest responseController.test.js
+ * // npx jest tests/controllers/responseController.test.js
  *
  * @tests
  * - Creating a response with valid/invalid payloads

@@ -17,7 +17,7 @@
  *
  * @example
  * // Run all tests for this service
- * // npx jest questionService.test.js
+ * // npx jest tests/services/questionService.test.js
  *
  * @tests
  * - Creating a question with valid/invalid payloads

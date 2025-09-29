@@ -16,7 +16,7 @@
  *
  * @example
  * // Run all integration tests for the Response model
- * // npx jest response.test.js
+ * //  NODE_ENV=test npx jest --config jest.config.integration.js tests/integration/respojse.test.js
  *
  * @tests
  * - Successfully creating a response in the database

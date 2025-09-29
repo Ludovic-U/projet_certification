@@ -17,7 +17,7 @@
  *
  * @example
  * // Run all tests for this controller
- * // npx jest optionController.test.js
+ * // npx jest tests/controllers/optionController.test.js
  *
  * @tests
  * - Creating a option with valid/invalid payloads

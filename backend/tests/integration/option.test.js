@@ -16,7 +16,7 @@
  *
  * @example
  * // Run all integration tests for the Option model
- * // npx jest option.test.js
+ * //  NODE_ENV=test npx jest --config jest.config.integration.js tests/integration/option.test.js
  *
  * @tests
  * - Successfully creating a option in the database

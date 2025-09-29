@@ -16,7 +16,7 @@
  *
  * @example
  * // Run all integration tests for the Question model
- * // npx jest question.test.js
+ * // NODE_ENV=test npx jest --config jest.config.integration.js tests/integration/question.test.js
  *
  * @tests
  * - Successfully creating a question in the database

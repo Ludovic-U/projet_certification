@@ -17,7 +17,7 @@
  *
  * @example
  * // Run all integration tests for the Admin Flow
- * // npx jest adminFlow.test.js
+ * // NODE_ENV=test npx jest --config jest.config.userflow.js tests/userflows/adminFlow.test.js
  *
  * @tests
  * - Allowing an admin to:

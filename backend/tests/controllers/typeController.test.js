@@ -17,7 +17,7 @@
  *
  * @example
  * // Run all tests for this controller
- * // npx jest typeController.test.js
+ * // npx jest tests/controllers/typeController.test.js
  *
  * @tests
  * - Creating a type with valid/invalid payloads

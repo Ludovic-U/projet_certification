@@ -17,7 +17,7 @@
  *
  * @example
  * // Run all tests for this controller
- * // npx jest questionController.test.js
+ * // npx jest tests/controllers/questionController.test.js
  *
  * @tests
  * - Creating a question with valid/invalid payloads
