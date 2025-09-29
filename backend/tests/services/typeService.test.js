@@ -183,7 +183,7 @@ describe("Type Service", () => {
       const typeId = 999;
       const mockUpdatedData = { label: "Non-existant label" };
       const mockError = new Error("Type not found");
-      mockError.code = "P025";
+      mockError.code = "P2025";
 
       prisma.type.update.mockRejectedValue(mockError);
 
@@ -237,7 +237,7 @@ describe("Type Service", () => {
     it("should throw an error if the type is not found", async () => {
       const typeId = 999;
       const mockError = new Error("Type not found");
-      mockError.code = "P025";
+      mockError.code = "P2025";
 
       prisma.type.delete.mockRejectedValue(mockError);
 

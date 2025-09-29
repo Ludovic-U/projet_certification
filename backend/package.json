@@ -9,6 +9,7 @@
     "test:controllers": "npx jest tests/controllers",
     "test:services": "npx jest tests/services",
     "test:all": "npm run test:controllers && npm run test:services && npm run test:integration && npm run test:userflow",
+    "test:coverage": "npx jest --coverage",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
