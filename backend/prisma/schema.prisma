@@ -113,14 +113,9 @@ model Project {
   client         Client    @relation(fields: [clientId], references: [clientId])
   manager        User      @relation("ProjectManager", fields: [projectManager], references: [userId])
   actions        Action[]
-<<<<<<< HEAD
 
   types     Type[] @relation("ProjectType")
   questions Question[] @relation("ProjectQuestion")
-=======
-  types     ProjectType[]
-  questions ProjectQuestion[]
->>>>>>> origin/main
   responses Response[]
 }
 
