@@ -6,7 +6,7 @@ const router = Router()
 
 
 router.post('/login', loginPost); // interface : { emailOrUsername, password } = req.body; 
-router.post('/:clientId/register', authenticateUser,registerPost); // TODO: à refaire
+router.post('/register', authenticateUser, registerPost); // TODO: à refaire
 router.post('/logout', logout) // interface : req.cookies.token
 
 router.post('/forgot-password', forgotPasswordPost);    // interface : { email } = req.body;

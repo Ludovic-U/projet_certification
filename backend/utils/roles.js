@@ -8,7 +8,9 @@ const prisma = new PrismaClient();
 // checkPermission(user, "project:create:any");
 // checkPermission(user, ["project:create:any", "project:create:org"]); 
 
-module.exports.checkPermission = (user, permissionsRequired) => {
+module.exports.
+
+checkPermission = (user, permissionsRequired) => {
   if (!user || !user.permissions) {
     throw new Error('checkPermission: no user or no permissions');
   }
