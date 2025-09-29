@@ -91,6 +91,16 @@ async function seedQuestionsWithType() {
   return { type, questions };
 }
 
+/**
+ * Seeds the database with a project, a question, and a type, linking them together.
+ *
+ * @async
+ * @function seedProjectWithQuestions
+ * @returns {Promise<Object>} Resolves to an object containing:
+ *  - project: The created project object with linked questions and types.
+ *  - question: The created question object linked to the project.
+ *  - typeQuestions: Array of questions linked to the type.
+ */
 async function seedProjectWithQuestions() {
   const { project, question } = await seedWithProjectAndQuestion();
   const { type, questions } = await seedQuestionsWithType();
@@ -146,6 +156,15 @@ async function seedQuestionWithOptions() {
   return { question, options: question.options };
 }
 
+/**
+ * Seeds the database with a project and a question linked to it.
+ *
+ * @async
+ * @function seedWithProjectAndQuestion
+ * @returns {Promise<Object>} Resolves to an object containing:
+ *  - project: The created project object with linked questions.
+ *  - question: The created question object linked to the project.
+ */
 async function seedWithProjectAndQuestion() {
   const { project } = await seedProjectWithClientAndManager();
   const question = await facoryFunction.newQuestion({
@@ -185,6 +204,15 @@ async function seedProjectWithResponses() {
   return { project, question, responses };
 }
 
+/**
+ * Seeds the database with a response and a subresponse linked to a subquestion.
+ *
+ * @async
+ * @function seedResponseWithSubresponse
+ * @returns {Promise<Object>} Resolves to an object containing:
+ *  - responseParent: The parent response object with its children included.
+ *  - subresponse: The created subresponse object linked to the parent.
+ */
 async function seedResponseWithSubresponse() {
   const { project } = await seedProjectWithClientAndManager();
   const { questionParent, subquestions } = await seedQuestionWithSubquestion();
@@ -209,6 +237,16 @@ async function seedResponseWithSubresponse() {
   return { responseParent, subresponse };
 }
 
+/**
+ * Seeds the database with a project, its client, and its manager (user).
+ *
+ * @async
+ * @function seedProjectWithClientAndManager
+ * @returns {Promise<Object>} Resolves to an object containing:
+ *  - client: The created client object.
+ *  - user: The created user object (project manager).
+ *  - project: The created project object linked to the client and manager.
+ */
 async function seedProjectWithClientAndManager() {
   const client = await facoryFunction.newClient();
   const user = await facoryFunction.newUser();

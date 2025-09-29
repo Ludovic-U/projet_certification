@@ -145,6 +145,19 @@ async function newOption({ label = "Default Option", questionId } = {}) {
   return option;
 }
 
+/**
+ * Helper function to create a new Project in the database, optionally connecting to types and questions.
+ *
+ * @async
+ * @function newProject
+ * @param {Object} params - Parameters for the new project.
+ * @param {string} [params.projectName="Default ProjectName"] - The name of the project.
+ * @param {string} params.projectManager - The project manager responsible for the project.
+ * @param {string} params.clientId - The client ID this project belongs to.
+ * @param {Array<string>} [params.types=[]] - Array of type IDs to connect.
+ * @param {Array<string>} [params.questions=[]] - Array of question IDs to connect.
+ * @returns {Promise<Object>} Resolves to the created project object, including connected types and questions.
+ */
 async function newProject({
   projectName = "Default ProjectName",
   projectManager,
@@ -170,6 +183,17 @@ async function newProject({
   return project;
 }
 
+/**
+ * Helper function to create a new Client in the database.
+ *
+ * @async
+ * @function newClient
+ * @param {Object} params - Parameters for the new client.
+ * @param {string} [params.clientName="Default Client"] - The name of the client.
+ * @param {string} [params.clientType="Default Type"] - The type/category of the client.
+ * @param {string} [params.description="Default desc."] - Description of the client.
+ * @returns {Promise<Object>} Resolves to the created client object.
+ */
 async function newClient({
   clientName = "Default Client",
   clientType = "Default Type",
@@ -182,6 +206,19 @@ async function newClient({
   return client;
 }
 
+/**
+ * Helper function to create a new User in the database.
+ *
+ * @async
+ * @function newUser
+ * @param {Object} params - Parameters for the new user.
+ * @param {string} [params.firstname="Default Firstname"] - The first name of the user.
+ * @param {string} [params.lastname="Default Lastname"] - The last name of the user.
+ * @param {string} [params.username="Default Username"] - The username for the user.
+ * @param {string} [params.email="test@gmail.com"] - The email address of the user.
+ * @param {string} [params.password="123456"] - The password for the user.
+ * @returns {Promise<Object>} Resolves to the created user object.
+ */
 async function newUser({
   firstname = "Default Firstname",
   lastname = "Default Lastname",
