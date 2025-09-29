@@ -1,3 +1,34 @@
+/**
+ * @fileoverview
+ * Integration tests for the Manager Flow.
+ *
+ * @module managerFlow.test
+ *
+ * @description
+ * Tests the lifecycle of a Manager managing responses within a project context.
+ * Covers:
+ *  - Creating, updating, deleting, and fetching responses for project questions
+ *  - Handling responses to option-based questions
+ *  - Managing multiple responses when questions allow it
+ *  - Working with nested questions and maintaining relational integrity between parent and child responses
+ *
+ * Uses Supertest and a test database setup with seeded Project and Question data.
+ *
+ * @example
+ * // Run all integration tests for the Manager Flow
+ * // npx jest managerFlow.test.js
+ *
+ * @tests
+ * - Allowing a Manager to:
+ *   - Create, update, fetch, and delete responses to project questions
+ *   - Respond to option-based questions by selecting options
+ *   - Submit multiple responses when allowed (hasMultipleOpenResponse)
+ *   - Answer nested questions, linking responses to parent responses
+ * - Validating system behavior:
+ *   - Ensuring deleted responses cannot be retrieved
+ *   - Maintaining parent-child relationships between questions and responses
+ *   - Correctly returning responses when fetching questions and subquestions
+ */
 const request = require("supertest");
 const app = require("../../index");
 const { seedWithProjectAndQuestion } = require("../helpers/seed");
@@ -252,7 +283,7 @@ describe("Manager Flow", () => {
     );
   });
 
-  it("should allow Manager to a nested question", async () => {
+  it("should allow Manager to respond to nested questions", async () => {
     // Setup: added a nested question to the question
     const nestedQuestion = await request(app)
       .post(`/api/question/create`)

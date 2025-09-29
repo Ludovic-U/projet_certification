@@ -1,3 +1,36 @@
+/**
+ * @fileoverview
+ * Integration tests for the Admin Flow.
+ *
+ * @module adminFlow.test
+ *
+ * @description
+ * Tests the full admin lifecycle operations on Questions, Types, Projects,
+ * Subquestions, and Options using a seeded test database.
+ * Covers:
+ *  - Managing question types and linking them to projects
+ *  - Creating, updating, and deleting project-specific and type-specific questions
+ *  - Fetching questions by project and verifying relational integrity
+ *  - Managing hierarchical relationships: questions, subquestions, and options
+ *
+ * Uses Supertest and a test database setup with seeded Client, Manager, and Project data.
+ *
+ * @example
+ * // Run all integration tests for the Admin Flow
+ * // npx jest adminFlow.test.js
+ *
+ * @tests
+ * - Allowing an admin to:
+ *   - Create and update question types
+ *   - Link types to projects
+ *   - Create type-specific and project-specific questions
+ *   - Update and delete questions
+ *   - Adding options to question
+ *   - Fetch project-level questions and verify integrity after changes
+ * - Handling hierarchical questions:
+ *   - Creating a question with subquestions
+ *   - Fetching subquestions
+ */
 const request = require("supertest");
 const app = require("../../index");
 const { seedProjectWithClientAndManager } = require("../helpers/seed");
