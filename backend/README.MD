@@ -10,130 +10,22 @@
    * **CORS (Cross-Origin Resource Sharing)** : Permet d'autoriser toutes les origines et méthodes pour les requêtes entrantes, en définissant les en-têtes appropriés.
 
 ### 2. Routes :
+- GET [`api/me`](./documentation/controllers_docs.md#get-apime) : prend le cookie de session renvoie un objet utilisateur 
 
-* `/api/user` : Routes relatives à l'authentification et à l'enregistrement des utilisateurs.
+- POST [`api/user/login`](./documentation/controllers_docs.md#post-apiuserlogin) : vérifie mdp et email, créé une session de connection, puis renvoie un cookie
+- POST [`api/user/logout`](./documentation/controllers_docs.md#post-apiuserlogout) : prend le cookie de session et supprime les sessions de l'utilisateur
+- POST [`api/user/register`](./documentation/controllers_docs.md#post-apiuserclientnameregister) : créer un utilisateur et le lie au client
+- POST [`api/user/forgot-password`](./documentation/controllers_docs.md#post-apiuserforgot-password) : envoie un lien de reset de mdp, contenant un token à usage unique, à un email.
+- POST [`api/user/reset-password`](./documentation/controllers_docs.md#post-apiuserreset-password) : consomme le token à usage unique, change le mdp.
+- GET [`api/client/get`](./documentation/controllers_docs.md#post-apiclientget) : retourne la liste de tout les clients
+- GET [`api/client/getById/:clientId`](./documentation/controllers_docs.md#post-apiclientget) : retourne un seul client
+- POST [`api/client/create`](./documentation/controllers_docs.md#post-apiclientcreate) : créer un nouveau client
+- 
 
-* `/api/client` : Routes relatives à la gestion des clients. L'accès est protégé par l'authentification JWT.
 
-* `/api/me` : Routes pour récupérer les informations de l'utilisateur authentifié. Accessible uniquement aux utilisateurs authentifiés.
 
-## Routes d'Authentification
-### 1. POST  `/login` :
 
-* **Description** : Permet de se connecter à l'application avec l'email/nom d'utilisateur et le mot de passe. Un jeton JWT est renvoyé dans le cookie si la connexion est réussie.
 
-* **Corps de la Requête** :
-    ```json
-    {
-      "email": "utilisateur@example.com",
-      "password": "motdepasse"
-    }
-    ```
-* **Réponses** :
-
-  * `200 OK` : Connexion réussie.
-
-  * `401 Unauthorized` : Identifiants incorrects.
-
-### 2. POST `/:clientId/register`
-
-* **Description** : Permet d'enregistrer un nouvel utilisateur et de l'associer à un client spécifique. Cette route est protégée et nécessite des permissions d'administrateur ou de responsable pour le client spécifié.
-
-* **Paramètres de la Requête** :
-
-  * `clientId` : L'ID du client auquel associer le nouvel utilisateur.
-
-* **Corps de la Requête** :
-    ```json
-    {
-      "username": "nouvelutilisateur",
-      "firstname": "Prénom",
-      "lastname": "Nom",
-      "email": "nouvelutilisateur@example.com",
-      "password": "motdepasse",
-      "manager": true,
-      "position": "Poste",
-      "role": "nomDuRôle"
-    }
-     ```
-* **Réponses** :
-
-  * `201 Created` : Utilisateur créé avec succès.
-
-  * `401 Unauthorized` : Aucun jeton fourni ou utilisateur non autorisé.
-
-  * `403 Forbidden` : Permissions insuffisantes (l'utilisateur n'est pas un administrateur ou un responsable pour ce client).
-
-### 3. POST `/logout` :
-
-* **Description** : Permet de déconnecter l'utilisateur en supprimant le jeton JWT du cookie.
-
-* **Réponses** :
-
-  * `200 OK` : Déconnexion réussie.
-
-  * `401 Unauthorized` : Aucun jeton fourni.
-
-## Routes Client
-### 1. POST `/create` :
-
-* **Description** : Crée un nouveau client. Accessible uniquement par les administrateurs.
-
-* **Corps de la Requête**:
-    ```json
-    {
-    "name": "Nom du Client",
-    "type": "Type du Client",
-    "desc": "Description du client"
-    }
-    ```
-* **Réponses** :
-
-   * **201 Created** : Client créé avec succès.
-
-   * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
-
-   * **500 Internal Server Error** : Erreur lors de la création du client.
-
-### 2. GET `/get` :
-
-* **Description** : Récupère la liste de tous les clients. Accessible uniquement par les administrateurs.
-
-* **Réponses** :
-
-    * **200 OK** : Retourne la liste des clients.
-
-    * **403 Forbidden** : Si l'utilisateur n'est pas un administrateur.
-
-    * **500 Internal Server Error** : Erreur lors de la récupération des clients.
-
-## Routes Me
-### 1. GET `/` :
-
-* **Description** : Récupère les informations de l'utilisateur actuellement authentifié.
-
-* **Réponses** :
-    * **exemple** :
-        ```json
-        {
-        "user": {
-            "userId": 3,
-            "roles": [
-             "manager"
-            ],
-            "permissions": [],
-            "clientId": 2,
-            "isManager": false,
-            "position": null,
-            "iat": 1744114310,
-            "exp": 1744200710
-            }
-         }
-        ```
-
-    * **200 OK** : Retourne les données de l'utilisateur.
-
-    * **401 Unauthorized** : Si l'utilisateur n'est pas authentifié.
 
 ## Middleware
 * `authenticateUser`
@@ -150,13 +42,17 @@ Le serveur utilise ***Express*** pour le traitement des requêtes et est configu
 
 Le serveur écoute sur le port spécifié dans ***process.env.PORT***.
 
-## Liste des routes
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
-* `api/me` : renvoie un objet utilisateur
+
+# Pense bête :
+    Liste des codes HTTP
+    
+    200 : succès de la requête ;
+    301 et 302 : redirection, respectivement permanente et temporaire ;
+    401 : utilisateur non authentifié ;
+    403 : accès refusé ;
+    404 : ressource non trouvée ;
+    500, 502 et 503 : erreurs serveur ;
+    504 : le serveur n'a pas répondu.
+
+
+
