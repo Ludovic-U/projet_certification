@@ -131,7 +131,68 @@ describe("Admin Flow", () => {
     );
   });
 
-  it("should allow admin to create a question with subquestions and options", async () => {
+  it("should allow admin to create a question with options", async () => {
+    // Admin create a new question
+    const question = await request(app).post(`/api/question/create`).send({
+      label: "Question with 4 options",
+      category: "Idea",
+      projectId: project.projectId,
+    });
+    expect(question.status).toBe(201);
+
+    // Admin create 4 options to the question
+    const option1 = await request(app).post(`/api/option/create`).send({
+      label: "Opt1",
+      questionId: question.body.questionId,
+    });
+    expect(option1.status).toBe(201);
+
+    const option2 = await request(app).post(`/api/option/create`).send({
+      label: "Opt2",
+      questionId: question.body.questionId,
+    });
+    expect(option2.status).toBe(201);
+
+    const option3 = await request(app).post(`/api/option/create`).send({
+      label: "Opt3",
+      questionId: question.body.questionId,
+    });
+    expect(option3.status).toBe(201);
+
+    const option4 = await request(app).post(`/api/option/create`).send({
+      label: "Opt4",
+      questionId: question.body.questionId,
+    });
+    expect(option4.status).toBe(201);
+
+    // System: refetch the question with options
+    const questionWithOptions = await request(app).get(
+      `/api/question/get/${question.body.questionId}`
+    );
+    expect(questionWithOptions.status).toBe(200);
+    expect(questionWithOptions.body.options).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Opt1",
+          questionId: question.body.questionId,
+        }),
+        expect.objectContaining({
+          label: "Opt2",
+          questionId: question.body.questionId,
+        }),
+        expect.objectContaining({
+          label: "Opt3",
+          questionId: question.body.questionId,
+        }),
+        expect.objectContaining({
+          label: "Opt4",
+          questionId: question.body.questionId,
+        }),
+      ])
+    );
+  });
+
+  it("should allow admin to create a question with subquestions with/without options", async () => {
     // Admin create a new question
     const createdQuestion = await request(app)
       .post("/api/question/create")
