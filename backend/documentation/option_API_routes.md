@@ -124,17 +124,7 @@ Supprime une option existante en fonction de son `optionId`.
 
 ### **Réponses**
 
-### 204 OK
-
-Retourne l'option supprimer.
-
-```json
-{
- "optionId": 1,
- "label": "Option 1",
- "questionId": 1
-}
-```
+### 204 OK No Content
 
 ### 404 Not Found
 

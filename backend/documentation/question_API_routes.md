@@ -220,25 +220,7 @@ Accessible uniquement par les administrateurs.
 
 ### **Réponses**
 
-### 204 OK
-
-Retourne la question supprimer.
-
-```json
-{
- "questionId": 1,
- "label": "Quel(s) sont vos objectif(s)?",
- "category": "Ideation",
- "numberOfselectionableOpt": null,
- "isRelevant": true,
- "hasMultipleOpenResponse": true,
- "shouldMultiply": false,
- "questionIdParent": null,
- "types": [1,2],
- "projects": [],
- "options": []
-}
-```
+### 204 OK No Content
 
 ### 404 Not Found
 

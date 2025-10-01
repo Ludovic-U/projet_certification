@@ -16,7 +16,7 @@ const optionService = require("../services/optionService");
 module.exports.createOption = async (req, res) => {
   const { label, questionId } = req.body;
 
-  // Checl label to not be null or empty
+  // Check label to not be null or empty
   if (!label) {
     return res.status(400).json({ error: "label is required" });
   }

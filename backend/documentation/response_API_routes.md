@@ -138,20 +138,7 @@ Supprime une réponse existante en fonction de son `responseId`.
 
 ### **Réponses**
 
-### 204 OK
-
-Retourne la réponse supprimer.
-
-```json
-{
- "responseId": 1,
- "label": "Ceci est une réponse",
- "projectId": 1,
- "questionId": 3,
- "option": null,
- "responseIdParent": null
-}
-```
+### 204 OK No Content
 
 ### 404 Not Found
 

@@ -170,18 +170,7 @@ Accessible uniquement par les administrateurs.
 
 ### **Réponses**
 
-### 204 OK
-
-Retourne le type supprimer.
-
-```json
-{
- "typeId": 1,
- "label": "General",
- "projects": [],
- "questions": []
-}
-```
+### 204 OK No Content
 
 ### 404 Not Found
 
