@@ -1,11 +1,15 @@
 const { Router } = require('express')
-const { createClient, getClients } = require('../controllers/clientController');
+const { createClientPost, getClients, getClientById } = require('../controllers/clientController');
+const { authenticateUser } = require('../middlewares/auth');
 const router = Router()
 
 
-router.post('/create', createClient);
+router.get('/get', authenticateUser, getClients);
+router.get('/getById/:clientId', authenticateUser, getClientById);
 
-router.get('/get', getClients);
+router.post('/create', authenticateUser, createClientPost);
+
+
 
 
 module.exports = router;

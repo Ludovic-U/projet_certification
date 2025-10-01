@@ -147,7 +147,7 @@ module.exports.requestPasswordReset = async (email) => {
   }
   // generate a reset token
   const resetToken = crypto.randomBytes(32).toString('hex');
-  const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+  const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now TODO: remove hardcoding
   createSession(user.userId, resetToken, null, resetTokenExpiry); // TOKEN A USAGE UNIQUE
 
   // send email with the reset link

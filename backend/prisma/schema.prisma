@@ -42,7 +42,7 @@ model UserSession {
 model Client {
   clientId    Int              @id @default(autoincrement())
   clientName  String           @unique
-  clientType  String
+  clientType  String // TODO: en faire un enum
   description String?
   createdAt   DateTime         @default(now())
   projects    Project[]
@@ -109,6 +109,7 @@ model Project {
   projectDesc    String?
   createdAt      DateTime  @default(now())
   clientId       Int
+
   client         Client    @relation(fields: [clientId], references: [clientId])
   manager        User      @relation("ProjectManager", fields: [projectManager], references: [userId])
   actions        Action[]
