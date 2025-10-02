@@ -84,42 +84,57 @@ Accessible uniquement par les administrateurs.
 
 ### **Description**
 
-Récupère la liste de toutes les questions.
+Récupère la liste des questions avec support de la pagination.
 Accessible uniquement par les administrateurs.
+
+### **Paramètres query**
+
+| Paramètre | Type    | Description                   | Défaut   | Exemple        |
+| --------- | ------- | ------------------------------|--------- | -------------- |
+| `page`    | number  | Numéro de la page à récupérer |`1`       | `/get?page=2`  |
+| `limit`   | number  | Nombre de questions par page  |`10`      | `/get?limit=5` |
+
+Exemple: `/get?page=2&limit=10`
 
 ### **Réponses**
 
 ### 200 OK
 
 ```json
-[
- {
-  "questionId": 1,
-  "label": "Quel(s) sont vos objectif(s)?",
-  "category": "Ideation",
-  "numberOfselectionableOpt": null,
-  "isRelevant": true,
-  "hasMultipleOpenResponse": true,
-  "shouldMultiply": false,
-  "questionIdParent": null,
-  "types": [1,2],
-  "projects": [],
-  "options": []
- },
- {
-  "questionId": 2,
-  "label": "Quelle(s) sont les contrainte(s)?",
-  "category": "Conception",
-  "numberOfselectionableOpt": null,
-  "isRelevant": true,
-  "hasMultipleOpenResponse": true,
-  "shouldMultiply": false,
-  "questionIdParent": 1,
-  "types": [1,2],
-  "projects": [],
-  "options": []
- }
-]
+{
+ "data": [{
+    "questionId": 1,
+    "label": "Quel(s) sont vos objectif(s)?",
+    "category": "Ideation",
+    "numberOfselectionableOpt": null,
+    "isRelevant": true,
+    "hasMultipleOpenResponse": true,
+    "shouldMultiply": false,
+    "questionIdParent": null,
+    "types": [1,2],
+    "projects": [],
+    "options": []
+  },
+  {
+    "questionId": 2,
+    "label": "Quelle(s) sont les contrainte(s)?",
+    "category": "Conception",
+    "numberOfselectionableOpt": null,
+    "isRelevant": true,
+    "hasMultipleOpenResponse": true,
+    "shouldMultiply": false,
+    "questionIdParent": 1,
+    "types": [1,2],
+    "projects": [],
+    "options": []
+  }],
+  "meta": {
+    "total": 2,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
+  }
+}
 ```
 
 ### 500 Internal Server Error

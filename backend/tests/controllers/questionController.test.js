@@ -136,14 +136,20 @@ describe("Question Controller", () => {
    */
   describe("getAllQuestions", () => {
     beforeEach(() => {
-      req = {};
+      req = {
+        query: {
+          page: 1,
+          limit: 10,
+        },
+      };
     });
 
-    it("should fetch all questions and return 200 status", async () => {
+    it("should fetch questions and return 200 status", async () => {
       const mockQuestions = [
         { questionId: 1, label: "Question 1" },
         { questionId: 2, label: "Question 2" },
       ];
+
       questionService.getAllQuestions.mockResolvedValue(mockQuestions);
 
       await questionController.getAllQuestions(req, res, next);

@@ -30,7 +30,7 @@ const app = require("../../index");
 const questionService = require("../../services/questionService");
 const { newQuestion, newType } = require("../helpers/facory_function");
 const {
-  seedWith3Questions,
+  seedWith12Questions,
   seedQuestionWithSubquestion,
   seedQuestionsWithCategory,
   seedQuestionsWithType,
@@ -156,20 +156,53 @@ describe("Question Integration Tests", () => {
   });
 
   describe("GET - /api/question/get", () => {
-    it("should return the question list (3) and 200 status", async () => {
-      const questions = await seedWith3Questions();
+    it("should return the paginated questions list (10) and 200 status", async () => {
+      await seedWith12Questions();
 
       const res = await request(app).get("/api/question/get");
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(questions.length);
+      expect(res.body.data).toHaveLength(10);
+      expect(res.body.meta).toEqual(
+        expect.objectContaining({
+          total: 12,
+          page: 1,
+          limit: 10,
+          totalPages: 2,
+        })
+      );
+    });
+
+    it("should return the paginated questions list (2) after the 10th and 200 status", async () => {
+      await seedWith12Questions();
+
+      const res = await request(app).get("/api/question/get?page=2&limit=10");
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.meta).toEqual(
+        expect.objectContaining({
+          total: 12,
+          page: 2,
+          limit: 10,
+          totalPages: 2,
+        })
+      );
     });
 
     it("should return empty list if no questions found and 200 status", async () => {
       const res = await request(app).get("/api/question/get");
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(0);
+      expect(res.body.data).toHaveLength(0);
+      expect(res.body.meta).toEqual(
+        expect.objectContaining({
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+        })
+      );
     });
 
     it("should return 500 status if prisma throws an error", async () => {

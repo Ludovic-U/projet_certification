@@ -1,15 +1,15 @@
 const facoryFunction = require("./facory_function");
 
 /**
- * Seeds the database with 3 standalone questions.
+ * Seeds the database with 12 standalone questions.
  *
  * @async
- * @function seedWith3Questions
- * @returns {Promise<Array<Object>>} Resolves to an array of 3 created question objects.
+ * @function seedWith12Questions
+ * @returns {Promise<Array<Object>>} Resolves to an array of 12 created question objects.
  */
-async function seedWith3Questions() {
+async function seedWith12Questions() {
   const questions = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 12; i++) {
     const question = await facoryFunction.newQuestion({
       label: `Question ${i + 1}`,
     });
@@ -259,7 +259,7 @@ async function seedProjectWithClientAndManager() {
 }
 
 module.exports = {
-  seedWith3Questions,
+  seedWith12Questions,
   seedQuestionWithSubquestion,
   seedQuestionsWithCategory,
   seedQuestionsWithType,

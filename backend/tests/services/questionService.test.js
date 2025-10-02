@@ -38,6 +38,7 @@ jest.mock("../../prisma/prismaClient", () => ({
       update: jest.fn(),
       delete: jest.fn(),
       findUnique: jest.fn(),
+      count: jest.fn(),
     },
     project: { findUnique: jest.fn() },
     type: { findUnique: jest.fn() },
@@ -188,38 +189,36 @@ describe("Question Service", () => {
    * Test suite for fetching questions
    */
   describe("getAllQuestions", () => {
-    it("should return a list of questions", async () => {
-      const mockQuestions = [
-        {
-          questionId: 1,
-          label: "Question 1?",
-          category: "General",
-          numberOfSelectionableOpt: 0,
-          isRelevant: true,
-          hasMultipleOpenResponse: false,
-          questionIdParent: null,
-          types: [],
-        },
-        {
-          questionId: 2,
-          label: "Question 2?",
-          category: "Specific",
-          numberOfSelectionableOpt: 2,
-          isRelevant: false,
-          hasMultipleOpenResponse: true,
-          questionIdParent: null,
-          types: [],
-        },
-      ];
+    it("should return paginated questions with meta info", async () => {
+      const mockQuestions = [];
+      for (let i = 0; i < 15; i++) {
+        const question = {
+          label: `Question ${i + 1}`,
+          category: "Ideation",
+        };
+        mockQuestions.push(question);
+      }
 
       prisma.question.findMany.mockResolvedValue(mockQuestions);
+      prisma.question.count.mockResolvedValue(mockQuestions.length);
 
-      const result = await questionService.getAllQuestions();
+      const result = await questionService.getAllQuestions(1, 10);
 
       expect(prisma.question.findMany).toHaveBeenCalledWith({
+        skip: 0,
+        take: 10,
         include: { types: true },
       });
-      expect(result).toEqual(mockQuestions);
+      expect(prisma.question.count).toHaveBeenCalled();
+      expect(result.data).toEqual(mockQuestions);
+      expect(result.meta).toEqual(
+        expect.objectContaining({
+          total: 15,
+          page: 1,
+          limit: 10,
+          totalPages: 2,
+        })
+      );
     });
 
     it("should throw an error if fetching fails", async () => {
@@ -227,11 +226,13 @@ describe("Question Service", () => {
 
       prisma.question.findMany.mockRejectedValue(mockError);
 
-      await expect(questionService.getAllQuestions()).rejects.toThrow(
+      await expect(questionService.getAllQuestions(1, 10)).rejects.toThrow(
         "Database error"
       );
 
       expect(prisma.question.findMany).toHaveBeenCalledWith({
+        skip: 0,
+        take: 10,
         include: { types: true },
       });
     });

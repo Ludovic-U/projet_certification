@@ -51,14 +51,37 @@ module.exports.createQuestion = async (data) => {
 };
 
 /**
- * Get all questions.
+ * Get all questions with paginations.
  *
  * @async
  * @function getAllQuestions
- * @returns {Promise<Array<Object>>} List of all questions, including related types.
+ * @param {number} page - Page number for pagination (default 1).
+ * @param {number} limit - Number of questions per page (default 10).
+ * @returns {Promise<Object>} Returns an object containing:
+ * - data: Array of questions, each including related types.
+ * - meta: Pagination info including total items, current page, limit, and total pages.
  */
-module.exports.getAllQuestions = async () => {
-  return await prisma.question.findMany({ include: { types: true } });
+module.exports.getAllQuestions = async (page, limit) => {
+  const skip = (page - 1) * limit;
+
+  const [questions, total] = await Promise.all([
+    prisma.question.findMany({
+      skip: skip,
+      take: limit,
+      include: { types: true },
+    }),
+    prisma.question.count(),
+  ]);
+
+  return {
+    data: questions,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 /**

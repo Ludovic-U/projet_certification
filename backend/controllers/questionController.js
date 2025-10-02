@@ -61,17 +61,23 @@ module.exports.createQuestion = async (req, res) => {
 };
 
 /**
- * Get all questions.
+ * Get all questions with paginations.
  *
  * @async
  * @function getAllQuestions
+ * @param {Object} req.query - Query parameters.
+ * @param {number} [req.query.page=1] - Page number for pagination.
+ * @param {number} [req.query.limit=10] - Number of questions per page.
  * @returns {Promise<void>} Sends:
- * - 200: OK, returns an array of questions.
+ * - 200: OK, returns an array of questions for the requested page.
  * - 500: Internal server error.
  */
-module.exports.getAllQuestions = async (_, res) => {
+module.exports.getAllQuestions = async (req, res) => {
   try {
-    const questions = await questionService.getAllQuestions();
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
+    const questions = await questionService.getAllQuestions(page, limit);
     res.status(200).json(questions);
   } catch (error) {
     console.error("Error fetching questions:", error);

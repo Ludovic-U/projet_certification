@@ -8,6 +8,7 @@
  * Tests the full admin lifecycle operations on Questions, Types, Projects,
  * Subquestions, and Options using a seeded test database.
  * Covers:
+ *  - Navigating on questions list pages.
  *  - Managing question types and linking them to projects
  *  - Creating, updating, and deleting project-specific and type-specific questions
  *  - Fetching questions by project and verifying relational integrity
@@ -33,9 +34,61 @@
  */
 const request = require("supertest");
 const app = require("../../index");
-const { seedProjectWithClientAndManager } = require("../helpers/seed");
+const {
+  seedProjectWithClientAndManager,
+  seedWith12Questions,
+} = require("../helpers/seed");
 
-describe("Admin Flow", () => {
+describe("Admin flow - Naviation", () => {
+  let questions;
+
+  beforeEach(async () => {
+    // Seed db with questions
+    questions = await seedWith12Questions();
+  });
+
+  it("should allow admin to navigate questions", async () => {
+    // Admin retrieve the page 1 of questions (10)
+    // System: fetch the first 10 questions
+    const first10Questions = await request(app).get(
+      `/api/question/get?page=1&limit=10`
+    );
+
+    expect(first10Questions.status).toBe(200);
+    expect(first10Questions.body.data).toHaveLength(10);
+    expect(first10Questions.body.data[0].questionId).toBe(1);
+    expect(first10Questions.body.data[9].questionId).toBe(10);
+    expect(first10Questions.body.meta).toEqual(
+      expect.objectContaining({
+        total: 12,
+        page: 1,
+        limit: 10,
+        totalPages: 2,
+      })
+    );
+
+    // Admin navigate to the next page.
+    // System: fetch the next page of questions (2)
+    const nextPage = await request(app).get(
+      `/api/question/get?page=2&limit=10`
+    );
+
+    expect(nextPage.status).toBe(200);
+    expect(nextPage.body.data).toHaveLength(2);
+    expect(nextPage.body.data[0].questionId).toBe(11);
+    expect(nextPage.body.data[1].questionId).toBe(12);
+    expect(nextPage.body.meta).toEqual(
+      expect.objectContaining({
+        total: 12,
+        page: 2,
+        limit: 10,
+        totalPages: 2,
+      })
+    );
+  });
+});
+
+describe("Admin Flow - Management", () => {
   let project;
 
   beforeEach(async () => {
@@ -44,7 +97,7 @@ describe("Admin Flow", () => {
     project = seeded.project;
   });
 
-  it("should Allow admin to manage questions", async () => {
+  it("should allow admin to manage questions to a project", async () => {
     // Admin creates a new type
     const createdType = await request(app)
       .post("/api/type/create")
