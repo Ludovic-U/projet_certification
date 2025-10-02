@@ -213,9 +213,9 @@ describe("Question Service", () => {
       expect(result.data).toEqual(mockQuestions);
       expect(result.meta).toEqual(
         expect.objectContaining({
-          total: 15,
-          page: 1,
-          limit: 10,
+          totalItems: 15,
+          currentPage: 1,
+          pageSize: 10,
           totalPages: 2,
         })
       );

@@ -60,9 +60,9 @@ describe("Admin flow - Naviation", () => {
     expect(first10Questions.body.data[9].questionId).toBe(10);
     expect(first10Questions.body.meta).toEqual(
       expect.objectContaining({
-        total: 12,
-        page: 1,
-        limit: 10,
+        totalItems: 12,
+        currentPage: 1,
+        pageSize: 10,
         totalPages: 2,
       })
     );
@@ -79,9 +79,9 @@ describe("Admin flow - Naviation", () => {
     expect(nextPage.body.data[1].questionId).toBe(12);
     expect(nextPage.body.meta).toEqual(
       expect.objectContaining({
-        total: 12,
-        page: 2,
-        limit: 10,
+        totalItems: 12,
+        currentPage: 2,
+        pageSize: 10,
         totalPages: 2,
       })
     );

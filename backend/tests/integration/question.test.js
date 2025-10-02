@@ -165,9 +165,9 @@ describe("Question Integration Tests", () => {
       expect(res.body.data).toHaveLength(10);
       expect(res.body.meta).toEqual(
         expect.objectContaining({
-          total: 12,
-          page: 1,
-          limit: 10,
+          totalItems: 12,
+          currentPage: 1,
+          pageSize: 10,
           totalPages: 2,
         })
       );
@@ -182,9 +182,9 @@ describe("Question Integration Tests", () => {
       expect(res.body.data).toHaveLength(2);
       expect(res.body.meta).toEqual(
         expect.objectContaining({
-          total: 12,
-          page: 2,
-          limit: 10,
+          totalItems: 12,
+          currentPage: 2,
+          pageSize: 10,
           totalPages: 2,
         })
       );
@@ -197,9 +197,9 @@ describe("Question Integration Tests", () => {
       expect(res.body.data).toHaveLength(0);
       expect(res.body.meta).toEqual(
         expect.objectContaining({
-          total: 0,
-          page: 1,
-          limit: 10,
+          totalItems: 0,
+          currentPage: 1,
+          pageSize: 10,
           totalPages: 0,
         })
       );

@@ -1,4 +1,8 @@
 const { prisma } = require("../prisma/prismaClient");
+const {
+  getPaginationOptions,
+  getPaginationMeta,
+} = require("./helper/pagination");
 
 /**
  * Create a new question.
@@ -62,25 +66,23 @@ module.exports.createQuestion = async (data) => {
  * - meta: Pagination info including total items, current page, limit, and total pages.
  */
 module.exports.getAllQuestions = async (page, limit) => {
-  const skip = (page - 1) * limit;
+  // const skip = (page - 1) * limit;
+  const { skip, take } = getPaginationOptions(page, limit);
 
-  const [questions, total] = await Promise.all([
+  const [questions, totalItems] = await Promise.all([
     prisma.question.findMany({
-      skip: skip,
-      take: limit,
+      skip,
+      take,
       include: { types: true },
     }),
     prisma.question.count(),
   ]);
 
+  const meta = getPaginationMeta(totalItems, page, limit);
+
   return {
     data: questions,
-    meta: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
+    meta,
   };
 };
 
