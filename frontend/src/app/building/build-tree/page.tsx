@@ -1,20 +1,13 @@
 "use client";
 
 import React from "react";
-import { useState, useCallback } from "react";
-
 import { ReactFlow, ControlButton, Controls } from "@xyflow/react"
 import '@xyflow/react/dist/style.css';
-
 import { Icons, FontAwesomeIcon } from "@/lib/icons";
 import { useModal } from "@/hooks"
 import { PageHeader, Button, Modal } from "@/components/ui";
-
 import { QuestionNode } from "@/components/ui/Nodes/Question";
 import { LeafNode } from "@/components/ui/Nodes/Leaf";
-
-import Question from "@/components/forms/Answer";
-
 
 export default function BuildingPage() {
     const nodeTypes = {
@@ -75,8 +68,7 @@ export default function BuildingPage() {
                         </ReactFlow>
                         <Modal
                         modal={modal}
-                        title={qst}>
-                            <textarea className="border rounded-lg h-40 w-70 p-2 resize-none"/>
+                        title="question id">
                             <Button className="mt-5">Valider</Button>
                         </Modal>
                     </div>

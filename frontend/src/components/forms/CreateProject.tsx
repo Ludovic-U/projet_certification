@@ -13,7 +13,7 @@ export default function CreateProjectForm() {
             <form className="flex flex-col items-center select-none">
                 <div className="flex flex-col gap-6 items-center">
                     <Input label="Titre"/>
-                    <Input label="Admin du projet"/>
+                    <Input label="Chef de projet"/>
                     <Input label="Description"/>
                     <Input type="date" className="text-greydarker" label="Date de début"/>
                 </div>

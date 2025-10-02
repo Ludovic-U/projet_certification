@@ -10,25 +10,54 @@ import {
     Radio,
     RadioGroup,
     Toggle,
-    Tooltip
+    Tooltip,
+    Modal,
 } from "@/components/ui";
-import CreateClientForm from "@/components/forms/CreateClient";
-import CreateUserForm from "@/components/forms/CreateUser";
+import { Select } from "@/components/ui/Select";
+import { MultiSelect } from "@/components/ui/Select/MultiSelect";
 
-import { Modal } from "@/components/ui"
+import {
+    CreateRoleForm,
+    CreateQuestionForm,
+    CreateUserForm,
+    CreateClientForm,
+    CreateProjectForm,
+    ReponseSelect,
+    ReponsesPlusieurs,
+    ReponseUnique
+} from "@/components/forms"
+
 import { useModal } from "@/hooks"
-import React from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
-import CreateProjectForm from "@/components/forms/CreateProject";
-
-
 
 export default function BuildingPage() {
     const clientModal = useModal();
     const userModal = useModal();
     const projectModal = useModal();
+    const questionModal = useModal();
+    const roleModal = useModal();
+    const modalUnique = useModal();
+    const modalPlusieurs = useModal();
+    const modalSelect = useModal();
 
     const [enable, setEnabled] = React.useState(false);
+
+    const qst = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ?"
+
+    const options = [
+        { value: "a", label: "Mathias Coquelin"},
+        { value: "b", label: "Porthos About"},
+        "Marc Schaeffer",
+        "Pierre-Antoine Hébras",
+        "Davy Allaire",
+        "Alban Robillard",
+        "Silvain Fétique",
+        "Amaury Mallet",
+        "Arnaud Girard",
+        "Valentin Roatta",
+    ]
+    const [selectedOption, setSelectedOption] = useState<string[]>([]);
 
     return (
         <div className="h-full">
@@ -78,9 +107,9 @@ export default function BuildingPage() {
                     <div className="p-3 border w-fit flex flex-col gap-4">
                         <h2 className="font-oswald text-2xl text-center">Card :</h2>
                         <div className="flex gap-3 items-center">
-                            <Card title="Titre" color="#99B095" progress={0} buttonLabel="Voir"/>
-                            <Card title="Titre" description="Description optionnelle." color="#83A18F" progress={50} buttonLabel="Voir"/>
-                            <Card title="Titre" description="Description optionnelle" color="#6D8E76" progress={100}/>
+                            <Card title="Titre" color="#DCC1AF" progress={0} buttonLabel="Voir"/>
+                            <Card title="Titre" description="Description optionnelle." color="#AB7743" progress={50} buttonLabel="Voir"/>
+                            <Card title="Titre" description="Description optionnelle" color="#6B3D17" progress={100} buttonLabel="Voir"/>
                         </div>
                     </div>
                 </div>
@@ -112,8 +141,23 @@ export default function BuildingPage() {
                                 helperText="Rechercher un élément dans cette liste "
                                 leftIcon={<FontAwesomeIcon icon={Icons.search}/>}/>
                                 <Input label="Chargement" loading/>
-                            </div>
+                            </div>    
                         </div>
+                        <div className="w-70 space-y-5">
+                            <Select
+                            label="Select unique"
+                            placeholder="Choisissez un type"
+                            options={options}
+                            />
+                            <MultiSelect
+                             label="Options"
+                             placeholder="Sélectionner une option..."
+                             options={options}
+                             value={selectedOption}
+                             onChange={setSelectedOption}/>
+                        </div>
+
+
                     </div>
                     
                     <div className="flex flex-col gap-8">
@@ -130,6 +174,82 @@ export default function BuildingPage() {
                         <div className="p-3 border w-fit h-fit flex gap-4">
                             <h2 className="font-oswald text-2xl">Modal :</h2>
                             <div className="flex flex-col gap-3">
+                                <div>
+                                    <Tooltip content={qst} position="rightTop">
+                                        <Button
+                                         onClick={modalUnique.openModal}
+                                         size="sm">
+                                            Réponse libre
+                                        </Button>
+                                    </Tooltip>
+                                    <Modal modal={modalUnique}
+                                     title="Question 01"
+                                     description="Saisissez votre réponse dans le champ prévu">
+                                        <ReponseUnique/>
+                                    </Modal>
+                                </div>
+                                <div>
+                                    <Tooltip content={qst} position="rightTop">
+                                        <Button
+                                         onClick={modalPlusieurs.openModal}
+                                         size="sm">
+                                            Réponses ouvertes
+                                        </Button>
+                                    </Tooltip>
+                                    <Modal modal={modalPlusieurs}
+                                     title="Question 01"
+                                     description="Ajoutez une ou plusieurs réponses courtes">
+                                        <ReponsesPlusieurs/>
+                                    </Modal>
+                                </div>
+                                <div>
+                                    <Tooltip content={qst} position="rightTop">
+                                        <Button
+                                         onClick={modalSelect.openModal}
+                                         size="sm">
+                                            Réponses select
+                                        </Button>
+                                    </Tooltip>
+                                    <Modal modal={modalSelect}
+                                     title="Question 01"
+                                     description="Selectionnez une pour plusieurs options">
+                                        <ReponseSelect/>
+                                    </Modal>
+                                </div>
+                                <div>
+                                    <Tooltip content="Ajouter un rôle" position="right">
+                                        <Button
+                                         onClick={roleModal.openModal}
+                                         size="sm">
+                                            <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={Icons.plus}/>
+                                            </div>
+                                            Nouveau rôle
+                                        </Button>
+                                    </Tooltip>
+                                    <Modal modal={roleModal}
+                                     title="ajouter un rôle"
+                                     description="Selectionnez les autorisations du nouveau rôle">
+                                        <CreateRoleForm/>
+                                    </Modal>
+                                </div>
+                                <div>
+                                    <Tooltip content="Ajouter une question" position="right">
+                                        <Button
+                                        onClick={questionModal.openModal}
+                                        size="sm">
+                                            <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={Icons.plus}/>
+                                            </div>
+                                            Nouvelle question
+                                        </Button>
+                                    </Tooltip>
+                                    <Modal modal={questionModal}
+                                    title="AJOUTER UNE QUESTION"
+                                    description="Entrez les informations de la nouvelle question">
+                                        <CreateQuestionForm/>
+                                    </Modal>
+                                </div>
                                 <div>
                                     <Tooltip content="Ajouter un client" position="right">
                                         <Button

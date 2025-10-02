@@ -44,11 +44,12 @@ export default function ClientsPage() {
     );
 
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full">
             <PageHeader title="Liste des clients" description="Consultez la liste des clients et accèdez aux détails."/>
+            <section>
 
-            <section className="flex flex-col flex-1 justify-center items-center">
-                <div className="w-[95%] self-center flex justify-between gap-5">
+                {/* ADD BTN + SEARCHBAR */}
+                <div className="flex items-center justify-between"> 
                     <div>
                         <Tooltip content="Ajouter un client" position="rightBottom">
                             <Button
@@ -66,15 +67,14 @@ export default function ClientsPage() {
                             <CreateClientForm/>
                         </Modal>
                     </div>
-                    <div>
-                        <Input
-                        type="search"
-                        leftIcon={<FontAwesomeIcon icon={Icons.search}/>}
-                        placeholder="Recherchez un client..."/>
-                    </div>
+                    <Input
+                     type="search"
+                     leftIcon={<FontAwesomeIcon icon={Icons.search}/>}
+                     placeholder="Recherchez dans cette liste..."
+                     className="w-70"/>
                 </div>
                 
-                <TableResponsive<typeof currentData[0]>
+                {/* <TableResponsive<typeof currentData[0]>
                  data={currentData}
                  columns={clientsList}/>
                 <Table<typeof currentData[0]>
@@ -87,7 +87,7 @@ export default function ClientsPage() {
                          totalPages={totalPages}
                          onPageChange={setCurrentPage}/>
                     </div>
-                 )}
+                 )} */}
             </section>
         </div>
     );

@@ -99,7 +99,7 @@ const Modal: React.FC<ModalProps> = ({
 
                 {/* Header */}
                 <div className="flex flex-col items-center">
-                    <h2 className="font-oswald text-2xl wrap-anywhere">{title}</h2>
+                    <h2 className="uppercase font-oswald text-2xl wrap-anywhere">{title}</h2>
                     {description && <p className="font-didact text-greydarker text-lg">{description}</p>}
                 </div>
                 

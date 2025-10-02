@@ -18,9 +18,6 @@ export const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
         },
         ref
     ) => {
-        // Si "checked" -> on est en mode contrôlé
-        // Sinon, on lit la valeur depuis l'input (uncontrolled)
-
         const [internalChecked, setInternalChecked] = React.useState(
             defaultChecked ?? false
         );
@@ -28,16 +25,14 @@ export const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
         const isChecked = isControlled ? checked : internalChecked;
 
         return (
-            <div className="flex flex-col gap-1 items-center">
+            <div className="flex flex-col items-start">
                 <label
                 className={cn(
                     "flex items-center gap-2 select-none transition-opacity",
                     disabled
                     ? "opacity-50 cursor-not-allowed"
                     : "cursor-pointer"
-                )}
-                        // className="flex items-center gap-2 cursor-pointer select-none"
-                >
+                )}>
                     {/* BUTTON SWITCH/TOGGLE */}
                     <span className="group relative inline-flex min-h-6 min-w-11 rounded-full bg-background border group-hover:bg-lighthover transition-colors duration-200">
                         <Input
@@ -45,7 +40,7 @@ export const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
                         type="checkbox"
                         role="switch"
                         aria-describedby={helperText ? `${props.id}-helper` : undefined}
-                        className="absolute h-full w-full opacity-0 m-0 p-0 cursor-pointer"
+                        className="absolute h-full w-full opacity-0 cursor-pointer"
                         checked={isChecked}
                         defaultChecked={defaultChecked}
                         onChange={(e) => {
@@ -68,7 +63,7 @@ export const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
                     {label && <span className="text-base font-noto">{label}</span>}
                 </label>
                 {helperText && (
-                    <p id={`${props.id}-helper`} className="font-didact text-left ml-10 text-greydarker text-sm max-w-[300px]">
+                    <p id={`${props.id}-helper`} className="font-didact text-left text-greydarker text-sm">
                         {helperText}
                     </p>)}
             </div>

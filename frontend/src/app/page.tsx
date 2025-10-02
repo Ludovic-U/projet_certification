@@ -54,14 +54,11 @@ export default function LoginPage() {
             setIsLoading(false);
 
             let errorMessage = "Echec de connexion.";
-            
 
             if (error.response?.status == 500) {
                 errorMessage = "Email ou mot de passe incorrect.";
             } else if (error.response?.status == 429) {
                 errorMessage = "Trop de tentatives. Veuillez réessayer plus tard.";
-            } else if (error.response?.status == 500) {
-                "Erreur du serveur. Veuillez réessayer plus tard."
             } else if (!error.response) {
                 errorMessage = "Erreur de connexion. Vérifiez votre connexion internet.";
             }

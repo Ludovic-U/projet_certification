@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import {
     PageHeader,
     Button,
@@ -9,11 +8,18 @@ import {
     Input,
     Pagination,
     projectsList,
-    TableResponsive
+    TableResponsive,
+    Tooltip,
+    Modal
  } from "@/components/ui";
- import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
+import CreateProjectForm from "@/components/forms/CreateProject";
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
+import { useModal } from "@/hooks";
+
 
 export default function ProjectsPage() {
+    const modal = useModal();
+
     const projects = [
         { id: 1, title: "Projet lamazeazebda", type: "AAP", step:"REPORTING (1/4)", contributors: 12},
         { id: 2, title: "Projet lambda", type: "POC", step:"Pilotage (1/4)", contributors: 3},
@@ -45,10 +51,38 @@ export default function ProjectsPage() {
         currentPage * itemsPerPage
     );
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full">
             <PageHeader title="Liste des projets" description="Consultez la liste des projets et accèdez aux détails"/>
-            <section className="flex flex-col flex-1 justify-center items-center">
-                <TableResponsive<typeof currentData[0]>
+            <section>
+
+                {/* ADD BTN + SEARCHBAR */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <Tooltip content="Ajouter un projet" position="rightBottom">
+                            <Button
+                            onClick={modal.openModal}
+                            size="sm">
+                                <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
+                                    <FontAwesomeIcon icon={Icons.plus}/>
+                                </div>
+                                Nouveau projet
+                            </Button>
+                        </Tooltip>
+                        <Modal modal={modal}
+                        title="AJOUTER UN PROJET"
+                        description="Entrez les informations du nouveau projet">
+                            <CreateProjectForm/>
+                        </Modal>
+                    </div>
+
+                    <Input
+                     type="search"
+                     leftIcon={<FontAwesomeIcon icon={Icons.search}/>}
+                     placeholder="Recherchez dans cette liste..."
+                     className="w-70"/>
+                </div>
+
+                {/* <TableResponsive<typeof currentData[0]>
                  data={currentData}
                  columns={projectsList}/>
 
@@ -62,7 +96,7 @@ export default function ProjectsPage() {
                          totalPages={totalPages}
                          onPageChange={setCurrentPage}/>
                     </div>
-                 )}
+                 )} */}
             </section>
         </div>
     );

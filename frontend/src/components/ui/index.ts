@@ -11,3 +11,5 @@ export * from "./Toggle";
 export * from "./Tooltip";
 export * from "./Table";
 export * from "./PageHeader";
+export * from "./DynamicOptions"
+export * from "./Select"

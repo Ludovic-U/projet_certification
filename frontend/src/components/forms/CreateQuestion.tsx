@@ -5,47 +5,86 @@ import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
 import {
     Input,
     Button,
-    Toggle
+    Toggle,
+    DynamicOptions,
+    MultiSelect,
+    Select
 } from "@/components/ui"
 
 export default function CreateQuestionForm() {
     const [allowMultiple, setAllowMultiple] = useState(false);
+    const [options, setOptions] = useState([""]);
 
+    const categories = [
+        {value: "ideation", label: "Idéation"},
+        {value: "conception", label: "Conception"},
+    ]
+
+    const [selectedType, setSelectedType] = useState<string[]>([]);
+    const types = [
+        "Startup",
+        "PME",
+        "ESN",
+        "CPF",
+        "OPCO",
+        "GRETA",
+        "Universités et grandes écoles",
+        "CFA",
+        "Associations de formation continue",
+        "Collectivités territoriales",
+        "CNRS",
+        "ONG",
+        "CCI",
+        "BTP"
+    ]
     return (
         <>
-            <form className="w-[90%] flex flex-col items-center select-none">
-                <div className="flex flex-col gap-6">
-                    <Input className="w-full" label="Question"/>
-                    <div className="flex gap-3">
-                    <Input label="Catégorie"/>
-                    <Input label="Type"/>                        
+            <form className="select-none flex flex-col items-center">
+                    <div className="space-y-5">
+                        <div className="flex gap-3">
+                            <div className="flex-1">
+                                <Input label="Question"/>
+                            </div>
+                            <Input className="w-28" label="ID parent"/>
+                        </div>
+                        <div className="flex gap-3">
+                            <Select
+                             className="flex-1"
+                             label="Catégorie"
+                             options={categories}/>
+
+                            <MultiSelect
+                             className="flex-1 max-w-70"
+                             value={selectedType}
+                             onChange={setSelectedType}
+                             label="Type"
+                             options={types}/>
+                        </div>
                     </div>
-                    
-                    {/* TODO : grid pour afficher les toggle */}
+
+                    <div className="w-100 space-y-3 my-4">
+                        <Toggle
+                        label="Autoriser plusieurs réponses libres."
+                        helperText="Le client pourra saisir plus d'une réponse écrite."/>
 
                         <Toggle
-                        label="multiples réponses écrites ?"
-                        helperText=""/>
-
-                        <Toggle
-                        label="Répéter cette question"
-                        helperText="Activer pour répéter cette question à chaque réponse donnée à la précédente"/>
+                        label="Répéter la question."
+                        helperText="La question sera posée une fois pour chaque élément défini dans la question précédente."/>
                         
                         <Toggle
                         checked={allowMultiple}
                         onCheckedChange={setAllowMultiple}
-                        label="multiples réponses radio ?"
-                        helperText="Activer pour"/>
-                        
-                        {allowMultiple && (
-                            <div className="space-y-3 flex flex-col items-center">
-                                <Input label="Option 1"/>
-                                <Input label="Option 2"/>
-                                <Input label="Option 3"/>                            
-                            </div>
-                        )}
-                </div>
-                <Button type="submit" className="mt-8">Créer</Button>
+                        label="Proposer une liste d'options"
+                        helperText="Activez pour définir des choix que le client pourra sélectionner."/>
+                    
+                            {allowMultiple && (
+                                <DynamicOptions
+                                 labelPrefix="Option"
+                                 values={options}
+                                 onChange={setOptions}/>
+                            )}                    
+                    </div>
+                    <Button type="submit">Créer</Button>
             </form>
         </>
     )

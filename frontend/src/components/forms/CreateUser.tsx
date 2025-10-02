@@ -13,7 +13,7 @@ export default function CreateUserForm() {
                     <Input label="Email"/>    
                     <Input label="Rôle" placeholder="ex. admin"/>                
                 </div>
-                <Button type="submit" className="mt-8">Créer</Button>
+                <Button type="submit">Créer</Button>
             </form>
         </>
     )
