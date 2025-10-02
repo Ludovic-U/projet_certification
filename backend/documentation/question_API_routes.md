@@ -129,9 +129,9 @@ Exemple: `/get?page=2&limit=10`
     "options": []
   }],
   "meta": {
-    "total": 2,
-    "page": 1,
-    "limit": 10,
+    "totalItems": 2,
+    "currentPage": 1,
+    "pageSize": 10,
     "totalPages": 1,
   }
 }
