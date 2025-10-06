@@ -86,7 +86,8 @@ export default function ProjectsPage() {
 
                 <TableResponsive<typeof currentData[0]>
                  data={currentData}
-                 columns={projectsList}/>
+                 columns={projectsList}
+                 onRowClick={(project) => router.push(`/projets/${project.id}`)}/>
 
                 <Table<typeof currentData[0]>
                  data={currentData}
