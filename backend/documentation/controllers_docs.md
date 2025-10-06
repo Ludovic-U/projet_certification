@@ -30,6 +30,17 @@ GET `/` :
 
 # userController
 
+### GET `/api/user/by-client/:clientId`
+
+**Description**  
+
+
+**Paramêtre de la requête**  
+ `clientId` : L'ID du client 
+
+**Réponses possibles**
+
+
 ### POST `/api/user/login`
 
 **Description**  

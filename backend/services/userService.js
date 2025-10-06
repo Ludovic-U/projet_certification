@@ -5,16 +5,8 @@ const crypto = require('crypto');
 const { createJWT } = require('../utils/jwt');
 const { createSession, deleteSessions } = require('../services/sessionService');
 const { hashToken, hashPassword } = require('../utils/hash');
-
-// class User {
-//   constructor(firstname, lastname, email, roleList = [], tasks = []) {
-//     this.firstname = firstname;
-//     this.lastname = lastname;
-//     this.email = email;
-//     this.roleList = roleList; // Array of roles
-//     this.tasks = tasks; // Array of tasks
-//   }
-// }
+const { checkPermission } = require('../utils/roles');
+const { assignRoleToUser } = require('./roleService');
 
 // récupère un utilisateur par email ou username et password, vérifie le mot de passe, crée un token JWT et une session, et retourne un token pour le front
 //TODO: rename to authenticateUser? 
@@ -75,11 +67,9 @@ module.exports.authenticateAndCreateSession = async (emailOrUsername, password, 
      return token;
 }
 
-module.exports.getUsersByClientId = async (clientId, permissions) => {
+module.exports.getUsersByClientId = async (askingUser, clientId) => {
     //  si la requete ne vient pas d'un super_admin ou d'un'admin client
-    if (!permissions.includes('user:read:any') || !permissions.includes('user:read:org')) {
-        throw new Error('getUsersByClientId: Unauthorized');
-    }
+    checkPermission(askingUser, ["user:read:any", "user:read:org"]);
 
     const userlist = await prisma.user.findMany({
         where: {
@@ -109,15 +99,30 @@ module.exports.getUsersByClientId = async (clientId, permissions) => {
     return userlist;
 }
 
-//  module.exports.getUsersByProjectId = async (projectId) => {
-//      return "placeholder";
-//  }
+// Crée un utilisateur sans mot de passe, par défaut contributeur, et le lie à un client si clientId est fourni
+// si un autre role que contributor est demandé, envoie un mail à l'utilisateur pour initialiser son mot de passe
+ module.exports.createUser = async ( askingUser, clientId, firstname, lastname, email, position, role ) => { // TODO: faire une transaction prisma
+    // Vérifie les permissions de l'utilisateur demandant la création
+    checkPermission(askingUser, ["user:create:any", "user:create:org"]);
+    const hasAny = askingUser.permissions.includes("user:create:any");
+    const hasOrg = askingUser.permissions.includes("user:create:org");
 
- module.exports.createUser = async ({ username, firstname, lastname, email }) => {
-  try {
-    const user = await prisma.user.create({
+    if (!hasAny || (  !hasOrg && askingUser.clientId !== clientId) ) {
+        throw new Error('createUser: Unauthorized - insufficient permissions');
+    }
+
+    // Vérifie si l'email existe déjà
+    const existingUser = await prisma.user.findUnique({
+        where: { email }
+    });
+    if (existingUser) {
+        throw new Error('Un utilisateur avec cet email existe déjà');
+    }
+
+    // 1. Create user
+    const newUser = await prisma.user.create({
       data: {
-        username,
+        username: firstname.toLowerCase() + '.' + lastname.toLowerCase(), // username par défaut
         firstname,
         lastname,
         email,
@@ -125,13 +130,22 @@ module.exports.getUsersByClientId = async (clientId, permissions) => {
       },
     });
 
-    return user;
-  } catch (error) {
-    if (error.code === 'P2002') {
-      throw new Error('Un utilisateur avec ce username ou email existe déjà');
-    }
-    throw error; // autre erreur
-  }
+    // 2. Link to client
+    await prisma.clientUserRole.create({
+      data: {
+        clientId: parseInt(clientId),
+        userId: newUser.userId,
+        position: position ?? null,
+      },
+    });
+
+
+    // TODO: update role service
+    await assignRoleToUser( askingUser, newUser.userId, role ?? 'contributeur' );   
+    
+
+    return newUser;
+
 };
 
 // module.exports.deleteUser = async (userId, ) => {}

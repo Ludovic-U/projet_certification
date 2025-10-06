@@ -34,6 +34,26 @@ export default function ClientsPage() {
     setResult(JSON.stringify(res.data, null, 2));
   }
 
+   async function handleRegister(e) {
+    try {
+      const res = await api_backend.post(
+        "user/register", 
+        {
+          clientId: 1,
+          firstname: "John",
+          lastname: "Doe",
+          email: "john.doe@example.com",
+          position: "Manager",
+          role: "contributeur",
+        }, // important si ton backend utilise req.user (sessions/cookies)
+      );
+
+      setResult(JSON.stringify(res.data, null, 2));
+    } catch (err) {
+      setResult(`Error: ${err.response ? err.response.data.error : err.message}`);
+    }
+  }
+
   return (
     <div style={{ fontFamily: "sans-serif", margin: "20px" }}>
       <h1>Test des routes Client</h1>
@@ -68,6 +88,18 @@ export default function ClientsPage() {
         </div>
         <button type="submit">Créer</button>
       </form>
+
+      {/* CREATE USER */}
+       <div className="p-4">
+      <button
+        onClick={handleRegister}
+        className="px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Tester registerPost
+      </button>
+
+      
+    </div>
 
       <h2>Résultat</h2>
       <pre style={{ background: "#f4f4f4", padding: "10px" }}>{result}</pre>
