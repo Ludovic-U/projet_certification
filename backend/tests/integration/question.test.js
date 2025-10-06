@@ -112,26 +112,35 @@ describe("Question Integration Tests", () => {
 
     it("should return 400 status if label is missing", async () => {
       const payload = {
-        label: "",
         category: "testing",
       };
 
       const res = await request(app).post("/api/question/create").send(payload);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label and category are required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "label", msg: "label is required" }),
+        ])
+      );
     });
 
     it("should return 400 status if category is missing", async () => {
       const payload = {
         label: "Test",
-        category: "",
       };
 
       const res = await request(app).post("/api/question/create").send(payload);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label and category are required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: "category",
+            msg: "category is required",
+          }),
+        ])
+      );
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -394,38 +403,46 @@ describe("Question Integration Tests", () => {
 
     it("should return 400 status if new label data is empty", async () => {
       const question = await newQuestion();
-      const newData = {
-        label: "",
-        category: question.category,
-      };
+      const newData = { label: "" };
 
       const res = await request(app)
         .patch(`/api/question/update/${question.questionId}`)
         .send(newData);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label and category are required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: "label",
+            msg: "label is required",
+          }),
+        ])
+      );
     });
 
     it("should return 400 status if new category data is empty", async () => {
       const question = await newQuestion();
-      const newData = {
-        label: question.label,
-        category: "",
-      };
+      const newData = { category: "" };
 
       const res = await request(app)
         .patch(`/api/question/update/${question.questionId}`)
         .send(newData);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label and category are required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: "category",
+            msg: "category is required",
+          }),
+        ])
+      );
     });
 
     it("should return 400 status if invalid questionId", async () => {
       const res = await request(app)
         .patch("/api/question/update/abc")
-        .send({ label: "a", category: "b" });
+        .send({ label: "label", category: "category" });
 
       expect(res.status).toBe(400);
       expect(res.body).toEqual({ error: "Invalid questionId" });
@@ -434,7 +451,7 @@ describe("Question Integration Tests", () => {
     it("should return 404 status if question does not exist", async () => {
       const res = await request(app)
         .patch("/api/question/update/999")
-        .send({ label: "a", category: "b" });
+        .send({ label: "label", category: "category" });
 
       expect(res.status).toBe(404);
       expect(res.body).toEqual({ error: "Question not found" });

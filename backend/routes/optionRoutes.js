@@ -1,10 +1,14 @@
 const { Router } = require("express");
 const optionController = require("../controllers/optionController");
 const { validateId } = require("../middlewares/validateId");
+const {
+  createOptionValidators,
+  updateOptionValidators,
+} = require("../middlewares/inputValidators");
 
 const router = Router();
 
-router.post("/create", optionController.createOption);
+router.post("/create", createOptionValidators, optionController.createOption);
 
 router.get(
   "/get/question/:questionId",
@@ -20,6 +24,7 @@ router.get(
 router.patch(
   "/update/:optionId",
   validateId("optionId"),
+  updateOptionValidators,
   optionController.updateOption
 );
 

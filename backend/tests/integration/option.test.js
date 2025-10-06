@@ -64,7 +64,11 @@ describe("Option Integration Tests", () => {
       const res = await request(app).post("/api/option/create").send(payload);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label is required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "label", msg: "label is required" }),
+        ])
+      );
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -73,7 +77,7 @@ describe("Option Integration Tests", () => {
         .spyOn(optionService, "createOption")
         .mockRejectedValue(new Error("Database error"));
 
-      const payload = { label: "Opt1" };
+      const payload = { label: "Opt1", questionId: 1 };
 
       const res = await request(app).post("/api/option/create").send(payload);
 
@@ -197,7 +201,11 @@ describe("Option Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label is required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "label", msg: "label is required" }),
+        ])
+      );
     });
 
     it("should return 400 if invalid optionId", async () => {

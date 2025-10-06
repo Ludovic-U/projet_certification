@@ -1,10 +1,18 @@
 const { Router } = require("express");
 const responseController = require("../controllers/responseController");
 const { validateId } = require("../middlewares/validateId");
+const {
+  createResponseValidators,
+  updateResponseValidators,
+} = require("../middlewares/inputValidators");
 
 const router = Router();
 
-router.post("/create", responseController.createResponse);
+router.post(
+  "/create",
+  createResponseValidators,
+  responseController.createResponse
+);
 
 router.get(
   "/get/:responseId/subresponse",
@@ -26,6 +34,7 @@ router.get(
 router.patch(
   "/update/:responseId",
   validateId("responseId"),
+  updateResponseValidators,
   responseController.updateResponse
 );
 

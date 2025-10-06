@@ -44,7 +44,12 @@ Crée une nouvelle option dans la base de données.
 
 ```json
 {
-  "error": "label is required"
+  "errors": [
+    {
+      "path": "label",
+      "msg": "label is required"
+    }
+  ]
 }
 ```
 
@@ -96,7 +101,12 @@ Seuls les champs envoyés seront mis à jour.
 
 ```json
 {
-  "error": "label is required"
+  "errors": [
+    {
+      "path": "label",
+      "msg": "label is required"
+    }
+  ]
 }
 ```
 

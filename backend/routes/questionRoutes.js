@@ -1,10 +1,18 @@
 const { Router } = require("express");
 const questionController = require("../controllers/questionController");
 const { validateId } = require("../middlewares/validateId");
+const {
+  createQuestionValidators,
+  updateQuestionValidators,
+} = require("../middlewares/inputValidators");
 
 const router = Router();
 
-router.post("/create", questionController.createQuestion);
+router.post(
+  "/create",
+  createQuestionValidators,
+  questionController.createQuestion
+);
 
 router.get("/get", questionController.getAllQuestions);
 router.get(
@@ -37,6 +45,7 @@ router.get(
 router.patch(
   "/update/:questionId",
   validateId("questionId"),
+  updateQuestionValidators,
   questionController.updateQuestion
 );
 

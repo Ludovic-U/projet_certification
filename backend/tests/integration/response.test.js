@@ -104,7 +104,6 @@ describe("Response Integration Tests", () => {
     it("should return 400 status if label is missing or empty", async () => {
       const { project, question } = await seedWithProjectAndQuestion();
       const payload = {
-        label: "",
         projectId: project.projectId,
         questionId: question.questionId,
       };
@@ -112,7 +111,11 @@ describe("Response Integration Tests", () => {
       const res = await request(app).post("/api/response/create").send(payload);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label is required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "label", msg: "label is required" }),
+        ])
+      );
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -354,13 +357,17 @@ describe("Response Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label is required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "label", msg: "label is required" }),
+        ])
+      );
     });
 
     it("should return 400 status if invalid responseId", async () => {
       const res = await request(app)
         .patch("/api/response/update/abc")
-        .send({ label: "a" });
+        .send({ label: "label" });
 
       expect(res.status).toBe(400);
       expect(res.body).toEqual({ error: "Invalid responseId" });
@@ -369,7 +376,7 @@ describe("Response Integration Tests", () => {
     it("should return 404 status if response does not exist", async () => {
       const res = await request(app)
         .patch("/api/response/update/999")
-        .send({ label: "a" });
+        .send({ label: "label" });
 
       expect(res.status).toBe(404);
       expect(res.body).toEqual({ error: "Response not found" });

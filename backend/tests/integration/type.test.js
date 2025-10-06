@@ -101,14 +101,14 @@ describe("Type Integration Tests", () => {
     });
 
     it("should return 400 status if label is missing or empty", async () => {
-      const payload = {
-        label: "",
-      };
-
-      const res = await request(app).post("/api/type/create").send(payload);
+      const res = await request(app).post("/api/type/create").send({});
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label is required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "label", msg: "label is required" }),
+        ])
+      );
     });
 
     it("should return 500 status if prisma throws an error", async () => {
@@ -276,7 +276,11 @@ describe("Type Integration Tests", () => {
         .send(newData);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: "label is required" });
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "label", msg: "label is required" }),
+        ])
+      );
     });
 
     it("should return 400 status if invalid typeId", async () => {

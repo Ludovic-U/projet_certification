@@ -68,7 +68,21 @@ Accessible uniquement par les administrateurs.
 
 ```json
 {
-  "error": "label and category are required"
+  "errors": [
+    {
+      "path": "label",
+      "msg": "label is required"
+    },
+    {
+      "path": "category",
+      "msg": "category is required" 
+    },
+    {
+      "path": "numberOfSelectionableOpt",
+      "msg": "Invalid value"
+    },
+    ...
+  ]
 }
 ```
 
@@ -206,7 +220,21 @@ Seuls les champs envoyés seront mis à jour.
 
 ```json
 {
-  "error": "label and category are required"
+  "errors": [
+    {
+      "path": "label",
+      "msg": "label is required"
+    },
+    {
+      "path": "category",
+      "msg": "category is required" 
+    },
+    {
+      "path": "numberOfSelectionableOpt",
+      "msg": "Invalid value"
+    },
+    ...
+  ]
 }
 ```
 
