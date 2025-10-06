@@ -1,34 +1,41 @@
-// Affichages de la liste des clients
-
 "use client";
 
 import { useState } from "react";
 
-import Header from "@/components/layout/Header/Header"
-import { SideNav } from "@/components/layout"
-import { FontAwesomeIcon, Icons, CirclePlus } from "@/lib/icons";
-
 import {
+    PageHeader,
     Button,
-    List,
+    Table,
+    TableResponsive,
     Input,
     Pagination,
-    clientsList
-} from "@/components/ui"
+    clientsList,
+    Tooltip,
+    Modal
+} from "@/components/ui";
+import CreateClientForm from "@/components/forms/CreateClient";
 
-export default function Home() {
-    const [isSideNavOpen, setIsSideNavOpen] = useState(false);
+import { useModal } from "@/hooks";
+import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
+export default function ClientsPage() {
+    const modal = useModal()
     const clients = [
         {id : 1, name: "Entreprise Alpha", sector: "Finance", contact: "Jean Dupont"},
         { id: 2, name: "Startup Beta", sector: "Tech", contact: "Alice Martin" },
         { id: 3, name: "Agence Gamma", sector: "Marketing", contact: "Paul Durand" },
         { id: 4, name: "Société Delta", sector: "Industrie", contact: "Emma Leroy" },
         { id: 5, name: "Entreprise Epsilon", sector: "Santé", contact: "Lucas Bernard" },
-        { id: 6, name: "Startup Zeta", sector: "Éducation", contact: "Clara Dubois" },        
-    ];
+        { id: 6, name: "Startup Zeta", sector: "Éducation", contact: "Clara Dubois" },
+        {id : 7, name: "Entreprise Alpha", sector: "Finance", contact: "Jean Dupont"},
+        { id: 8, name: "Startup Beta", sector: "Tech", contact: "Alice Martin" },
+        { id: 9, name: "Agence Gamma", sector: "Marketing", contact: "Paul Durand" },
+        { id: 10, name: "Société Delta", sector: "Industrie", contact: "Emma Leroy" },
+        { id: 11, name: "Entreprise Epsilon", sector: "Santé", contact: "Lucas Bernard" },
+        { id: 12, name: "Startup Zeta", sector: "Éducation", contact: "Clara Dubois" },
+    ]
 
-    const itemsPerPage = 5;
+    const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = Math.ceil(clients.length / itemsPerPage);
     const currentData = clients.slice(
@@ -37,66 +44,51 @@ export default function Home() {
     );
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <Header/>
-            <div className="flex flex-1">
-                <SideNav
-                isOpen={isSideNavOpen}
-                toggle={() => setIsSideNavOpen((prev) => !prev)}
-                />
+        <div className="h-full">
+            <PageHeader title="Liste des clients" description="Consultez la liste des clients et accèdez aux détails."/>
+            <section>
 
-                <main
-                 className={`
-                    overflow-y-scroll flex flex-col bg-light transition-all duration-300 flex-1
-                    ${isSideNavOpen ? "ml-[240px]" : "ml-[90px]"}
-                 `}
-                >   
-                    <div className="flex items-center justify-between mx-20 my-10">
-                        <div className="w-fit cursor-default select-none flex flex-col gap-2">
-                            <h1 className="font-oswald text-dark text-4xl">
-                                Liste des clients
-                            </h1>
-                            <p className="font-didact text-greydarker text-xl">
-                                Consultez la liste des clients et accèdez aux détails.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col self-center w-[80%] max-w-[1200px] flex-1">
-                        <div className="flex justify-between ">
+                {/* ADD BTN + SEARCHBAR */}
+                <div className="flex items-center justify-between"> 
+                    <div>
+                        <Tooltip content="Ajouter un client" position="rightBottom">
                             <Button
-                             variant="iconPrimary"
-                             size="sm">
-                                <CirclePlus/>
-                                Ajouter un<br/> nouveau client
+                            onClick={modal.openModal}
+                            size="sm">
+                                <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
+                                    <FontAwesomeIcon icon={Icons.plus}/>
+                                </div>
+                                Nouveau client
                             </Button>
-                            <Input
-                             placeholder="Rechercher dans cette liste"
-                             leftIcon={
-                                <span>
-                                    <FontAwesomeIcon icon={Icons.search}/>
-                                </span>
-                             }
-                             className="min-w-70 max-w-80"
-                            />
-                        </div>
-                            
-                            <List<typeof currentData[0]>
-                            data={currentData}
-                            columns={clientsList}
-                            />
-                         {totalPages > 1 && (
-                            <div className="flex justify-center mt-10">
-                                <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={setCurrentPage}
-                                />
-                             </div>
-                        )}
+                        </Tooltip>
+                        <Modal modal={modal}
+                        title="AJOUTER UN CLIENT"
+                        description="Entrez les informations du nouveau client">
+                            <CreateClientForm/>
+                        </Modal>
                     </div>
-                </main>
-            </div>
+                    <Input
+                     type="search"
+                     leftIcon={<FontAwesomeIcon icon={Icons.search}/>}
+                     placeholder="Recherchez dans cette liste..."
+                     className="w-70"/>
+                </div>
+                
+                {/* <TableResponsive<typeof currentData[0]>
+                 data={currentData}
+                 columns={clientsList}/>
+                <Table<typeof currentData[0]>
+                 data={currentData}
+                 columns={clientsList}/>
+                 {totalPages > 1 && (
+                    <div className="flex justify-center mt-10">
+                        <Pagination
+                         currentPage={currentPage}
+                         totalPages={totalPages}
+                         onPageChange={setCurrentPage}/>
+                    </div>
+                 )} */}
+            </section>
         </div>
     );
 }

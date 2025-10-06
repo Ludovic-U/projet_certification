@@ -3,10 +3,13 @@ export * from "./Card";
 export * from "./Checkbox";
 export * from "./Input";
 export * from "./LoadingSpinner";
+export * from "./Modal"
 export * from "./Pagination";
 export * from "./ProgressBar";
 export * from "./Radio";
 export * from "./Toggle";
 export * from "./Tooltip";
-export * from "./List";
-export * from "./PageHeader"
+export * from "./Table";
+export * from "./PageHeader";
+export * from "./DynamicOptions"
+export * from "./Select"

@@ -52,11 +52,14 @@ module.exports.logout = async (req, res) => {
         
     }
     console.log("User logged out, clearing cookie.");
+
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
     });
+
+    res.status(200).json({ message: "Loggeed out successfully"})
 }
 
 module.exports.registerPost = async (req, res) => {

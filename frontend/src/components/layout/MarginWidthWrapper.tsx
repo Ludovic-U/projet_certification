@@ -1,3 +1,5 @@
+// Container qui adapte la largeur du contenu selon l'état du sidebar
+// Ajuste automatiquement la marge gauche avec animation fluide à ouverture et fermeture
 "use client";
 import { ReactNode } from "react";
 

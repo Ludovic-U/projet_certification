@@ -1,9 +1,6 @@
 "use client";
-import React from 'react';
 import { cn } from "@/utils/utils"
 import {
-    ArrowLeft,
-    LogOut,
     ChevronRight
 } from 'lucide-react';
 

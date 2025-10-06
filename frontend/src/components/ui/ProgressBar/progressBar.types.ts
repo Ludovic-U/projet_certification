@@ -3,6 +3,6 @@ export interface ProgressBarProps {
     max?: number;
     size?: "sm" | "md" | "lg";
     className?: string;
-    color?: string;
+    color: string;
     showLabel?: boolean;
 }

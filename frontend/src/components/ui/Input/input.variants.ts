@@ -6,14 +6,14 @@ export const inputVariants = cva(
         "bg-background border border-dark",
         "px-3 py-2 ",
         "text-base font-noto text-dark",
-        "hover:bg-lighthover",
-        "focus:outline focus:outline-primary focus:border-primary",
+        "hover:border-dashed hover:border-primary",
+        "focus:outline-none focus:border-solid focus:border-primary",
     ],
     {
         variants: {
             variant: {
-                error: "border-alertdanger bg-alertdanger50",
-                success: "border-alertsuccess bg-alertsuccess50",
+                error: "border-alertdanger",
+                success: "border-alertsuccess",
             },
         },
     }
