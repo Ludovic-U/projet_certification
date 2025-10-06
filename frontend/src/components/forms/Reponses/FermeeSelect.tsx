@@ -15,12 +15,15 @@ export default function ReponseSelect() {
     return (
         <>
             {options.map((opt, i) => (
-                <Checkbox
-                 key={i}
-                 label={opt}
-                 checked={reponses.includes(opt)}
-                 onCheckedChange={() => toggleOption(opt)}
-                />
+                <div className="border my-2 pl-4 py-2 rounded-lg hover:border-dashed hover:border-primay">
+                    <Checkbox
+                    key={i}
+                    className=""
+                    label={opt}
+                    checked={reponses.includes(opt)}
+                    onCheckedChange={() => toggleOption(opt)}
+                    />                   
+                </div>
             ))}
         </>
     )

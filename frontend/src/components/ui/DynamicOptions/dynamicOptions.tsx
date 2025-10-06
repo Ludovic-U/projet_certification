@@ -34,14 +34,15 @@ export function DynamicOptions({
                         <FontAwesomeIcon icon={Icons.plus}/>
                     </Button>
                 </Tooltip>
-                <span className="text-sm font-didact text-dark">Ajouter une réponse</span>
+                <span className="text-sm font-didact text-greydarker">Ajouter une réponse</span>
             </div>
 
             <div className="flex flex-col gap-4 max-h-60 w-full overflow-y-auto py-4">
                 {values.map((val, index) => (
-                    <div key={index} className="bg-orange-200">
+                    <div key={index}>
                         <Input
                          label={`${labelPrefix} ${index + 1}`}
+                         labelBg="bg-white"
                          value={val}
                          onChange={(e) => updateField(index, e.target.value)}
                          rightIcon={
