@@ -32,8 +32,8 @@ GET `/` :
 
 ### GET `/api/user/by-client/:clientId`
 
-**Description**  
-
+**Description** 
+Récupérer un liste de client 
 
 **Paramêtre de la requête**  
  `clientId` : L'ID du client 
