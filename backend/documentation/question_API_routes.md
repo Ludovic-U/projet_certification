@@ -89,10 +89,10 @@ Accessible uniquement par les administrateurs.
 
 ### **Paramètres query**
 
-| Paramètre | Type    | Description                   | Défaut   | Exemple        |
-| --------- | ------- | ------------------------------|--------- | -------------- |
-| `page`    | number  | Numéro de la page à récupérer |`1`       | `/get?page=2`  |
-| `limit`   | number  | Nombre de questions par page  |`10`      | `/get?limit=5` |
+| Paramètre | Type    | Défaut   | Description                   | Exemple        |
+| --------- | ------- |--------- | ------------------------------| -------------- |
+| `page`    | number  |`1`       | Numéro de la page à récupérer | `/get?page=2`  |
+| `limit`   | number  |`10`      | Nombre de questions par page  | `/get?limit=5` |
 
 Exemple: `/get?page=2&limit=10`
 
