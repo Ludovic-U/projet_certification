@@ -11,7 +11,7 @@ export default function ReponsesPlusieurs() {
         <>
             <form className="flex flex-col gap-8 items-center select-none">
                 <div className="flex flex-col items-center gap-3 max-w-90">
-                    <h2 className="font-bold text-dark w-full text-center font-noto">{qst}</h2>
+                    <h2 className="font-semibold text-lg text-dark w-full text-left">{qst}</h2>
                     <DynamicOptions
                      labelPrefix="Réponse"
                      values={reponse}

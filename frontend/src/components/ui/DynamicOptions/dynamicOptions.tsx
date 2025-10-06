@@ -32,7 +32,6 @@ export function DynamicOptions({
                 {values.map((val, index) => (
                     <div key={index} className="flex gap-2 items-center">
                         <Input
-                        className="flex-1"
                         label={`${labelPrefix} ${index + 1}`}
                         value={val}
                         onChange={(e) => updateField(index, e.target.value)}/>

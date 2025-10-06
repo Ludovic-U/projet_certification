@@ -184,7 +184,7 @@ export default function BuildingPage() {
                                     </Tooltip>
                                     <Modal modal={modalUnique}
                                      title="Question 01"
-                                     description="Saisissez votre réponse dans le champ prévu">
+                                    >
                                         <ReponseUnique/>
                                     </Modal>
                                 </div>
@@ -198,7 +198,7 @@ export default function BuildingPage() {
                                     </Tooltip>
                                     <Modal modal={modalPlusieurs}
                                      title="Question 01"
-                                     description="Ajoutez une ou plusieurs réponses courtes">
+                                    >
                                         <ReponsesPlusieurs/>
                                     </Modal>
                                 </div>
@@ -212,7 +212,7 @@ export default function BuildingPage() {
                                     </Tooltip>
                                     <Modal modal={modalSelect}
                                      title="Question 01"
-                                     description="Selectionnez une pour plusieurs options">
+                                    >
                                         <ReponseSelect/>
                                     </Modal>
                                 </div>
