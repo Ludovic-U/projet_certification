@@ -1,16 +1,15 @@
 "use client";
 
-import React, { ReactNode, useEffect, useRef, useState} from "react";
+import React, { ReactNode, useRef, useState} from "react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
 import { useDimensions } from "@/hooks"
-
 import { SIDENAV_ITEMS, MenuItemWithSubMenuProps } from "../SideNav";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
-
 import { motion, useCycle, Variants, TargetAndTransition } from "framer-motion"
+import { Button } from "@/components/ui";
+import { useUser } from "@/context/UserContext";
 
 /*
     Variants Framer Motion pour l'animation du conteneur principal
@@ -60,6 +59,7 @@ const HeaderMobile = () => {
     const { height } = useDimensions(containerRef); // hook pour récupérer la hauteur
     const [isOpen, toggleOpen] = useCycle(false, true) // gestion de l'état du menu (ouvert/fermé)
 
+    const {signOut} = useUser();
     return (
         <motion.nav
          initial={false}
@@ -76,36 +76,46 @@ const HeaderMobile = () => {
              variants={sidebar}/>
 
             <motion.ul
-             className="absolute grid w-full gap-3 px-10 py-16"
+             className="absolute flex flex-col w-full h-full justify-around px-10 py-16"
              variants={variants}>
 
-                {SIDENAV_ITEMS.map( (item, idx) =>
-                {
-                    const isLastItem = idx === SIDENAV_ITEMS.length - 1;
-                    return (
-                        <div key={idx}>
-                            {item.subMenu ? (
-                                <MenuItemWithSubMenu item={item} toggleOpen={toggleOpen}/>
-                            ) : (
-                                <MenuItem>
-                                    <Link
-                                     href={item.path}
-                                     onClick={() => toggleOpen()}
-                                     className={`flex w-full text-2xl text-primary 
-                                        ${item.path === pathname ? "font-bold text-primaryhover" : ""}`
-                                     }
-                                    >
-                                        {item.title}
-                                    </Link>
-                                </MenuItem>
-                            )}
-                            {!isLastItem && (
-                                <MenuItem className="my-3 h-px w-full bg-dark"/>
-                            )}
-                        </div>
-                    )
-                })}
-
+                <div className="flex flex-col gap-3">
+                    {SIDENAV_ITEMS.map( (item, idx) => {
+                        const isLastItem = idx === SIDENAV_ITEMS.length - 1;
+                        return (
+                            <div key={idx}>
+                                {item.subMenu ? (
+                                    <MenuItemWithSubMenu item={item} toggleOpen={toggleOpen}/>
+                                ) : (
+                                    <MenuItem>
+                                        <Link
+                                        href={item.path}
+                                        onClick={() => toggleOpen()}
+                                        className={`flex w-full text-2xl text-primary 
+                                            ${item.path === pathname ? "font-bold text-primaryhover" : ""}`
+                                        }
+                                        >
+                                            {item.title}
+                                        </Link>
+                                        
+                                    </MenuItem>
+                                )}
+                                
+                                {!isLastItem && (
+                                    <MenuItem className="my-3 h-px w-full bg-dark"/>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+                <MenuItem>
+                    <Button
+                     onClick={signOut}
+                     className="flex justify-self-center text-light gap-3">
+                        <span>Se déconnecter</span>
+                        <FontAwesomeIcon icon={Icons.logout}/>
+                    </Button>
+                </MenuItem>
             </motion.ul>
             <MenuToggle toggle={toggleOpen}/>
         </motion.nav>

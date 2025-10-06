@@ -4,20 +4,17 @@ import React, { useState } from "react";
 
 import Link from "next/link"; // Composant de navigation côté client
 import { usePathname } from "next/navigation"; // Hook pour récupérer le chemin de l'url active 
-
 import { SIDENAV_ITEMS } from "./constants"; // Liste des items du menu (icônes, titres, liens...)
 import { SideNavItem, SideNavProps } from "./types"; // Type TypeScript décrivant la forme d'un item de menu
 import { FontAwesomeIcon, Icons } from "@/lib/icons"; // Icones utilisés dans la navbar
-
 import { Button, Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
-import api_backend from "@/api/axiosInstance";
 
 // Déclare l'état de la sidenav (ouverte ou fermée).
 const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     const toggleCollapse = () => setIsCollapsed(!isCollapsed);
-    
     // Etat pour gérer quel sous-menu est ouvert (pour n'en avoir qu'un seul à la fois)
     const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null);
+
     const handleSubMenuToggle = (index: number) => {
         setOpenSubMenuIndex(openSubMenuIndex === index ? null : index);
     }
@@ -25,7 +22,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     return (
         // Composant principal :
         // Fixée à gauche, prend toute la hauteur de l'écran et masquée sur mobile.
-        <div className={`fixed hidden h-screen ${isCollapsed ? 'md:w-16' : 'md:w-60'} flex-1 bg-dark text-light font-noto md:flex z-50 transistion-all duration-300`}>
+        <div className={`fixed hidden h-screen ${isCollapsed ? 'md:w-16' : 'md:w-63'} flex-1 bg-dark text-light font-noto md:flex z-50 transistion-all duration-300`}>
             <div className="relative flex w-full flex-col space-y-8">
 
                 {/* Logo + Titre */}
@@ -65,7 +62,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                 {/* Bouton pour ouvrir ou fermer la sidenav avec toggleCollapse */}
                 <button
                  onClick={toggleCollapse}
-                 className="absolute top-14 -right-4 cursor-pointer h-8 w-8 text-dark border border-dark bg-light rounded-full hover:bg-lighthover hover:text-darkhover transition-colors">
+                 className="absolute top-14 -right-4 cursor-pointer h-8 w-8 text-dark border border-dark bg-light rounded-full hover:bg-lighthover hover:text-darkhover transition-all">
                     <FontAwesomeIcon icon={isCollapsed ? Icons.chevronRight : Icons.chevronLeft}
                      className="text-md text-dark"/>
                 </button>
@@ -96,12 +93,6 @@ const MenuItem = (
         const parentActive = pathname === item.path;
         const childActive = item.subMenuItems?.some(sub => sub.path === pathname);
 
-    //     // Etat local pour gérer si le sous-menu est ouvert
-    //     const [subMenuOpen, setSubMenuOpen] = useState(false);
-    //     const toggleSubMenu = () => {
-    //         setSubMenuOpen(!subMenuOpen);
-    // };
-
     // SIDENAV FERMEE
     // Chaque item s'affiche uniquement comme icône carré cliquable + Tooltip en hover avec le titre
     // Si le chemin actuel (pathname) correspond, l'icône de l'item actif est mis en surbrillance
@@ -110,7 +101,7 @@ const MenuItem = (
             // Contenu graphique de base (icône dans carré centré)
             <div
              className={`cursor-pointer flex items-center justify-center h-10 w-10 rounded-lg transition hover:bg-lighthover hover:text-primary
-                    ${pathname.includes(item.path) ? "bg-light text-primary" : ""}
+                    ${pathname.includes(item.path) ? "text-primary" : ""}
                     ${childActive && !parentActive ? "text-primary" : ""}`}
             >
                 {item.icon}
@@ -127,7 +118,7 @@ const MenuItem = (
                     {/* Flyout menu : apparaît à droite au hover */}
                     <div
                      className="absolute left-full top-0 ml-4 hidden group-hover:flex flex-col
-                     bg-dark text-primary200 rounded-lg shadow-400 p-3 z-50 min-w-[180px]">
+                     bg-dark text-lighthover rounded-lg shadow-400 p-3 z-50 min-w-[180px]">
 
                         {/* Zone Tampon pour laisser le flyoutmenu ouvert le temps de mettre la souris dessus */}
                         <div className="absolute -left-4 top-0 h-full w-4"/>
@@ -142,7 +133,7 @@ const MenuItem = (
                                  href={subItem.path}
                                  className={`flex items-center gap-2 whitespace-nowrap text-sm rounded-lg px-3 py-2
                                             hover:bg-lighthover hover:text-primary
-                                 ${subItem.path === pathname ? "bg-light font-semibold text-primary" : ""}`}>
+                                 ${subItem.path === pathname ? "font-semibold text-primary" : ""}`}>
                                     {subItem.title}
                                 </Link>
                             ))}
@@ -175,17 +166,17 @@ const MenuItem = (
                      className={`
                         cursor-pointer flex w-full flex-row items-center justify-between transition p-2 rounded-lg
                         hover:bg-lighthover hover:text-primary
-                        ${pathname.includes(item.path) ? "bg-light text-primary" : ""}
-                        ${childActive && !parentActive ? "text-primary" : ""}`}
+                        ${pathname.includes(item.path) ? "text-primary" : ""}
+                        ${childActive && !parentActive ? "text-primary200" : ""}`}
                     >
                         <div className="flex flex-row space-x-4 items-center">
                             {item.icon}
-                            <span className="font-base text-lg flex">{item.title}</span>
+                            <span className="font-base flex">{item.title}</span>
                         </div>
 
                         {/* chevron pour ouvrir/fermer le submenu*/}
                         <div className={`${isSubMenuOpen ? 'rotate-180' : ""} flex`}>
-                            <FontAwesomeIcon className="text-md" icon={Icons.chevronDown}></FontAwesomeIcon>
+                            <FontAwesomeIcon className="text-sm" icon={Icons.chevronDown}></FontAwesomeIcon>
                         </div>
                     </button>
 
@@ -194,14 +185,14 @@ const MenuItem = (
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out
                                         ${isSubMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
                             {/* Liste des liens enfants (submenu), l'item actif est surlignée si son path correspond */}
-                            <div className="my-2 ml-2 flex flex-col space-y-5 text-primary200 w-fit p-2">
+                            <div className="my-2 ml-2 flex flex-col space-y-5 text-lighthover w-fit p-2">
                                 {item.subMenuItems?.map((subItem, idx) => {
                                     return (
                                         <Link
                                         key={idx}
                                         href={subItem.path}
-                                        className={`flex gap-3 text-md items-center p-2 rounded-lg transition
-                                                    ${subItem.path === pathname ? 'bg-light font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
+                                        className={`flex gap-3 items-center p-2 rounded-lg transition
+                                                    ${subItem.path === pathname ? 'font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
                                         >
                                             <span className="flex gap-3 items-center">{subItem.icon}{subItem.title}</span>
                                         </Link>
@@ -216,10 +207,10 @@ const MenuItem = (
                 <Link
                  href={item.path}
                  className={`flex flex-row space-x-4 items-center p-2 rounded-lg hover:bg-lighthover hover:text-primary
-                    ${item.path === pathname ? 'text-primary bg-light font-semibold cursor-default' : ''}`}
+                    ${item.path === pathname ? 'text-primary font-semibold cursor-default hover:bg-transparent' : ''}`}
                 >
                     {item.icon}
-                    <span className="flex font-base text-lg">{item.title}</span>
+                    <span className="flex font-base">{item.title}</span>
                 </Link>
             )}
         </div>

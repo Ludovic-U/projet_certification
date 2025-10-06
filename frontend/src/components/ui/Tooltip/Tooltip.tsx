@@ -17,6 +17,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
         left: "right-full top-1/2 -translate-y-1/2 mr-2",
         right: "left-full top-1/2 -translate-y-1/2 ml-2",
         rightMenu: "left-full top-1/2 -translate-y-1/2 ml-4",
+        leftTop: "bottom-full right-1/2 mb-1",
+        rightTop: "bottom-full left-1/2 mb-1",
+        leftBottom: "top-full right-1/2 mt-1",
+        rightBottom: "top-full left-1/2 mt-1",
     }[position];
 
     return (
@@ -25,9 +29,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
             <div
              className={cn(
-                "absolute z-50 px-3 py-1.5 bg-[rgba(39,39,39,0.6)] text-light font-noto text-sm rounded-lg shadow-500base opacity-0 invisible transition-all duration-200",
+                "absolute z-9999 px-3 py-1.5 opacity-0 invisible transition-all duration-200",
+                "bg-[rgba(39,39,39,0.6)] rounded-lg shadow-500base",
+                "font-noto text-light text-sm",
                 "group-hover opacity-100 group-hover:visible",
-                "max-w-xs overflow-x-hidden text-ellipsis whitespace-nowrap",
+                "max-w-[250px] truncate",
                 positionClasses,
                 className
              )}

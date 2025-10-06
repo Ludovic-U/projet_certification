@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 export const buttonVariants = cva(
     [
-        "cursor-pointer w-fit h-fit",
+        "select-none cursor-pointer w-fit h-fit",
         "inline-flex items-center justify-center gap-2",
         "font-noto rounded-lg",
         "whitespace-nowrap",
@@ -45,6 +45,8 @@ export const buttonVariants = cva(
                 sm: "px-3 py-1 text-sm",
                 md: "px-6 py-2",
                 icon: "h-8 w-8 p-3 border-1 rounded-full",
+                iconS: "h-6 w-6 border-1 rounded-full text-xs",
+                iconXS: "text-xs h-5 w-5 rounded-full border-1",
             },
         },
         defaultVariants: {
