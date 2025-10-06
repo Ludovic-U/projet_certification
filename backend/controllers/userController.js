@@ -59,18 +59,22 @@ module.exports.logout = async (req, res) => {
     });
 }
 
-module.exports.registerPost = async (req, res) => { // TODO : a refaire
+module.exports.registerPost = async (req, res) => {
     const user = req.user;
     const {clientId, firstname, lastname, email, position, role } = req.body;
     if (!clientId || !firstname || !lastname || !email || !role) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        return res.status(400).json({ error: 'Champs requis manquants' });
     }
     try {
-        createUser(user, clientId, firstname, lastname, email, position, role );
-        res.status(201).json({ message: 'User created successfully', userId: user.userId });
+        const newUser = await createUser(user, clientId, firstname, lastname, email, position, role );
+        res.status(201).json({ message: 'User created successfully', userId: user.userId, newUser:newUser });
     } catch (err) {
+        if (err.code === 'P2002') {
+            // throw new Error('Un utilisateur avec ce username ou email existe déjà');
+            res.status(400).json({ error: 'Un utilisateur avec ce username ou email existe déjà' });
+        }
         console.error(err);
-        res.status(500).json({ error: 'Error creating user' });
+        res.status(500).json({ error: 'Error creating user ' + err });
     }
 };
 
@@ -111,4 +115,21 @@ module.exports.resetPasswordPost = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+//get users by clientId
+module.exports.getUsersByClientId = async (req, res) => {
+    const clientId = Number(req.params.clientId);
+    if (isNaN(clientId)) {
+        return res.status(400).json({ error: 'Invalid clientId' });
+    }
+    try {
+        const users = await this.getUsersByClientId(req.user, clientId);
+        res.status(200).json(users);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error fetching users' });
+    }
+};
+
+
 

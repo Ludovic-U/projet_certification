@@ -11,10 +11,10 @@
 
 ### 2. Routes :
 - GET [`api/me`](./documentation/controllers_docs.md#get-apime) : prend le cookie de session renvoie un objet utilisateur 
-
+- GET [`api/user/by-client/:clientID`](./documentation/controllers_docs.md#post-apiuserlogin)
 - POST [`api/user/login`](./documentation/controllers_docs.md#post-apiuserlogin) : vérifie mdp et email, créé une session de connection, puis renvoie un cookie
 - POST [`api/user/logout`](./documentation/controllers_docs.md#post-apiuserlogout) : prend le cookie de session et supprime les sessions de l'utilisateur
-- POST [`api/user/register`](./documentation/controllers_docs.md#post-apiuserclientnameregister) : créer un utilisateur et le lie au client
+- POST [`api/user/register`](./documentation/controllers_docs.md#post-apiuserclientnameregister) : créer un utilisateur, le lie au client, et lui assigne un role
 - POST [`api/user/forgot-password`](./documentation/controllers_docs.md#post-apiuserforgot-password) : envoie un lien de reset de mdp, contenant un token à usage unique, à un email.
 - POST [`api/user/reset-password`](./documentation/controllers_docs.md#post-apiuserreset-password) : consomme le token à usage unique, change le mdp.
 - GET [`api/client/get`](./documentation/controllers_docs.md#post-apiclientget) : retourne la liste de tout les clients
