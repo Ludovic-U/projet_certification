@@ -27,31 +27,6 @@ module.exports.authenticateUser = async (req, res, next) => {
   next();
 };
 
-// module.exports.findSession = async ( userId, token) => {
-//     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-//     return await prisma.userSession.findFirst({
-//       where: {
-//         userId,
-//         tokenHash,
-//         expiresAt: {
-//           gt: new Date() // gt in prisma means "greater than" (i.e., not expired)
-//         }
-//       }
-//     });
-// };
-
-// module.exports.extendSession = async (sessionId, additionalHours = 24) => { // TODO: enlever le chiffre magique. 
-//   const newExpirationDate = new Date();
-//   newExpirationDate.setHours(newExpirationDate.getHours() + additionalHours);
-
-//   prisma.userSession.update({
-//     where: { id: sessionId },
-//     data: {
-//       expiresAt: newExpirationDate
-//     }
-//   });
-// };
-
 
 
 
