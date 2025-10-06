@@ -1,7 +1,6 @@
 "use client";
 
 import { PageHeader } from "@/components/ui";
-import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 export default function BuildingPage() {
 

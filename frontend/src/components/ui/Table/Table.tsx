@@ -3,7 +3,12 @@
 import React from "react";
 import { TableProps } from "./table.types"
 
-export const Table = <T extends { id: string | number }>({ data, columns }: TableProps<T>) => {
+export const Table = <T extends { id: string | number }>({
+    data,
+    columns,
+    onRowClick,
+}: TableProps<T>) => {
+
     return (
         <div className="hidden md:block font-noto">
             <div className="flex flex-col items-center overflow-x-scroll">
@@ -22,7 +27,10 @@ export const Table = <T extends { id: string | number }>({ data, columns }: Tabl
                             {data.map((item) => (
                                 <tr key={item.id} className="bg-white group cursor-pointer shadow-400">
                                     {columns.map((col) => (
-                                        <td key={col.key} className="bg-white align-middle group-hover:bg-lighthover py-5 text-center">
+                                        <td
+                                         key={col.key}
+                                         onClick={() => onRowClick?.(item)}
+                                         className="bg-white align-middle group-hover:bg-lighthover py-5 text-center">
                                             {col.render ? col.render(item) : (item as any)[col.key]}
                                         </td>
                                     ))}

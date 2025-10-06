@@ -15,9 +15,11 @@ import {
 import CreateProjectForm from "@/components/forms/CreateProject";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
+import { useRouter } from "next/navigation";
 
 
 export default function ProjectsPage() {
+    const router = useRouter();
     const modal = useModal();
 
     const projects = [
@@ -82,13 +84,14 @@ export default function ProjectsPage() {
                      className="w-70"/>
                 </div>
 
-                {/* <TableResponsive<typeof currentData[0]>
+                <TableResponsive<typeof currentData[0]>
                  data={currentData}
                  columns={projectsList}/>
 
                 <Table<typeof currentData[0]>
                  data={currentData}
-                 columns={projectsList}/>
+                 columns={projectsList}
+                 onRowClick={(project) => router.push(`/projets/${project.id}`)}/>
                  {totalPages > 1 && (
                     <div className="flex justify-center mt-10">
                         <Pagination
@@ -96,7 +99,7 @@ export default function ProjectsPage() {
                          totalPages={totalPages}
                          onPageChange={setCurrentPage}/>
                     </div>
-                 )} */}
+                 )}
             </section>
         </div>
     );

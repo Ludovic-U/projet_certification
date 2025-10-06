@@ -14,7 +14,6 @@ const Modal: React.FC<ModalProps> = ({
     className,
 }) => {
     const modalRef = useModalBehavior(modal.isOpen, modal.closeModal);
-    const previousActiveElement = useRef<HTMLElement | null>(null);
 
     // Gestion du click en dehors du modal
     const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
