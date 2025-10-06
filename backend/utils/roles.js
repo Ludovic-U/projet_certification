@@ -4,10 +4,22 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+
+const roleAttributionRules = { //TODO: ne pas coder en dur?
+  "super_admin": ["super_admin", "admin_client", "chef_de_projet", "contributeur"],
+  "admin_client": ["admin_client", "chef_de_projet", "contributeur"],
+  "chef_de_projet": ["contributeur"],
+  "contributeur": []
+}
+
+module.exports.canAttributeRole = (assigningUserRole, roleToAssign) => {
+  const allowedRoles = roleAttributionRules[assigningUserRole];
+  return allowedRoles.includes(roleToAssign);
+}
+
 // Exemple d’utilisation
 // checkPermission(user, "project:create:any");
 // checkPermission(user, ["project:create:any", "project:create:org"]); 
-
 module.exports.checkPermission = (user, permissionsRequired) => {
   if (!user || !user.permissions) {
     throw new Error('checkPermission: no user or no permissions');
