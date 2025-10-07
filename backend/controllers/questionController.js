@@ -48,7 +48,7 @@ module.exports.createQuestion = async (req, res) => {
       isRelevant: isRelevant ?? false,
       hasMultipleOpenResponse: hasMultipleOpenResponse ?? false,
       shouldMultiply: shouldMultiply ?? false,
-      questionIdParent: questionIdParent ?? null,
+      questionIdParent: Number(questionIdParent) ?? null,
       types: types ?? [],
       projects: projects ?? [],
       options: options ?? [],
