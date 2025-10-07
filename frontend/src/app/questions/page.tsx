@@ -9,14 +9,30 @@ import api_backend from "@/api/axiosInstance";
 
 export default function PilotagePage() {
   const [questions, setQuestions] = useState([]);
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    currentPage: 1,
+    pageSize: 10,
+    totalPages: 1,
+  });
   const modal = useModal();
 
-  // fetch questions list
+  // Test fetch questions list with pagination
   useEffect(() => {
-    api_backend.get(`/question/get?page=1&limit=10`).then((res) => {
-      setQuestions(res.data.data);
-    });
-  }, []);
+    const fetchQuestions = async () => {
+      try {
+        const res = await api_backend.get(
+          `/question/get?page=${pagination.currentPage}&limit=${pagination.pageSize}`
+        );
+        setQuestions(res.data.data);
+        setPagination(res.data.meta);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchQuestions();
+  }, [pagination.currentPage, pagination.pageSize]);
 
   return (
     <div className="h-full">
@@ -78,6 +94,11 @@ export default function PilotagePage() {
                       await api_backend.delete(
                         `/question/delete/${q.questionId}`
                       );
+                      setQuestions((prev) =>
+                        prev.filter(
+                          (question) => question.questionId !== q.questionId
+                        )
+                      );
                       console.log(`question with id: ${q.questionId} deleted`);
                     } catch (error) {
                       console.log(error);
@@ -92,6 +113,37 @@ export default function PilotagePage() {
         ) : (
           <span>No Questions</span>
         )}
+
+        {/* Test Pagination */}
+        <div className="flex justify-center mt-4 space-x-2">
+          <Button
+            onClick={() =>
+              setPagination((prev) => ({
+                ...prev,
+                currentPage: Math.max(prev.currentPage - 1, 1),
+              }))
+            }
+            disabled={pagination.currentPage === 1}
+          >
+            Previous
+          </Button>
+
+          <span>
+            Page {pagination.currentPage} of {pagination.totalPages}
+          </span>
+
+          <Button
+            onClick={() =>
+              setPagination((prev) => ({
+                ...prev,
+                currentPage: Math.min(prev.currentPage + 1, prev.totalPages),
+              }))
+            }
+            disabled={pagination.currentPage === pagination.totalPages}
+          >
+            Next
+          </Button>
+        </div>
       </section>
     </div>
   );
