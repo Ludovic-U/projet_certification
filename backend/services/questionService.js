@@ -87,7 +87,7 @@ module.exports.getAllQuestions = async (page, limit) => {
 };
 
 /**
- * Update a question by ID.
+ * Update a question by ID.questio
  *
  * @async
  * @function updateQuestion

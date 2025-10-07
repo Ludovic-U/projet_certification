@@ -89,3 +89,4 @@ export function useUser() {
     if (!context) throw new Error("useUser doit être utilisé dans le UserProvider");
     return context;
 }
+
