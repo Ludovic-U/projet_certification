@@ -18,7 +18,7 @@ export default function CreateQuestionForm() {
   const [hasMultipleOpenResponse, setHasMultipleOpenResponse] = useState(false);
   const [shouldMultiply, setShouldMultiple] = useState(false);
   const [allowMultiple, setAllowMultiple] = useState(false);
-  const [options, setOptions] = useState([""]);
+  const [options, setOptions] = useState<string[]>([]);
   const [questionIdParent, setQuestionIdParent] = useState("");
 
   const categories = [
@@ -53,6 +53,7 @@ export default function CreateQuestionForm() {
         hasMultipleOpenResponse,
         shouldMultiply,
         ...(questionIdParent && { questionIdParent }),
+        ...(options && { options }),
       });
 
       console.log("Question created successfully");

@@ -235,7 +235,7 @@ model Option {
   label      String
   questionId Int
 
-  question Question @relation(fields: [questionId], references: [questionId])
+  question Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
 
   responses Response[]
 }
