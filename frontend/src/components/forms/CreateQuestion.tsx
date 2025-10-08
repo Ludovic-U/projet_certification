@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
 import {
   Input,
@@ -27,24 +27,33 @@ export default function CreateQuestionForm() {
   ];
 
   const [selectedType, setSelectedType] = useState<string[]>([]);
-  const types = [
-    "Startup",
-    "PME",
-    "ESN",
-    "CPF",
-    "OPCO",
-    "GRETA",
-    "Universités et grandes écoles",
-    "CFA",
-    "Associations de formation continue",
-    "Collectivités territoriales",
-    "CNRS",
-    "ONG",
-    "CCI",
-    "BTP",
-  ];
+  // const types = [
+  //   "Startup",
+  //   "PME",
+  //   "ESN",
+  //   "CPF",
+  //   "OPCO",
+  //   "GRETA",
+  //   "Universités et grandes écoles",
+  //   "CFA",
+  //   "Associations de formation continue",
+  //   "Collectivités territoriales",
+  //   "CNRS",
+  //   "ONG",
+  //   "CCI",
+  //   "BTP",
+  // ];
+
+  // TEST
+  const [testTypes, setTestTypes] = useState([]);
+  const [TestLabels, setTestLabels] = useState<string[]>([]);
 
   const onSubmit = async () => {
+    // Get the IDs of selected types
+    const selectedIds = testTypes
+      .filter((t) => selectedType.includes(t.label))
+      .map((t) => t.typeId);
+
     try {
       await api_backend.post(`question/create`, {
         label,
@@ -54,6 +63,7 @@ export default function CreateQuestionForm() {
         shouldMultiply,
         ...(questionIdParent && { questionIdParent }),
         ...(options && { options }),
+        ...(selectedIds && { types: selectedIds }),
       });
 
       console.log("Question created successfully");
@@ -61,6 +71,21 @@ export default function CreateQuestionForm() {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    // fetch Type List
+    const fetchTypeList = async () => {
+      try {
+        const res = await api_backend.get(`/type/get`);
+        setTestTypes(res.data); // Stores types with IDs and labels.
+        setTestLabels(res.data.map((t) => t.label)); // Stores labels of types.
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchTypeList();
+  }, []);
 
   return (
     <>
@@ -100,7 +125,7 @@ export default function CreateQuestionForm() {
               value={selectedType}
               onChange={setSelectedType}
               label="Type"
-              options={types}
+              options={TestLabels}
             />
           </div>
         </div>

@@ -13,8 +13,9 @@ export default function PilotagePage() {
     totalItems: 0,
     currentPage: 1,
     pageSize: 10,
-    totalPages: 1,
-  });
+    totalPages: 0,
+  }); // Pagination default Infos
+
   const modal = useModal();
 
   // Test fetch questions list with pagination
@@ -24,8 +25,8 @@ export default function PilotagePage() {
         const res = await api_backend.get(
           `/question/get?page=${pagination.currentPage}&limit=${pagination.pageSize}`
         );
-        setQuestions(res.data.data);
-        setPagination(res.data.meta);
+        setQuestions(res.data.data); // Stores questions
+        setPagination(res.data.meta); // Stores pagination data
       } catch (error) {
         console.error(error);
       }
