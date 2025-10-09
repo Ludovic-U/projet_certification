@@ -40,14 +40,14 @@ export default function LoginPage() {
             const res = await api_backend.get("me");
             setUser(res.data.user);
 
-            // TODO : routes selon rôle
+
             const roles = res.data.user.roles || [];
             // redirection selon le rôle
-            // if (roles.includes("superadmin")) {
-            if (res.data.user) {
-                router.push("/home");
-            } else {
+            if (roles.includes("super_admin")) {
                 router.push("/clients");
+            } else {
+                //TODO: vérifier que clientId existe
+                router.push(`/${res.data.user.clientId}/projets`);
             }
         } catch (error: any) {
             console.log ("Login failed", error.response);

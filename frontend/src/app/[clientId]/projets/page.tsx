@@ -15,10 +15,11 @@ import {
 import CreateProjectForm from "@/components/forms/CreateProject";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 
 export default function ProjectsPage() {
+    console.log("param", useParams());
     const router = useRouter();
     const modal = useModal();
 
@@ -92,7 +93,7 @@ export default function ProjectsPage() {
                 <Table<typeof currentData[0]>
                  data={currentData}
                  columns={projectsList}
-                 onRowClick={(project) => router.push(`/projets/${project.id}`)}/>
+                 onRowClick={(project) => router.push(`/projet/${project.id}`)}/>
                  {totalPages > 1 && (
                     <div className="flex justify-center mt-10">
                         <Pagination

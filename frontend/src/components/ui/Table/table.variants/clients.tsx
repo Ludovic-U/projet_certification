@@ -3,35 +3,35 @@ import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { Column, Button } from "@/components/ui";
 
 export type Client = {
-  id: number;
-  name: string;
-  sector: string;
-  contact: string;
+  clientId: number;
+  clientName: string;
+  clientType: string;
+  // contact: string;
 };
 
 export const clientsList: Column<Client>[] = [
         {
-          key: "id",
+          key: "clientId",
           label: "ID",
           className: "w-15",
           render: (item) =>
-            <span className=" font-bold text-grey">{item.id}</span>
+            <span className=" font-bold text-grey">{item.clientId}</span>
         },
         { 
-          key: "name",
+          key: "clientName",
           label: "Nom",
           render: (item) =>
-            <span className="block truncate text-left">{item.name}</span> },
+            <span className="block truncate text-left">{item.clientName}</span> },
         { 
-          key: "sector",
+          key: "clientType",
           label: "Secteur",
           render: (item) =>
-            <span className="inline-block border px-4 py-1 rounded-full text-xs font-bold">{item.sector}</span> },
-        { 
-          key: "contact",
-          label: "Contact",
-          render: (item) =>
-            <span className="text-primary font-bold uppercase">{item.contact}</span> },
+            <span className="inline-block border px-4 py-1 rounded-full text-xs font-bold">{item.clientType}</span> },
+        // { 
+        //   key: "contact",
+        //   label: "Contact",
+        //   render: (item) =>
+        //     <span className="text-primary font-bold uppercase">{item.contact}</span> },
         { 
           key: "actions",
           label: "Actions",

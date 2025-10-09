@@ -5,7 +5,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 // const { isAdmin, isManager } = require('../utils/roles');
 const { deleteSessions } = require('../services/sessionService');
-const { authenticateAndCreateSession, createUser, requestPasswordReset, resetPassword } = require('../services/userService');
+const { authenticateAndCreateSession, createUser, requestPasswordReset, resetPassword, UsersByClientId } = require('../services/userService');
 
 
 
@@ -126,7 +126,7 @@ module.exports.getUsersByClientId = async (req, res) => {
         return res.status(400).json({ error: 'Invalid clientId' });
     }
     try {
-        const users = await this.getUsersByClientId(req.user, clientId);
+        const users = await UsersByClientId(req.user, clientId);
         res.status(200).json(users);
     } catch (err) {
         console.error(err);

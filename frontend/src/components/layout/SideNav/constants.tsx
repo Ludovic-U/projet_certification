@@ -1,11 +1,14 @@
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { SideNavItem } from "./types"
+import { useParams } from "next/navigation";
+
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
     {
-        title: "Building",
+        title: "Building", // pages de test pour dev
         path: "/front",
         icon: <FontAwesomeIcon icon={Icons.penRuler}/>,
+        roles: ["super_admin"], // <-- visible uniquement pour super_admin
         subMenu: true,
         subMenuItems: [
             { title: "Page Test", path:"/building", icon: <FontAwesomeIcon icon={Icons.users}/>},
@@ -14,41 +17,54 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         ],
     },
     {
-        title: "Projet Lambda",
-        path: "/modif",
-        icon: <FontAwesomeIcon icon={Icons.briefcase}/>,
-        subMenu: true,
-        subMenuItems: [
-            { title: "Vue d'ensemble", path:"/vue_ensemble", icon: <FontAwesomeIcon icon={Icons.tableCells}/>},
-            { title: "Ideation", path:"/ideation", icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
-            { title: "Conception", path:"/conception", icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
-            { title: "Pilotage", path:"/pilotage", icon: <FontAwesomeIcon icon={Icons.compass}/>},
-            { title: "Reporting", path:"/reporting", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
-        ],
-    },
-    {
-        title: "Projets",
-        path: "/projets",
-        icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>
-    },
-    {
         title: "Clients",
         path: "/clients",
+        roles: ["super_admin"], 
         icon: <FontAwesomeIcon icon={Icons.userTie}/>
-    },
+    },    
     {
-        title: "Contributeurs",
-        path: "/users",
-        icon: <FontAwesomeIcon icon={Icons.userTie}/>
-    },
-    {
-        title: "Questions",
+        title: "Configuration des Questions",
         path: "/questions",
+        roles: ["super_admin"],
         icon: <FontAwesomeIcon icon={Icons.question}/>
     },
     {
-        title: "Paramètres",
+        title: "Liste des Projets",
+        path: `/projets`, //TODO: ajout param clientId
+        requiredParams: ["clientId"], 
+        icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>
+    },  
+    { 
+        title: "Projet Lambda",
+        path: "/modif",
+        icon: <FontAwesomeIcon icon={Icons.briefcase}/>,
+        requiredParams: ["clientId", "projectId"], // <-- n'afficher que si clientId et projectId sont dans l'URL
+        subMenu: true,
+        subMenuItems: [
+            { title: "Vue d'ensemble", path:"/vue_ensemble", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.tableCells}/>},
+            { title: "Ideation", path:"/ideation", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+            { title: "Conception", path:"/conception", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
+            { title: "Pilotage", path:"/pilotage", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.compass}/>},
+            { title: "Reporting", path:"/reporting", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
+        ],
+    },    
+    {
+        title: "Contributeurs",
+        path: "/users",
+        requiredParams: ["clientId"],
+        icon: <FontAwesomeIcon icon={Icons.userTie}/>
+    },
+    {
+        title: "Paramètres projet",
         path: "/parametres",
+        requiredParams: ["clientId", "projectId"],
+        icon: <FontAwesomeIcon icon={Icons.gear}/>
+    },
+    {
+        title: "Paramètres client",
+        path: "/parametres-client",
+        roles: ["super_admin", "admin_client"],
+        requiredParams: ["clientId"],
         icon: <FontAwesomeIcon icon={Icons.gear}/>
     },
 ]

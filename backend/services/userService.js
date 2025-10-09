@@ -47,10 +47,12 @@ module.exports.authenticateAndCreateSession = async (emailOrUsername, password, 
      const roles = user.roles.map((userRole) => userRole.role.roleName);
      const permissions = user.roles.flatMap((userRole) =>
         userRole.role.rolePermissions.map((rolePerm) => rolePerm.permission.permName)
-     );
+     )
+     ;
     const tokenPayload = {
         clientId: clientData?.clientId || null,
         userId: user.userId,
+        roles: roles,
         permissions: permissions,
         createdAT: Date.now
     };
@@ -67,35 +69,46 @@ module.exports.authenticateAndCreateSession = async (emailOrUsername, password, 
      return token;
 }
 
-module.exports.getUsersByClientId = async (askingUser, clientId) => {
+module.exports.UsersByClientId = async (askingUser, clientId) => {
     //  si la requete ne vient pas d'un super_admin ou d'un'admin client
     checkPermission(askingUser, ["user:read:any", "user:read:org"]);
 
-    const userlist = await prisma.user.findMany({
-        where: {
+    const users = await prisma.user.findMany({
+      where: {
         clientUserRoles: {
-            some: {
+          some: {
             clientId: clientId
-            }
+          }
         }
-        },
-        include: {
+      },
+      include: {
         clientUserRoles: true,
         roles: {
-            include: {
+          include: {
             role: {
-                include: {
+              include: {
                 rolePermissions: {
-                    include: {
+                  include: {
                     permission: true
-                    }
+                  }
                 }
-                }
+              }
             }
-            }
+          }
         }
-        }
+      }
     });
+
+    // Exclure le mot de passe et ne sortir que le nom du premier rôle
+    const userlist = users.map(user => ({
+      userId: user.userId,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      clientUserRoles: user.clientUserRoles,
+      role: user.roles.length > 0 ? user.roles[0].role.roleName : null
+    }));
     return userlist;
 }
 
