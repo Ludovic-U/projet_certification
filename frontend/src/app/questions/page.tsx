@@ -18,8 +18,8 @@ export default function PilotagePage() {
 
   const modal = useModal();
 
-  // Test fetch questions list with pagination
   useEffect(() => {
+    // Fecth questions list
     const fetchQuestions = async () => {
       try {
         const res = await api_backend.get(
@@ -45,7 +45,7 @@ export default function PilotagePage() {
         {/* ADD BTN + SEARCHBAR */}
         <div className="flex items-center justify-between">
           <div>
-            <Tooltip content="Ajouter un client" position="rightBottom">
+            <Tooltip content="Ajouter une question" position="rightBottom">
               <Button onClick={modal.openModal} size="sm">
                 <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
                   <FontAwesomeIcon icon={Icons.plus} />
@@ -87,6 +87,7 @@ export default function PilotagePage() {
                   </span>
                   <span className="mr-4">{q.shouldMultiply.toString()}</span>
                   <span className="mr-4">{q.questionIdParent}</span>
+                  <span className="mr-4">{q.types.length}</span>
                 </div>
 
                 <span

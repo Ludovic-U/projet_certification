@@ -26,31 +26,13 @@ export default function CreateQuestionForm() {
     { value: "conception", label: "Conception" },
   ];
 
+  const [types, setTypes] = useState([]);
+  const [typesLabel, setTypesLabel] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string[]>([]);
-  // const types = [
-  //   "Startup",
-  //   "PME",
-  //   "ESN",
-  //   "CPF",
-  //   "OPCO",
-  //   "GRETA",
-  //   "Universités et grandes écoles",
-  //   "CFA",
-  //   "Associations de formation continue",
-  //   "Collectivités territoriales",
-  //   "CNRS",
-  //   "ONG",
-  //   "CCI",
-  //   "BTP",
-  // ];
-
-  // TEST
-  const [testTypes, setTestTypes] = useState([]);
-  const [TestLabels, setTestLabels] = useState<string[]>([]);
 
   const onSubmit = async () => {
     // Get the IDs of selected types
-    const selectedIds = testTypes
+    const selectedIds = types
       .filter((t) => selectedType.includes(t.label))
       .map((t) => t.typeId);
 
@@ -77,8 +59,8 @@ export default function CreateQuestionForm() {
     const fetchTypeList = async () => {
       try {
         const res = await api_backend.get(`/type/get`);
-        setTestTypes(res.data); // Stores types with IDs and labels.
-        setTestLabels(res.data.map((t) => t.label)); // Stores labels of types.
+        setTypes(res.data); // Stores types with IDs and labels.
+        setTypesLabel(res.data.map((t) => t.label)); // Stores labels of types.
       } catch (error) {
         console.log(error);
       }
@@ -125,7 +107,7 @@ export default function CreateQuestionForm() {
               value={selectedType}
               onChange={setSelectedType}
               label="Type"
-              options={TestLabels}
+              options={typesLabel}
             />
           </div>
         </div>
