@@ -1,40 +1,12 @@
 "use client";
 
-import React, { useMemo } from "react";
-
-import { ReactFlow, ControlButton, Controls, ControlPosition} from "@xyflow/react"
-import '@xyflow/react/dist/style.css';
-
-import { buildHierarchy, computeTreeLayout, d3ToReactFlow } from "@/lib/treeUtils"
-import { Question } from "@/types/question";
-
-import { QuestionNode } from "@/components/ui/Nodes/Question";
-import { LeafNode } from "@/components/ui/Nodes/Leaf";
-
+import React from "react";
 import { PageHeader, Card } from "@/components/ui";
-
-const nodeTypes = { question: QuestionNode, leaf: LeafNode};
-
-const sampleQuestions: Question[] = [
-    { questionId: 0, label: "root_virtual", questionIdParent: null},
-    { questionId: 1, label: "Root", questionIdParent: 0 },
-    { questionId: 2, label: "Child 1", questionIdParent: 0 },
-    { questionId: 3, label: "Child 2", questionIdParent: 0 },
-    { questionId: 4, label: "Leaf 1", questionIdParent: 0 },
-    { questionId: 5, label: 'Child 3', questionIdParent: 2 },
-    { questionId: 6, label: "Leaf 2", questionIdParent: 2 },
-    { questionId: 7, label: 'Leaf 3', questionIdParent: 2 },
-    { questionId: 8, label: "Child x", questionIdParent: 2 },
-    { questionId: 9, label: "Child x", questionIdParent: 6 },
-    { questionId: 10, label: "Child x", questionIdParent: 3 },
-]
+import TreeView from "@/components/ui/Tree/TreeView";
+import questionsMock from "@/components/ui/Tree/questionsMock.json"
 
 export default function IdeationPage() {
-
-    const { nodes, edges } = useMemo(() => {
-        const root = computeTreeLayout(buildHierarchy(sampleQuestions));
-        return d3ToReactFlow(root);
-    }, []);
+    const maxQuestions = questionsMock.length
 
     return (
         <div className="h-full flex flex-col">
@@ -44,22 +16,13 @@ export default function IdeationPage() {
                     <Card
                     color="#9CCA95"
                     title="Synthèse des projets"
-                    progress={30}/>                    
+                    max={maxQuestions}
+                    progress={7}
+                    buttonLabel="voir toutes les questions"/>
                 </div>
 
-                 <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">
-                    <ReactFlow
-                     nodeTypes={nodeTypes}
-                     nodes={nodes}
-                     edges={edges}
-                     defaultEdgeOptions={{
-                        type: "step",
-                        style: { strokeWidth: 2}
-                     }}
-                    >
-                        <Controls position="bottom-center" orientation="horizontal" showInteractive={false}/>
-                        
-                    </ReactFlow>
+                <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">
+                    <TreeView questions={questionsMock}/>
                  </div>
 
                  <div className="flex gap-8 h-fit">

@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "label": "Question 1 ?",
+        "parentId": null,
+        "answered": false
+    },
+    {
+        "id": 2,
+        "label": "Question 2a ?",
+        "parentId": 1,
+        "answered": false
+    },
+    {
+        "id": 3,
+        "label": "Question 2b ?",
+        "parentId": 1,
+        "answered": false
+    },
+    {
+        "id": 4,
+        "label": "Question 3a ?",
+        "parentId": 2,
+        "answered": false
+    },
+    {
+        "id": 5,
+        "label": "Question 3b ?",
+        "parentId": 2,
+        "answered": false
+    },
+    {
+        "id": 6,
+        "label": "Question 4a ?",
+        "parentId": 3,
+        "answered": false
+    },
+    {
+        "id": 7,
+        "label": "Question 4b ?",
+        "parentId": 3,
+        "answered": false
+    },
+    {
+        "id": 8,
+        "label": "Question 4c ?",
+        "parentId": 3,
+        "answered": false
+    }
+]

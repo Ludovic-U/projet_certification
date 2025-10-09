@@ -3,15 +3,21 @@
 import { NodeProps, Handle, Position } from "@xyflow/react"
 import { Tooltip } from "@/components/ui"
 
-// type QuestionNodeData = Node<{ answered: boolean }, 'answered'>;
 
-// export function QuestionNode({ data }: NodeProps<QuestionNodeData>)
 export function QuestionNode({ data }: NodeProps) {
-    const qst = "Question fictive à propos du secteur de l'entreprise ?"
+    const questionData = data as { status?: "pending" | "answered" | "skipped"; label?:string };
+    
+    const statusStyle = {
+        pending: "bg-transparent border-3 border-dark",
+        answered:"bg-green-500 border-3 border-green-500",
+        skipped: "bg-gray-500 border-3 border-gray-500",
+    }
+
+    const bg = statusStyle[questionData.status || "pending"];
 
     return (
-        <Tooltip content={qst} position="right">
-            <div className="relative cursor-pointer bg-dark h-4 w-4 rounded-full transition-all">
+        <Tooltip content={data.label?.toString()} position="right">
+            <div className={`relative cursor-pointer h-4 w-4 rounded-full transition-all duration-300 ease-in-out ${bg}`}>
                 <Handle
                  type="target"
                  position={Position.Top}
