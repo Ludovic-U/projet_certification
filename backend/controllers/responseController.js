@@ -17,11 +17,17 @@ const responseService = require("../services/responseService");
  *  - 500: Internal server error.
  */
 module.exports.createResponse = async (req, res) => {
+  let idParent;
   const { label, projectId, questionId, optionId, responseIdParent } = req.body;
 
   // Check label to not be null or empty
   if (!label) {
     return res.status(400).json({ error: "label is required" });
+  }
+
+  // Check if a responseIdParent has been recieved
+  if (responseIdParent) {
+    idParent = Number(responseIdParent);
   }
 
   try {
@@ -30,7 +36,7 @@ module.exports.createResponse = async (req, res) => {
       projectId,
       questionId,
       optionId: optionId ?? null,
-      responseIdParent: responseIdParent ?? null,
+      responseIdParent: idParent ?? null,
     });
     res.status(201).json(response);
   } catch (error) {
