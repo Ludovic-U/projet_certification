@@ -1,12 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { Node } from "@xyflow/react";
+import "@xyflow/react/dist/style.css"
+import { Question } from "@/types/question";
 import { PageHeader, Card } from "@/components/ui";
 import TreeView from "@/components/ui/Tree/TreeView";
 import questionsMock from "@/components/ui/Tree/questionsMock.json"
 
 export default function IdeationPage() {
-    const maxQuestions = questionsMock.length
+    const [nodesState, setNodesState] = useState<Node<Question>[]>([]);
+    const progress = nodesState.filter(
+        (n) => n.data?.status === "answered" || n.data?.status === "skipped"
+    ).length;
+
+    const maxQuestions = nodesState.length || questionsMock.length;
 
     return (
         <div className="h-full flex flex-col">
@@ -17,12 +25,15 @@ export default function IdeationPage() {
                     color="#9CCA95"
                     title="Synthèse des projets"
                     max={maxQuestions}
-                    progress={7}
+                    progress={progress}
                     buttonLabel="voir toutes les questions"/>
                 </div>
 
                 <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">
-                    <TreeView questions={questionsMock}/>
+                    <TreeView
+                     questions={questionsMock}
+                    //  onNodesChange={setNodesState}
+                    />
                  </div>
 
                  <div className="flex gap-8 h-fit">

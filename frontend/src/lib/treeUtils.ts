@@ -37,7 +37,7 @@ export function buildHierarchy(questions: Question[]) {
 export function computeTreeLayout(root: HierarchyNode<Question>) {
     // Création d'un layout en arbre
     // nodeSize([hauteur, largeur]) définit l'espacement entre les noeuds.
-    const treeLayout = tree<Question>().nodeSize([20, 20]).separation((a,b) => a.parent === b.parent ? 1 : 2);
+    const treeLayout = tree<Question>().nodeSize([10, 20]).separation((a,b) => a.parent === b.parent ? 1 : 2);
 
     // Applique le layout à la hiérarchie
     // Chaque noeud a "x" et "y"

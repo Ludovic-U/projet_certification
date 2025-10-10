@@ -77,7 +77,7 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
             <ReactFlow
              nodes={nodes}
              edges={edges}
-             defaultEdgeOptions={{ type: "step", style: {stroke: "#272727", strokeWidth: 1 }}}
+             defaultEdgeOptions={{ type: "step", style: {stroke: "#272727"}}}
              nodeTypes={nodeTypes}
              onNodeClick={handleNodeClick}
              fitView>
