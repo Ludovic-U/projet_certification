@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api_backend from "@/api/axiosInstance";
 import { Question } from "@/types/question";
 
 export function useProjectQuestion(projectId: number) {
@@ -11,8 +11,26 @@ export function useProjectQuestion(projectId: number) {
         async function fetchQuestions() {
             try {
                 setLoading(true);
-                const res = await axios.get(`/api/questions/get/project/${projectId}`);
-                setQuestions(res.data) // data est un tableau de questions
+                const res = await api_backend
+                    // .get(`/api/question/get/project/${projectId}`);
+                    .get(`/question/get`);
+
+                const mappedQuestions: Question[] = res.data.data.map((q: any) => ({
+                    id: q.questionId,
+                    label: q.label,
+                    parentId: q.questionIdParent ?? null,
+                    answered: false,
+                    status: "pending",
+                    category: q.category,
+                    numberOfSelectionableOpt: q.numberOfSelectionableOpt,
+                    isRelevant: q.isRelevant,
+                    hasMultipleOpenResponse: q.hasMultipleOpenResponse,
+                    shouldMultiply: q.shouldMultiply,
+                    addType: q.types || [],
+                    addProject: q.projects || []
+                }));
+
+                setQuestions(mappedQuestions)
             } catch (err: any) {
                 console.error(err)
                 setError(err.message || "Erreur lors de la récupération des questions");
@@ -20,7 +38,7 @@ export function useProjectQuestion(projectId: number) {
                 setLoading(false);
             }
         }
-        if (projectId) fetchQuestions();
+        fetchQuestions();
     }, [projectId]);
 
     return { questions, loading, error };

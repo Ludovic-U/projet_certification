@@ -7,7 +7,7 @@ import CreateQuestionForm from "@/components/forms/CreateQuestion";
 import { useEffect, useState } from "react";
 import api_backend from "@/api/axiosInstance";
 
-export default function PilotagePage() {
+export default function QuestionsPage() {
   const [questions, setQuestions] = useState([]);
   const [pagination, setPagination] = useState({
     totalItems: 0,

@@ -1,6 +1,3 @@
-import { Node } from "@xyflow/react";
-import { useState } from "react";
-
 export interface Question extends Record<string, unknown>{
     id: number | string;
     label: string;
@@ -11,11 +8,9 @@ export interface Question extends Record<string, unknown>{
     isRelevant?: boolean;
     hasMultipleOpenResponse?: boolean;
     shouldMultiply?: boolean;
-    // parentId?: number | null;
-    // addType?: number[];
-    // removeType?: number[];
-    // addProject?: number[];
-    // removeProject?: number[];
+    parentId?: number | null;
+    addType?: number[];
+    removeType?: number[];
+    addProject?: number[];
+    removeProject?: number[];
 }
-
-const [nodesState, setNodesState] = useState<Node<Question>[]>([]);
