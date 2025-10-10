@@ -5,11 +5,13 @@ import { useState } from "react";
 import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
 import { Input, Button } from "@/components/ui";
 
-type CreateUserInputs = {
+export type CreateUserInputs = {
     lastname: string;
     firstname: string;
     email: string;
     role: string;
+    clientId: number,
+    position: string // si nécessaire
 };
 
 interface CreateUserFormProps {
@@ -64,6 +66,12 @@ export default function CreateUserForm({ onSubmit, isLoading, apiError }: Create
                         label="Rôle"
                         placeholder="ex. admin"
                         error={errors.role?.message}
+                        leftIcon={<FontAwesomeIcon icon={Icons.userTie} />}
+                    />
+                    <Input
+                        {...register("position", { required: "Position dans l'organisation" })}
+                        label="Position"
+                        error={errors.position?.message}
                         leftIcon={<FontAwesomeIcon icon={Icons.userTie} />}
                     />
                 </div>

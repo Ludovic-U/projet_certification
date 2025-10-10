@@ -1,5 +1,6 @@
 const express = require("express");
 const clientRoutes = require("./routes/clientRoutes");
+const projectRoutes = require("./routes/projectRoutes");
 const meRoutes = require("./routes/meRoutes");
 const userRoutes = require("./routes/userRoutes");
 const questionRoutes = require("./routes/questionRoutes");
@@ -36,6 +37,7 @@ app.use((req, res, next) => {
 //routes
 app.use("/api/user", userRoutes);
 app.use("/api/client", authenticateUser, clientRoutes);
+app.use("/api/project", authenticateUser, projectRoutes); 
 app.use("/api/me", authenticateUser, meRoutes);
 
 app.use("/api/question", questionRoutes);

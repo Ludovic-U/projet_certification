@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     PageHeader,
     Button,
@@ -16,35 +16,50 @@ import CreateProjectForm from "@/components/forms/CreateProject";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
 import { useParams, useRouter } from "next/navigation";
-
+import api_backend from "@/api/axiosInstance";
 
 export default function ProjectsPage() {
-    console.log("param", useParams());
+    const params = useParams();
     const router = useRouter();
     const modal = useModal();
 
-    const projects = [
-        { id: 1, title: "Projet lamazeazebda", type: "AAP", step:"REPORTING (1/4)", contributors: 12},
-        { id: 2, title: "Projet lambda", type: "POC", step:"Pilotage (1/4)", contributors: 3},
-        { id: 3, title: "Projet lamhbda un titre long", type: "MVP", step:"IDEATION (1/4)", contributors: 3},
-        { id: 4, title: "Projet lambda avec un titre encore plus long", type: "R&D", step:"IDEATION (1/4)", contributors: 3},
-        { id: 5, title: "Projet lambda je ne pense pas que des titres seront aussi longs mais au cas où", type: "Concours / Challenge", step:"IDEATION (1/4)", contributors: 3},
-        { id: 6, title: "Projet lambda", type: "Campagne", step:"IDEATION (1/4)", contributors: 3},
-        { id: 7, title: "Projet lambda", type: "Sprint", step:"IDEATION (1/4)", contributors: 3},
-        { id: 8, title: "Projet lambda", type: "Concours", step:"IDEATION (1/4)", contributors: 8},
-        { id: 9, title: "Projet lambda", type: "Programme", step:"IDEATION (1/4)", contributors: 3},
-        { id: 10, title: "Projet lambda", type: "Initiative", step:"IDEATION (1/4)", contributors: 3},
-        { id: 11, title: "Projet lambda", type: "Contrat / Prestation", step:"IDEATION (1/4)", contributors: 3},
-        { id: 12, title: "Projet lambda", type: "Concours / Challenge", step:"IDEATION (1/4)", contributors: 3},
-        { id: 13, title: "Projet lambda", type: "AAP", step:"PILOTAGE (1/4)", contributors: 3},
-        { id: 14, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
-        { id: 15, title: "Projet lambda", type: "AAP", step:"REPORTING (1/4)", contributors: 3},
-        { id: 16, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
-        { id: 17, title: "Projet lambda", type: "AAP", step:"CONCEPTION (1/4)", contributors: 3},
-        { id: 18, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
-        { id: 19, title: "Projet lambda", type: "AAP", step:"CONCEPTION (8/10)", contributors: 3},
-        { id: 20, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
-    ];
+    // const projects = [
+    //     { id: 1, title: "Projet lamazeazebda", type: "AAP", step:"REPORTING (1/4)", contributors: 12},
+    //     { id: 2, title: "Projet lambda", type: "POC", step:"Pilotage (1/4)", contributors: 3},
+    //     { id: 3, title: "Projet lamhbda un titre long", type: "MVP", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 4, title: "Projet lambda avec un titre encore plus long", type: "R&D", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 5, title: "Projet lambda je ne pense pas que des titres seront aussi longs mais au cas où", type: "Concours / Challenge", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 6, title: "Projet lambda", type: "Campagne", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 7, title: "Projet lambda", type: "Sprint", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 8, title: "Projet lambda", type: "Concours", step:"IDEATION (1/4)", contributors: 8},
+    //     { id: 9, title: "Projet lambda", type: "Programme", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 10, title: "Projet lambda", type: "Initiative", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 11, title: "Projet lambda", type: "Contrat / Prestation", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 12, title: "Projet lambda", type: "Concours / Challenge", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 13, title: "Projet lambda", type: "AAP", step:"PILOTAGE (1/4)", contributors: 3},
+    //     { id: 14, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 15, title: "Projet lambda", type: "AAP", step:"REPORTING (1/4)", contributors: 3},
+    //     { id: 16, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 17, title: "Projet lambda", type: "AAP", step:"CONCEPTION (1/4)", contributors: 3},
+    //     { id: 18, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
+    //     { id: 19, title: "Projet lambda", type: "AAP", step:"CONCEPTION (8/10)", contributors: 3},
+    //     { id: 20, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
+    // ];
+
+    const [projects, setProjects] = useState<any[]>([]);
+    
+    useEffect(() => {
+        api_backend.get(`/project/getByClientId/${params.clientId}`)
+            .then(res => {
+                setProjects(res.data);
+                console.log("users", res.data);
+            })
+            .catch(err => {
+                console.error("Error fetching users:", err);
+                setProjects([]);
+            });
+    }, []);
+
     
     const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
@@ -88,12 +103,12 @@ export default function ProjectsPage() {
                 <TableResponsive<typeof currentData[0]>
                  data={currentData}
                  columns={projectsList}
-                 onRowClick={(project) => router.push(`/projets/${project.id}`)}/>
+                 onRowClick={(project) => router.push(`/${params.clientId}/${project.id}/vue_ensemble`)}/>
 
                 <Table<typeof currentData[0]>
                  data={currentData}
                  columns={projectsList}
-                 onRowClick={(project) => router.push(`/projet/${project.id}`)}/>
+                 onRowClick={(project) => router.push(`/${params.clientId}/${project.id}/vue_ensemble`)}/>
                  {totalPages > 1 && (
                     <div className="flex justify-center mt-10">
                         <Pagination

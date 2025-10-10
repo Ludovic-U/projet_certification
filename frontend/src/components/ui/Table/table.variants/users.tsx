@@ -7,6 +7,7 @@ export type User = {
     lastname: string;
     email: string;
     role: string;
+    position: string;
     createdAt: Date;
 };
 

@@ -72,11 +72,12 @@ module.exports.registerPost = async (req, res) => {
         const newUser = await createUser(user, clientId, firstname, lastname, email, position, role );
         res.status(201).json({ message: 'User created successfully', userId: user.userId, newUser:newUser });
     } catch (err) {
+        console.error(err);
         if (err.code === 'P2002') {
             // throw new Error('Un utilisateur avec ce username ou email existe déjà');
             res.status(400).json({ error: 'Un utilisateur avec ce username ou email existe déjà' });
         }
-        console.error(err);
+        
         res.status(500).json({ error: 'Error creating user ' + err });
     }
 };

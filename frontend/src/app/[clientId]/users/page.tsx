@@ -84,13 +84,13 @@ export default function UsersPage() {
                 <TableResponsive<typeof currentData[0]>
                     data={currentData}
                     columns={usersList}
-                    onRowClick={(user) => router.push(`/${user.userId}/projets`)}
+                    onRowClick={(user) => router.push(`/${params.clientId}/users/${user.userId}`)}
                 />
 
                 <Table<typeof currentData[0]>
                     data={currentData}
                     columns={usersList}
-                    onRowClick={(user) => router.push(`/${user.userId}/projets`)} />
+                    onRowClick={(user) => router.push(`/${params.clientId}/users/${user.userId}`)} />
                 {totalPages > 1 && (
                     <div className="flex justify-center mt-10">
                         <Pagination

@@ -120,7 +120,7 @@ module.exports.UsersByClientId = async (askingUser, clientId) => {
     const hasAny = askingUser.permissions.includes("user:create:any");
     const hasOrg = askingUser.permissions.includes("user:create:org");
 
-    if (!hasAny || (  !hasOrg && askingUser.clientId !== clientId) ) {
+    if (!(hasAny || (hasOrg && askingUser.clientId !== clientId)) ) {
         throw new Error('createUser: Unauthorized - insufficient permissions');
     }
 

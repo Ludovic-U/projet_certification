@@ -9,7 +9,7 @@ const {
   getProjectsByUserId,
   getProjectsByName,
 } = require("../services/projectService");
-const { validateId } = require("./helpers/validateId");
+const { validateId } = require("../middlewares/validateId");
 
 /**
  * Create a new project.
@@ -27,16 +27,20 @@ const { validateId } = require("./helpers/validateId");
  * }
  * */
 module.exports.createProjectPost = async (req, res) => {
-  const { name, description, clientId } = req.body;
-  if (!name || !clientId) {
-    return res.status(400).json({ error: "name and clientId are required" });
-  }
+  // TODO: check permissions selon req.user ou rôle
   try {
-    const project = await Project.create({ name, description, clientId });
-    res.status(201).json(project);
+    const data = {
+      projectName: req.body.projectName,
+      projectManager: req.body.projectManager,
+      projectDesc: req.body.projectDesc,
+      clientId: req.body.clientId,
+    };
+
+    const newProject = await createProject(data);
+    res.status(201).json(newProject);
   } catch (error) {
-    console.error("Error creating project:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Erreur lors de la création du projet :", error);
+    res.status(500).json({ error: "Impossible de créer le projet." });
   }
 };
 
