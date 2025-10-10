@@ -35,7 +35,6 @@ export default function CreateQuestionForm() {
     const selectedIds = types
       .filter((t) => selectedType.includes(t.label))
       .map((t) => t.typeId);
-
     try {
       await api_backend.post(`question/create`, {
         label,
