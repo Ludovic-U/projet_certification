@@ -75,7 +75,7 @@ module.exports.deleteResponse = async (responseId) => {
  * @function getResponsesByQuestionOfProject
  * @param {number} projectId -The ID of the project to retrieve.
  * @param {number} questionId - The ID of the question to retrieve.
- * @returns {Promise<Array<Object>>} List of response for the question of a project.
+ * @returns {Promise<Array<Object>>} List of response of a question tied to a project directly or by type.
  * @throws {Error} If the project or question does not exist.
  */
 module.exports.getResponsesByQuestionOfProject = async (
@@ -85,18 +85,20 @@ module.exports.getResponsesByQuestionOfProject = async (
   const project = await prisma.project.findUnique({
     where: { projectId: projectId },
     select: {
+      // Directly linked
       questions: {
         where: { questionId: questionId },
         select: { responses: { include: { children: true } } },
       },
-      // types: {
-      //   select: {
-      //     questions: {
-      //       where: { questionId: questionId },
-      //       select: { responses: { include: { children: true } } },
-      //     },
-      //   },
-      // },
+      // Linked by type
+      types: {
+        select: {
+          questions: {
+            where: { questionId: questionId },
+            select: { responses: { include: { children: true } } },
+          },
+        },
+      },
     },
   });
 
@@ -104,7 +106,17 @@ module.exports.getResponsesByQuestionOfProject = async (
     throw new Error("Project not found");
   }
 
-  const question = project.questions[0]; //|| project.types.flatMap((t) => t.questions)[0];
+  let question = project.questions[0];
+
+  // If not found directly, check questions via type
+  if (!question && project.types) {
+    for (const type of project.types) {
+      if (type.questions.length > 0) {
+        question = type.questions[0];
+        break;
+      }
+    }
+  }
 
   if (!question) {
     throw new Error("Question not found");
