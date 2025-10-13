@@ -89,14 +89,6 @@ module.exports.getResponsesByQuestionOfProject = async (
         where: { questionId: questionId },
         select: { responses: { include: { children: true } } },
       },
-      // types: {
-      //   select: {
-      //     questions: {
-      //       where: { questionId: questionId },
-      //       select: { responses: { include: { children: true } } },
-      //     },
-      //   },
-      // },
     },
   });
 
@@ -104,7 +96,7 @@ module.exports.getResponsesByQuestionOfProject = async (
     throw new Error("Project not found");
   }
 
-  const question = project.questions[0]; //|| project.types.flatMap((t) => t.questions)[0];
+  const question = project.questions[0];
 
   if (!question) {
     throw new Error("Question not found");
