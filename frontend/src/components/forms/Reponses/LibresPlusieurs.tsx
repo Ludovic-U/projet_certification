@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, DynamicOptions } from "@/components/ui"
+import { DynamicOptions } from "@/components/ui"
 import { useState } from "react";
 
 export default function ReponsesPlusieurs() {

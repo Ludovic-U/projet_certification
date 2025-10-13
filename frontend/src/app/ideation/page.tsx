@@ -20,6 +20,9 @@ export default function IdeationPage() {
     ).length;
 
     const maxQuestions = nodesState.length || questions.length;
+    const seeAllQuestions = () => {
+        console.log("Toutes les questions :", questions)
+    }
 
     if (loading) return <div className="flex">Chargement des questions...<LoadingSpinner/></div>
 
@@ -36,7 +39,8 @@ export default function IdeationPage() {
                     title="Synthèse des projets"
                     max={maxQuestions}
                     progress={progress}
-                    buttonLabel="voir toutes les questions"/>
+                    buttonLabel="voir toutes les questions"
+                    onButtonClick={seeAllQuestions()}/>
                 </div>
 
                 <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">

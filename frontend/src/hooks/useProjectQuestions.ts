@@ -11,26 +11,31 @@ export function useProjectQuestion(projectId: number) {
         async function fetchQuestions() {
             try {
                 setLoading(true);
-                const res = await api_backend
-                    // .get(`/api/question/get/project/${projectId}`);
-                    .get(`/question/get`);
+                const res = await api_backend.get(`/question/get`);
+                const questionBase = res.data.data
 
-                const mappedQuestions: Question[] = res.data.data.map((q: any) => ({
-                    id: q.questionId,
-                    label: q.label,
-                    parentId: q.questionIdParent ?? null,
-                    answered: false,
-                    status: "pending",
-                    category: q.category,
-                    numberOfSelectionableOpt: q.numberOfSelectionableOpt,
-                    isRelevant: q.isRelevant,
-                    hasMultipleOpenResponse: q.hasMultipleOpenResponse,
-                    shouldMultiply: q.shouldMultiply,
-                    addType: q.types || [],
-                    addProject: q.projects || []
-                }));
+                const questionsWithOptions = await Promise.all(
+                    questionBase.map(async (q: any) => {
+                        const resOpt = await api_backend.get(`/question/get/${q.questionId}`);
+                        return {
+                            id: q.questionId,
+                            label: q.label,
+                            parentId: q.questionIdParent ?? null,
+                            answered: false,
+                            status: "pending",
+                            category: q.category,
+                            numberOfSelectionableOpt: q.numberOfSelectionableOpt,
+                            options: resOpt.data.options || [],
+                            isRelevant: q.isRelevant,
+                            hasMultipleOpenResponse: q.hasMultipleOpenResponse,
+                            shouldMultiply: q.shouldMultiply,
+                            addType: q.types || [],
+                            addProject: q.projects || []
+                        };
+                    })
+                );
 
-                setQuestions(mappedQuestions)
+                setQuestions(questionsWithOptions)
             } catch (err: any) {
                 console.error(err)
                 setError(err.message || "Erreur lors de la récupération des questions");

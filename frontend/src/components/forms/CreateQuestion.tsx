@@ -48,6 +48,7 @@ export default function CreateQuestionForm() {
       });
 
       console.log("Question created successfully");
+      console.log(options)
     } catch (error) {
       console.log(error);
     }

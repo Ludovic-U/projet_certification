@@ -7,6 +7,7 @@ export interface Question extends Record<string, unknown>{
     numberOfSelectionableOpt?: number;
     isRelevant?: boolean;
     hasMultipleOpenResponse?: boolean;
+    options?: string[];
     shouldMultiply?: boolean;
     parentId?: number | null;
     addType?: number[];

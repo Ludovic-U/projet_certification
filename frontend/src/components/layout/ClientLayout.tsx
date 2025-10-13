@@ -9,7 +9,7 @@ import PageWrapper from "./PageWrapper";
 import MarginWidthWrapper from "./MarginWidthWrapper";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
     const pathname = usePathname();
 
     const publicPages = ['/'];

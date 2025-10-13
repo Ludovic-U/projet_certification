@@ -1,6 +1,7 @@
 "use client";
 
-import { PageHeader, Tooltip, Button, Modal, Input } from "@/components/ui";
+import { PageHeader, Tooltip, Button, Modal, Input, Pagination, Table } from "@/components/ui";
+import { questionsList } from "@/components/ui/Table/table.variants/questions";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
 import CreateQuestionForm from "@/components/forms/CreateQuestion";
@@ -15,7 +16,6 @@ export default function QuestionsPage() {
     pageSize: 10,
     totalPages: 0,
   }); // Pagination default Infos
-
   const modal = useModal();
 
   useEffect(() => {
@@ -34,6 +34,34 @@ export default function QuestionsPage() {
 
     fetchQuestions();
   }, [pagination.currentPage, pagination.pageSize]);
+
+  const handleDelete = async (questionId: number) => {
+    try {
+      await api_backend.delete(`/question/delete/${questionId}`);
+      setQuestions((prev) => prev.filter((q) => q.questionId !== questionId));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const columnsWithDelete = questionsList.map((col) =>
+    col.key === "actions"
+      ? {
+        ...col,
+        className: "text-right pr-6",
+        render: (item: Question) => (
+          <div className="flex justify-end pr-6">
+            <Button
+            onClick={() => handleDelete(item.questionId)}
+            >
+              <FontAwesomeIcon icon={Icons.trash}/>
+            </Button>            
+          </div>
+
+        ),
+      }
+      : col
+    );
 
   return (
     <div className="h-full">
@@ -69,83 +97,22 @@ export default function QuestionsPage() {
           />
         </div>
 
-        {/* Testing questions list */}
         {questions && questions.length > 0 ? (
           <div>
-            {questions.map((q) => (
-              <div
-                key={q.questionId}
-                className="mt-4 p-4 rounded shadow border flex justify-between"
-              >
-                <div>
-                  <span className="mr-4">{q.questionId}</span>
-                  <span className="mr-4">{q.label}</span>
-                  <span className="mr-4">{q.category}</span>
-                  <span className="mr-4">{q.numberOfSelectionableOpt}</span>
-                  <span className="mr-4">
-                    {q.hasMultipleOpenResponse.toString()}
-                  </span>
-                  <span className="mr-4">{q.shouldMultiply.toString()}</span>
-                  <span className="mr-4">{q.questionIdParent}</span>
-                  <span className="mr-4">{q.types.length}</span>
-                </div>
-
-                <span
-                  onClick={async () => {
-                    try {
-                      await api_backend.delete(
-                        `/question/delete/${q.questionId}`
-                      );
-                      setQuestions((prev) =>
-                        prev.filter(
-                          (question) => question.questionId !== q.questionId
-                        )
-                      );
-                      console.log(`question with id: ${q.questionId} deleted`);
-                    } catch (error) {
-                      console.log(error);
-                    }
-                  }}
-                >
-                  delete
-                </span>
-              </div>
-            ))}
+            <Table
+             data={questions.map((q) => ({ ...q, id: q.questionId}))}
+             columns={columnsWithDelete}/>
           </div>
         ) : (
           <span>No Questions</span>
         )}
 
-        {/* Test Pagination */}
-        <div className="flex justify-center mt-4 space-x-2">
-          <Button
-            onClick={() =>
-              setPagination((prev) => ({
-                ...prev,
-                currentPage: Math.max(prev.currentPage - 1, 1),
-              }))
-            }
-            disabled={pagination.currentPage === 1}
-          >
-            Previous
-          </Button>
-
-          <span>
-            Page {pagination.currentPage} of {pagination.totalPages}
-          </span>
-
-          <Button
-            onClick={() =>
-              setPagination((prev) => ({
-                ...prev,
-                currentPage: Math.min(prev.currentPage + 1, prev.totalPages),
-              }))
-            }
-            disabled={pagination.currentPage === pagination.totalPages}
-          >
-            Next
-          </Button>
-        </div>
+        <Pagination
+         className="mt-6 flex items-center justify-center"
+         currentPage={pagination.currentPage}
+         totalPages={pagination.totalPages}
+         onPageChange={(page) => setPagination((prev) => ({ ...prev, currentPage: page,}))}
+        />
       </section>
     </div>
   );
