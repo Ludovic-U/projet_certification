@@ -16,7 +16,7 @@
  *
  * @example
  * // Run all integration tests for the Response model
- * //  NODE_ENV=test npx jest --config jest.config.integration.js tests/integration/respojse.test.js
+ * //  NODE_ENV=test npx jest --config jest.config.integration.js tests/integration/response.test.js
  *
  * @tests
  * - Successfully creating a response in the database
@@ -35,6 +35,7 @@ const {
   seedResponseWithSubresponse,
   seedWithProjectAndQuestion,
   seedProjectWithClientAndManager,
+  seedWithProjectTypeAndQuestionWithResponse,
 } = require("../helpers/seed");
 
 describe("Response Integration Tests", () => {
@@ -208,9 +209,19 @@ describe("Response Integration Tests", () => {
       expect(res.body[0].questionId).toBe(question.questionId);
     });
 
-    // TODO
-    // it("should return the response of question of a project tied by type and return 200 status", () => {
-    // });
+    it("should return the response of question of a project tied by type and return 200 status", async () => {
+      const { project, question } =
+        await seedWithProjectTypeAndQuestionWithResponse();
+
+      const res = await request(app).get(
+        `/api/response/get/project/${project.projectId}/question/${question.questionId}`
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body[0].label).toBe("Response 1");
+      expect(res.body[0].projectId).toBe(project.projectId);
+      expect(res.body[0].questionId).toBe(question.questionId);
+    });
 
     it("should return an empty array if no response(s) found for the given question of a project and 200 status", async () => {
       const { project, question } = await seedWithProjectAndQuestion();

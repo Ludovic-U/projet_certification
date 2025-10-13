@@ -278,9 +278,54 @@ describe("Response Service", () => {
       expect(result).toEqual(mockProject.questions[0].responses);
     });
 
-    // TODO
-    // it("should return responses for the given question tied by type to a project", async () => {
-    // });
+    it("should return responses for the given question tied by type to a project", async () => {
+      const projectId = 1;
+      const questionId = 1;
+      const mockProject = {
+        questions: [],
+        types: [
+          {
+            questions: [
+              {
+                responses: [
+                  {
+                    responseId: 1,
+                    label: "Answer 01",
+                    projectId: 1,
+                    questionId: 1,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      prisma.project.findUnique.mockResolvedValue(mockProject);
+
+      const result = await responseService.getResponsesByQuestionOfProject(
+        projectId,
+        questionId
+      );
+
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
+        where: { projectId: projectId },
+        select: {
+          questions: {
+            where: { questionId: questionId },
+            select: { responses: { include: { children: true } } },
+          },
+          types: {
+            select: {
+              questions: {
+                where: { questionId: questionId },
+                select: { responses: { include: { children: true } } },
+              },
+            },
+          },
+        },
+      });
+      expect(result).toEqual(mockProject.types[0].questions[0].responses);
+    });
 
     it("should throw an error if project does not exist", async () => {
       prisma.project.findUnique.mockResolvedValue(null);
