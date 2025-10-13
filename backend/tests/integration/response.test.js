@@ -208,6 +208,10 @@ describe("Response Integration Tests", () => {
       expect(res.body[0].questionId).toBe(question.questionId);
     });
 
+    // TODO
+    // it("should return the response of question of a project tied by type and return 200 status", () => {
+    // });
+
     it("should return an empty array if no response(s) found for the given question of a project and 200 status", async () => {
       const { project, question } = await seedWithProjectAndQuestion();
       const res = await request(app).get(

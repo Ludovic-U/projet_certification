@@ -280,13 +280,6 @@ describe("Response Service", () => {
 
     // TODO
     // it("should return responses for the given question tied by type to a project", async () => {
-    // const projectId = 1;
-    // const questionId = 1;
-    // prisma.project.findUnique.mockResolvedValue(mockProject);
-    // const result = await responseService.getResponsesByQuestionOfProject(
-    //   projectId,
-    //   questionId
-    // );
     // });
 
     it("should throw an error if project does not exist", async () => {
