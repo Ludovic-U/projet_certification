@@ -55,7 +55,7 @@ export default function QuestionsPage() {
             onClick={() => handleDelete(item.questionId)}
             >
               <FontAwesomeIcon icon={Icons.trash}/>
-            </Button>            
+            </Button>
           </div>
 
         ),

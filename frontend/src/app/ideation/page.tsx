@@ -19,7 +19,7 @@ export default function IdeationPage() {
         (n) => n.data?.status === "answered" || n.data?.status === "skipped"
     ).length;
 
-    const maxQuestions = nodesState.length || questions.length;
+    const maxQuestions = nodesState.length - 1 || questions.length - 1;
     const seeAllQuestions = () => {
         console.log("Toutes les questions :", questions)
     }
@@ -39,8 +39,7 @@ export default function IdeationPage() {
                     title="Synthèse des projets"
                     max={maxQuestions}
                     progress={progress}
-                    buttonLabel="voir toutes les questions"
-                    onButtonClick={seeAllQuestions()}/>
+                    buttonLabel="voir toutes les questions"/>
                 </div>
 
                 <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">
