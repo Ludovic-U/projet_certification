@@ -7,7 +7,6 @@ interface UseModalReturn {
 }
 
 export const useModal = (): UseModalReturn => {
-    console.log("useModal clicked")
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const openModal = (): void => setIsOpen(true);
