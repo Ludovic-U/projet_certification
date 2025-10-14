@@ -9,9 +9,11 @@ import { buildHierarchy, computeTreeLayout, d3ToReactFlow, generateNodesWithMult
 import ModalQuestion from "../ModalQuestion/ModalQuestion";
 import { Icons, FontAwesomeIcon } from "@/lib/icons";
 import { useModal } from "@/hooks";
-import ReponseUnique from "@/components/forms/Reponses/LibreUnique"
-import ReponsesPlusieurs from "@/components/forms/Reponses/LibresPlusieurs"
-import ReponseSelect from "@/components/forms/Reponses/FermeeSelect"
+import {
+    ReponseUnique,
+    ReponsesPlusieurs,
+    ReponseSelect
+} from "@/components/forms";
 
 interface TreeViewProps {
     questions: Question[]
@@ -22,10 +24,6 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
 
     // Génération automatique du layout avec D3
     const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-        const parentAnswers = {
-            "": ["PC", "Tablette"],
-        };
-
         const root = buildHierarchy(questions);
         const laidOutRoot = computeTreeLayout(root);
         const { nodes, edges } = d3ToReactFlow(laidOutRoot);
@@ -107,6 +105,8 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
                     </ControlButton>
                 </Controls>
             </ReactFlow>
+            
+            {/* Renvoie du bon formulaire de réponse */}
             {selectedNode && (() => {
                 const question = selectedNode.data as Question;
                 let ResponseForm;

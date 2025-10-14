@@ -12,9 +12,12 @@ import { LoadingSpinner } from "@/components/ui";
 import { useModal } from "@/hooks";
 import { Question } from "@/types/question";
 
-import { ReponseUnique } from "@/components/forms";
-import { ReponsesPlusieurs } from "@/components/forms";
-import { ReponseSelect } from "@/components/forms";
+import {
+    ReponseUnique,
+    ReponsesPlusieurs,
+    ReponseSelect
+} from "@/components/forms";
+
 import ModalQuestion from "@/components/ui/ModalQuestion/ModalQuestion";
 
 export default function IdeationPage() {

@@ -3,18 +3,6 @@ import { SideNavItem } from "./types"
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
     {
-        title: "Building",
-        path: "/front",
-        icon: <FontAwesomeIcon icon={Icons.penRuler}/>,
-        subMenu: true,
-        subMenuItems: [
-            { title: "Page Test", path:"/building", icon: <FontAwesomeIcon icon={Icons.users}/>},
-            { title: "Tree", path:"/building/build-tree", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
-            { title: "Components", path:"/building/components", icon: <FontAwesomeIcon icon={Icons.users}/>},
-            { title: "Tree Hierarchy", path:"/building/tree"}
-        ],
-    },
-    {
         title: "Projet Lambda",
         path: "/modif",
         icon: <FontAwesomeIcon icon={Icons.briefcase}/>,
