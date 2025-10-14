@@ -17,7 +17,7 @@ export function QuestionNode({ data }: NodeProps) {
     const bg = statusStyle[questionData.status || "pending"];
 
     return (
-        <Tooltip content={data.label?.toString()} position="right">
+        <Tooltip className="bg-dark" content={data.label?.toString()} position="rightTop">
             <div className={`relative cursor-pointer h-4 w-4 `}>
                 {questionData.status === "pending" && (
                     <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-dark animate-ping"></span>
