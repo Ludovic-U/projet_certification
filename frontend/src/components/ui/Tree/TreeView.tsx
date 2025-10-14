@@ -24,6 +24,11 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
 
     // Génération automatique du layout avec D3
     const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
+        if (!questions || questions.length === 0) {
+            console.warn("Aucune question à afficher - arbre vide")
+            return { nodes: [], edges: [] };
+        }
+        
         const root = buildHierarchy(questions);
         const laidOutRoot = computeTreeLayout(root);
         const { nodes, edges } = d3ToReactFlow(laidOutRoot);
