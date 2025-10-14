@@ -1,21 +1,54 @@
 "use client"
 
-import { Node, NodeProps, ViewportPortal, Handle, Position } from "@xyflow/react"
-import { useState } from "react"
+import { NodeProps, Handle, Position } from "@xyflow/react"
 import { Tooltip } from "@/components/ui"
+import { cn } from "@/utils/utils";
 
-// type QuestionNodeData = Node<{ answered: boolean }, 'answered'>;
 
-// export function QuestionNode({ data }: NodeProps<QuestionNodeData>)
-export function QuestionNode({ data, id }: NodeProps) {
-    const qst = "Question fictive à propos du secteur de l'entreprise ?"
+export function QuestionNode({ data }: NodeProps) {
+    const questionData = data as { status?: "pending" | "answered" | "skipped"; label?:string };
+    
+    const statusStyle = {
+        pending: "bg-transparent border-3 border-dark",
+        answered:"bg-green-500 border-3 border-green-500",
+        skipped: "bg-gray-500 border-3 border-gray-500",
+    }
+
+    const bg = statusStyle[questionData.status || "pending"];
 
     return (
-        <Tooltip content={qst} position="right">
-            <div className="cursor-pointer bg-dark h-4 w-4 rounded-full transition-all"/>
-            <Handle type="source" position={Position.Top}/>
-            <Handle type="target" position={Position.Bottom}/>        
+        <Tooltip className="bg-dark" content={data.label?.toString()} position="rightTop">
+            <div className={`relative cursor-pointer h-4 w-4 `}>
+                {questionData.status === "pending" && (
+                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-dark animate-ping"></span>
+                )}
+                <div className={`relative h-4 w-4 rounded-full transition-all duration-300 ease-in-out ${bg}`}>
+                    <Handle
+                    type="target"
+                    position={Position.Top}
+                    style={{
+                        opacity: 0,
+                        pointerEvents: "none",
+                        position: "absolute",
+                        top: "-1px",
+                        left: "50%",
+                        transform: "translateX(-50%)"
+                    }}
+                    />
+                    <Handle
+                    type="source"
+                    position={Position.Bottom}
+                    style={{
+                        opacity: 0,
+                        pointerEvents: "none",
+                        position: "absolute",
+                        bottom: "-1px",
+                        left: "50%",
+                        transform: "translateX(-50%)"
+                    }}
+                    />
+                </div>
+            </div>
         </Tooltip>
-        // <div className="bg-transparent border-dark border-3 h-4 w-4 rounded-full transition-all"/>
     )
 }

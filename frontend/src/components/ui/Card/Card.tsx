@@ -12,6 +12,7 @@ export const Card: React.FC<CardProps> = ({
     buttonLabel,
     onButtonClick,
     color = "#88B081",
+    max,
     className,
 }) => {
     return (
@@ -26,7 +27,7 @@ export const Card: React.FC<CardProps> = ({
                     <p className="text-greydarker font-didact leading-tight">{description}</p>
                 )}
 
-                <ProgressBar className="my-3" color={color} value={progress} showLabel/>
+                <ProgressBar className="my-3" color={color} value={progress} max={max} showLabel/>
             </div>
 
             {buttonLabel && (

@@ -1,4 +1,4 @@
-const facoryFunction = require("./facory_function");
+const factoryFunction = require("./facory_function");
 
 /**
  * Seeds the database with 12 standalone questions.
@@ -10,7 +10,7 @@ const facoryFunction = require("./facory_function");
 async function seedWith12Questions() {
   const questions = [];
   for (let i = 0; i < 12; i++) {
-    const question = await facoryFunction.newQuestion({
+    const question = await factoryFunction.newQuestion({
       label: `Question ${i + 1}`,
     });
     questions.push(question);
@@ -28,13 +28,13 @@ async function seedWith12Questions() {
  *  - subquestions: Array of 2 created subquestion objects linked to the parent.
  */
 async function seedQuestionWithSubquestion() {
-  const question = await facoryFunction.newQuestion({
+  const question = await factoryFunction.newQuestion({
     label: "Question with subquestions",
   });
 
   const subquestions = [];
   for (let i = 0; i < 2; i++) {
-    const subquestion = await facoryFunction.newQuestion({
+    const subquestion = await factoryFunction.newQuestion({
       label: `Subquestion ${i + 1}`,
       questionIdParent: question.questionId,
     });
@@ -61,7 +61,7 @@ async function seedQuestionWithSubquestion() {
 async function seedQuestionsWithCategory(category) {
   const questions = [];
   for (let i = 0; i < 2; i++) {
-    const question = await facoryFunction.newQuestion({
+    const question = await factoryFunction.newQuestion({
       label: `Question ${i + 1}`,
       category: category,
     });
@@ -78,11 +78,11 @@ async function seedQuestionsWithCategory(category) {
  * @returns {Promise<Array<Object>>} Resolves to an array of 2 created question objects linked to the created type.
  */
 async function seedQuestionsWithType() {
-  const type = await facoryFunction.newType({ label: "Type1" });
+  const type = await factoryFunction.newType({ label: "Type1" });
 
   const questions = [];
   for (let i = 0; i < 2; i++) {
-    const question = await facoryFunction.newQuestion({
+    const question = await factoryFunction.newQuestion({
       label: `Question ${i + 1}`,
       types: [type.typeId],
     });
@@ -134,7 +134,7 @@ async function seedProjectWithQuestions() {
 async function seedWith3types() {
   const types = [];
   for (let i = 0; i < 3; i++) {
-    const type = await facoryFunction.newType({ label: `Type ${i + 1}` });
+    const type = await factoryFunction.newType({ label: `Type ${i + 1}` });
     types.push(type);
   }
   return types;
@@ -150,7 +150,7 @@ async function seedWith3types() {
  *  - options: Array of created option objects linked to the question.
  */
 async function seedQuestionWithOptions() {
-  const question = await facoryFunction.newQuestion({
+  const question = await factoryFunction.newQuestion({
     options: ["Opt1", "Opt2"],
   });
   return { question, options: question.options };
@@ -167,7 +167,7 @@ async function seedQuestionWithOptions() {
  */
 async function seedWithProjectAndQuestion() {
   const { project } = await seedProjectWithClientAndManager();
-  const question = await facoryFunction.newQuestion({
+  const question = await factoryFunction.newQuestion({
     projects: [project.projectId],
   });
 
@@ -194,7 +194,7 @@ async function seedProjectWithResponses() {
   const { project, question } = await seedWithProjectAndQuestion();
   const responses = [];
   for (let i = 0; i < 3; i++) {
-    const response = await facoryFunction.newResponse({
+    const response = await factoryFunction.newResponse({
       label: `Response${i + 1}`,
       projectId: project.projectId,
       questionId: question.questionId,
@@ -216,12 +216,12 @@ async function seedProjectWithResponses() {
 async function seedResponseWithSubresponse() {
   const { project } = await seedProjectWithClientAndManager();
   const { questionParent, subquestions } = await seedQuestionWithSubquestion();
-  const response = await facoryFunction.newResponse({
+  const response = await factoryFunction.newResponse({
     label: "Response of QuestionParent",
     projectId: project.projectId,
     questionId: questionParent.questionId,
   });
-  const subresponse = await facoryFunction.newResponse({
+  const subresponse = await factoryFunction.newResponse({
     label: "Response of Subquestion",
     projectId: project.projectId,
     questionId: subquestions[0].questionId,
@@ -248,14 +248,43 @@ async function seedResponseWithSubresponse() {
  *  - project: The created project object linked to the client and manager.
  */
 async function seedProjectWithClientAndManager() {
-  const client = await facoryFunction.newClient();
-  const user = await facoryFunction.newUser();
-  const project = await facoryFunction.newProject({
+  const client = await factoryFunction.newClient();
+  const user = await factoryFunction.newUser();
+  const project = await factoryFunction.newProject({
     projectManager: user.userId,
     clientId: client.clientId,
   });
 
   return { client, user, project };
+}
+
+/**
+ * Seeds the database with a project tied to a type and a question with a response tied to same type.
+ *
+ * @async
+ * @function seedWithProjectTypeAndQuestionWithResponse
+ * @returns {Promise<Object>} Resolves to an object containing:
+ *  - project: The created project tied to a type.
+ *  - question: The created question with a response tied to the same type.
+ */
+async function seedWithProjectTypeAndQuestionWithResponse() {
+  const { project } = await seedProjectWithClientAndManager();
+  const question = await factoryFunction.newQuestion({
+    label: "Question type",
+    category: "Ideation",
+  });
+  await factoryFunction.newType({
+    label: "Type 1",
+    projects: [project.projectId],
+    questions: [question.questionId],
+  });
+  await factoryFunction.newResponse({
+    label: "Response 1",
+    projectId: project.projectId,
+    questionId: question.questionId,
+  });
+
+  return { project, question };
 }
 
 module.exports = {
@@ -270,4 +299,5 @@ module.exports = {
   seedWithProjectAndQuestion,
   seedProjectWithQuestions,
   seedProjectWithClientAndManager,
+  seedWithProjectTypeAndQuestionWithResponse,
 };

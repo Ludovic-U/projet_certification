@@ -22,6 +22,7 @@ const questionService = require("../services/questionService");
  * - 500: Internal server error.
  */
 module.exports.createQuestion = async (req, res) => {
+  let idParent;
   const {
     label,
     category,
@@ -40,6 +41,11 @@ module.exports.createQuestion = async (req, res) => {
     return res.status(400).json({ error: "label and category are required" });
   }
 
+  // Check if a responseIdParent has been recieved
+  if (questionIdParent) {
+    idParent = Number(questionIdParent);
+  }
+
   try {
     const question = await questionService.createQuestion({
       label,
@@ -48,7 +54,7 @@ module.exports.createQuestion = async (req, res) => {
       isRelevant: isRelevant ?? false,
       hasMultipleOpenResponse: hasMultipleOpenResponse ?? false,
       shouldMultiply: shouldMultiply ?? false,
-      questionIdParent: questionIdParent ?? null,
+      questionIdParent: idParent ?? null,
       types: types ?? [],
       projects: projects ?? [],
       options: options ?? [],
@@ -56,7 +62,8 @@ module.exports.createQuestion = async (req, res) => {
     res.status(201).json(question);
   } catch (error) {
     console.error("Error creating question:", error);
-    res.status(500).json({ error: "Internal server error" });
+    // res.status(500).json({ error: "Internal server error" })
+    throw new Error(error)
   }
 };
 

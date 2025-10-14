@@ -87,7 +87,7 @@ module.exports.getAllQuestions = async (page, limit) => {
 };
 
 /**
- * Update a question by ID.
+ * Update a question by ID.questio
  *
  * @async
  * @function updateQuestion
@@ -217,17 +217,17 @@ module.exports.getQuestionById = async (questionId) => {
  * @async
  * @function getQuestionsByProject
  * @param {number} projectId - The project ID.
- * @returns {Promise<Array<Object>>} List of questions for the project, including there responses.
+ * @returns {Promise<Array<Object>>} List of questions for the project, including there responses and options.
  * @throws {Error} If the project does not exist.
  */
 module.exports.getQuestionsByProject = async (projectId) => {
   const projectWithQuestions = await prisma.project.findUnique({
     where: { projectId },
     include: {
-      questions: { include: { responses: true } }, // Direct relation between Project and Question
+      questions: { include: { responses: true, options: true } }, // Direct relation between Project and Question
       types: {
         include: {
-          questions: { include: { responses: true } }, // Direct relation between Type and Question
+          questions: { include: { responses: true, options: true } }, // Direct relation between Type and Question
         },
       },
     },

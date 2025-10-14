@@ -6,4 +6,5 @@ export interface CardProps {
     onButtonClick?: () => void;
     color?: string,
     className?: string;
+    max?: number;
 }

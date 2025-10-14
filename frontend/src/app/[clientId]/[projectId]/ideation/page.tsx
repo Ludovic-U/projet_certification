@@ -1,98 +1,78 @@
 "use client";
 
-import { PageHeader, Card } from "@/components/ui";
+import React, { useState } from "react";
+import { Node } from "@xyflow/react";
+import "@xyflow/react/dist/style.css"
+import { PageHeader, Card, Modal, Table, Button } from "@/components/ui";
+import { questionsList } from "@/components/ui/Table/table.variants/questions";
+import TreeView from "@/components/ui/Tree/TreeView";
+import { useProjectQuestion } from "@/hooks/useProjectQuestions";
+import { Icons, FontAwesomeIcon } from "@/lib/icons";
+import { LoadingSpinner } from "@/components/ui";
+import { useModal } from "@/hooks";
+import { Question } from "@/types/question";
 
-import { ReactFlow, ControlButton, Controls, ControlPosition} from "@xyflow/react"
-import '@xyflow/react/dist/style.css';
-import { PanelsTopLeft } from "lucide-react";
+import {
+    ReponseUnique,
+    ReponsesPlusieurs,
+    ReponseSelect
+} from "@/components/forms";
+
+import ModalQuestion from "@/components/ui/ModalQuestion/ModalQuestion";
 
 export default function IdeationPage() {
-    const initialNodes = [
-        {
-            id: 'n1',
-            position: {x: 570, y: 0},
-            data: {label: 'Question 1 ?'},
-            type: 'input',
-        },
-        {
-            id: 'n2',
-            position: {x: 470, y: 100},
-            data: {label: 'Question 2 ?'},
-        },
-        {
-            id: 'n3',
-            position: {x: 700, y: 100},
-            data: {label: 'Question 3 ?'},
-        },
-        {
-            id: 'n4',
-            position: {x: 370, y: 200},
-            data: {label: 'Question 4 ?'},
-        },
-        {
-            id: 'n5',
-            position: {x: 600, y: 200},
-            data: {label: 'Question 5 ?'},
-        },
-        {
-            id: 'n6',
-            position: {x: 800, y: 200},
-            data: {label: 'Question 6 ?'},
-        },
-    ];
+    const projectId = 1;
+    const { questions, loading } = useProjectQuestion(projectId);
+    const [nodesState, setNodesState] = useState<Node[]>([]);
+    const modalQuestions = useModal();
+    const modalResponse = useModal();
+    const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
 
-    const initialEdges = [
-        {
-            id: 'n1-n2',
-            source: 'n1',
-            target: 'n2',
-            type: 'step',
-        },
-        {
-            id: 'n1-n3',
-            source: 'n1',
-            target: 'n3',
-            type: 'step',
-        },
-        {
-            id: 'n2-n4',
-            source: 'n2',
-            target: 'n4',
-            type: 'step',
-        },
-        {
-            id: 'n3-n5',
-            source: 'n3',
-            target: 'n5',
-            type: 'step',
-        },
-        {
-            id: 'n3-n6',
-            source: 'n3',
-            target: 'n6',
-            type: 'step',
-        },
-    ];
+    const progress = nodesState.filter(
+        (n) => n.data?.status === "answered" || n.data?.status === "skipped"
+    ).length;
+
+    const maxQuestions = nodesState.length - 1 || questions.length - 1;
+
+    if (loading) return <div className="flex">Chargement des questions...<LoadingSpinner/></div>
+
+    const handleOpenQuestion = (question: Question) => {
+        setSelectedQuestion(question);
+        modalResponse.openModal();
+    };
+
+    const getResponseForm = (question: Question) => {
+        if (question.shouldMultiply)
+            return () => <div>Question répétée</div>;
+        if (question.hasMultipleOpenResponse)
+            return ReponsesPlusieurs;
+        if (question.options?.length > 0 )
+            return () => <ReponseSelect options={question.options}/>;
+        return ReponseUnique;
+    };
 
     return (
         <div className="h-full flex flex-col">
-            <PageHeader title="Projet Lambda - IDEATION" description="Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer à poser les bases de votre projet en répondant aux questions."/>
+            <PageHeader
+             title="Projet Lambda - IDEATION"
+             description="Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer à poser les bases de votre projet en répondant aux questions."
+            />
             <section className="flex flex-1 flex-col items-center">
                 <div className="h-fit z-10">
                     <Card
                     color="#9CCA95"
                     title="Synthèse des projets"
-                    progress={30}/>                    
+                    max={maxQuestions}
+                    progress={progress}
+                    buttonLabel="voir toutes les questions"
+                    onButtonClick={modalQuestions.openModal}/>
                 </div>
 
-
-                 <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">
-                    <ReactFlow
-                     nodes={initialNodes}
-                     edges={initialEdges}>
-                        <Controls position="bottom-center" orientation="horizontal" showInteractive={false}/>
-                        
-                    </ReactFlow>
+                <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">
+                    <TreeView
+                     questions={questions}
+                     onNodesChange={setNodesState}
+                    />
                  </div>
 
                  <div className="flex gap-8 h-fit">
@@ -101,6 +81,42 @@ export default function IdeationPage() {
                     <Card color="#495F46" title="Auto-positionnement" buttonLabel="Voir"/>
                  </div>
             </section>
+
+            <Modal
+            modal={modalQuestions}
+            title="Toutes les questions">
+                <div className="flex flex-col gap-3 p-4">
+                    {questions.length > 1 ? (
+                        questions
+                        .slice(1)
+                        .map((q: Question) => (
+                            <div
+                             key={q.id}
+                             className="p-3 border w-[360px] rounded-lg flex justify-between">
+                                <p className="truncate">{q.label}</p>
+                                <Button
+                                 size="sm"
+                                 onClick={() => handleOpenQuestion(q)}>
+                                    <FontAwesomeIcon icon={Icons.arrowRight}/>
+                                </Button>
+                            </div>
+                        ))
+                    ) : (
+                        <p>Aucune question pour ce projet.</p>
+                    )}
+                </div>
+            </Modal>
+            {selectedQuestion && (
+                <ModalQuestion
+                 modal={modalResponse}
+                 question={selectedQuestion.label || "Question"}
+                 questionId={selectedQuestion.id?.toString() || "id"}
+                 onValidate={() => modalResponse.closeModal()}
+                 onSkip={() => modalResponse.closeModal()}
+                >
+                    {React.createElement(getResponseForm(selectedQuestion))}
+                </ModalQuestion>
+            )}
         </div>
     );
 }

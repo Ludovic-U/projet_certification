@@ -48,7 +48,7 @@ app.use("/api/option", optionRoutes);
 module.exports = app; // export the app instance
 
 // start server
- const PORT = process.env.PORT
- app.listen(PORT, () => {
-     console.log(`Server is running on port ${PORT}`);
- } );
+const PORT = process.env.PORT;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
