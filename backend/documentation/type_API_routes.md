@@ -74,14 +74,10 @@ Accessible uniquement par les administrateurs.
  {
   "typeId": 1,
   "label": "General",
-  "projects": [],
-  "questions": []
  },
  {
   "typeId": 2,
   "label": "Sports",
-  "projects": [],
-  "questions": []
  }, 
 ]
 ```

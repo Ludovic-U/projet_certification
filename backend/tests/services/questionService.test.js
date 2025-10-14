@@ -538,10 +538,10 @@ describe("Question Service", () => {
       expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
         include: {
-          questions: { include: { responses: true } },
+          questions: { include: { responses: true, options: true } },
           types: {
             include: {
-              questions: { include: { responses: true } },
+              questions: { include: { responses: true, options: true } },
             },
           },
         },
@@ -563,10 +563,10 @@ describe("Question Service", () => {
       expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
         include: {
-          questions: { include: { responses: true } },
+          questions: { include: { responses: true, options: true } },
           types: {
             include: {
-              questions: { include: { responses: true } },
+              questions: { include: { responses: true, options: true } },
             },
           },
         },
@@ -595,10 +595,10 @@ describe("Question Service", () => {
       expect(prisma.project.findUnique).toHaveBeenCalledWith({
         where: { projectId: projectId },
         include: {
-          questions: { include: { responses: true } },
+          questions: { include: { responses: true, options: true } },
           types: {
             include: {
-              questions: { include: { responses: true } },
+              questions: { include: { responses: true, options: true } },
             },
           },
         },

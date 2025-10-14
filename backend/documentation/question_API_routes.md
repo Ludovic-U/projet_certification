@@ -112,8 +112,6 @@ Exemple: `/get?page=2&limit=10`
     "shouldMultiply": false,
     "questionIdParent": null,
     "types": [1,2],
-    "projects": [],
-    "options": []
   },
   {
     "questionId": 2,
@@ -125,8 +123,6 @@ Exemple: `/get?page=2&limit=10`
     "shouldMultiply": false,
     "questionIdParent": 1,
     "types": [1,2],
-    "projects": [],
-    "options": []
   }],
   "meta": {
     "totalItems": 2,
@@ -198,7 +194,6 @@ Seuls les champs envoyés seront mis à jour.
  "questionIdParent": null,
  "types": [1,5],
  "projects": [10],
- "options": []
 }
 ```
 
@@ -276,7 +271,15 @@ Accessible uniquement par les administrateurs.
  "questionIdParent": null,
  "types": [1,2],
  "projects": [],
- "options": []
+ "options": [],
+ "responses": [],
+ "children": [
+   {
+    "questionId": 2,
+    ...
+    "responses": []
+   }
+ ]
 }
 ```
 
@@ -318,8 +321,8 @@ Retourne la liste des questions liées par le type ou directement assosciées au
   "shouldMultiply": false,
   "questionIdParent": null,
   "types": [1,2],
-  "projects": [],
-  "options": []
+  "options": [],
+  "responses": []
  },
  {
   "questionId": 2,
@@ -331,8 +334,8 @@ Retourne la liste des questions liées par le type ou directement assosciées au
   "shouldMultiply": false,
   "questionIdParent": 1,
   "types": [5],
-  "projects": [1],
-  "options": []
+  "options": [],
+  "responses": []
  }
 ]
 ```
@@ -376,7 +379,6 @@ Retourne la liste des questions assosciées à la category en fonction de `categ
   "questionIdParent": null,
   "types": [1,4],
   "projects": [],
-  "options": []
  },
  {
   "questionId": 7,
@@ -389,7 +391,6 @@ Retourne la liste des questions assosciées à la category en fonction de `categ
   "questionIdParent": null,
   "types": [2],
   "projects": [6],
-  "options": [1,2]
  }
 ]
 ```
@@ -425,7 +426,6 @@ Retourn la liste des questions assosciées au type en fonction de `typeId`
   "questionIdParent": null,
   "types": [1,4],
   "projects": [],
-  "options": []
  },
  {
   "questionId": 7,
@@ -438,7 +438,6 @@ Retourn la liste des questions assosciées au type en fonction de `typeId`
   "questionIdParent": null,
   "types": [1],
   "projects": [6],
-  "options": [1,2]
  }
 ]
 ```
@@ -480,9 +479,6 @@ Retourne la liste des subquestions assosciées a une question en fonction de `qu
   "hasMultipleOpenResponse": true,
   "shouldMultiply": false,
   "questionIdParent": 1,
-  "types": [4],
-  "projects": [],
-  "options": []
  },
  {
   "questionId": 7,
@@ -493,9 +489,6 @@ Retourne la liste des subquestions assosciées a une question en fonction de `qu
   "hasMultipleOpenResponse": false,
   "shouldMultiply": false,
   "questionIdParent": 1,
-  "types": [1],
-  "projects": [6],
-  "options": [1,2]
  }
 ]
 ```
