@@ -4,6 +4,7 @@ import "../styles/globals.css";
 import { oswald, notoSans, didactGothic } from "./fonts";
 import ClientLayout from "@/components/layout/ClientLayout";
 import { UserProvider } from "@/context/UserContext";
+import { LocalStorageProvider } from "@/context/LocalStorageContext";
 
 export const metadata: Metadata = {
   title: "F2S_APP",
@@ -19,9 +20,11 @@ export default function RootLayout({
   return (
       <html lang="fr" className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>
         <body className="bg-light">
+          <LocalStorageProvider>    
           <UserProvider>
             <ClientLayout>{children}</ClientLayout>            
           </UserProvider>
+          </LocalStorageProvider>
         </body>
       </html>
   );

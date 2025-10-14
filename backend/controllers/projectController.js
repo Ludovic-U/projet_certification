@@ -8,6 +8,7 @@ const {
   getProjectsByClientId,
   getProjectsByUserId,
   getProjectsByName,
+  ProjectsByClientId,
 } = require("../services/projectService");
 const { validateId } = require("../middlewares/validateId");
 
@@ -31,9 +32,9 @@ module.exports.createProjectPost = async (req, res) => {
   try {
     const data = {
       projectName: req.body.projectName,
-      projectManager: req.body.projectManager,
+      projectManager: parseInt(req.body.projectManager, 10),
       projectDesc: req.body.projectDesc,
-      clientId: req.body.clientId,
+      clientId: parseInt(req.body.clientId, 10),
     };
 
     const newProject = await createProject(data);
@@ -144,7 +145,7 @@ module.exports.getProjectsByClientId = async (req, res) => {
   // Validate clientId
   if (!validateId(clientId, "clientId", res)) return;
   try {
-    const projects = await Project.findAll({ where: { clientId } });
+    const projects = await ProjectsByClientId(clientId);
     res.status(200).json(projects);
   } catch (error) {
     console.error("Error fetching projects by clientId:", error);

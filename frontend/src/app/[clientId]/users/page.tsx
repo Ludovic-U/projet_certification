@@ -70,6 +70,11 @@ export default function UsersPage() {
                                 onSubmit={(formData) => {
                                     // Handle form submission logic here
                                     // Example: send formData to backend and refresh users list
+                                    api_backend.post('/user/register', { ...formData, clientId: params.clientId })
+                                        .then(response => {
+                                            // reload page
+                                            router.refresh;
+                                        })
                                 }}
                                 isLoading={false}
                             />

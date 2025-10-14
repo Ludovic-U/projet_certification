@@ -17,11 +17,13 @@ import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
 import { useParams, useRouter } from "next/navigation";
 import api_backend from "@/api/axiosInstance";
+import { useLocalStorage } from "@/context/LocalStorageContext";
 
 export default function ProjectsPage() {
     const params = useParams();
     const router = useRouter();
     const modal = useModal();
+    const { data, setItem, removeItem } = useLocalStorage();
 
     // const projects = [
     //     { id: 1, title: "Projet lamazeazebda", type: "AAP", step:"REPORTING (1/4)", contributors: 12},
@@ -52,13 +54,21 @@ export default function ProjectsPage() {
         api_backend.get(`/project/getByClientId/${params.clientId}`)
             .then(res => {
                 setProjects(res.data);
-                console.log("users", res.data);
+                console.log("projects", res.data);
             })
             .catch(err => {
                 console.error("Error fetching users:", err);
                 setProjects([]);
             });
     }, []);
+
+    const handleRowClick = (project: any) => {
+        // Met à jour le contexte utilisateur avec le projet sélectionné
+       
+        setItem("projectName", project.projectName);
+        // Redirige vers la page du projet
+        router.push(`/${params.clientId}/${project.projectId}/vue_ensemble`);
+    };
 
     
     const itemsPerPage = 6;
@@ -89,7 +99,16 @@ export default function ProjectsPage() {
                         <Modal modal={modal}
                         title="AJOUTER UN PROJET"
                         description="Entrez les informations du nouveau projet">
-                            <CreateProjectForm/>
+                            <CreateProjectForm onSubmit={(formData) => {
+                                    // Handle form submission logic here
+                                    // Example: send formData to backend and refresh users list
+                                    api_backend.post('/project/create', { ...formData, clientId: params.clientId })
+                                        .then(response => {
+                                            // reload page
+                                            router.refresh;
+                                        })
+                                }}
+                                isLoading={false}/>
                         </Modal>
                     </div>
 
@@ -103,12 +122,12 @@ export default function ProjectsPage() {
                 <TableResponsive<typeof currentData[0]>
                  data={currentData}
                  columns={projectsList}
-                 onRowClick={(project) => router.push(`/${params.clientId}/${project.id}/vue_ensemble`)}/>
+                 onRowClick={(project) => handleRowClick(project)}/>
 
                 <Table<typeof currentData[0]>
                  data={currentData}
                  columns={projectsList}
-                 onRowClick={(project) => router.push(`/${params.clientId}/${project.id}/vue_ensemble`)}/>
+                 onRowClick={(project) => handleRowClick(project)}/>
                  {totalPages > 1 && (
                     <div className="flex justify-center mt-10">
                         <Pagination

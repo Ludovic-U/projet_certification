@@ -31,13 +31,13 @@ const prisma = new PrismaClient();
 //   });
 // };
 
-module.exports = createProject = async (data) => {
+module.exports.createProject = async (data) => {
   //TODO: check permissions
   try {
     const newProject = await prisma.project.create({
       data: {
         projectName: data.projectName,
-        startDate: Date.now(),
+        startDate: new Date(),
         endDate: null,
         projectManager: data.projectManager,
         projectStage: "Idéation",
