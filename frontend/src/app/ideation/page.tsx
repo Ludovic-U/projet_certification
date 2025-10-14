@@ -32,7 +32,7 @@ export default function IdeationPage() {
         (n) => n.data?.status === "answered" || n.data?.status === "skipped"
     ).length;
 
-    const maxQuestions = nodesState.length - 1 || questions.length - 1;
+    const maxQuestions = questions.length - 1;
 
     if (loading) return <div className="flex">Chargement des questions...<LoadingSpinner/></div>
 
@@ -60,7 +60,7 @@ export default function IdeationPage() {
             <section className="flex flex-1 flex-col items-center">
                 <div className="h-fit z-10">
                     <Card
-                    color="#9CCA95"
+                    color="#96776E"
                     title="Synthèse des projets"
                     max={maxQuestions}
                     progress={progress}
@@ -76,9 +76,9 @@ export default function IdeationPage() {
                  </div>
 
                  <div className="flex gap-8 h-fit">
-                    <Card color="#7EA478" title="Proposition des valeurs" buttonLabel="Voir"/>
-                    <Card color="#627F5D" title="Analyse de l'existant" buttonLabel="Voir"/>
-                    <Card color="#495F46" title="Auto-positionnement" buttonLabel="Voir"/>
+                    <Card color="#D4B2A7" title="Proposition des valeurs" buttonLabel="Voir"/>
+                    <Card color="#B49186" title="Analyse de l'existant" buttonLabel="Voir"/>
+                    <Card color="#715E53" title="Auto-positionnement" buttonLabel="Voir"/>
                  </div>
             </section>
 

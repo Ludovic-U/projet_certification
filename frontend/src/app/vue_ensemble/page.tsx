@@ -15,7 +15,7 @@ export default function VueEnsemblePage() {
                      title="IDEATION"
                      description="Générer et structurer les idées initiales."
                      buttonLabel="Ouvrir"
-                     color="#B6CBBF"
+                     color="#D4B2A7"
                      progress={80}
                      onButtonClick={() => router.push("/ideation")}
                     />
@@ -23,7 +23,7 @@ export default function VueEnsemblePage() {
                      title="CONCEPTION"
                      description="Définir et planifier les solutions."
                      buttonLabel="Ouvrir"
-                     color="#83A18F"
+                     color="#B49186"
                      progress={30}
                      onButtonClick={() => router.push("/conception")}
                     />
@@ -31,7 +31,7 @@ export default function VueEnsemblePage() {
                      title="PILOTAGE"
                      description="Suivre l'avancement et coordonner l'équipe."
                      buttonLabel="Ouvrir"
-                     color="#74966E"
+                     color="#96776E"
                      progress={60}
                      onButtonClick={() => router.push("/pilotage")}
                     />
@@ -40,7 +40,7 @@ export default function VueEnsemblePage() {
                      title="REPORTING"
                      description="Analyser les résultats et partager les bilans."
                      buttonLabel="Ouvrir"
-                     color="#577153"
+                     color="#605049"
                      progress={20}
                      onButtonClick={() => router.push("/reporting")}
                     />

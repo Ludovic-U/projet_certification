@@ -14,7 +14,8 @@ export function buildHierarchy(questions: Question[]) {
     
     // Si aucune racine n'est trouvée, on renvoie une erreur
     if (!rootQuestion) {
-        throw new Error("Pas de racine trouvée")
+        console.warn("Pas de racine trouvée")
+        return null
     };
     
     // Création de la hiérarchie D3
