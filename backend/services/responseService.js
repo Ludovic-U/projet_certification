@@ -90,8 +90,6 @@ module.exports.getResponsesByQuestionOfProject = async (
         where: { questionId: questionId },
         select: { responses: { include: { children: true } } },
       },
-<<<<<<< HEAD
-=======
       // Linked by type
       types: {
         select: {
@@ -101,7 +99,6 @@ module.exports.getResponsesByQuestionOfProject = async (
           },
         },
       },
->>>>>>> backend/fix/getResponseByquestionOfProject
     },
   });
 
@@ -109,9 +106,6 @@ module.exports.getResponsesByQuestionOfProject = async (
     throw new Error("Project not found");
   }
 
-<<<<<<< HEAD
-  const question = project.questions[0];
-=======
   let question = project.questions[0];
 
   // If not found directly, check questions via type
@@ -123,7 +117,6 @@ module.exports.getResponsesByQuestionOfProject = async (
       }
     }
   }
->>>>>>> backend/fix/getResponseByquestionOfProject
 
   if (!question) {
     throw new Error("Question not found");
