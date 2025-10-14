@@ -5,6 +5,8 @@ export type SideNavItem = {
     title: string; // Titre
     path: string; // Le chemin de navigation associé (URL path)
     icon?: React.ReactNode; // Icône
+    roles?: string[]; // Optionnel : liste des rôles autorisés à voir cet item
+    requiredParams?: string[]; // Optionnel : liste des params requis dans l'URL pour afficher cet item
     subMenu?: boolean; // Optionnel : indique si cet item comprend un submenu
     subMenuItems?: SideNavItem[]; // Optionnel : tableau d'items enfants
     button?: React.ReactNode; // Optionnel : bouton personnalisé

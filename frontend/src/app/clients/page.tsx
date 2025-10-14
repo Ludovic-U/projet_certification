@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
 
 import {
     PageHeader,
@@ -11,32 +12,35 @@ import {
     Pagination,
     clientsList,
     Tooltip,
-    Modal
+    Modal,
+    Client
 } from "@/components/ui";
 import CreateClientForm from "@/components/forms/CreateClient";
 
 import { useModal } from "@/hooks";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
+import api_backend from "@/api/axiosInstance";
+import { useRouter } from "next/navigation";
 
 export default function ClientsPage() {
-    const modal = useModal()
-    const clients = [
-        {id : 1, name: "Entreprise Alpha", sector: "Finance", contact: "Jean Dupont"},
-        { id: 2, name: "Startup Beta", sector: "Tech", contact: "Alice Martin" },
-        { id: 3, name: "Agence Gamma", sector: "Marketing", contact: "Paul Durand" },
-        { id: 4, name: "Société Delta", sector: "Industrie", contact: "Emma Leroy" },
-        { id: 5, name: "Entreprise Epsilon", sector: "Santé", contact: "Lucas Bernard" },
-        { id: 6, name: "Startup Zeta", sector: "Éducation", contact: "Clara Dubois" },
-        {id : 7, name: "Entreprise Alpha", sector: "Finance", contact: "Jean Dupont"},
-        { id: 8, name: "Startup Beta", sector: "Tech", contact: "Alice Martin" },
-        { id: 9, name: "Agence Gamma", sector: "Marketing", contact: "Paul Durand" },
-        { id: 10, name: "Société Delta", sector: "Industrie", contact: "Emma Leroy" },
-        { id: 11, name: "Entreprise Epsilon", sector: "Santé", contact: "Lucas Bernard" },
-        { id: 12, name: "Startup Zeta", sector: "Éducation", contact: "Clara Dubois" },
-    ]
+    const router = useRouter();
+    const modal = useModal();
 
+    const [clients, setClients] = useState<any[]>([]);
     const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        api_backend.get('/client/get')
+            .then(res => {
+                setClients(res.data);
+            })
+            .catch(err => {
+                console.error("Error fetching clients:", err);
+                setClients([]);
+            }); 
+    }, []);
+
     const totalPages = Math.ceil(clients.length / itemsPerPage);
     const currentData = clients.slice(
         (currentPage - 1) * itemsPerPage,
@@ -74,12 +78,16 @@ export default function ClientsPage() {
                      className="w-70"/>
                 </div>
                 
-                {/* <TableResponsive<typeof currentData[0]>
+                 <TableResponsive<typeof currentData[0]>
                  data={currentData}
-                 columns={clientsList}/>
+                 columns={clientsList}
+                 onRowClick={(client) => router.push(`/${client.clientId}/projets`)}
+                 />
+                 
                 <Table<typeof currentData[0]>
                  data={currentData}
-                 columns={clientsList}/>
+                 columns={clientsList}
+                 onRowClick={(client) => router.push(`/${client.clientId}/projets`)}/>
                  {totalPages > 1 && (
                     <div className="flex justify-center mt-10">
                         <Pagination
@@ -87,7 +95,7 @@ export default function ClientsPage() {
                          totalPages={totalPages}
                          onPageChange={setCurrentPage}/>
                     </div>
-                 )} */}
+                 )} 
             </section>
         </div>
     );

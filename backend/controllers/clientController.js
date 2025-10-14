@@ -9,7 +9,7 @@ module.exports.getClients = async (req, res) => {
         const clients = await getClients(req.user);
        res.status(200).json(clients) 
     } catch (error) {
-        res.status(500).json({ error : `Error fetching clients ${error.message}` });
+        res.status(error.status).json({ error : `Error fetching clients ${error.message}` });
     }
 }
 
