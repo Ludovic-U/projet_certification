@@ -3,25 +3,34 @@
 import { Input, Button, Checkbox } from "@/components/ui"
 import { useState } from "react";
 
-export default function ReponseSelect() {
-    const [reponses, setReponses] = useState<string[]>([]);
+interface Option {
+    optionId: number;
+    label: string;
+    questionId: number;
+}
 
-    const options = ["Manque de temps pour tester les idées", "Budget limité pour le projet", "Besoin de valider l'intéret du marché", "Identifier les concurrents principaux"];
-    const toggleOption = (option: string) => {
+interface ReponseSelectProps {
+    options: Option[];
+}
+
+export default function ReponseSelect({ options }: ReponseSelectProps) {
+    const [reponses, setReponses] = useState<number[]>([]);
+
+    const toggleOption = (id: number) => {
         setReponses(prev  =>
-            prev.includes(option) ? prev.filter(r => r !== option) : [...prev, option]
+            prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]
         );
     };
     return (
         <>
-            {options.map((opt, i) => (
-                <div className="border my-2 pl-4 py-2 rounded-lg hover:border-dashed hover:border-primay">
+            {options.map(opt => (
+                <div
+                 key={opt.optionId}
+                 className="border my-2 pl-4 py-2 rounded-lg hover:border-dashed hover:border-primay">
                     <Checkbox
-                    key={i}
-                    className=""
-                    label={opt}
-                    checked={reponses.includes(opt)}
-                    onCheckedChange={() => toggleOption(opt)}
+                    label={opt.label}
+                    checked={reponses.includes(opt.optionId)}
+                    onCheckedChange={() => toggleOption(opt.optionId)}
                     />                   
                 </div>
             ))}

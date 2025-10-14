@@ -6,19 +6,32 @@ import "@xyflow/react/dist/style.css"
 import { Question } from "@/types/question";
 import { PageHeader, Card } from "@/components/ui";
 import TreeView from "@/components/ui/Tree/TreeView";
-import questionsMock from "@/components/ui/Tree/questionsMock.json"
+import { useProjectQuestion } from "@/hooks/useProjectQuestions";
+import { Icons, FontAwesomeIcon } from "@/lib/icons";
+import { LoadingSpinner } from "@/components/ui";
 
 export default function IdeationPage() {
-    const [nodesState, setNodesState] = useState<Node<Question>[]>([]);
+    const projectId = 1; // récupéré dynamiquement selon le projet courant
+    const { questions, loading } = useProjectQuestion(projectId);
+    const [nodesState, setNodesState] = useState<Node[]>([]);
+
     const progress = nodesState.filter(
         (n) => n.data?.status === "answered" || n.data?.status === "skipped"
     ).length;
 
-    const maxQuestions = nodesState.length || questionsMock.length;
+    const maxQuestions = nodesState.length || questions.length;
+    const seeAllQuestions = () => {
+        console.log("Toutes les questions :", questions)
+    }
+
+    if (loading) return <div className="flex">Chargement des questions...<LoadingSpinner/></div>
 
     return (
         <div className="h-full flex flex-col">
-            <PageHeader title="Projet Lambda - IDEATION" description="Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer à poser les bases de votre projet en répondant aux questions."/>
+            <PageHeader
+             title="Projet Lambda - IDEATION"
+             description="Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer à poser les bases de votre projet en répondant aux questions."
+            />
             <section className="flex flex-1 flex-col items-center">
                 <div className="h-fit z-10">
                     <Card
@@ -26,13 +39,14 @@ export default function IdeationPage() {
                     title="Synthèse des projets"
                     max={maxQuestions}
                     progress={progress}
-                    buttonLabel="voir toutes les questions"/>
+                    buttonLabel="voir toutes les questions"
+                    onButtonClick={seeAllQuestions()}/>
                 </div>
 
                 <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">
                     <TreeView
-                     questions={questionsMock}
-                    //  onNodesChange={setNodesState}
+                     questions={questions}
+                     onNodesChange={setNodesState}
                     />
                  </div>
 

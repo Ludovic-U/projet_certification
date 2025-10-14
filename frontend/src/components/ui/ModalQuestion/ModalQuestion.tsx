@@ -26,12 +26,7 @@ const ModalQuestion : React.FC<ModalQuestionProps> = ({
     // Validation du formulaire
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
-        const formData = new FormData(event.currentTarget);
-        console.log("Réponses :", Object.fromEntries(formData.entries()));
-
         if (onValidate) onValidate();
-
         modal.closeModal();
     };
 

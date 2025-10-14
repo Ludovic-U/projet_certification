@@ -62,7 +62,8 @@ module.exports.createQuestion = async (req, res) => {
     res.status(201).json(question);
   } catch (error) {
     console.error("Error creating question:", error);
-    res.status(500).json({ error: "Internal server error" });
+    // res.status(500).json({ error: "Internal server error" })
+    throw new Error(error)
   }
 };
 

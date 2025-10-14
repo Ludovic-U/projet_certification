@@ -37,7 +37,7 @@ export function buildHierarchy(questions: Question[]) {
 export function computeTreeLayout(root: HierarchyNode<Question>) {
     // Création d'un layout en arbre
     // nodeSize([hauteur, largeur]) définit l'espacement entre les noeuds.
-    const treeLayout = tree<Question>().nodeSize([10, 20]).separation((a,b) => a.parent === b.parent ? 1 : 2);
+    const treeLayout = tree<Question>().nodeSize([20, 20]).separation((a,b) => a.parent === b.parent ? 1 : 2);
 
     // Applique le layout à la hiérarchie
     // Chaque noeud a "x" et "y"
@@ -57,18 +57,23 @@ export function d3ToReactFlow(root: HierarchyNode<Question>): { nodes: Node[]; e
     const scale = 3;
 
     root.descendants().forEach(node => {
+        const isRoot = node.depth === 0;
+
         nodes.push({
             id: node.data.id.toString(),
             type: "question",
-            position: { 
-                x: (node.x ?? 0) * scale,
-                y: (node.y ?? 0) * scale
-            },
+            position: isRoot
+                ? { x: 0, y: -40 }
+                : { x: (node.x ?? 0) * scale, y: (node.y ?? 0) * scale },
             data: {
                 ...node.data,
                 status: node.data.status || "pending",
-            } as Record<string, unknown>,
-            hidden: node.depth > 1,
+                isRoot,
+            } as Question & { isRoot?: boolean },
+            hidden: node.depth > 1 ? true : false,
+            style: isRoot
+                ? { opacity: 0, pointerEvents: "none" }
+                : undefined,
         });
 
         if (node.parent) {
@@ -81,4 +86,39 @@ export function d3ToReactFlow(root: HierarchyNode<Question>): { nodes: Node[]; e
     });
     
     return { nodes, edges };
+}
+
+export function generateNodesWithMultiply(questions: Question[], parentAnswers: Record<string, string[]> = {}) {
+    const nodes: Node[] = [];
+
+    questions.forEach(q => {
+        const parentId = q.parentId?.toString() ?? null;
+
+        if (q.shouldMultiply && parentId && parentAnswers[parentId]?.length > 0) {
+            parentAnswers[parentId].forEach(answer => {
+                nodes.push({
+                    id: `${q.id}_${answer}`,
+                    type: "question",
+                    data: {
+                        ...q,
+                        label: q.label?.replace("{{context}}", answer) ?? q.label,
+                        context: answer,
+                        parentId
+                    },
+                    position: { x: 0, y: 0},
+                    hidden: true,
+                });
+            });
+        } else {
+            nodes.push({
+                id: q.id.toString(),
+                type: "question",
+                data: { ...q, parentId },
+                position: { x: 0, y: 0 },
+                hidden: true,
+            });
+        }
+    });
+
+    return nodes;
 }

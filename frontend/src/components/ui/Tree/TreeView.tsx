@@ -5,10 +5,13 @@ import { ReactFlow, Node, Edge, Controls, ControlButton } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Question } from "@/types/question";
 import { QuestionNode } from "../Nodes/Question";
-import { buildHierarchy, computeTreeLayout, d3ToReactFlow } from "@/lib/treeUtils";
+import { buildHierarchy, computeTreeLayout, d3ToReactFlow, generateNodesWithMultiply } from "@/lib/treeUtils";
 import ModalQuestion from "../ModalQuestion/ModalQuestion";
 import { Icons, FontAwesomeIcon } from "@/lib/icons";
 import { useModal } from "@/hooks";
+import ReponseUnique from "@/components/forms/Reponses/LibreUnique"
+import ReponsesPlusieurs from "@/components/forms/Reponses/LibresPlusieurs"
+import ReponseSelect from "@/components/forms/Reponses/FermeeSelect"
 
 interface TreeViewProps {
     questions: Question[]
@@ -19,9 +22,19 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
 
     // Génération automatique du layout avec D3
     const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
+        const parentAnswers = {
+            "": ["PC", "Tablette"],
+        };
+
         const root = buildHierarchy(questions);
         const laidOutRoot = computeTreeLayout(root);
-        return d3ToReactFlow(laidOutRoot);
+        const { nodes, edges } = d3ToReactFlow(laidOutRoot);
+
+        nodes.forEach(n => {
+            console.log(`node ${n.id} options:`, n.data.options)
+        });
+
+        return { nodes, edges };
     }, [questions]);
 
     // Etats ReactFlow et Modal
@@ -32,6 +45,8 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
 
     const handleNodeClick = (_: any, node: Node) => {
         setSelectedNode(node);
+        console.log("question :", node.data);
+        console.log("options :", (node.data as Question).options);
         modal.openModal();
     }
 
@@ -80,23 +95,37 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
              defaultEdgeOptions={{ type: "step", style: {stroke: "#272727"}}}
              nodeTypes={nodeTypes}
              onNodeClick={handleNodeClick}
-             fitView>
+             fitView
+             fitViewOptions={{
+                padding: 0.2,
+                minZoom: 0.8,
+                nodes: nodes.filter(n => !(n.data as any).isRoot)
+             }}>
                 <Controls showInteractive={false}>
                     <ControlButton>
                         <FontAwesomeIcon icon={Icons.briefcase}/>    
                     </ControlButton>
                 </Controls>
             </ReactFlow>
-            {selectedNode && (
-                <ModalQuestion
-                 modal={modal}
-                 question={selectedNode?.data?.label?.toString() || "question"}
-                 questionId={selectedNode?.data.id?.toString() || "id"}
-                 onValidate={handleValidate}
-                 onSkip={handleSkip}>
-                    ok
-                </ModalQuestion>
-            )}
+            {selectedNode && (() => {
+                const question = selectedNode.data as Question;
+                let ResponseForm;
+                if (question.shouldMultiply) ResponseForm = () => <div>Question répétée</div>;
+                else if (question.hasMultipleOpenResponse) ResponseForm = ReponsesPlusieurs;
+                else if (question.options?.length > 0 ) ResponseForm = () => <ReponseSelect options={question.options}/>;
+                else ResponseForm = ReponseUnique;
+
+                return (
+                    <ModalQuestion
+                     modal={modal}
+                     question={question.label || "question"}
+                     questionId={question.id?.toString() || "id"}
+                     onValidate={handleValidate}
+                     onSkip={handleSkip}>
+                        <ResponseForm/>
+                    </ModalQuestion>
+                );
+            })()}
         </div>
     )
 }
