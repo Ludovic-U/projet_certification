@@ -15,6 +15,7 @@ import {
 } from "@/components/ui";
 import { Select } from "@/components/ui/Select";
 import { MultiSelect } from "@/components/ui/Select/MultiSelect";
+import ModalQuestion from "@/components/ui/ModalQuestion/ModalQuestion";
 
 import {
     CreateRoleForm,
@@ -182,11 +183,12 @@ export default function BuildingPage() {
                                             Réponse libre
                                         </Button>
                                     </Tooltip>
-                                    <Modal modal={modalUnique}
-                                     title="Question 01"
-                                    >
+                                    <ModalQuestion
+                                     modal={modalUnique}
+                                     questionId="01"
+                                     question={qst}>
                                         <ReponseUnique/>
-                                    </Modal>
+                                    </ModalQuestion>
                                 </div>
                                 <div>
                                     <Tooltip content={qst} position="rightTop">
@@ -196,11 +198,13 @@ export default function BuildingPage() {
                                             Réponses ouvertes
                                         </Button>
                                     </Tooltip>
-                                    <Modal modal={modalPlusieurs}
-                                     title="Question 01"
+                                    <ModalQuestion
+                                     modal={modalPlusieurs}
+                                     questionId="02"
+                                     question={qst}
                                     >
                                         <ReponsesPlusieurs/>
-                                    </Modal>
+                                    </ModalQuestion>
                                 </div>
                                 <div>
                                     <Tooltip content={qst} position="rightTop">
@@ -210,11 +214,13 @@ export default function BuildingPage() {
                                             Réponses select
                                         </Button>
                                     </Tooltip>
-                                    <Modal modal={modalSelect}
-                                     title="Question 01"
+                                    <ModalQuestion
+                                     modal={modalSelect}
+                                     questionId="03"
+                                     question={qst}
                                     >
                                         <ReponseSelect/>
-                                    </Modal>
+                                    </ModalQuestion>
                                 </div>
                                 <div>
                                     <Tooltip content="Ajouter un rôle" position="right">

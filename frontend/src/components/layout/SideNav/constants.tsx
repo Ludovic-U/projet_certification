@@ -11,6 +11,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
             { title: "Page Test", path:"/building", icon: <FontAwesomeIcon icon={Icons.users}/>},
             { title: "Tree", path:"/building/build-tree", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
             { title: "Components", path:"/building/components", icon: <FontAwesomeIcon icon={Icons.users}/>},
+            { title: "Tree Hierarchy", path:"/building/tree"}
         ],
     },
     {

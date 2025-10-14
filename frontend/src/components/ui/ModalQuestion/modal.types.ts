@@ -8,4 +8,6 @@ export interface ModalQuestionProps {
     question: string;
     children: ReactNode;
     className?: string;
+    onValidate?: () => void;
+    onSkip?: () => void;
 }

@@ -27,34 +27,40 @@ export function DynamicOptions({
     }
 
     return (
-        <div className="flex flex-col items-center">
-            <div className="space-y-4 max-h-30 overflow-y-auto p-2">
+        <div className="flex flex-col w-full gap-2">
+            <div className="flex justify-start items-center gap-1">
+                <Tooltip content="Ajouter" position="right">
+                    <Button type="button" variant="primaryBorder" size="iconS" onClick={addField}>
+                        <FontAwesomeIcon icon={Icons.plus}/>
+                    </Button>
+                </Tooltip>
+                <span className="text-sm font-didact text-greydarker">Ajouter une réponse</span>
+            </div>
+
+            <div className="flex flex-col gap-4 max-h-60 w-full overflow-y-auto py-4">
                 {values.map((val, index) => (
-                    <div key={index} className="flex gap-2 items-center">
+                    <div key={index}>
                         <Input
-                        label={`${labelPrefix} ${index + 1}`}
-                        value={val}
-                        onChange={(e) => updateField(index, e.target.value)}/>
-                        {values.length > 1 && (
-                            <Tooltip content="Supprimer" position="left">
-                                <Button
-                                type="button"
-                                variant="primaryBorder"
-                                size="iconS"
-                                onClick={() => removeField(index)}>
-                                    <FontAwesomeIcon icon={Icons.xmark}/>
-                                </Button>
-                            </Tooltip>
-                        )}
+                         label={`${labelPrefix} ${index + 1}`}
+                         labelBg="bg-white"
+                         value={val}
+                         onChange={(e) => updateField(index, e.target.value)}
+                         rightIcon={
+                            values.length > 1 && (
+                                <Tooltip content="Supprimer" position="left">
+                                    <button
+                                     type="button"
+                                     onClick={() => removeField(index)}
+                                     className="cursor-pointer text-grey hover:text-greydarker transition-colors">
+                                        <FontAwesomeIcon icon={Icons.trash}/>
+                                    </button>
+                                </Tooltip>
+                            )
+                         }
+                        />
                     </div>
                 ))}
             </div>
-
-            <Tooltip content="Ajouter" position="right">
-                <Button type="button" variant="secondary" size="icon" onClick={addField}>
-                    <FontAwesomeIcon icon={Icons.plus}/>
-                </Button>                
-            </Tooltip>
         </div>
-    )
+    );
 }

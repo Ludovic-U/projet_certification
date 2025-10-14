@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/utils/utils";
 
 import { ProgressBarProps } from "./progressBar.types";
+import { progress } from "framer-motion";
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
     value,
@@ -27,7 +28,11 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             {showLabel && (
                 <span className="inline-flex justify-between text-sm text-greydarker font-noto">
                     <span>Avancement</span>
-                    <span>{Math.round(percentage)}%</span>
+                    <div className="space-x-2">
+                        <span>{Math.round(percentage)}%</span>
+                        <span>({value}/{max})</span>
+                    </div>
+                    
                 </span>
             )}   
         </div>
