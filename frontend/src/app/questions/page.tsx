@@ -1,12 +1,21 @@
 "use client";
 
-import { PageHeader, Tooltip, Button, Modal, Input, Pagination, Table } from "@/components/ui";
+import {
+  PageHeader,
+  Tooltip,
+  Button,
+  Modal,
+  Input,
+  Pagination,
+  Table,
+} from "@/components/ui";
 import { questionsList } from "@/components/ui/Table/table.variants/questions";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
 import CreateQuestionForm from "@/components/forms/CreateQuestion";
 import { useEffect, useState } from "react";
 import api_backend from "@/api/axiosInstance";
+import { Question } from "@/types/question";
 
 export default function QuestionsPage() {
   const [questions, setQuestions] = useState([]);
@@ -35,10 +44,12 @@ export default function QuestionsPage() {
     fetchQuestions();
   }, [pagination.currentPage, pagination.pageSize]);
 
-  const handleDelete = async (questionId: number) => {
+  const handleDelete = async (questionId: number | string) => {
     try {
       await api_backend.delete(`/question/delete/${questionId}`);
-      setQuestions((prev) => prev.filter((q) => q.questionId !== questionId));
+      setQuestions((prev) =>
+        prev.filter((q: Question) => q.questionId !== questionId)
+      );
     } catch (error) {
       console.error(error);
     }
@@ -47,21 +58,18 @@ export default function QuestionsPage() {
   const columnsWithDelete = questionsList.map((col) =>
     col.key === "actions"
       ? {
-        ...col,
-        className: "text-right pr-6",
-        render: (item: Question) => (
-          <div className="flex justify-end pr-6">
-            <Button
-            onClick={() => handleDelete(item.questionId)}
-            >
-              <FontAwesomeIcon icon={Icons.trash}/>
-            </Button>
-          </div>
-
-        ),
-      }
+          ...col,
+          className: "text-right pr-6",
+          render: (item: Question) => (
+            <div className="flex justify-end pr-6">
+              <Button onClick={() => handleDelete(item.questionId)}>
+                <FontAwesomeIcon icon={Icons.trash} />
+              </Button>
+            </div>
+          ),
+        }
       : col
-    );
+  );
 
   return (
     <div className="h-full">
@@ -100,18 +108,24 @@ export default function QuestionsPage() {
         {questions && questions.length > 0 ? (
           <div>
             <Table
-             data={questions.map((q) => ({ ...q, id: q.questionId}))}
-             columns={columnsWithDelete}/>
+              data={questions.map((q: Question) => ({
+                ...q,
+                id: q.questionId,
+              }))}
+              columns={columnsWithDelete}
+            />
           </div>
         ) : (
           <span>No Questions</span>
         )}
 
         <Pagination
-         className="mt-6 flex items-center justify-center"
-         currentPage={pagination.currentPage}
-         totalPages={pagination.totalPages}
-         onPageChange={(page) => setPagination((prev) => ({ ...prev, currentPage: page,}))}
+          className="mt-6 flex items-center justify-center"
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          onPageChange={(page) =>
+            setPagination((prev) => ({ ...prev, currentPage: page }))
+          }
         />
       </section>
     </div>

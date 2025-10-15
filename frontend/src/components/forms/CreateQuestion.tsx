@@ -12,6 +12,11 @@ import {
 } from "@/components/ui";
 import api_backend from "@/api/axiosInstance";
 
+interface Type {
+  typeId: number | string;
+  label: string;
+}
+
 export default function CreateQuestionForm() {
   const [label, setLabel] = useState("");
   const [category, setCategory] = useState("ideation");
@@ -26,14 +31,14 @@ export default function CreateQuestionForm() {
     { value: "conception", label: "Conception" },
   ];
 
-  const [types, setTypes] = useState([]);
+  const [types, setTypes] = useState<Type[]>([]);
   const [typesLabel, setTypesLabel] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string[]>([]);
 
   const onSubmit = async () => {
     // Get the IDs of selected types
     const selectedIds = types
-      .filter((t) => selectedType.includes(t.label))
+      .filter((t: Type) => selectedType.includes(t.label))
       .map((t) => t.typeId);
     try {
       await api_backend.post(`question/create`, {
@@ -48,7 +53,7 @@ export default function CreateQuestionForm() {
       });
 
       console.log("Question created successfully");
-      console.log(options)
+      console.log(options);
     } catch (error) {
       console.log(error);
     }
@@ -60,7 +65,7 @@ export default function CreateQuestionForm() {
       try {
         const res = await api_backend.get(`/type/get`);
         setTypes(res.data); // Stores types with IDs and labels.
-        setTypesLabel(res.data.map((t) => t.label)); // Stores labels of types.
+        setTypesLabel(res.data.map((t: Type) => t.label)); // Stores labels of types.
       } catch (error) {
         console.log(error);
       }
