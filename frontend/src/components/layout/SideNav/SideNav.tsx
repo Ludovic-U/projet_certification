@@ -3,11 +3,13 @@
 import React, { useState } from "react";
 
 import Link from "next/link"; // Composant de navigation côté client
-import { usePathname } from "next/navigation"; // Hook pour récupérer le chemin de l'url active 
+import { useParams, usePathname } from "next/navigation"; // Hook pour récupérer le chemin de l'url active 
 import { SIDENAV_ITEMS } from "./constants"; // Liste des items du menu (icônes, titres, liens...)
 import { SideNavItem, SideNavProps } from "./types"; // Type TypeScript décrivant la forme d'un item de menu
 import { FontAwesomeIcon, Icons } from "@/lib/icons"; // Icones utilisés dans la navbar
 import { Button, Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
+import { useLocalStorage } from "@/context/LocalStorageContext";
+
 
 // Déclare l'état de la sidenav (ouverte ou fermée).
 const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
@@ -18,6 +20,9 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     const handleSubMenuToggle = (index: number) => {
         setOpenSubMenuIndex(openSubMenuIndex === index ? null : index);
     }
+    // console.log(useParams());
+    const currentParams = Object.keys(useParams() || {});
+    const { data } = useLocalStorage();
 
     return (
         // Composant principal :
@@ -27,7 +32,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
 
                 {/* Logo + Titre */}
                 <Link
-                 href="/home"
+                 href="/home" //TODO: changer ça
                  className={`flex mt-2 h-12 w-full flex-row items-center
                             ${isCollapsed ? "justify-center" : "md:justify-start md:px-6 spase-x-3"}`}
                  >
@@ -46,11 +51,29 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
 
                 {/* Boucle sur SIDENAV_ITEMS et crée un MenuItem pour chaque item. */}
                 <div className={`flex flex-col space-y-2 md:px-6 ${isCollapsed ? "items-center px-0" : ""}`}>
-                    {SIDENAV_ITEMS.map((item, idx) => {
+                    {SIDENAV_ITEMS
+                    // .filter(item => !item.roles?.includes("super_admin")) 
+                    .filter(item => !item.requiredParams || item.requiredParams?.every(param => currentParams.includes(param)))
+                    .map((item, idx) => {
+                        // remplace le titre du projet 
+                        let title = item.title;
+                        if (item.title === "Projet Lambda") {
+                            title = "Projet " + data.projectName 
+                        }
+
+
+                        // concatene les requiredParams à path si besoin
+                        let path = item.path;
+                            if (item.requiredParams) {
+                            const paramsPath = item.requiredParams.map(param => useParams()[param]).join("/");
+                            // Si item.path commence par "/", retire-le pour éviter "//"
+                            const cleanPath = typeof path === "string" && path.startsWith("/") ? path : `/${path}`;
+                            path = `/${paramsPath}${cleanPath}`;
+                            }
                         return (
                             <MenuItem
                              key={idx}
-                             item={item}
+                             item={{ ...item, title, path }}
                              isCollapsed={isCollapsed}
                              isSubMenuOpen={openSubMenuIndex === idx}
                              onSubMenuToggle={() => handleSubMenuToggle(idx)}
@@ -187,10 +210,18 @@ const MenuItem = (
                             {/* Liste des liens enfants (submenu), l'item actif est surlignée si son path correspond */}
                             <div className="my-2 ml-2 flex flex-col space-y-5 text-lighthover w-fit p-2">
                                 {item.subMenuItems?.map((subItem, idx) => {
+                                    let path = subItem.path;
+                                    if (subItem.requiredParams) {
+                                    const paramsPath = subItem.requiredParams.map(param => useParams()[param]).join("/");
+                                    // Si subItem.path commence par "/", retire-le pour éviter "//"
+                                    const cleanPath = typeof path === "string" && path.startsWith("/") ? path : `/${path}`;
+                                    path = `/${paramsPath}${cleanPath}`;
+                                    console.log(path);
+                                    }
                                     return (
                                         <Link
                                         key={idx}
-                                        href={subItem.path}
+                                        href={  path} ////////////////////////////////
                                         className={`flex gap-3 items-center p-2 rounded-lg transition
                                                     ${subItem.path === pathname ? 'font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
                                         >

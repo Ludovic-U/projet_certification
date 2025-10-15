@@ -1,15 +1,18 @@
 "use client";
 
 import { PageHeader, Button, Card } from "@/components/ui";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useLocalStorage } from "@/context/LocalStorageContext";
 
 export default function VueEnsemblePage() {
     const router = useRouter();
+    const { data, setItem, removeItem } = useLocalStorage();
+
+    const params = useParams(); // A remplacer par les vrais params
 
     return (
         <div className="h-full flex flex-col">
-            <PageHeader title="Projet Lambda" description="Etapes de réalisation de votre projet"/>
-            <section className="flex-1 flex flex-col items-center justify-evenly">
+            <PageHeader title= {"Projet "  + (data?.projectName ?? "")} description="Etapes de réalisation de votre projet"/>            <section className="flex-1 flex flex-col items-center justify-evenly">
                 <div className="flex flex-col md:flex-row items-center gap-8">
                     <Card
                      title="IDEATION"
@@ -17,7 +20,7 @@ export default function VueEnsemblePage() {
                      buttonLabel="Ouvrir"
                      color="#D4B2A7"
                      progress={80}
-                     onButtonClick={() => router.push("/ideation")}
+                     onButtonClick={() => router.push(`/${params.clientId}/${params.projectId}/ideation`)}
                     />
                     <Card
                      title="CONCEPTION"
@@ -25,7 +28,7 @@ export default function VueEnsemblePage() {
                      buttonLabel="Ouvrir"
                      color="#B49186"
                      progress={30}
-                     onButtonClick={() => router.push("/conception")}
+                     onButtonClick={() => router.push(`/${params.clientId}/${params.projectId}/conception`)}
                     />
                     <Card
                      title="PILOTAGE"
@@ -33,7 +36,7 @@ export default function VueEnsemblePage() {
                      buttonLabel="Ouvrir"
                      color="#96776E"
                      progress={60}
-                     onButtonClick={() => router.push("/pilotage")}
+                     onButtonClick={() => router.push(`/${params.clientId}/${params.projectId}/pilotage`)}
                     />
 
                     <Card
@@ -42,7 +45,7 @@ export default function VueEnsemblePage() {
                      buttonLabel="Ouvrir"
                      color="#605049"
                      progress={20}
-                     onButtonClick={() => router.push("/reporting")}
+                     onButtonClick={() => router.push(`/${params.clientId}/${params.projectId}/reporting`)}
                     />
                 </div>
 
