@@ -30,6 +30,9 @@ export default function IdeationPage() {
     null
   );
 
+  // Store the response value
+  const [responseValue, setResponseValue] = useState<string>("");
+
   const progress = nodesState.filter(
     (n) => n.data?.status === "answered" || n.data?.status === "skipped"
   ).length;
@@ -122,10 +125,17 @@ export default function IdeationPage() {
           modal={modalResponse}
           question={selectedQuestion.label || "Question"}
           questionId={selectedQuestion.id?.toString() || "id"}
-          onValidate={() => modalResponse.closeModal()}
+          onValidate={() => {
+            // Test log
+            console.log(responseValue);
+            modalResponse.closeModal();
+          }}
           onSkip={() => modalResponse.closeModal()}
         >
-          {React.createElement(getResponseForm(selectedQuestion))}
+          {React.createElement(getResponseForm(selectedQuestion), {
+            value: responseValue,
+            onChange: setResponseValue,
+          })}
         </ModalQuestion>
       )}
     </div>
