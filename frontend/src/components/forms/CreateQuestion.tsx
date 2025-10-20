@@ -45,7 +45,8 @@ export default function CreateQuestionForm() {
         ...(questionIdParent && { questionIdParent }),
         ...(options && { options }),
         ...(selectedIds && { types: selectedIds }),
-      });
+      })
+      .then(response => {console.log(response)});
 
       console.log("Question created successfully");
       console.log(options)

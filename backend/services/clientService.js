@@ -6,7 +6,7 @@ const { checkPermission } = require('../utils/roles');
 
 // TODO: create functions getClients, getClientById, createClient, updateClient, deleteClient
 module.exports.getClients = async (askingUser) => {
-    checkPermission(askingUser, 'client:read:any');
+    checkPermission(askingUser, 'client:read:any'); //TODO: add to db seed
     return await prisma.client.findMany();
 }
 
