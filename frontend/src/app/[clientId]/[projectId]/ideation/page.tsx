@@ -11,6 +11,7 @@ import { Icons, FontAwesomeIcon } from "@/lib/icons";
 import { LoadingSpinner } from "@/components/ui";
 import { useModal } from "@/hooks";
 import { Question } from "@/types/question";
+import { useParams } from "next/navigation";
 
 import {
   ReponseUnique,
@@ -21,8 +22,10 @@ import {
 import ModalQuestion from "@/components/ui/ModalQuestion/ModalQuestion";
 
 export default function IdeationPage() {
-  const projectId = 1;
-  const { questions, loading } = useProjectQuestion(projectId);
+  const params = useParams();
+  // Access dynamic route params
+  const { projectId } = params;
+  const { questions, loading } = useProjectQuestion(Number(projectId));
   const [nodesState, setNodesState] = useState<Node[]>([]);
   const modalQuestions = useModal();
   const modalResponse = useModal();

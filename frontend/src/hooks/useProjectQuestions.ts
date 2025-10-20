@@ -11,8 +11,8 @@ export function useProjectQuestion(projectId: number) {
         async function fetchQuestions() {
             try {
                 setLoading(true);
-                const res = await api_backend.get(`/question/get`);
-                const questionBase = res.data.data
+                const res = await api_backend.get(`/question/get/project/${projectId}`);
+                const questionBase = res.data
 
                 const questionsWithOptions = await Promise.all(
                     questionBase.map(async (q: any) => {

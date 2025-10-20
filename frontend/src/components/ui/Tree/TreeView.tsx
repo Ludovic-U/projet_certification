@@ -20,6 +20,7 @@ import {
   ReponseSelect,
 } from "@/components/forms";
 import api_backend from "@/api/axiosInstance";
+import { useParams } from "next/navigation";
 
 interface TreeViewProps {
   questions: Question[];
@@ -27,6 +28,9 @@ interface TreeViewProps {
 }
 
 export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
+  const params = useParams();
+  // Access dynamic route params
+  const { projectId } = params;
   // Génération automatique du layout avec D3
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     if (!questions || questions.length === 0) {
@@ -59,12 +63,12 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
     console.log("options :", (node.data as Question).options);
     // Fetch response and set response value
     await api_backend
-      .get(`/response/get/project/1/question/${node.data.id}`)
+      .get(`/response/get/project/${projectId}/question/${node.data.id}`)
       .then((res) => {
-        console.log(res.data.label);
-
-        if (res.data) {
+        if (res.data && res.data.length > 0) {
           setResponseValue(res.data[0].label);
+        } else {
+          setResponseValue("");
         }
       });
     modal.openModal();
@@ -102,7 +106,7 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
     // store response to DB
     await api_backend.post(`/response/create`, {
       label: responseValue,
-      projectId: 1,
+      projectId: Number(projectId),
       questionId: (selectedNode?.data as Question).id,
     });
 
@@ -140,7 +144,6 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
           </ControlButton>
         </Controls>
       </ReactFlow>
-
       {/* Renvoie du bon formulaire de réponse */}
       {selectedNode &&
         (() => {
@@ -154,6 +157,20 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
             ResponseForm = () => <ReponseSelect options={question.options} />;
           else ResponseForm = ReponseUnique;
 
+          const responseFormProps =
+            // question.options?.length > 0
+            //   ? { options: question.options }
+            //   : question.hasMultipleOpenResponse
+            //   ? {
+            //       values: multipleResponses,
+            //       onChange: setMultipleResponses,
+            //     }
+            //   :
+            {
+              value: responseValue,
+              onChange: setResponseValue,
+            };
+
           return (
             <ModalQuestion
               modal={modal}
@@ -162,11 +179,8 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
               onValidate={handleValidate}
               onSkip={handleSkip}
             >
-              {/* <ResponseForm /> */}
-              {React.createElement(ResponseForm, {
-                value: responseValue,
-                onChange: setResponseValue,
-              })}
+              {/* {React.createElement(ResponseForm)} */}
+              <ResponseForm {...responseFormProps} />
             </ModalQuestion>
           );
         })()}
