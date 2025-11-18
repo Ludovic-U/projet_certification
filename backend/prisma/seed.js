@@ -11,6 +11,7 @@ async function main() {
     { permName: "user:read:any", permDesc: "Voir n'importe quel utilisateur" },
     { permName: "user:update:any", permDesc: "Modifier n'importe quel utilisateur" },
     { permName: "user:delete:any", permDesc: "Créer n'importe quel utilisateur" },
+    { permName: "client:read:any", permDesc: "Créer un client" },
     { permName: "client:create", permDesc: "Créer un client" },
     { permName: "client:update", permDesc: "Modifier un client" },
     { permName: "clientUserRole:update:any", permDesc: "Modifier le rôle d'un utilisateur" },
@@ -65,7 +66,7 @@ async function main() {
 
   // Matrice rôle -> permissions
   const rolePermissionsMatrix = {
-    super_admin: ["view_super_admin_dashboard", "user:create:any", "user:read:any", "user:update:any", "user:delete:any", 
+    super_admin: ["view_super_admin_dashboard", "user:create:any", "user:read:any", "user:update:any", "user:delete:any", "client:read:any",
     "client:create", "client:update", "clientUserRole:update:any",
     "project:create:any", "project:read:any", "project:update:any", "project:delete:any"
     ],

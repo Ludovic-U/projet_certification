@@ -58,8 +58,13 @@ export default function IdeationPage() {
   const getResponseForm = (question: Question) => {
     if (question.shouldMultiply) return () => <div>Question répétée</div>;
     if (question.hasMultipleOpenResponse) return ReponsesPlusieurs;
-    if (question.options?.length > 0)
-      return () => <ReponseSelect options={question.options} />;
+    if ((question.options?.length ?? 0) > 0)
+      return (props: any) => (
+        <ReponseSelect
+          options={(question.options ?? []).map((o) => ({ label: o, value: o }))}
+          {...props}
+        />
+      );
     return ReponseUnique;
   };
 

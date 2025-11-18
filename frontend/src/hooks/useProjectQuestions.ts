@@ -13,7 +13,7 @@ export function useProjectQuestion(projectId: number) {
                 setLoading(true);
                 const res = await api_backend.get(`/question/get/project/${projectId}`);
                 const questionBase = res.data
-
+                console.log("Questions de projet récupérées:", questionBase);
                 const questionsWithOptions = await Promise.all(
                     questionBase.map(async (q: any) => {
                         const resOpt = await api_backend.get(`/question/get/${q.questionId}`);

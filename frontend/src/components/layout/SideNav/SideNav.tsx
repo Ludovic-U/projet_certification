@@ -16,12 +16,13 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     const toggleCollapse = () => setIsCollapsed(!isCollapsed);
     // Etat pour gérer quel sous-menu est ouvert (pour n'en avoir qu'un seul à la fois)
     const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null);
+    
 
     const handleSubMenuToggle = (index: number) => {
         setOpenSubMenuIndex(openSubMenuIndex === index ? null : index);
     }
     // console.log(useParams());
-    const currentParams = Object.keys(useParams() || {});
+    const params = useParams();
     const { data } = useLocalStorage();
 
     return (
@@ -53,7 +54,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                 <div className={`flex flex-col space-y-2 md:px-6 ${isCollapsed ? "items-center px-0" : ""}`}>
                     {SIDENAV_ITEMS
                     // .filter(item => !item.roles?.includes("super_admin")) 
-                    .filter(item => !item.requiredParams || item.requiredParams?.every(param => currentParams.includes(param)))
+                    .filter(item => !item.requiredParams || item.requiredParams?.every(param => param in params))
                     .map((item, idx) => {
                         // remplace le titre du projet 
                         let title = item.title;
@@ -65,7 +66,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                         // concatene les requiredParams à path si besoin
                         let path = item.path;
                             if (item.requiredParams) {
-                            const paramsPath = item.requiredParams.map(param => useParams()[param]).join("/");
+                            const paramsPath = item.requiredParams.map(param => params[param as keyof typeof params]).join("/");
                             // Si item.path commence par "/", retire-le pour éviter "//"
                             const cleanPath = typeof path === "string" && path.startsWith("/") ? path : `/${path}`;
                             path = `/${paramsPath}${cleanPath}`;

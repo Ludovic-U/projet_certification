@@ -94,7 +94,17 @@ export default function QuestionsPage() {
               title="ajouter une question"
               description="Entrez les informations de la nouvelle question"
             >
-              <CreateQuestionForm />
+              <CreateQuestionForm 
+                isLoading={false}
+                onSubmit={(formData) => {
+                  // After creating a question, refresh the questions list
+                  api_backend.post(`/question/create`, {...formData})
+                    .then(res => {
+                      setQuestions(res.data.data);
+                      setPagination(res.data.meta);
+                    });
+                }}
+              />
             </Modal>
           </div>
           <Input

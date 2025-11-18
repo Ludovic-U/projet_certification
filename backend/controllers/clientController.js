@@ -16,7 +16,6 @@ module.exports.getClients = async (req, res) => {
 module.exports.getClientById = async (req, res) => {
     user = req.user;  // assuming req.user is populated by authentication middleware
     const clientId = Number(req.params.clientId);  
-    console.log("clientId:", clientId);
     if (isNaN(clientId)) {
          res.status(400).json({ error: "Client not found" });
     }   
@@ -36,12 +35,14 @@ module.exports.createClientPost = async (req, res) => {
     user = req.user; // assuming req.user is populated by authentication middleware
     const { name, type, desc } = req.body;
     if (name == null || type == null) {
+        console.log("Missing required fields: name and type");
         return res.status(400).json({ error: "Missing required fields: name and type" });
     }
     try {
         await createClient(user, name, type, desc);
         res.status(200).json({message: "client created"});
     } catch (error) {
+        console.log(error)
         console.error('Error creating client:', error);
         res.status(500).json({ error: 'Internal server error' });
     }

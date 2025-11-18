@@ -30,7 +30,7 @@ export default function ClientsPage() {
     const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
 
-    useEffect(() => {
+    const fetchClients = () => {
         api_backend.get('/client/get')
             .then(res => {
                 setClients(res.data);
@@ -39,6 +39,10 @@ export default function ClientsPage() {
                 console.error("Error fetching clients:", err);
                 setClients([]);
             }); 
+    };
+
+    useEffect(() => {
+        fetchClients();
     }, []);
 
     const totalPages = Math.ceil(clients.length / itemsPerPage);
@@ -68,7 +72,20 @@ export default function ClientsPage() {
                         <Modal modal={modal}
                         title="AJOUTER UN CLIENT"
                         description="Entrez les informations du nouveau client">
-                            <CreateClientForm/>
+                            <CreateClientForm
+                                onSubmit={(formData) => {
+                                    // Handle form submission logic here
+                                    // Example: send formData to backend and refresh users list
+                                    api_backend.post('/client/create', { ...formData })
+                                        .then(response => {
+                                            modal.closeModal();
+                                            // reload page
+                                            fetchClients();
+                                        })
+                                        .catch(err => console.error(err));
+                                }}
+                                isLoading={false}
+                            />
                         </Modal>
                     </div>
                     <Input

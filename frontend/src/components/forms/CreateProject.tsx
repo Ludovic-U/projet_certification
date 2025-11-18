@@ -1,34 +1,12 @@
-// "use client";
 
-// import { useState } from "react";
-// import { useForm } from "react-hook-form";
-// import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
-// import { Input, Button } from "@/components/ui"
-
-
-// export default function CreateProjectForm() {
-
-//     return (
-//         <>
-//             <form className="flex flex-col items-center select-none">
-//                 <div className="flex flex-col gap-6 items-center">
-//                     <Input label="Titre"/>
-//                     <Input label="Chef de projet"/>
-//                     <Input label="Description"/>
-//                     <Input type="date" className="text-greydarker" label="Date de début"/>
-//                 </div>
-//                 <Button type="submit" className="mt-8">Créer</Button>
-//             </form>
-//         </>
-//     )
-// }
 
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
-import { Input, Button } from "@/components/ui";
+import { Input, Button, MultiSelect } from "@/components/ui";
+import api_backend from "@/api/axiosInstance";
 
 export type CreateProjectInputs = {
     projectName: string;
@@ -42,9 +20,32 @@ interface CreateProjectFormProps {
     isLoading: boolean;
     apiError?: string;
 }
+// TODO : code redondant avec CreateQuestion.tsx
+interface Type {
+  typeId: number | string;
+  label: string;
+}
 
 export default function CreateProjectForm({ onSubmit, isLoading, apiError }: CreateProjectFormProps) {
     const { register, handleSubmit, formState: { errors } } = useForm<CreateProjectInputs>();
+    const [typesLabels, setTypesLabels] = useState<string[]>([]);
+    const [selectedType, setSelectedType] = useState<string[]>([]);
+    const [types, setTypes] = useState<Type[]>([]);
+
+    useEffect(() => {
+    // fetch Type List
+    const fetchTypeList = async () => {
+      try {
+        const res = await api_backend.get(`/type/get`);
+        setTypes(res.data); // Stores types with IDs and labels.
+        setTypesLabels(res.data.map((t: Type) => t.label)); // Stores labels of types.
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchTypeList();
+  }, []);
 
     return (
         <>
@@ -85,6 +86,13 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError }: Cre
                         leftIcon={<FontAwesomeIcon icon={Icons.calendar} />}
                         className="text-greydarker"
                     />
+                    <MultiSelect
+                                  className="flex-1 max-w-70"
+                                  value={selectedType}
+                                  onChange={setSelectedType}
+                                  label="Type"
+                                  options={typesLabels}
+                                />
                 </div>
                 <Button type="submit" disabled={isLoading}>
                     {isLoading ? "Création..." : "Créer"}

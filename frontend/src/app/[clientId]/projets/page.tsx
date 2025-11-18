@@ -49,17 +49,22 @@ export default function ProjectsPage() {
     // ];
 
     const [projects, setProjects] = useState<any[]>([]);
-    
-    useEffect(() => {
+
+    const fetchProjects = () => {
         api_backend.get(`/project/getByClientId/${params.clientId}`)
             .then(res => {
                 setProjects(res.data);
                 console.log("projects", res.data);
             })
             .catch(err => {
-                console.error("Error fetching users:", err);
+                console.error("Error fetching projects:", err);
                 setProjects([]);
             });
+    }
+
+    
+    useEffect(() => {
+        fetchProjects();
     }, []);
 
     const handleRowClick = (project: any) => {
@@ -104,8 +109,8 @@ export default function ProjectsPage() {
                                     // Example: send formData to backend and refresh users list
                                     api_backend.post('/project/create', { ...formData, clientId: params.clientId })
                                         .then(response => {
-                                            // reload page
-                                            router.refresh;
+                                            modal.closeModal();
+                                            fetchProjects(); // ou router.refresh()
                                         })
                                 }}
                                 isLoading={false}/>

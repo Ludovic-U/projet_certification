@@ -37,7 +37,6 @@ module.exports.loginPost = async (req, res) => {
 };
 
 module.exports.logout = async (req, res) => {
-    console.log("Logging out user...");
     const token = req.cookies.token;
     if (token) {
         const payload = verifyJWT(token);
@@ -51,7 +50,6 @@ module.exports.logout = async (req, res) => {
         }
         
     }
-    console.log("User logged out, clearing cookie.");
 
     res.clearCookie('token', {
         httpOnly: true,

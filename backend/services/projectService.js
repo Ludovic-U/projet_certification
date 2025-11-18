@@ -1,6 +1,3 @@
-// Made a simple projectService
-// TODO: Added missing methods
-
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -32,18 +29,38 @@ const prisma = new PrismaClient();
 // };
 
 module.exports.createProject = async (data) => {
-  //TODO: check permissions
+  // TODO: check permissions
   try {
+    const managerId = Number(data.projectManager ?? data.managerId ?? 1); // adapter si nécessaire
+    const clientId = Number(data.clientId);
+
+    if (!Number.isInteger(managerId) || managerId <= 0) {
+      throw new Error(`createProject: invalid projectManager id (${data.projectManager})`);
+    }
+    if (!Number.isInteger(clientId) || clientId <= 0) {
+      throw new Error(`createProject: invalid clientId (${data.clientId})`);
+    }
+
     const newProject = await prisma.project.create({
       data: {
         projectName: data.projectName,
-        startDate: new Date(),
-        endDate: null,
-        projectManager: data.projectManager,
-        projectStage: "Idéation",
-        projectStatus: "en cours",
-        projectDesc: data.projectDesc,
-        clientId: data.clientId,
+        startDate: data.startDate ? new Date(data.startDate) : new Date(),
+        endDate: data.endDate ? new Date(data.endDate) : null,
+        projectStage: data.projectStage ?? "Idéation",
+        projectStatus: data.projectStatus ?? "en cours",
+        projectDesc: data.projectDesc ?? null,
+        // connect relations via nested connect (do not include the scalar fields projectManager/clientId here)
+        manager: { connect: { userId: managerId } },
+        client: { connect: { clientId: clientId } },
+        // si tu as types/questions à connecter :
+        // types: Array.isArray(data.types) && data.types.length > 0 ? { connect: data.types.map(id => ({ typeId: id })) } : undefined,
+        // questions: Array.isArray(data.questions) && data.questions.length > 0 ? { connect: data.questions.map(id => ({ questionId: id })) } : undefined,
+      },
+      include: {
+        manager: true,
+        client: true,
+        types: true,
+        questions: true,
       },
     });
 

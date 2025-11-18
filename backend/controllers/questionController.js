@@ -22,7 +22,8 @@ const questionService = require("../services/questionService");
  * - 500: Internal server error.
  */
 module.exports.createQuestion = async (req, res) => {
-  let idParent;
+  console.log("create question Request body:", req.body);
+  let idParent = null;
   const {
     label,
     category,
@@ -38,7 +39,7 @@ module.exports.createQuestion = async (req, res) => {
 
   // Check label or category to be not null or empty
   if (!label || !category) {
-    return res.status(400).json({ error: "label and category are required" });
+    res.status(400).json({ error: "label and category are required" });
   }
 
   // Check if a responseIdParent has been recieved
@@ -181,7 +182,7 @@ module.exports.deleteQuestion = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     if (error.message === "Question not found") {
-      return res.status(404).json({ error: error.message });
+      res.status(404).json({ error: error.message });
     }
     console.error("Error deleting question:", error);
     res.status(500).json({ error: "Internal server error" });

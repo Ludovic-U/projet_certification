@@ -24,11 +24,9 @@ export async function middleware(request)  {
   
   var userPermissions = [];
   const checkAuth = async () => { // TODO: modifier pour vérifier les permissions du cookie, pour pas avoir à chaque fois une requête au backend
-    console.log("Vérification de l'authentification...");
     try {
       const response = await api.get('/me');
       userPermissions = response.data.user.permissions;
-      console.log("Utilisateur authentifié avec les permissions :", response.data.user.permissions);
       return true;
     } catch (err) {
       console.warn("Utilisateur non authentifié", err.message, err.data);
@@ -41,7 +39,6 @@ export async function middleware(request)  {
 
   // redirige vers la page de connexion si l'utilisateur n'est pas connecté
   if (!isAuth && pathname !== '/') { 
-    console.log("Utilisateur non authentifié, redirection vers la page de connexion...", pathname);
     const url = new URL('/', request.url);
     return NextResponse.redirect(url);
   }
@@ -49,7 +46,6 @@ export async function middleware(request)  {
   // redirige vers une page d'erreur si l'utilisateur n'est pas un super_admin et qu'il essaie d'accéder à une page super_admin
   if (isAuth && Object.keys(f2s_routes).includes(pathname)) {
     if (!userPermissions?.includes("view_super_admin_dashboard")) {
-      console.log("Page super_admin, utilisateur non authorisé, redirection...", pathname, userPermissions);
       const url = new URL('/admin', request.url);
       return NextResponse.redirect(url);
   }
