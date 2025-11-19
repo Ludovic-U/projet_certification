@@ -17,6 +17,17 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         ],
     },
     {
+        title: "App Config", // pages de test pour dev
+        path: "/front",
+        icon: <FontAwesomeIcon icon={Icons.penRuler}/>,
+        roles: ["super_admin"], // <-- visible uniquement pour super_admin
+        subMenu: true,
+        subMenuItems: [
+            { title: "Questions", path:"/questions", icon: <FontAwesomeIcon icon={Icons.question}/>},
+            { title: "Financeurs", path:"/financeurs", icon: <FontAwesomeIcon icon={Icons.coins}/>},
+        ],
+    },
+    {
         title: "Clients",
         path: "/clients",
         roles: ["super_admin"], 

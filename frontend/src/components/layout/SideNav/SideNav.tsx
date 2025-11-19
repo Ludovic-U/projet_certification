@@ -62,23 +62,27 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                             title = "Projet " + data.projectName 
                         }
 
-
                         // concatene les requiredParams à path si besoin
                         let path = item.path;
-                            if (item.requiredParams) {
+                        if (item.requiredParams) {
                             const paramsPath = item.requiredParams.map(param => params[param as keyof typeof params]).join("/");
                             // Si item.path commence par "/", retire-le pour éviter "//"
                             const cleanPath = typeof path === "string" && path.startsWith("/") ? path : `/${path}`;
                             path = `/${paramsPath}${cleanPath}`;
-                            }
+                        }
+
+                        // Ajoute la classe text-amber-400 si l'item a le rôle super_admin
+                        const superAdminClass = item.roles?.length === 1 && item.roles[0] === "super_admin" ? "text-amber-400" : "";
+
                         return (
-                            <MenuItem
-                             key={idx}
-                             item={{ ...item, title, path }}
-                             isCollapsed={isCollapsed}
-                             isSubMenuOpen={openSubMenuIndex === idx}
-                             onSubMenuToggle={() => handleSubMenuToggle(idx)}
-                            />
+                            <div key={idx} className={superAdminClass}>
+                                <MenuItem
+                                 item={{ ...item, title, path }}
+                                 isCollapsed={isCollapsed}
+                                 isSubMenuOpen={openSubMenuIndex === idx}
+                                 onSubMenuToggle={() => handleSubMenuToggle(idx)}
+                                />
+                            </div>
                         );
                     })}
                 </div>
@@ -112,7 +116,8 @@ const MenuItem = (
         isSubMenuOpen: boolean,
         onSubMenuToggle: () => void;
     }) => {
-        const pathname = usePathname();
+        const pathname = usePathname();        
+        const params = useParams();
 
         const parentActive = pathname === item.path;
         const childActive = item.subMenuItems?.some(sub => sub.path === pathname);
@@ -213,7 +218,7 @@ const MenuItem = (
                                 {item.subMenuItems?.map((subItem, idx) => {
                                     let path = subItem.path;
                                     if (subItem.requiredParams) {
-                                    const paramsPath = subItem.requiredParams.map(param => useParams()[param]).join("/");
+                                    const paramsPath = subItem.requiredParams.map(param => params[param as keyof typeof params]).join("/");
                                     // Si subItem.path commence par "/", retire-le pour éviter "//"
                                     const cleanPath = typeof path === "string" && path.startsWith("/") ? path : `/${path}`;
                                     path = `/${paramsPath}${cleanPath}`;

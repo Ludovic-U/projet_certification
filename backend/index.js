@@ -1,6 +1,7 @@
 const express = require("express");
 const clientRoutes = require("./routes/clientRoutes");
 const projectRoutes = require("./routes/projectRoutes");
+const financeurRoutes = require('./routes/financeurRoutes');
 const meRoutes = require("./routes/meRoutes");
 const userRoutes = require("./routes/userRoutes");
 const questionRoutes = require("./routes/questionRoutes");
@@ -44,6 +45,7 @@ app.use("/api/question", questionRoutes);
 app.use("/api/response", responseRoutes);
 app.use("/api/type", typeRoutes);
 app.use("/api/option", optionRoutes);
+app.use('/api/financeur', authenticateUser, financeurRoutes);
 
 module.exports = app; // export the app instance
 

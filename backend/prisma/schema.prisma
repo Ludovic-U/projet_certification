@@ -40,13 +40,15 @@ model UserSession {
 }
 
 model Client {
-  clientId    Int              @id @default(autoincrement())
-  clientName  String           @unique
-  clientType  String // TODO: en faire un enum
-  description String?
-  createdAt   DateTime         @default(now())
-  projects    Project[]
-  userRoles   ClientUserRole[]
+  clientId        Int              @id @default(autoincrement())
+  clientName      String           @unique
+  clientType      String // TODO: en faire un enum
+  description     String?
+  secteur         String?
+  statusJuridique String?
+  createdAt       DateTime         @default(now())
+  projects        Project[]
+  userRoles       ClientUserRole[]
 }
 
 model ClientUserRole {
