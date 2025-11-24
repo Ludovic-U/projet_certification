@@ -18,11 +18,21 @@ module.exports.createFinanceur = async (financeurName) => {
  * @returns {Promise<Array>} List of all financeurs
  */
 module.exports.getAllFinanceurs = async () => {
-  return await prisma.financeur.findMany({
-    include: {
-      FinanceurProjet: true,
+  const financeurs = await prisma.financeur.findMany({
+    select: {
+      financeurId: true,
+      FinanceurName: true,
+      _count: {
+        select: { FinanceurProjet: true },
+      },
     },
   });
+
+  return financeurs.map(f => ({
+    financeurId: f.financeurId,
+    financeurName: f.FinanceurName,
+    projectNumber: f._count?.FinanceurProjet ?? 0,
+  }));
 };
 
 /**

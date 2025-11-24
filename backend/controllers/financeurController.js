@@ -26,7 +26,7 @@ module.exports.createFinanceur = async (req, res) => {
   try {
     // Permission: require a permission, fallback to any authenticated user
     try {
-      checkPermission(req.user, ['financeur:create', 'financeur:manage']);
+      checkPermission(req.user, ['financeur:manage']);
     } catch (permErr) {
       return res.status(403).json({ error: permErr.message || 'Forbidden' });
     }
@@ -81,7 +81,7 @@ module.exports.getFinanceurById = async (req, res) => {
 module.exports.updateFinanceur = async (req, res) => {
   try {
     try {
-      checkPermission(req.user, ['financeur:update', 'financeur:manage']);
+      checkPermission(req.user, ['financeur:manage']);
     } catch (permErr) {
       return res.status(403).json({ error: permErr.message || 'Forbidden' });
     }
@@ -109,7 +109,7 @@ module.exports.updateFinanceur = async (req, res) => {
 module.exports.deleteFinanceur = async (req, res) => {
   try {
     try {
-      checkPermission(req.user, ['financeur:delete', 'financeur:manage']);
+      checkPermission(req.user, ['financeur:manage']);
     } catch (permErr) {
       return res.status(403).json({ error: permErr.message || 'Forbidden' });
     }
@@ -149,7 +149,7 @@ module.exports.getFinanceursByProject = async (req, res) => {
 module.exports.addFinanceurToProject = async (req, res) => {
   try {
     try {
-      checkPermission(req.user, ['financeur:manage', 'financeur:update']);
+      checkPermission(req.user, ['financeur:manage']);
     } catch (permErr) {
       return res.status(403).json({ error: permErr.message || 'Forbidden' });
     }
@@ -177,7 +177,7 @@ module.exports.addFinanceurToProject = async (req, res) => {
 module.exports.removeFinanceurFromProject = async (req, res) => {
   try {
     try {
-      checkPermission(req.user, ['financeur:manage', 'financeur:delete']);
+      checkPermission(req.user, ['financeur:manage']);
     } catch (permErr) {
       return res.status(403).json({ error: permErr.message || 'Forbidden' });
     }

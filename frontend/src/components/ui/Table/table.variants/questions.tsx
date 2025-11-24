@@ -8,7 +8,7 @@ export const questionsList: Column<Question>[] = [
         label: "ID",
         className: "w-15",
         render: (item) =>
-            <span className="font-bold text-grey">{item.id}</span>,
+            <span className="font-bold text-grey">{item.questionId}</span>,
     },
     {
         key: "label",

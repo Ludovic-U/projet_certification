@@ -6,6 +6,7 @@ import {
     Button,
     Table,
     TableResponsive,
+    financeursList,
     Input,
     Pagination,
     Tooltip,
@@ -26,10 +27,12 @@ export default function FinanceursPage() {
     const [currentPage, setCurrentPage] = useState(1);
 
     const fetchFinanceurs = () => {
+        console.log("Fetching financeurs...");
         api_backend.get('/financeur')
             .then(res => {
-                const data = res.data;
-                setFinanceurs(Array.isArray(data) ? data : []);
+                const data = res.data.data;
+                console.log("Financeurs fetched:", data);
+                setFinanceurs(data);
             })
             .catch(err => {
                 console.error("Error fetching financeurs:", err);
@@ -40,9 +43,9 @@ export default function FinanceursPage() {
     useEffect(() => {
         fetchFinanceurs();
     }, []);
-    const safeFinanceurs = Array.isArray(financeurs) ? financeurs : [];
-    const totalPages = Math.max(1, Math.ceil(safeFinanceurs.length / itemsPerPage));
-    const currentData = safeFinanceurs.slice(
+
+    const totalPages = Math.max(1, Math.ceil(financeurs.length / itemsPerPage));
+    const currentData = financeurs.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
@@ -90,13 +93,13 @@ export default function FinanceursPage() {
                 </div>
                 <TableResponsive<any>
                     data={currentData}
-                    columns={/* financeursList */ [] as any} // <- remplace par la constante de colonnes appropriée
+                    columns={ financeursList} // <- remplace par la constante de colonnes appropriée
                     onRowClick={(financeur) => router.push(`/financeurs/${financeur.financeurId}`)}
                 />
 
                 <Table<any>
                     data={currentData}
-                    columns={/* financeursList */ [] as any} // <- remplace par la constante de colonnes appropriée
+                    columns={financeursList} // <- remplace par la constante de colonnes appropriée
                     onRowClick={(financeur) => router.push(`/financeurs/${financeur.financeurId}`)}
                 />
 

@@ -1,35 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// module.exports.createProject = async (data) => {
-//   const { types, questions, ...projectData } = data;
-
-//   return await prisma.project.create({
-//     data: {
-//       ...projectData,
-//       types:
-//         Array.isArray(types) && types.length > 0
-//           ? {
-//               connect: types.map((typeId) => ({ typeId })),
-//             }
-//           : undefined,
-
-//       questions:
-//         Array.isArray(questions) && questions.length > 0
-//           ? {
-//               connect: questions.map((questionId) => ({ questionId })),
-//             }
-//           : undefined,
-//     },
-//     include: {
-//       types: true,
-//       questions: true,
-//     },
-//   });
-// };
-
 module.exports.createProject = async (data) => {
-  // TODO: check permissions
   try {
     const managerId = Number(data.projectManager ?? data.managerId ?? 1); // adapter si nécessaire
     const clientId = Number(data.clientId);
@@ -72,7 +44,7 @@ module.exports.createProject = async (data) => {
 };
 
 module.exports.getAllProjects = async () => {
-  return await prisma.project.findMany();
+  // never used
 };
 
 // TODO: Update
@@ -104,10 +76,52 @@ module.exports.getProjectById = async (projectId) => {
 };
 
 module.exports.ProjectsByClientId = async (clientId) => {
-  //TODO: validate clientId
-  //TODO: authorisation
-  return await prisma.project.findMany({
-    where: { clientId: clientId },
-    include: { types: true, questions: true },
-  });
+  try {
+    const validClientId = Number(clientId);
+    if (!Number.isInteger(validClientId) || validClientId <= 0) {
+      throw new Error("Invalid clientId");
+    }
+
+    const projects = await prisma.project.findMany({
+      where: { clientId: validClientId },
+      include: {
+        manager: {
+          select: {
+            firstname: true,
+            lastname: true,
+          },
+        },
+        types: {
+          select: {
+            label: true,
+          },
+        },
+        FinanceurProjet: {
+          include: {
+            financeur: {
+              select: {
+                FinanceurName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Transformer les données pour correspondre au type Project frontend
+    const formattedProjects = projects.map((project) => ({
+      projectId: project.projectId,
+      projectName: project.projectName,
+      ChefDeProjet: project.manager 
+        ? `${project.manager.firstname} ${project.manager.lastname}` 
+        : "N/A",
+      types: project.types.map((t) => t.label), // Array de strings
+      financeurs: project.FinanceurProjet.map((fp) => fp.financeur.FinanceurName), // Array de strings
+    }));
+
+    return formattedProjects;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des projets :", error);
+    throw error;
+  }
 }

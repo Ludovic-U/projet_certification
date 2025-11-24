@@ -128,7 +128,7 @@ module.exports.getProjectById = async (req, res) => {
  * */
 module.exports.getAllProjects = async (req, res) => {
   try {
-    const projects = await Project.findAll();
+    const projects = await getAllProjects();
     res.status(200).json(projects);
   } catch (error) {
     console.error("Error fetching projects:", error);
