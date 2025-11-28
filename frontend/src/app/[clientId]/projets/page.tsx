@@ -19,7 +19,11 @@ import { useParams, useRouter } from "next/navigation";
 import api_backend from "@/api/axiosInstance";
 import { useLocalStorage } from "@/context/LocalStorageContext";
 
+import { useConfig } from '@/context/ConfigContext';
 export default function ProjectsPage() {
+    
+    const { config } = useConfig();
+
     const params = useParams();
     const router = useRouter();
     const modal = useModal();
@@ -62,7 +66,7 @@ export default function ProjectsPage() {
     );
     return (
         <div className="h-full">
-            <PageHeader title="Liste des projets" description="Consultez la liste des projets et accèdez aux détails"/>
+            <PageHeader title="Liste des projets" description={config?.subtitles.projectList}/>
             <section>
 
                 {/* ADD BTN + SEARCHBAR */}

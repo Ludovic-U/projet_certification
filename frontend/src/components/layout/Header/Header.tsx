@@ -24,7 +24,7 @@ const Header = () => {
                      className="flex flex-row space-x-2 items-center justify-center md:hidden"
                     >
                         <span className="h-7 w-7 bg-light rounded-full"/>
-                        <span className="font-medium font-oswald text-light text-xl flex">Figure de Skills</span>
+                        <span className="font-medium font-oswald text-light text-xl flex">Figures de Skills</span>
                     </Link>
                 </div>
                 {/* Contenu visible uniquement sur écran taille md (en dessous = mobile) */}

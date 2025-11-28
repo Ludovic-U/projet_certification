@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@/utils/utils";
 
-import { ProgressBar, Button, CardProps} from "@/components/ui";
+import { ProgressBar, CardProps } from "@/components/ui";
 
 export const Card: React.FC<CardProps> = ({
     title,
@@ -18,8 +18,12 @@ export const Card: React.FC<CardProps> = ({
     return (
         <div
          className={cn(
-            "bg-white md:h-full w-80 px-8 pt-6 pb-4 rounded-xl shadow-500base flex flex-col justify-between"
-         )}>
+            "bg-white md:h-full w-100 px-8 pt-6 pb-4 rounded-xl shadow-500base flex flex-col justify-between cursor-pointer transition-shadow hover:shadow-700 relative group",
+            className
+         )}
+         onClick={onButtonClick}
+         title={buttonLabel}
+        >
             <div>
                 <h3 className="uppercase font-medium font-oswald text-xl">{title}</h3>
 
@@ -30,9 +34,11 @@ export const Card: React.FC<CardProps> = ({
                 <ProgressBar className="my-3" color={color} value={progress} max={max} showLabel/>
             </div>
 
-            {buttonLabel && (
-                <Button className="w-fit self-center text-light" variant="secondary" style={{ backgroundColor: color, borderColor: color }} size="sm" onClick={onButtonClick}>{buttonLabel}</Button>
-            )}
+            {/* {buttonLabel && (
+                <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-dark text-light px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    {buttonLabel}
+                </div>
+            )} */}
         </div>
     )
 }

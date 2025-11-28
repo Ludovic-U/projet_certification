@@ -48,7 +48,7 @@ export default function LoginForm({ onSubmit, isLoading, apiError }: LoginFormPr
                 label="Email"
                 labelBg="bg-white"
                 type="email"
-                placeholder="bonjour@figuredeskills.fr"
+                placeholder="bonjour@figuresdeskills.fr"
                 error={errors.email?.message}
                 leftIcon={
                     <span className="text-grey">

@@ -9,6 +9,7 @@ import { SideNavItem, SideNavProps } from "./types"; // Type TypeScript décriva
 import { FontAwesomeIcon, Icons } from "@/lib/icons"; // Icones utilisés dans la navbar
 import { Button, Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
 import { useLocalStorage } from "@/context/LocalStorageContext";
+import { useUser } from "@/context/UserContext";
 
 
 // Déclare l'état de la sidenav (ouverte ou fermée).
@@ -16,25 +17,30 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     const toggleCollapse = () => setIsCollapsed(!isCollapsed);
     // Etat pour gérer quel sous-menu est ouvert (pour n'en avoir qu'un seul à la fois)
     const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null);
-    
+    const [mounted, setMounted] = useState(false);
 
     const handleSubMenuToggle = (index: number) => {
         setOpenSubMenuIndex(openSubMenuIndex === index ? null : index);
     }
-    // console.log(useParams());
+    
     const params = useParams();
     const { data } = useLocalStorage();
+
+    // Attendre que le composant soit monté côté client
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
         // Composant principal :
         // Fixée à gauche, prend toute la hauteur de l'écran et masquée sur mobile.
         <div className={`fixed hidden h-screen ${isCollapsed ? 'md:w-16' : 'md:w-63'} flex-1 bg-dark text-light font-noto md:flex z-50 transistion-all duration-300`}>
-            <div className="relative flex w-full flex-col space-y-8">
+            <div className="relative flex w-full flex-col h-full">
 
                 {/* Logo + Titre */}
                 <Link
-                 href="/home" //TODO: changer ça
-                 className={`flex mt-2 h-12 w-full flex-row items-center
+                 href="http://www.figuresdeskills.fr/" //TODO: changer ça
+                 className={`flex mt-2 h-12 w-full flex-row items-center flex-shrink-0
                             ${isCollapsed ? "justify-center" : "md:justify-start md:px-6 spase-x-3"}`}
                  >
                     {/* cercle coloré représentant le logo */}
@@ -44,15 +50,15 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                     {!isCollapsed && (
                         <span className={`font-bold font-oswald text-xl ml-2 whitespace-nowrap overflow-hidden transition-all duration-300
                                         ${isCollapsed ? "opacity-0 w-0 ml-0" : "opacity-100 w-auto ml-2"}`}>
-                            Figure de Skills
+                            Figures de Skills
                         </span>
                     )}
                 
                 </Link>
 
                 {/* Boucle sur SIDENAV_ITEMS et crée un MenuItem pour chaque item. */}
-                <div className={`flex flex-col space-y-2 md:px-6 ${isCollapsed ? "items-center px-0" : ""}`}>
-                    {SIDENAV_ITEMS
+                <div className={`flex flex-col space-y-2 md:px-6 mt-8 overflow-y-auto flex-1 pb-20 ${isCollapsed ? "items-center px-0" : ""}`}>
+                    {mounted && SIDENAV_ITEMS
                     // .filter(item => !item.roles?.includes("super_admin")) 
                     .filter(item => !item.requiredParams || item.requiredParams?.every(param => param in params))
                     .map((item, idx) => {
@@ -73,9 +79,10 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
 
                         // Ajoute la classe text-amber-400 si l'item a le rôle super_admin
                         const superAdminClass = item.roles?.length === 1 && item.roles[0] === "super_admin" ? "text-amber-400" : "";
+                        const logoutClass = item.action === "signOut"  ? "text-red-500" : "";
 
                         return (
-                            <div key={idx} className={superAdminClass}>
+                            <div key={idx} className={`${superAdminClass} ${logoutClass}`}>
                                 <MenuItem
                                  item={{ ...item, title, path }}
                                  isCollapsed={isCollapsed}
@@ -118,9 +125,25 @@ const MenuItem = (
     }) => {
         const pathname = usePathname();        
         const params = useParams();
+        const { signOut } = useUser();
+
+        const handleClick = (e: React.MouseEvent) => {
+            if (item.action === "signOut") {
+                e.preventDefault();
+                signOut();
+            }
+        };
 
         const parentActive = pathname === item.path;
-        const childActive = item.subMenuItems?.some(sub => sub.path === pathname);
+        const childActive = item.subMenuItems?.some(sub => {
+            let subPath = sub.path;
+            if (sub.requiredParams) {
+                const paramsPath = sub.requiredParams.map(param => params[param as keyof typeof params]).join("/");
+                const cleanPath = typeof subPath === "string" && subPath.startsWith("/") ? subPath : `/${subPath}`;
+                subPath = `/${paramsPath}${cleanPath}`;
+            }
+            return pathname === subPath;
+        });
 
     // SIDENAV FERMEE
     // Chaque item s'affiche uniquement comme icône carré cliquable + Tooltip en hover avec le titre
@@ -130,7 +153,7 @@ const MenuItem = (
             // Contenu graphique de base (icône dans carré centré)
             <div
              className={`cursor-pointer flex items-center justify-center h-10 w-10 rounded-lg transition hover:bg-lighthover hover:text-primary
-                    ${pathname.includes(item.path) ? "text-primary" : ""}
+                    ${parentActive ? "text-primary" : ""}
                     ${childActive && !parentActive ? "text-primary" : ""}`}
             >
                 {item.icon}
@@ -156,16 +179,24 @@ const MenuItem = (
                         <span className="font-semibold text-base mb-3 text-light">{item.title}</span>
                         {/* Liste des sous-items */}
                         <div className="flex flex-col space-y-1">
-                            {item.subMenuItems?.map((subItem, idx) => (
-                                <Link
-                                 key={idx}
-                                 href={subItem.path}
-                                 className={`flex items-center gap-2 whitespace-nowrap text-sm rounded-lg px-3 py-2
-                                            hover:bg-lighthover hover:text-primary
-                                 ${subItem.path === pathname ? "font-semibold text-primary" : ""}`}>
-                                    {subItem.title}
-                                </Link>
-                            ))}
+                            {item.subMenuItems?.map((subItem, idx) => {
+                                let subPath = subItem.path;
+                                if (subItem.requiredParams) {
+                                    const paramsPath = subItem.requiredParams.map(param => params[param as keyof typeof params]).join("/");
+                                    const cleanPath = typeof subPath === "string" && subPath.startsWith("/") ? subPath : `/${subPath}`;
+                                    subPath = `/${paramsPath}${cleanPath}`;
+                                }
+                                return (
+                                    <Link
+                                     key={idx}
+                                     href={subPath}
+                                     className={`flex items-center gap-2 whitespace-nowrap text-sm rounded-lg px-3 py-2
+                                                hover:bg-lighthover hover:text-primary
+                                     ${pathname === subPath ? "font-semibold text-primary" : ""}`}>
+                                        {subItem.title}
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
@@ -175,7 +206,7 @@ const MenuItem = (
         // Item sans sous-menu, simple tooltip affichant le titre au survol
         return (
             <Tooltip content={item.title} position="rightMenu">
-                <Link href={item.path}>
+                <Link href={item.path} onClick={handleClick}>
                     {menuContent}
                 </Link>
             </Tooltip>
@@ -195,7 +226,7 @@ const MenuItem = (
                      className={`
                         cursor-pointer flex w-full flex-row items-center justify-between transition p-2 rounded-lg
                         hover:bg-lighthover hover:text-primary
-                        ${pathname.includes(item.path) ? "text-primary" : ""}
+                        ${parentActive ? "text-primary" : ""}
                         ${childActive && !parentActive ? "text-primary200" : ""}`}
                     >
                         <div className="flex flex-row space-x-4 items-center">
@@ -227,9 +258,9 @@ const MenuItem = (
                                     return (
                                         <Link
                                         key={idx}
-                                        href={  path} ////////////////////////////////
+                                        href={path}
                                         className={`flex gap-3 items-center p-2 rounded-lg transition
-                                                    ${subItem.path === pathname ? 'font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
+                                                    ${pathname === path ? 'font-semibold text-primary' : 'hover:bg-lighthover hover:text-primary'}`}
                                         >
                                             <span className="flex gap-3 items-center">{subItem.icon}{subItem.title}</span>
                                         </Link>
@@ -243,8 +274,9 @@ const MenuItem = (
                 // Icône + titre cliquables pour rediriger et si pathname correspond à l'item, alors mis en surbrillance.
                 <Link
                  href={item.path}
+                 onClick={handleClick}
                  className={`flex flex-row space-x-4 items-center p-2 rounded-lg hover:bg-lighthover hover:text-primary
-                    ${item.path === pathname ? 'text-primary font-semibold cursor-default hover:bg-transparent' : ''}`}
+                    ${parentActive ? 'text-primary font-semibold cursor-default hover:bg-transparent' : ''}`}
                 >
                     {item.icon}
                     <span className="flex font-base">{item.title}</span>

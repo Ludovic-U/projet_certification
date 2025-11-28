@@ -12,6 +12,7 @@ import { LoadingSpinner } from "@/components/ui";
 import { useModal } from "@/hooks";
 import { Question } from "@/types/question";
 import { useParams } from "next/navigation";
+import { useConfig } from "@/context/ConfigContext";
 
 import {
   ReponseUnique,
@@ -22,6 +23,7 @@ import {
 import ModalQuestion from "@/components/ui/ModalQuestion/ModalQuestion";
 
 export default function IdeationPage() {
+  const { config } =  useConfig();
   const params = useParams();
   // Access dynamic route params
   const { projectId } = params;
@@ -72,7 +74,7 @@ export default function IdeationPage() {
     <div className="h-full flex flex-col">
       <PageHeader
         title="Projet Lambda - IDEATION"
-        description="Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer à poser les bases de votre projet en répondant aux questions."
+        description={config?.subtitles.ideation}
       />
       <section className="flex flex-1 flex-col items-center">
         <div className="h-fit z-10">

@@ -1,0 +1,15 @@
+{
+  "subtitles": {
+    "projectList": "Consultez la liste des projets et accèdez aux détails",
+    "overview": "Étapes de réalisation de votre projet.",
+    "ideation": "Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer à poser les bases de votre projet en répondant aux questions.",
+    "conception": "Phase de conception",
+    "pilotage": "Pilotage du projet",
+    "evaluation": "Évaluation",
+    "reporting": "Reporting"
+  },
+  "labels": {
+    "todoList": "Tâches à faire",
+    "actionList": "Actions planifiées"
+  }
+}
