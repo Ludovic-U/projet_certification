@@ -12,32 +12,34 @@ export function useProjectQuestion(projectId: number) {
             try {
                 setLoading(true);
                 const res = await api_backend.get(`/question/get/project/${projectId}`);
-                const questionBase = res.data
+                const questionBase = res.data;
                 console.log("Questions de projet récupérées:", questionBase);
-                const questionsWithOptions = await Promise.all(
-                    questionBase.map(async (q: any) => {
-                        const resOpt = await api_backend.get(`/question/get/${q.questionId}`);
-                        return {
-                            id: q.questionId,
-                            label: q.label,
-                            parentId: q.questionIdParent ?? null,
-                            answered: false,
-                            status: "pending",
-                            category: q.category,
-                            numberOfSelectionableOpt: q.numberOfSelectionableOpt,
-                            options: resOpt.data.options || [],
-                            isRelevant: q.isRelevant,
-                            hasMultipleOpenResponse: q.hasMultipleOpenResponse,
-                            shouldMultiply: q.shouldMultiply,
-                            addType: q.types || [],
-                            addProject: q.projects || []
-                        };
-                    })
-                );
+                
+                // Map les questions avec les options déjà présentes dans la réponse
+                const questionsWithOptions = questionBase.map((q: any) => ({
+                    id: q.questionId,
+                    questionId: q.questionId,
+                    label: q.label,
+                    parentId: q.questionIdParent ?? null,
+                    answered: false,
+                    status: "pending",
+                    category: q.category,
+                    numberOfSelectionableOpt: q.numberOfSelectionableOpt,
+                    options: (q.options || []).map((opt: any) => ({
+                        label: opt.label,
+                        value: opt.label
+                    })),
+                    isRelevant: q.isRelevant,
+                    hasMultipleOpenResponse: q.hasMultipleOpenResponse,
+                    shouldMultiply: q.shouldMultiply,
+                    types: q.types || [],
+                    projects: q.projects || []
+                }));
 
-                setQuestions(questionsWithOptions)
+                console.log("Questions formatées:", questionsWithOptions);
+                setQuestions(questionsWithOptions);
             } catch (err: any) {
-                console.error(err)
+                console.error("Erreur lors de la récupération des questions:", err);
                 setError(err.message || "Erreur lors de la récupération des questions");
             } finally {
                 setLoading(false);
