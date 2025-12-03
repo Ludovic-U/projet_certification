@@ -11,15 +11,16 @@ export function useProjectQuestion(projectId: number) {
         async function fetchQuestions() {
             try {
                 setLoading(true);
-                const res = await api_backend.get(`/question/get/project/${projectId}`);
-                const questionBase = res.data;
-                console.log("Questions de projet récupérées:", questionBase);
+                const res = await api_backend.get(`/question/get`);
+                console.log("Questions de projet récupérées:", res.data.data);
+                const questionBase = Array.isArray(res.data.data) ? res.data.data : [];
                 
                 // Map les questions avec les options déjà présentes dans la réponse
                 const questionsWithOptions = questionBase.map((q: any) => ({
                     id: q.questionId,
                     questionId: q.questionId,
                     label: q.label,
+                    keyword: q.keyword,
                     parentId: q.questionIdParent ?? null,
                     answered: false,
                     status: "pending",

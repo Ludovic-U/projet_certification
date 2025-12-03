@@ -1,6 +1,7 @@
 export interface Question extends Record<string, unknown> {
   questionId: number | string;
   label: string;
+  keyword?: string;
   answered: boolean;
   status?: "pending" | "answered" | "skipped";
   category?: string;

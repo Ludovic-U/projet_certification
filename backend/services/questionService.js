@@ -11,6 +11,7 @@ const {
  * @function createQuestion
  * @param {Object} data - The question data to create.
  * @param {string} data.label - The question text.
+ * @param {string} [data.keyword] - The keyword for the question.
  * @param {string} data.category - The category of the question.
  * @param {number|null} [data.numberOfSelectionableOpt=null] - Max number of selectable options.
  * @param {boolean} [data.isRelevant=false] - Whether the question is relevant.

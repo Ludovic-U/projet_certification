@@ -1,17 +1,20 @@
 "use client";
 
 import { DynamicOptions } from "@/components/ui"
-import { useState } from "react";
 
-export default function ReponsesPlusieurs() {
-    const [reponse, setReponse] = useState([""]);
+interface ReponsesPlusieursProps {
+    value?: string[];
+    onChange?: (value: string[]) => void;
+}
+
+export default function ReponsesPlusieurs({ value = [""], onChange }: ReponsesPlusieursProps) {
 
     return (
         <>
             <DynamicOptions
              labelPrefix="Réponse"
-             values={reponse}
-             onChange={setReponse}/>
+             values={value}
+             onChange={onChange || (() => {})}/>
         </>
     )
 }

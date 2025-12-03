@@ -27,7 +27,7 @@ export default function IdeationPage() {
   const params = useParams();
   // Access dynamic route params
   const { projectId } = params;
-  const { questions, loading } = useProjectQuestion(Number(projectId));
+  const { questions, loading } = useProjectQuestion(Number(projectId)); // Appel api
   const [nodesState, setNodesState] = useState<Node[]>([]);
   const modalQuestions = useModal();
   const modalResponse = useModal();
@@ -41,8 +41,6 @@ export default function IdeationPage() {
   const progress = nodesState.filter(
     (n) => n.data?.status === "answered" || n.data?.status === "skipped"
   ).length;
-
-  const maxQuestions = questions.length - 1;
 
   if (loading)
     return (
@@ -81,7 +79,7 @@ export default function IdeationPage() {
           <Card
             color="#96776E"
             title="Synthèse des projets"
-            max={maxQuestions}
+            max={questions.length}
             progress={progress}
             buttonLabel="voir toutes les questions"
             onButtonClick={modalQuestions.openModal}
@@ -113,8 +111,8 @@ export default function IdeationPage() {
 
       <Modal modal={modalQuestions} title="Toutes les questions">
         <div className="flex flex-col gap-3 p-4">
-          {questions.length > 1 ? (
-            questions.slice(1).map((q: Question) => (
+          {questions.length > 0 ? (
+            questions.slice(0).map((q: Question) => (
               <div
                 key={q.questionId}
                 className="p-3 border w-[360px] rounded-lg flex justify-between"

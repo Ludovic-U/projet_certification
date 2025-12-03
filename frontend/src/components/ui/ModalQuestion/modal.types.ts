@@ -6,8 +6,10 @@ export interface ModalQuestionProps {
     modal: ReturnType<typeof useModal>;
     questionId: string;
     question: string;
+    keyword?: string;
     children: ReactNode;
     className?: string;
     onValidate?: () => void;
     onSkip?: () => void;
+    onKeywordChange?: (keyword: string) => void;
 }

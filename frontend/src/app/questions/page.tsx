@@ -35,7 +35,7 @@ export default function QuestionsPage() {
           `/question/get?page=${pagination.currentPage}&limit=${pagination.pageSize}`
         );
         setQuestions(res.data.data); // Stores questions
-        setPagination(res.data.meta); // Stores pagination data
+        setPagination((prev) => ({ ...prev, ...res.data.meta })); // Merge pagination data
       } catch (error) {
         console.error(error);
       }
@@ -100,9 +100,17 @@ export default function QuestionsPage() {
                   // After creating a question, refresh the questions list
                   api_backend.post(`/question/create`, {...formData})
                     .then(res => {
+                      modal.closeModal();
+                      // Refetch questions to update the list
+                      return api_backend.get(
+                        `/question/get?page=${pagination.currentPage}&limit=${pagination.pageSize}`
+                      );
+                    })
+                    .then(res => {
                       setQuestions(res.data.data);
-                      setPagination(res.data.meta);
-                    });
+                      setPagination((prev) => ({ ...prev, ...res.data.meta }));
+                    })
+                    .catch(error => console.error(error));
                 }}
               />
             </Modal>

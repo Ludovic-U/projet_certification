@@ -7,6 +7,7 @@ const questionService = require("../services/questionService");
  * @function createQuestion
  * @param {Object} req.body - Request payload.
  * @param {string} req.body.label - The text of the question (required).
+ * @param {string} [req.body.keyword] - The keyword for the question.
  * @param {string} req.body.category - The category this question belongs to (required).
  * @param {number} [req.body.numberOfSelectionableOpt=null] - Maximum number of selectable options.
  * @param {boolean} [req.body.isRelevant=false] - Whether the question is considered relevant.
@@ -26,6 +27,7 @@ module.exports.createQuestion = async (req, res) => {
   let idParent = null;
   const {
     label,
+    keyword,
     category,
     numberOfSelectionableOpt,
     isRelevant,
@@ -50,6 +52,7 @@ module.exports.createQuestion = async (req, res) => {
   try {
     const question = await questionService.createQuestion({
       label,
+      keyword,
       category,
       numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
       isRelevant: isRelevant ?? false,

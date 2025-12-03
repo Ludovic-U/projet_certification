@@ -6,7 +6,7 @@ import { cn } from "@/utils/utils";
 
 
 export function QuestionNode({ data }: NodeProps) {
-    const questionData = data as { status?: "pending" | "answered" | "skipped"; label?:string };
+    const questionData = data as { status?: "pending" | "answered" | "skipped"; label?:string; keyword?: string };
     
     const statusStyle = {
         pending: "bg-transparent border-3 border-dark",
@@ -18,35 +18,42 @@ export function QuestionNode({ data }: NodeProps) {
 
     return (
         <Tooltip className="bg-dark" content={data.label?.toString()} position="rightTop">
-            <div className={`relative cursor-pointer h-4 w-4 `}>
-                {questionData.status === "pending" && (
-                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-dark animate-ping"></span>
+            <div className={`relative cursor-pointer flex flex-col items-center gap-1`}>
+                {questionData.keyword && (
+                    <span className="text-xs font-medium text-dark whitespace-nowrap">
+                        {questionData.keyword}
+                    </span>
                 )}
-                <div className={`relative h-4 w-4 rounded-full transition-all duration-300 ease-in-out ${bg}`}>
+                <div className="relative">
+                    {questionData.status === "pending" && (
+                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-dark animate-ping"></span>
+                    )}
+                    <div className={`relative h-4 w-4 rounded-full transition-all duration-300 ease-in-out ${bg}`}>
                     <Handle
                     type="target"
-                    position={Position.Top}
+                    position={Position.Left}
                     style={{
                         opacity: 0,
                         pointerEvents: "none",
                         position: "absolute",
-                        top: "-1px",
-                        left: "50%",
-                        transform: "translateX(-50%)"
+                        left: "-1px",
+                        top: "50%",
+                        transform: "translateY(-50%)"
                     }}
                     />
                     <Handle
                     type="source"
-                    position={Position.Bottom}
+                    position={Position.Right}
                     style={{
                         opacity: 0,
                         pointerEvents: "none",
                         position: "absolute",
-                        bottom: "-1px",
-                        left: "50%",
-                        transform: "translateX(-50%)"
+                        right: "-1px",
+                        top: "50%",
+                        transform: "translateY(-50%)"
                     }}
                     />
+                    </div>
                 </div>
             </div>
         </Tooltip>

@@ -7,6 +7,7 @@ const responseService = require("../services/responseService");
  * @function createResponse
  * @param {Object} req.body - Request payload.
  * @param {String} req.body.label - The text of the response (required).
+ * @param {String} [req.body.keyword] - The keyword for the response.
  * @param {number} req.body.projectId - The ID of the associated project (required).
  * @param {number} req.body.questionId - The ID of the associated question (required).
  * @param {number|null} [req.body.optionId=null] - The ID of the assiocated option.
@@ -18,7 +19,7 @@ const responseService = require("../services/responseService");
  */
 module.exports.createResponse = async (req, res) => {
   let idParent;
-  const { label, projectId, questionId, optionId, responseIdParent } = req.body;
+  const { label, keyword, projectId, questionId, optionId, responseIdParent } = req.body;
 
   // Check label to not be null or empty
   if (!label) {
@@ -33,6 +34,7 @@ module.exports.createResponse = async (req, res) => {
   try {
     const response = await responseService.createResponse({
       label,
+      keyword,
       projectId,
       questionId,
       optionId: optionId ?? null,

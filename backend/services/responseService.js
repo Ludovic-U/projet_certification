@@ -7,6 +7,7 @@ const { prisma } = require("../prisma/prismaClient");
  * @function createResponse
  * @param {Object} data - The response data to create.
  * @param {string} data.label - The response text.
+ * @param {string} [data.keyword] - The keyword for the response.
  * @param {string} data.projectId - The ID of the associated project.
  * @param {number} data.questionId - The ID of the associated question.
  * @param {number|null} [data.optionId=null] - The ID of the associated option.
