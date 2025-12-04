@@ -37,6 +37,8 @@ export default function IdeationPage() {
 
   // Store the response value
   const [responseValue, setResponseValue] = useState<string>("");
+  // Store keyword for response
+  const [responseKeyword, setResponseKeyword] = useState<string>("");
 
   const progress = nodesState.filter(
     (n) => n.data?.status === "answered" || n.data?.status === "skipped"
