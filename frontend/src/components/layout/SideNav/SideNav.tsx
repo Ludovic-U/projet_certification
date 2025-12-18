@@ -25,6 +25,12 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     
     const params = useParams();
     const { data } = useLocalStorage();
+    const { user } = useUser();
+
+    // Déterminer le lien de la page d'accueil selon le rôle
+    const homeLink = user?.roles?.some((role: any) => role === "super_admin") 
+        ? "/clients"
+        : `/${user?.clientId}/projets` ;
 
     // Attendre que le composant soit monté côté client
     React.useEffect(() => {
@@ -39,7 +45,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
 
                 {/* Logo + Titre */}
                 <Link
-                 href="http://www.figuresdeskills.fr/" //TODO: changer ça
+                 href={homeLink}
                  className={`flex mt-2 h-12 w-full flex-row items-center flex-shrink-0
                             ${isCollapsed ? "justify-center" : "md:justify-start md:px-6 spase-x-3"}`}
                  >

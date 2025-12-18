@@ -21,7 +21,7 @@ export const clientsList: Column<Client>[] = [
           key: "clientName",
           label: "Nom",
           render: (item) =>
-            <span className="block truncate text-left">{item.clientName}</span> },
+            <span>{item.clientName}</span> },
         { 
           key: "clientType",
           label: "Secteur",

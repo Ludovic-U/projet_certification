@@ -4,7 +4,7 @@ import axios from "axios";
 import { NextResponse } from 'next/server';
 
  const f2s_routes = {
-  "/super_admin": "view_super_admin_dashboard",
+  "/clients": "view_super_admin_dashboard",
 };
 
 export async function middleware(request)  { 
@@ -23,13 +23,15 @@ export async function middleware(request)  {
 
   
   var userPermissions = [];
+  var userclientId = null;
   const checkAuth = async () => { // TODO: modifier pour vérifier les permissions du cookie, pour pas avoir à chaque fois une requête au backend
     try {
       const response = await api.get('/me');
       userPermissions = response.data.user.permissions;
+      userclientId = response.data.user.clientId;
       return true;
     } catch (err) {
-      console.warn("Utilisateur non authentifié", err.message, err.data);
+      console.log("Utilisateur non authentifié", err.message, err.data);
       return false;
     }
   };
@@ -46,7 +48,7 @@ export async function middleware(request)  {
   // redirige vers une page d'erreur si l'utilisateur n'est pas un super_admin et qu'il essaie d'accéder à une page super_admin
   if (isAuth && Object.keys(f2s_routes).includes(pathname)) {
     if (!userPermissions?.includes("view_super_admin_dashboard")) {
-      const url = new URL('/admin', request.url);
+      const url = new URL('/', request.url);
       return NextResponse.redirect(url);
   }
 }
@@ -55,12 +57,12 @@ export async function middleware(request)  {
   if (isAuth && pathname === '/') {
     // rediger vers la page super admin si l'utilisateur est super_admin
     if (userPermissions?.includes("view_super_admin_dashboard")) { 
-      const url = new URL('/super_admin', request.url); // 
+      const url = new URL('/clients', request.url); // 
       return NextResponse.redirect(url);
     }
 
     // rediger vers la page admin(orga_dashboard) si l'utilisateur est un autre role
-    const url = new URL('/admin', request.url); 
+    const url = new URL(`/${userclientId}/projects`, request.url); 
     return NextResponse.redirect(url);
   }
 }

@@ -91,26 +91,33 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
       return;
     }
     
-    // Create a map of questionId -> response exists
-    const responseMap = new Map<number, boolean>();
+    // Create a map of questionId -> response data (status + keyword)
+    const responseMap = new Map<number, { exists: boolean; keyword?: string }>();
     projectResponses.forEach((response: any) => {
-      responseMap.set(response.questionId, true);
+      responseMap.set(response.questionId, {
+        exists: true,
+        keyword: response.keyword || null,
+      });
     });
     
-    // Update nodes with status and visibility
+    // Update nodes with status, keyword and visibility
     const updatedNodes = initialNodes.map((node) => {
       const questionId = node.data.questionId || node.data.id;
-      const hasResponse = responseMap.has(Number(questionId));
+      const responseData = responseMap.get(Number(questionId));
+      const hasResponse = responseData?.exists || false;
       const parentId = node.data.parentId;
       
       // Check if parent has a response (if this is not root)
-      const parentHasResponse = parentId ? responseMap.has(Number(parentId)) : true;
+      const parentResponseData = parentId ? responseMap.get(Number(parentId)) : null;
+      const parentHasResponse = parentId ? (parentResponseData?.exists || false) : true;
       
       return {
         ...node,
         data: {
           ...node.data,
           status: hasResponse ? "answered" : "pending",
+          // Use keyword from response if exists, otherwise keep question's keyword
+          keyword: responseData?.keyword || node.data.keyword,
         },
         // Show node if: it's root OR parent has response
         hidden: parentId !== null && !parentHasResponse,

@@ -24,13 +24,13 @@ export const projectsList: Column<Project>[] = [
         key: "projectName",
         label: "Titre",
         render: (item) =>
-            <span className="block truncate text-left">{item.projectName}</span>
+            <span className="block truncate ">{item.projectName}</span>
     },
     {
         key: "ChefDeProjet",
         label: "Chef de Projet",
         render: (item) =>
-            <span className="block truncate text-left">{item.ChefDeProjet}</span>
+            <span className="block truncate ">{item.ChefDeProjet}</span>
     },
     {
         key: "types",
