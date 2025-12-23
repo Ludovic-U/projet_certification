@@ -65,8 +65,16 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                 {/* Boucle sur SIDENAV_ITEMS et crée un MenuItem pour chaque item. */}
                 <div className={`flex flex-col space-y-2 md:px-6 mt-8 overflow-y-auto flex-1 pb-20 ${isCollapsed ? "items-center px-0" : ""}`}>
                     {mounted && SIDENAV_ITEMS
-                    // .filter(item => !item.roles?.includes("super_admin")) 
+                    
                     .filter(item => !item.requiredParams || item.requiredParams?.every(param => param in params))
+                    .filter(item => {
+                        // Si l'item a des rôles requis, vérifier que l'utilisateur a au moins un de ces rôles
+                        if (item.roles && item.roles.length > 0) {
+                            return user?.roles?.some((userRole: string) => item.roles?.includes(userRole));
+                        }
+                        // Si pas de rôles requis, afficher l'item pour tout le monde
+                        return true;
+                    })
                     .map((item, idx) => {
                         // remplace le titre du projet 
                         let title = item.title;
@@ -95,6 +103,9 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                                  isSubMenuOpen={openSubMenuIndex === idx}
                                  onSubMenuToggle={() => handleSubMenuToggle(idx)}
                                 />
+                                {item.showSeparatorAfter && (
+                                    <div className={`border-b border-lighthover opacity-30 ${isCollapsed ? 'mx-2' : 'mx-0'} my-3`} />
+                                )}
                             </div>
                         );
                     })}

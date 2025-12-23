@@ -4,18 +4,18 @@ import { useParams } from "next/navigation";
 
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
-    {
-        title: "Building", // pages de test pour dev
-        path: "/front",
-        icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>,
-        roles: ["super_admin"], // <-- visible uniquement pour super_admin
-        subMenu: true,
-        subMenuItems: [
-            { title: "Page Test", path:"/building", icon: <FontAwesomeIcon icon={Icons.users}/>},
-            { title: "Tree", path:"/building/build-tree", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
-            { title: "Components", path:"/building/components", icon: <FontAwesomeIcon icon={Icons.users}/>},
-        ],
-    },
+    // {
+    //     title: "Building", // pages de test pour dev
+    //     path: "/front",
+    //     icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>,
+    //     roles: ["super_admin"], // <-- visible uniquement pour super_admin
+    //     subMenu: true,
+    //     subMenuItems: [
+    //         { title: "Page Test", path:"/building", icon: <FontAwesomeIcon icon={Icons.users}/>},
+    //         { title: "Tree", path:"/building/build-tree", icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},
+    //         { title: "Components", path:"/building/components", icon: <FontAwesomeIcon icon={Icons.users}/>},
+    //     ],
+    // },
     {
         title: "App Config", // pages de test pour dev
         path: "/front",
@@ -32,7 +32,8 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         title: "Clients",
         path: "/clients",
         roles: ["super_admin"], 
-        icon: <FontAwesomeIcon icon={Icons.userTie}/>
+        icon: <FontAwesomeIcon icon={Icons.userTie}/>,
+        showSeparatorAfter: true
     },    
     // {
     //     title: "Configuration des Questions",

@@ -9,7 +9,7 @@ module.exports.getClients = async (req, res) => {
         const clients = await getClients(req.user);
        res.status(200).json(clients) 
     } catch (error) {
-        res.status(error.status).json({ error : `Error fetching clients ${error.message}` });
+        res.status(error.status || 500).json({ error : `Error fetching clients ${error.message}` });
     }
 }
 
@@ -33,13 +33,13 @@ module.exports.getClientById = async (req, res) => {
 
 module.exports.createClientPost = async (req, res) => {
     user = req.user; // assuming req.user is populated by authentication middleware
-    const { name, type, desc } = req.body;
-    if (name == null || type == null) {
-        console.log("Missing required fields: name and type");
-        return res.status(400).json({ error: "Missing required fields: name and type" });
+    const { clientName, secteur, statusJuridique, description } = req.body;
+    if (!clientName) {
+        console.log("Missing required field: clientName");
+        return res.status(400).json({ error: "Missing required field: clientName" });
     }
     try {
-        await createClient(user, name, type, desc);
+        await createClient(user, clientName, secteur, statusJuridique, description);
         res.status(200).json({message: "client created"});
     } catch (error) {
         console.log(error)
@@ -54,17 +54,9 @@ module.exports.updateClientPost = async (req, res) => {
     if (isNaN(clientId)) {
         return res.status(400).json({ error: "Invalid clientId" });
     }   
-    const { name, type, desc } = req.body;
+    const { clientName, secteur, statusJuridique, description } = req.body;
     try {
-        // TODO: call the service
-        const client = await prisma.client.update({ 
-            where: { id: clientId },
-            data: {
-                clientName : name,
-                clientType :type,
-                description : desc
-            }
-        }); 
+        const client = await updateClient(clientId, { clientName, secteur, statusJuridique, description });
         if (!client) {
             return res.status(404).json({ error: "Client not found" });
         }   

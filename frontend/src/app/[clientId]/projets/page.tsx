@@ -30,6 +30,7 @@ export default function ProjectsPage() {
     const { data, setItem, removeItem } = useLocalStorage();
 
     const [projects, setProjects] = useState<any[]>([]);
+    const [clientName, setClientName] = useState<string>("");
 
     const fetchProjects = () => {
         api_backend.get(`/project/getByClientId/${params.clientId}`)
@@ -43,9 +44,20 @@ export default function ProjectsPage() {
             });
     }
 
+    const fetchClient = () => {
+        api_backend.get(`/client/getById/${params.clientId}`)
+            .then(res => {
+                setClientName(res.data.clientName);
+            })
+            .catch(err => {
+                console.error("Error fetching client:", err);
+            });
+    }
+
     
     useEffect(() => {
         fetchProjects();
+        fetchClient();
     }, []);
 
     const handleRowClick = (project: any) => {
@@ -66,7 +78,10 @@ export default function ProjectsPage() {
     );
     return (
         <div className="h-full">
-            <PageHeader title="Liste des projets" description={config?.subtitles.projectList}/>
+            <PageHeader 
+                title={clientName ? `${clientName} - Liste des projets` : "Liste des projets"} 
+                description={config?.subtitles.projectList}
+            />
             <section>
 
                 {/* ADD BTN + SEARCHBAR */}
@@ -85,7 +100,9 @@ export default function ProjectsPage() {
                         <Modal modal={modal}
                         title="AJOUTER UN PROJET"
                         description="Entrez les informations du nouveau projet">
-                            <CreateProjectForm onSubmit={(formData) => {
+                            <CreateProjectForm 
+                                clientId={Number(params.clientId)}
+                                onSubmit={(formData) => {
                                     // Handle form submission logic here
                                     // Example: send formData to backend and refresh users list
                                     api_backend.post('/project/create', { ...formData, clientId: params.clientId })

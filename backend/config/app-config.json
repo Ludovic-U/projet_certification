@@ -1,6 +1,6 @@
 {
   "subtitles": {
-    "projectList": "Consultez la liste des projets et accèdez aux informations.",
+    "projectList": "Consultez la liste des projets et accèdez aux détails du projet.",
     "overview": "Étapes de réalisation de votre projet.",
     "ideation": "Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer à poser les bases de votre projet en répondant aux questions.",
     "conception": "Phase de conception",
@@ -11,5 +11,22 @@
   "labels": {
     "todoList": "Tâches à faire",
     "actionList": "Actions planifiées"
+  },
+  "types": {
+    "secteur_clients": [
+      "IMMOBILIER",
+      "BTP",
+      "ENTREPRISE",
+      "COLLECTIVITÉ",
+      "CFA"
+    ],
+    "juridiques_clients": [
+      "SA",
+      "SAS",
+      "SARL",
+      "EURL",
+      "AUTO-ENTREPRENEUR",
+      "ASSOCIATION"
+    ]
   }
 }

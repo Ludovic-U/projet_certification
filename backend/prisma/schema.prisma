@@ -5,7 +5,9 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
+} 
+
+// la config de l'app est un fichier json ..\backend\config\app-config.json
 
 model User {
   userId    Int      @id @default(autoincrement())
@@ -42,7 +44,6 @@ model UserSession {
 model Client {
   clientId        Int              @id @default(autoincrement())
   clientName      String           @unique
-  clientType      String // TODO: en faire un enum
   description     String?
   secteur         String?
   statusJuridique String?

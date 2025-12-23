@@ -2,19 +2,10 @@ import { useState, useEffect } from 'react';
 import api_backend from '../api/axiosInstance';
 
 export interface AppConfig {
-  subtitles: {
-    projectList: string;
-    overview: string;
-    ideation: string;
-    conception: string;
-    pilotage: string;
-    evaluation: string;
-    reporting: string;
-  };
-  labels: {
-    todoList: string;
-    actionList: string;
-  };
+  subtitles: Record<string, string>;
+  labels: Record<string, string>;
+  types: Record<string, string[]>;
+  [key: string]: any; // Permet d'ajouter d'autres sections dynamiquement
 }
 
 // Default fallback values
@@ -31,6 +22,11 @@ const DEFAULT_CONFIG: AppConfig = {
   labels: {
     todoList: "Tâches à faire",
     actionList: "Actions planifiées"
+  },
+  types: {
+    secteur_clients: [],
+    projets: [],
+    juridiques_clients: []
   }
 };
 

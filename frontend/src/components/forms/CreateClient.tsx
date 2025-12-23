@@ -2,11 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
-import { Input, Button } from "@/components/ui";
+import { Input, Button, Select } from "@/components/ui";
+import { useConfig } from "@/context/ConfigContext";
 
 export type CreateClientInputs = {
-  name: string;
-  type: string;
+  clientName: string;
+  secteur?: string;
+  statusJuridique?: string;
   description?: string;
 };
 
@@ -18,6 +20,7 @@ interface CreateClientFormProps {
 
 export default function CreateClientForm({ onSubmit, isLoading, apiError }: CreateClientFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<CreateClientInputs>();
+  const { config } = useConfig();
 
   return (
     <>
@@ -33,16 +36,26 @@ export default function CreateClientForm({ onSubmit, isLoading, apiError }: Crea
       >
         <div className="flex flex-col gap-6 items-center w-full">
           <Input
-            {...register("name", { required: "Le nom est requis" })}
+            {...register("clientName", { required: "Le nom est requis" })}
             label="Nom"
-            error={errors.name?.message}
+            error={errors.clientName?.message}
             leftIcon={<FontAwesomeIcon icon={Icons.home} />}
           />
-          <Input
-            {...register("type", { required: "Le type est requis" })}
-            label="Type"
-            error={errors.type?.message}
-            leftIcon={<FontAwesomeIcon icon={Icons.userTie} />}
+          <Select
+            {...register("secteur")}
+            label="Secteur"
+            error={errors.secteur?.message}
+            leftIcon={<FontAwesomeIcon icon={Icons.briefcase} />}
+            options={config.types?.secteur_clients || []}
+            placeholder="Sélectionner un secteur"
+          />
+          <Select
+            {...register("statusJuridique")}
+            label="Statut Juridique"
+            error={errors.statusJuridique?.message}
+            leftIcon={<FontAwesomeIcon icon={Icons.projectDiagram} />}
+            options={config.types?.juridiques_clients || []}
+            placeholder="Sélectionner un statut juridique"
           />
           <Input
             {...register("description")}

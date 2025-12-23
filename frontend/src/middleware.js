@@ -62,7 +62,7 @@ export async function middleware(request)  {
     }
 
     // rediger vers la page admin(orga_dashboard) si l'utilisateur est un autre role
-    const url = new URL(`/${userclientId}/projects`, request.url); 
+    const url = new URL(`/${userclientId}/projets`, request.url); 
     return NextResponse.redirect(url);
   }
 }

@@ -25,32 +25,34 @@ module.exports.getClientById = async (askingUser, clientId) => {
     throw new Error('getClientById: Unauthorized');    
 }
 
-module.exports.createClient = async (askingUser,  name, type, desc) => {
+module.exports.createClient = async (askingUser, clientName, secteur, statusJuridique, description) => {
     checkPermission(askingUser, 'client:create');
 
     return await prisma.client.create({
         data: {
-            clientName : name,
-            clientType :type,
-            description : desc
+            clientName,
+            secteur,
+            statusJuridique,
+            description
         }
     });
 }
 
-module.exports.updateClient = async (clientId, { name, type, desc }) => {
+module.exports.updateClient = async (clientId, { clientName, secteur, statusJuridique, description }) => {
     return await prisma.client.update({
-        where: { id: clientId },    
+        where: { clientId },    
         data: {
-            clientName : name,
-            clientType :type,
-            description : desc
+            clientName,
+            secteur,
+            statusJuridique,
+            description
         }
     });
 }
 
 module.exports.deleteClient = async (clientId) => {
     return await prisma.client.delete({
-        where: { id: clientId },
+        where: { clientId },
     });
 }
 
