@@ -48,6 +48,8 @@ export default function ProjectsPage() {
         api_backend.get(`/client/getById/${params.clientId}`)
             .then(res => {
                 setClientName(res.data.clientName);
+                setItem("clientName", res.data.clientName);
+                setItem("clientId", res.data.clientId);
             })
             .catch(err => {
                 console.error("Error fetching client:", err);
@@ -64,6 +66,7 @@ export default function ProjectsPage() {
         // Met à jour le contexte utilisateur avec le projet sélectionné
        
         setItem("projectName", project.projectName);
+        setItem("projectId", project.projectId);
         // Redirige vers la page du projet
         router.push(`/${params.clientId}/${project.projectId}/vue_ensemble`);
     };

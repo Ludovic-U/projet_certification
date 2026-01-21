@@ -24,9 +24,10 @@ module.exports.createProject = async (data) => {
         // connect relations via nested connect (do not include the scalar fields projectManager/clientId here)
         manager: { connect: { userId: managerId } },
         client: { connect: { clientId: clientId } },
-        // si tu as types/questions à connecter :
-        // types: Array.isArray(data.types) && data.types.length > 0 ? { connect: data.types.map(id => ({ typeId: id })) } : undefined,
-        // questions: Array.isArray(data.questions) && data.questions.length > 0 ? { connect: data.questions.map(id => ({ questionId: id })) } : undefined,
+        // Connecter les types si fournis
+        types: Array.isArray(data.types) && data.types.length > 0 
+          ? { connect: data.types.map(id => ({ typeId: Number(id) })) } 
+          : undefined,
       },
       include: {
         manager: true,
@@ -85,6 +86,12 @@ module.exports.ProjectsByClientId = async (clientId) => {
     const projects = await prisma.project.findMany({
       where: { clientId: validClientId },
       include: {
+        client: {
+          select: {
+            clientId: true,
+            clientName: true,
+          },
+        },
         manager: {
           select: {
             firstname: true,
@@ -112,6 +119,8 @@ module.exports.ProjectsByClientId = async (clientId) => {
     const formattedProjects = projects.map((project) => ({
       projectId: project.projectId,
       projectName: project.projectName,
+      clientId: project.client.clientId,
+      clientName: project.client.clientName,
       ChefDeProjet: project.manager 
         ? `${project.manager.firstname} ${project.manager.lastname}` 
         : "N/A",
@@ -125,3 +134,67 @@ module.exports.ProjectsByClientId = async (clientId) => {
     throw error;
   }
 }
+
+// SWOT Functions
+module.exports.updateProjectSwot = async (projectId, swotData) => {
+  try {
+    const validProjectId = Number(projectId);
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+
+    const updateData = {};
+    if (swotData.SWOT_strength !== undefined) updateData.SWOT_strength = swotData.SWOT_strength;
+    if (swotData.SWOT_weakness !== undefined) updateData.SWOT_weakness = swotData.SWOT_weakness;
+    if (swotData.SWOT_opportunity !== undefined) updateData.SWOT_opportunity = swotData.SWOT_opportunity;
+    if (swotData.SWOT_threat !== undefined) updateData.SWOT_threat = swotData.SWOT_threat;
+
+    const updatedProject = await prisma.project.update({
+      where: { projectId: validProjectId },
+      data: updateData,
+      select: {
+        projectId: true,
+        projectName: true,
+        SWOT_strength: true,
+        SWOT_weakness: true,
+        SWOT_opportunity: true,
+        SWOT_threat: true,
+      },
+    });
+
+    return updatedProject;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour SWOT :", error);
+    throw error;
+  }
+};
+
+module.exports.getProjectSwot = async (projectId) => {
+  try {
+    const validProjectId = Number(projectId);
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { projectId: validProjectId },
+      select: {
+        projectId: true,
+        projectName: true,
+        SWOT_strength: true,
+        SWOT_weakness: true,
+        SWOT_opportunity: true,
+        SWOT_threat: true,
+      },
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    return project;
+  } catch (error) {
+    console.error("Erreur lors de la récupération SWOT :", error);
+    throw error;
+  }
+};

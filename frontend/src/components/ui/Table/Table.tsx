@@ -7,6 +7,7 @@ export const Table = <T extends { id: string | number }>({
     data,
     columns,
     onRowClick,
+    onEditClick,
 }: TableProps<T>) => {
 
     return (
@@ -31,7 +32,7 @@ export const Table = <T extends { id: string | number }>({
                                          key={col.key ?? `col-${colIndex}`}
                                          onClick={() => onRowClick?.(item)}
                                          className="bg-white align-middle group-hover:bg-lighthover py-2 text-center text-sm">
-                                            {col.render ? col.render(item) : (item as any)[col.key]}
+                                            {col.render ? col.render(item, onEditClick) : (item as any)[col.key]}
                                         </td>
                                     ))}
                                 </tr>

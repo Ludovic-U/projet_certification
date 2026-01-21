@@ -81,6 +81,10 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                         if (item.title === "Projet Lambda") {
                             title = "Projet " + data.projectName 
                         }
+                        if (item.title === "Liste des Projets") {
+                            title = data.clientName + " - Liste des Projets"
+                            console.log("title", data.clientName);
+                        }
 
                         // concatene les requiredParams à path si besoin
                         let path = item.path;

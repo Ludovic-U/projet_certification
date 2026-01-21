@@ -58,7 +58,7 @@ export const usersList: Column<User>[] = [
         render: () => (
             <Button size="sm" variant="primary">
                 <FontAwesomeIcon icon={Icons.gear} />
-                Paramètres
+                Modifier
             </Button>
         ),
     },

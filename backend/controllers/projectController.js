@@ -9,6 +9,8 @@ const {
   getProjectsByUserId,
   getProjectsByName,
   ProjectsByClientId,
+  updateProjectSwot,
+  getProjectSwot,
 } = require("../services/projectService");
 const { validateId } = require("../middlewares/validateId");
 
@@ -35,6 +37,8 @@ module.exports.createProjectPost = async (req, res) => {
       projectManager: parseInt(req.body.projectManager, 10),
       projectDesc: req.body.projectDesc,
       clientId: parseInt(req.body.clientId, 10),
+      startDate: req.body.startDate,
+      types: req.body.types || [],
     };
 
     const newProject = await createProject(data);
@@ -192,6 +196,52 @@ module.exports.getProjectsByName = async (req, res) => {
     res.status(200).json(projects);
   } catch (error) {
     console.error("Error fetching projects by name:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Update SWOT analysis for a project
+ * Expects projectId in req.params and SWOT data in req.body
+ * Responds with the updated SWOT data
+ */
+module.exports.updateProjectSwotPost = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+  
+  try {
+    const swotData = {
+      SWOT_strength: req.body.SWOT_strength || req.body.strengths,
+      SWOT_weakness: req.body.SWOT_weakness || req.body.weaknesses,
+      SWOT_opportunity: req.body.SWOT_opportunity || req.body.opportunities,
+      SWOT_threat: req.body.SWOT_threat || req.body.threats,
+    };
+
+    const updatedProject = await updateProjectSwot(projectId, swotData);
+    res.status(200).json(updatedProject);
+  } catch (error) {
+    console.error("Error updating project SWOT:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Get SWOT analysis for a project
+ * Expects projectId in req.params
+ * Responds with the SWOT data
+ */
+module.exports.getProjectSwotGet = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+  
+  try {
+    const project = await getProjectSwot(projectId);
+    res.status(200).json(project);
+  } catch (error) {
+    console.error("Error fetching project SWOT:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
+    }
     res.status(500).json({ error: "Internal server error" });
   }
 };

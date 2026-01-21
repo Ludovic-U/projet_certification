@@ -23,9 +23,20 @@ export default function UsersPage() {
     const modal = useModal();
 
     const [users, setUsers] = useState<any[]>([]);
+    const [clientName, setClientName] = useState<string>("");
     const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
     const params = useParams();
+
+    const fetchClient = () => {
+        api_backend.get(`/client/getById/${params.clientId}`)
+            .then(res => {
+                setClientName(res.data.clientName);
+            })
+            .catch(err => {
+                console.error("Error fetching client:", err);
+            });
+    }
 
     useEffect(() => {
         api_backend.get(`/user/by-client/${params.clientId}`)
@@ -37,6 +48,7 @@ export default function UsersPage() {
                 console.error("Error fetching users:", err);
                 setUsers([]);
             });
+        fetchClient();
     }, []);
 
     const totalPages = Math.ceil(users.length / itemsPerPage);
@@ -47,7 +59,10 @@ export default function UsersPage() {
 
     return (
         <div className="h-full">
-            <PageHeader title="Liste des contributeurs" description="Consultez la liste des contributeurs et accèdez aux détails" />
+            <PageHeader 
+                title={clientName ? `${clientName} - Liste des contributeurs` : "Liste des contributeurs"} 
+                description="Consultez la liste des contributeurs et accèdez aux détails" 
+            />
             <section>
 
                 {/* ADD BTN + SEARCHBAR */}

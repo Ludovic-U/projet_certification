@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
 import { Input, Button, Select } from "@/components/ui";
 import { useConfig } from "@/context/ConfigContext";
+import { useEffect } from "react";
 
 export type CreateClientInputs = {
   clientName: string;
@@ -16,11 +17,24 @@ interface CreateClientFormProps {
   onSubmit: (data: CreateClientInputs) => void;
   isLoading: boolean;
   apiError?: string;
+  initialData?: any;
 }
 
-export default function CreateClientForm({ onSubmit, isLoading, apiError }: CreateClientFormProps) {
-  const { register, handleSubmit, formState: { errors } } = useForm<CreateClientInputs>();
+export default function CreateClientForm({ onSubmit, isLoading, apiError, initialData }: CreateClientFormProps) {
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateClientInputs>();
   const { config } = useConfig();
+
+  // Pré-remplir le formulaire si initialData est fourni
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        clientName: initialData.clientName || "",
+        secteur: initialData.secteur || "",
+        statusJuridique: initialData.statusJuridique || "",
+        description: initialData.description || "",
+      });
+    }
+  }, [initialData, reset]);
 
   return (
     <>
@@ -66,7 +80,7 @@ export default function CreateClientForm({ onSubmit, isLoading, apiError }: Crea
         </div>
 
         <Button type="submit" className="mt-8" disabled={isLoading}>
-          {isLoading ? "Création..." : "Créer"}
+          {isLoading ? (initialData ? "Modification..." : "Création...") : (initialData ? "Modifier" : "Créer")}
         </Button>
       </form>
     </>

@@ -37,10 +37,14 @@ export const clientsList: Column<Client>[] = [
         { 
           key: "actions",
           label: "Actions",
-          render: () => (
-            <Button size="sm" variant="primary">
+          render: (item, onEditClick) => (
+            <Button 
+              size="sm" 
+              variant="primary"
+              onClick={(e) => onEditClick?.(item, e)}
+            >
                 <FontAwesomeIcon icon={Icons.gear} />
-                Paramètres
+                Modifier
             </Button>
           ),
         },

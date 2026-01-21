@@ -68,19 +68,19 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         requiredParams: ["clientId"],
         icon: <FontAwesomeIcon icon={Icons.userTie}/>
     },
-    {
-        title: "Paramètres projet",
-        path: "/parametres",
-        requiredParams: ["clientId", "projectId"],
-        icon: <FontAwesomeIcon icon={Icons.gear}/>
-    },
-    {
-        title: "Paramètres client",
-        path: "/parametres-client",
-        roles: ["super_admin", "admin_client"],
-        requiredParams: ["clientId"],
-        icon: <FontAwesomeIcon icon={Icons.gear}/>
-    },
+    // {
+    //     title: "Paramètres projet",
+    //     path: "/parametres",
+    //     requiredParams: ["clientId", "projectId"],
+    //     icon: <FontAwesomeIcon icon={Icons.gear}/>
+    // },
+    // {
+    //     title: "Paramètres client",
+    //     path: "/parametres-client",
+    //     roles: ["super_admin", "admin_client"],
+    //     requiredParams: ["clientId"],
+    //     icon: <FontAwesomeIcon icon={Icons.gear}/>
+    // },
     {
         title: "Déconnexion",
         path: "#",

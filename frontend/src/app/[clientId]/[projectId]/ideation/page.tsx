@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { PageHeader, Card, Modal, Table, Button } from "@/components/ui";
@@ -11,8 +11,11 @@ import { Icons, FontAwesomeIcon } from "@/lib/icons";
 import { LoadingSpinner } from "@/components/ui";
 import { useModal } from "@/hooks";
 import { Question } from "@/types/question";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useConfig } from "@/context/ConfigContext";
+import { useLocalStorage } from "@/context/LocalStorageContext";
+import api_backend from "@/api/axiosInstance";
+
 
 import {
   ReponseUnique,
@@ -23,10 +26,12 @@ import {
 import ModalQuestion from "@/components/ui/ModalQuestion/ModalQuestion";
 
 export default function IdeationPage() {
+  const { data, setItem, removeItem } = useLocalStorage();
   const { config } =  useConfig();
   const params = useParams();
+  const router = useRouter();
   // Access dynamic route params
-  const { projectId } = params;
+  const { projectId, clientId } = params;
   const { questions, loading } = useProjectQuestion(Number(projectId)); // Appel api
   const [nodesState, setNodesState] = useState<Node[]>([]);
   const modalQuestions = useModal();
@@ -34,6 +39,7 @@ export default function IdeationPage() {
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
     null
   );
+  const [swotProgress, setSwotProgress] = useState(0);
 
   // Store the response value
   const [responseValue, setResponseValue] = useState<string>("");
@@ -43,6 +49,30 @@ export default function IdeationPage() {
   const progress = nodesState.filter(
     (n) => n.data?.status === "answered" || n.data?.status === "skipped"
   ).length;
+
+  // Fetch SWOT progress
+  useEffect(() => {
+    const fetchSwotProgress = async () => {
+      try {
+        const response = await api_backend.get(`/project/${projectId}/swot`);
+        const project = response.data;
+        
+        let completed = 0;
+        if (project.SWOT_strength?.trim()) completed++;
+        if (project.SWOT_weakness?.trim()) completed++;
+        if (project.SWOT_opportunity?.trim()) completed++;
+        if (project.SWOT_threat?.trim()) completed++;
+        
+        setSwotProgress(completed);
+      } catch (error) {
+        console.error("Erreur lors du chargement de la progression SWOT:", error);
+      }
+    };
+    
+    if (projectId) {
+      fetchSwotProgress();
+    }
+  }, [projectId]);
 
   if (loading)
     return (
@@ -72,12 +102,10 @@ export default function IdeationPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <PageHeader
-        title="Projet Lambda - IDEATION"
-        description={config?.subtitles.ideation}
-      />
-      <section className="flex flex-1 flex-col items-center">
-        <div className="h-fit z-10">
+      <PageHeader title={"Projet " + (data?.projectName ?? "") + " - IDEATION"} description={config?.subtitles.overview}/>
+      <section className="flex flex-1 gap-4">
+        {/* Colonne de gauche avec les Cards */}
+        <div className="flex flex-col gap-4 w-[320px] min-w-[320px]">
           <Card
             color="#96776E"
             title="Synthèse des projets"
@@ -86,28 +114,19 @@ export default function IdeationPage() {
             buttonLabel="voir toutes les questions"
             onButtonClick={modalQuestions.openModal}
           />
+          <Card
+            color="#4CAF50"
+            title="Analyse SWOT"
+            max={4}
+            progress={swotProgress}
+            buttonLabel="Remplir l'analyse"
+            onButtonClick={() => router.push(`/${clientId}/${projectId}/swot`)}
+          />
         </div>
 
-        <div className="flex rounded-xl flex-col m-5 mt-0 bg-light flex-1 w-[80%] items-center justify-center">
+        {/* Zone principale avec le TreeView */}
+        <div className="flex rounded-xl flex-col bg-light flex-1 items-center justify-center">
           <TreeView questions={questions} onNodesChange={setNodesState} />
-        </div>
-
-        <div className="flex gap-8 h-fit">
-          <Card
-            color="#D4B2A7"
-            title="Proposition des valeurs"
-            buttonLabel="Voir"
-          />
-          <Card
-            color="#B49186"
-            title="Analyse de l'existant"
-            buttonLabel="Voir"
-          />
-          <Card
-            color="#715E53"
-            title="Auto-positionnement"
-            buttonLabel="Voir"
-          />
         </div>
       </section>
 

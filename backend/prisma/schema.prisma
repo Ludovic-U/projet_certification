@@ -112,6 +112,10 @@ model Project {
   projectDesc    String?
   createdAt      DateTime  @default(now())
   clientId       Int
+  SWOT_strength     String?
+  SWOT_weakness     String?
+  SWOT_opportunity  String?
+  SWOT_threat       String?
 
   client  Client   @relation(fields: [clientId], references: [clientId])
   manager User     @relation("ProjectManager", fields: [projectManager], references: [userId])

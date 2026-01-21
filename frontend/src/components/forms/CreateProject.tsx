@@ -13,6 +13,7 @@ export type CreateProjectInputs = {
     projectManager: number;
     projectDesc: string;
     startDate: string;
+    types?: number[];
 };
 
 interface CreateProjectFormProps {
@@ -69,7 +70,14 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError, clien
             )}
 
             <form
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit((data) => {
+                    // Convertir les labels sélectionnés en IDs
+                    const typeIds = selectedType.map(label => 
+                        types.find(t => t.label === label)?.typeId
+                    ).filter(id => id !== undefined).map(id => Number(id));
+                    
+                    onSubmit({ ...data, types: typeIds });
+                })}
                 className="flex flex-col gap-8 items-center select-none w-[70%]"
             >
                 <div className="flex flex-col gap-6 items-center w-full">

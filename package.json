@@ -5,6 +5,7 @@
     "@fortawesome/react-fontawesome": "^3.0.2",
     "@prisma/client": "^6.6.0",
     "@radix-ui/react-slot": "^1.2.3",
+    "@svar-ui/react-gantt": "^2.4.5",
     "@xyflow/react": "^12.8.5",
     "bcrypt": "^6.0.0",
     "browserslist": "^4.25.4",

@@ -140,7 +140,7 @@ export default function VueEnsemblePage() {
                  {/* -------------------------Aperçu action-------------------------------- */}
 
                 <div className="hidden md:flex gap-6 w-full max-w-6xl">
-                    <div className="flex-[2] bg-white rounded-xl p-6">
+                    <div className="flex-2 bg-white rounded-xl p-6">
                         <div className="flex flex-col gap-2">
                             <h2 className="font-oswald text-primary text-2xl">Aperçu des actions</h2>
                             <p className="font-noto text-greydarker text-sm">Aucune action ou échéance actuellement planifiée.</p>
@@ -148,7 +148,7 @@ export default function VueEnsemblePage() {
                     </div>
                      {/* ------------------------TODO list-------------------------------- */}
 
-                    <div className="flex-[1] bg-white rounded-xl p-6">
+                    <div className="flex-1 bg-white rounded-xl p-6">
                         <div className="flex flex-col gap-3 h-full">
                             <div className="flex items-center justify-between">
                                 <h2 className="font-oswald text-primary text-2xl">Todo list</h2>
@@ -171,7 +171,7 @@ export default function VueEnsemblePage() {
                                 className="w-full px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
                             />
 
-                            <div className="flex-1 overflow-y-auto max-h-[400px]">
+                            <div className="flex-1 overflow-y-auto max-h-100">
                                 {todos.length === 0 ? (
                                     <p className="font-noto text-greydarker text-sm mt-2">Aucune tâche pour le moment.</p>
                                 ) : (
@@ -207,7 +207,7 @@ export default function VueEnsemblePage() {
                           className="md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:translate-x-[calc(100%+2rem)]"
                           onClick={() => setSkip(200)}
                         >
-                            Passer
+                            Passer aux étapes suivantes
                         </Button>
                     )}
                     {!showIdeationConception && (

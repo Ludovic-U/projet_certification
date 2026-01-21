@@ -29,7 +29,7 @@ export const questionsList: Column<Question>[] = [
             <div className="flex gap-2 justify-center">
                 <Button size="sm" variant="primary">
                     <FontAwesomeIcon icon={Icons.gear} />
-                    Paramètres
+                    Modifier
                 </Button>
             </div>
         ),
