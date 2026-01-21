@@ -10,6 +10,8 @@ export type SideNavItem = {
     subMenu?: boolean; // Optionnel : indique si cet item comprend un submenu
     subMenuItems?: SideNavItem[]; // Optionnel : tableau d'items enfants
     button?: React.ReactNode; // Optionnel : bouton personnalisé
+    action?: string; // Optionnel : action à exécuter au lieu de naviguer (ex: "signOut")
+    showSeparatorAfter?: boolean; // Optionnel : indique si une séparation doit être affichée après cet item
 };
 
 // Indique si la sidebar est réduite ou étendue

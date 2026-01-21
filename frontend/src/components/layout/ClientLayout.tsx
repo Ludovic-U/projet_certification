@@ -30,8 +30,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <SideNav isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}/>
         
             <MarginWidthWrapper isCollapsed={isCollapsed}>
-                <Header/>
-                <HeaderMobile/>
+                {/* <Header/>
+                <HeaderMobile/> */}
                 <PageWrapper>{children}</PageWrapper>
             </MarginWidthWrapper>
         </div>

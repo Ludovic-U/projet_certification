@@ -19,53 +19,54 @@ import { useParams, useRouter } from "next/navigation";
 import api_backend from "@/api/axiosInstance";
 import { useLocalStorage } from "@/context/LocalStorageContext";
 
+import { useConfig } from '@/context/ConfigContext';
 export default function ProjectsPage() {
+    
+    const { config } = useConfig();
+
     const params = useParams();
     const router = useRouter();
     const modal = useModal();
     const { data, setItem, removeItem } = useLocalStorage();
 
-    // const projects = [
-    //     { id: 1, title: "Projet lamazeazebda", type: "AAP", step:"REPORTING (1/4)", contributors: 12},
-    //     { id: 2, title: "Projet lambda", type: "POC", step:"Pilotage (1/4)", contributors: 3},
-    //     { id: 3, title: "Projet lamhbda un titre long", type: "MVP", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 4, title: "Projet lambda avec un titre encore plus long", type: "R&D", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 5, title: "Projet lambda je ne pense pas que des titres seront aussi longs mais au cas où", type: "Concours / Challenge", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 6, title: "Projet lambda", type: "Campagne", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 7, title: "Projet lambda", type: "Sprint", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 8, title: "Projet lambda", type: "Concours", step:"IDEATION (1/4)", contributors: 8},
-    //     { id: 9, title: "Projet lambda", type: "Programme", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 10, title: "Projet lambda", type: "Initiative", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 11, title: "Projet lambda", type: "Contrat / Prestation", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 12, title: "Projet lambda", type: "Concours / Challenge", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 13, title: "Projet lambda", type: "AAP", step:"PILOTAGE (1/4)", contributors: 3},
-    //     { id: 14, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 15, title: "Projet lambda", type: "AAP", step:"REPORTING (1/4)", contributors: 3},
-    //     { id: 16, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 17, title: "Projet lambda", type: "AAP", step:"CONCEPTION (1/4)", contributors: 3},
-    //     { id: 18, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
-    //     { id: 19, title: "Projet lambda", type: "AAP", step:"CONCEPTION (8/10)", contributors: 3},
-    //     { id: 20, title: "Projet lambda", type: "AAP", step:"IDEATION (1/4)", contributors: 3},
-    // ];
-
     const [projects, setProjects] = useState<any[]>([]);
-    
-    useEffect(() => {
+    const [clientName, setClientName] = useState<string>("");
+
+    const fetchProjects = () => {
         api_backend.get(`/project/getByClientId/${params.clientId}`)
             .then(res => {
                 setProjects(res.data);
                 console.log("projects", res.data);
             })
             .catch(err => {
-                console.error("Error fetching users:", err);
+                console.error("Error fetching projects:", err);
                 setProjects([]);
             });
+    }
+
+    const fetchClient = () => {
+        api_backend.get(`/client/getById/${params.clientId}`)
+            .then(res => {
+                setClientName(res.data.clientName);
+                setItem("clientName", res.data.clientName);
+                setItem("clientId", res.data.clientId);
+            })
+            .catch(err => {
+                console.error("Error fetching client:", err);
+            });
+    }
+
+    
+    useEffect(() => {
+        fetchProjects();
+        fetchClient();
     }, []);
 
     const handleRowClick = (project: any) => {
         // Met à jour le contexte utilisateur avec le projet sélectionné
        
         setItem("projectName", project.projectName);
+        setItem("projectId", project.projectId);
         // Redirige vers la page du projet
         router.push(`/${params.clientId}/${project.projectId}/vue_ensemble`);
     };
@@ -80,7 +81,10 @@ export default function ProjectsPage() {
     );
     return (
         <div className="h-full">
-            <PageHeader title="Liste des projets" description="Consultez la liste des projets et accèdez aux détails"/>
+            <PageHeader 
+                title={clientName ? `${clientName} - Liste des projets` : "Liste des projets"} 
+                description={config?.subtitles.projectList}
+            />
             <section>
 
                 {/* ADD BTN + SEARCHBAR */}
@@ -99,13 +103,15 @@ export default function ProjectsPage() {
                         <Modal modal={modal}
                         title="AJOUTER UN PROJET"
                         description="Entrez les informations du nouveau projet">
-                            <CreateProjectForm onSubmit={(formData) => {
+                            <CreateProjectForm 
+                                clientId={Number(params.clientId)}
+                                onSubmit={(formData) => {
                                     // Handle form submission logic here
                                     // Example: send formData to backend and refresh users list
                                     api_backend.post('/project/create', { ...formData, clientId: params.clientId })
                                         .then(response => {
-                                            // reload page
-                                            router.refresh;
+                                            modal.closeModal();
+                                            fetchProjects(); // ou router.refresh()
                                         })
                                 }}
                                 isLoading={false}/>
@@ -119,12 +125,12 @@ export default function ProjectsPage() {
                      className="w-70"/>
                 </div>
 
-                <TableResponsive<typeof currentData[0]>
+                <TableResponsive<any>
                  data={currentData}
                  columns={projectsList}
                  onRowClick={(project) => handleRowClick(project)}/>
 
-                <Table<typeof currentData[0]>
+                <Table<any>
                  data={currentData}
                  columns={projectsList}
                  onRowClick={(project) => handleRowClick(project)}/>

@@ -1,21 +1,88 @@
 "use client";
 
+import { useForm } from "react-hook-form";
 import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
-import { Input, Button } from "@/components/ui"
+import { Input, Button, Select } from "@/components/ui";
+import { useConfig } from "@/context/ConfigContext";
+import { useEffect } from "react";
 
+export type CreateClientInputs = {
+  clientName: string;
+  secteur?: string;
+  statusJuridique?: string;
+  description?: string;
+};
 
-export default function CreateClientForm() {
+interface CreateClientFormProps {
+  onSubmit: (data: CreateClientInputs) => void;
+  isLoading: boolean;
+  apiError?: string;
+  initialData?: any;
+}
 
-    return (
-        <>
-            <form className="flex flex-col items-center select-none">
-                <div className="flex flex-col gap-6 items-center">
-                    <Input label="Nom"/>
-                    <Input label="Type"/>
-                    <Input label="Description"/>                    
-                </div>
-                <Button type="submit" className="mt-8">Créer</Button>
-            </form>
-        </>
-    )
+export default function CreateClientForm({ onSubmit, isLoading, apiError, initialData }: CreateClientFormProps) {
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateClientInputs>();
+  const { config } = useConfig();
+
+  // Pré-remplir le formulaire si initialData est fourni
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        clientName: initialData.clientName || "",
+        secteur: initialData.secteur || "",
+        statusJuridique: initialData.statusJuridique || "",
+        description: initialData.description || "",
+      });
+    }
+  }, [initialData, reset]);
+
+  return (
+    <>
+      {apiError && (
+        <div className="w-[70%] mb-4 cursor-default">
+          <p className="text-alertdanger text-center text-sm">{apiError}</p>
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col items-center select-none w-[70%]"
+      >
+        <div className="flex flex-col gap-6 items-center w-full">
+          <Input
+            {...register("clientName", { required: "Le nom est requis" })}
+            label="Nom"
+            error={errors.clientName?.message}
+            leftIcon={<FontAwesomeIcon icon={Icons.home} />}
+          />
+          <Select
+            {...register("secteur")}
+            label="Secteur"
+            error={errors.secteur?.message}
+            leftIcon={<FontAwesomeIcon icon={Icons.briefcase} />}
+            options={config.types?.secteur_clients || []}
+            placeholder="Sélectionner un secteur"
+          />
+          <Select
+            {...register("statusJuridique")}
+            label="Statut Juridique"
+            error={errors.statusJuridique?.message}
+            leftIcon={<FontAwesomeIcon icon={Icons.projectDiagram} />}
+            options={config.types?.juridiques_clients || []}
+            placeholder="Sélectionner un statut juridique"
+          />
+          <Input
+            {...register("description")}
+            label="Description"
+            error={errors.description?.message}
+            leftIcon={<FontAwesomeIcon icon={Icons.penRuler} />}
+          />
+        </div>
+
+        <Button type="submit" className="mt-8" disabled={isLoading}>
+          {isLoading ? (initialData ? "Modification..." : "Création...") : (initialData ? "Modifier" : "Créer")}
+        </Button>
+      </form>
+    </>
+  );
 }

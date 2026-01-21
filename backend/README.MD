@@ -20,9 +20,18 @@
 - GET [`api/client/get`](./documentation/controllers_docs.md#post-apiclientget) : retourne la liste de tout les clients
 - GET [`api/client/getById/:clientId`](./documentation/controllers_docs.md#post-apiclientget) : retourne un seul client
 - POST [`api/client/create`](./documentation/controllers_docs.md#post-apiclientcreate) : créer un nouveau client
-- 
 
+#### Questions
 
+- POST [`/create`](./documentation/question_API_routes.md#post-create)
+- GET [`/get`](./documentation/question_API_routes.md#get-get)
+- PATCH [`/update/:questionId`](./documentation/question_API_routes.md#patch-updatequestionid)
+- DELETE [`/delete/:questionId`](./documentation/question_API_routes.md#delete-deletequestionid)
+- GET [`/get/:questionId`](./documentation/question_API_routes.md#get-getquestionid)
+- GET [`/get/project/:projectId`](./documentation/question_API_routes.md#get-getprojectprojectid)
+- GET [`/get/category/:category`](./documentation/question_API_routes.md#get-getcategorycategory)
+- GET [`/get/type/:typeId`](./documentation/question_API_routes.md#get-gettypetypeid)
+- GET [`/get/:questionId/subquestion`](./documentation/question_API_routes.md#get-getquestionidsubquestion)
 
 
 

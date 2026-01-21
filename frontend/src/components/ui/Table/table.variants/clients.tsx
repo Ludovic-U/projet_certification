@@ -5,8 +5,10 @@ import { Column, Button } from "@/components/ui";
 export type Client = {
   clientId: number;
   clientName: string;
-  clientType: string;
-  // contact: string;
+  description?: string;
+  secteur?: string;
+  statusJuridique?: string;
+  createdAt?: string;
 };
 
 export const clientsList: Column<Client>[] = [
@@ -21,24 +23,28 @@ export const clientsList: Column<Client>[] = [
           key: "clientName",
           label: "Nom",
           render: (item) =>
-            <span className="block truncate text-left">{item.clientName}</span> },
+            <span>{item.clientName}</span> },
         { 
-          key: "clientType",
+          key: "secteur",
           label: "Secteur",
           render: (item) =>
-            <span className="inline-block border px-4 py-1 rounded-full text-xs font-bold">{item.clientType}</span> },
-        // { 
-        //   key: "contact",
-        //   label: "Contact",
-        //   render: (item) =>
-        //     <span className="text-primary font-bold uppercase">{item.contact}</span> },
+            <span className="inline-block border px-4 py-1 rounded-full text-xs font-bold">{item.secteur || "N/A"}</span> },
+        { 
+          key: "statusJuridique",
+          label: "Statut Juridique",
+          render: (item) =>
+            <span className="text-sm">{item.statusJuridique || "N/A"}</span> },
         { 
           key: "actions",
           label: "Actions",
-          render: () => (
-            <Button size="sm" variant="primary">
+          render: (item, onEditClick) => (
+            <Button 
+              size="sm" 
+              variant="primary"
+              onClick={(e) => onEditClick?.(item, e)}
+            >
                 <FontAwesomeIcon icon={Icons.gear} />
-                Paramètres
+                Modifier
             </Button>
           ),
         },

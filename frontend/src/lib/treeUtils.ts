@@ -29,15 +29,18 @@ export function buildHierarchy(questions: Question[]) {
 
 /**
  * Calcule la disposition (layout) de type "tidy tree" pour la hiérarchie D3.
- * Chaque noeud obtion des coordonnées 'x' et 'y' pour l'afficher.
+ * Chaque noeud obtient des coordonnées 'x' et 'y' pour l'afficher.
+ * Layout horizontal : les noeuds progressent de gauche à droite.
  * 
  * @param root - La racine de l'arbre
  * @returns  root - La racine enrichie avec les coordonnées de chaque noeud
  */
 export function computeTreeLayout(root: HierarchyNode<Question>) {
-    // Création d'un layout en arbre
-    // nodeSize([hauteur, largeur]) définit l'espacement entre les noeuds.
-    const treeLayout = tree<Question>().nodeSize([20, 20]).separation((a,b) => a.parent === b.parent ? 1 : 2);
+    // Création d'un layout en arbre horizontal
+    // nodeSize([hauteur verticale, espacement horizontal]) définit l'espacement entre les noeuds.
+    const treeLayout = tree<Question>()
+        .nodeSize([100, 200]) // [hauteur entre niveaux verticaux, largeur entre niveaux horizontaux]
+        .separation((a,b) => a.parent === b.parent ? 1 : 1.5);
 
     // Applique le layout à la hiérarchie
     // Chaque noeud a "x" et "y"
@@ -48,32 +51,34 @@ export function computeTreeLayout(root: HierarchyNode<Question>) {
 
 /**
  * Convertit une hiérarchie D3 en nodes et edges pour React Flow
+ * Layout horizontal : inverse x et y pour progression de gauche à droite
  * @param root - La racine de l'arbre
  * @returns nodes, edges - Noeuds et arêtes prêts pour React Flow
  */
 export function d3ToReactFlow(root: HierarchyNode<Question>): { nodes: Node[]; edges: Edge[] } {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
-    const scale = 3;
 
     root.descendants().forEach(node => {
         const isRoot = node.depth === 0;
 
+        // Inverser x et y pour un layout horizontal (gauche à droite)
+        // D3 tree : x = vertical, y = horizontal
+        // ReactFlow : x = horizontal, y = vertical
         nodes.push({
             id: node.data.id.toString(),
             type: "question",
-            position: isRoot
-                ? { x: 0, y: -40 }
-                : { x: (node.x ?? 0) * scale, y: (node.y ?? 0) * scale },
+            position: { 
+                x: (node.y ?? 0),  // Profondeur → axe horizontal
+                y: (node.x ?? 0)   // Position dans le niveau → axe vertical
+            },
             data: {
                 ...node.data,
                 status: node.data.status || "pending",
                 isRoot,
             } as Question & { isRoot?: boolean },
-            hidden: node.depth > 1 ? true : false,
-            style: isRoot
-                ? { opacity: 0, pointerEvents: "none" }
-                : undefined,
+            // Cacher tous les nœuds sauf la racine au départ
+            hidden: !isRoot,
         });
 
         if (node.parent) {
@@ -91,7 +96,7 @@ export function d3ToReactFlow(root: HierarchyNode<Question>): { nodes: Node[]; e
 export function generateNodesWithMultiply(questions: Question[], parentAnswers: Record<string, string[]> = {}) {
     const nodes: Node[] = [];
 
-    questions.forEach(q => {
+    questions.forEach((q: Question) => {
         const parentId = q.parentId?.toString() ?? null;
 
         if (q.shouldMultiply && parentId && parentAnswers[parentId]?.length > 0) {
@@ -111,7 +116,7 @@ export function generateNodesWithMultiply(questions: Question[], parentAnswers: 
             });
         } else {
             nodes.push({
-                id: q.id.toString(),
+                id: q.questionId.toString(),
                 type: "question",
                 data: { ...q, parentId },
                 position: { x: 0, y: 0 },

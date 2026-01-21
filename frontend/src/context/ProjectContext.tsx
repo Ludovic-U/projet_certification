@@ -5,6 +5,8 @@ type Project = {
     id: string;
     name: string;
     description?: string;
+    clientId: string;
+    clientName: string;
     // Ajoutez d'autres propriétés selon vos besoins
 };
 

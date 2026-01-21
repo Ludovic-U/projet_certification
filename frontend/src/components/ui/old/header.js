@@ -65,7 +65,7 @@ export default function Header() {
             let title = "";
             switch (pathname) {
                 case "/super_admin":
-                    title = "Super-admin FIGURE DE SKILLS";
+                    title = "Super-admin FIGURES DE SKILLS";
                     break;
                 case "/admin":
                     title = "LAMBDA-SARL";

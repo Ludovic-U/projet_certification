@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 
 type LocalStorageContextType = {
   data: Record<string, any>;
@@ -11,18 +11,24 @@ const LocalStorageContext = createContext<LocalStorageContextType | undefined>(u
 
 export function LocalStorageProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<Record<string, any>>({});
+  const isInitialized = useRef(false);
 
-  // Charger le localStorage uniquement côté client
+  // Charger le localStorage uniquement au montage
   useEffect(() => {
-    const storedData = localStorage.getItem("appData");
-    if (storedData) {
-      setData(JSON.parse(storedData));
+    if (!isInitialized.current) {
+      const storedData = localStorage.getItem("appData");
+      if (storedData) {
+        setData(JSON.parse(storedData));
+      }
+      isInitialized.current = true;
     }
   }, []);
 
-  // Sauvegarder à chaque changement
+  // Sauvegarder à chaque changement (seulement après initialisation)
   useEffect(() => {
-    localStorage.setItem("appData", JSON.stringify(data));
+    if (isInitialized.current) {
+      localStorage.setItem("appData", JSON.stringify(data));
+    }
   }, [data]);
 
   const setItem = (key: string, value: any) => {

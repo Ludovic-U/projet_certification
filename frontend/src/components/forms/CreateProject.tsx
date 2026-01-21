@@ -1,50 +1,65 @@
-// "use client";
 
-// import { useState } from "react";
-// import { useForm } from "react-hook-form";
-// import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
-// import { Input, Button } from "@/components/ui"
-
-
-// export default function CreateProjectForm() {
-
-//     return (
-//         <>
-//             <form className="flex flex-col items-center select-none">
-//                 <div className="flex flex-col gap-6 items-center">
-//                     <Input label="Titre"/>
-//                     <Input label="Chef de projet"/>
-//                     <Input label="Description"/>
-//                     <Input type="date" className="text-greydarker" label="Date de début"/>
-//                 </div>
-//                 <Button type="submit" className="mt-8">Créer</Button>
-//             </form>
-//         </>
-//     )
-// }
 
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
-import { Input, Button } from "@/components/ui";
+import { Input, Button, MultiSelect, Select } from "@/components/ui";
+import api_backend from "@/api/axiosInstance";
 
 export type CreateProjectInputs = {
     projectName: string;
-    projectManager: string;
+    projectManager: number;
     projectDesc: string;
     startDate: string;
+    types?: number[];
 };
 
 interface CreateProjectFormProps {
     onSubmit: (data: CreateProjectInputs) => void;
     isLoading: boolean;
     apiError?: string;
+    clientId: number;
+}
+// TODO : code redondant avec CreateQuestion.tsx
+interface Type {
+  typeId: number | string;
+  label: string;
 }
 
-export default function CreateProjectForm({ onSubmit, isLoading, apiError }: CreateProjectFormProps) {
+interface User {
+  userId: number;
+  firstname: string;
+  lastname: string;
+  username: string;
+}
+
+export default function CreateProjectForm({ onSubmit, isLoading, apiError, clientId }: CreateProjectFormProps) {
     const { register, handleSubmit, formState: { errors } } = useForm<CreateProjectInputs>();
+    const [typesLabels, setTypesLabels] = useState<string[]>([]);
+    const [selectedType, setSelectedType] = useState<string[]>([]);
+    const [types, setTypes] = useState<Type[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
+
+    useEffect(() => {
+    // fetch Type List and Users by Client
+    const fetchData = async () => {
+      try {
+        const [typesRes, usersRes] = await Promise.all([
+          api_backend.get(`/type/get`),
+          api_backend.get(`/user/by-client/${clientId}`)
+        ]);
+        setTypes(typesRes.data);
+        setTypesLabels(typesRes.data.map((t: Type) => t.label));
+        setUsers(usersRes.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, [clientId]);
 
     return (
         <>
@@ -55,7 +70,14 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError }: Cre
             )}
 
             <form
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit((data) => {
+                    // Convertir les labels sélectionnés en IDs
+                    const typeIds = selectedType.map(label => 
+                        types.find(t => t.label === label)?.typeId
+                    ).filter(id => id !== undefined).map(id => Number(id));
+                    
+                    onSubmit({ ...data, types: typeIds });
+                })}
                 className="flex flex-col gap-8 items-center select-none w-[70%]"
             >
                 <div className="flex flex-col gap-6 items-center w-full">
@@ -65,11 +87,19 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError }: Cre
                         error={errors.projectName?.message}
                         leftIcon={<FontAwesomeIcon icon={Icons.projectDiagram} />}
                     />
-                    <Input
-                        {...register("projectManager", { required: "Le chef de projet est requis" })}
+                    <Select
+                        {...register("projectManager", { 
+                            required: "Le chef de projet est requis",
+                            valueAsNumber: true 
+                        })}
                         label="Chef de projet"
                         error={errors.projectManager?.message}
                         leftIcon={<FontAwesomeIcon icon={Icons.userTie} />}
+                        placeholder="Sélectionner un chef de projet"
+                        options={users.map(user => ({
+                            value: user.userId.toString(),
+                            label: `${user.firstname} ${user.lastname} (${user.username})`
+                        }))}
                     />
                     <Input
                         {...register("projectDesc", { required: "La description est requise" })}
@@ -85,6 +115,13 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError }: Cre
                         leftIcon={<FontAwesomeIcon icon={Icons.calendar} />}
                         className="text-greydarker"
                     />
+                    <MultiSelect
+                                  className="flex-1 max-w-70"
+                                  value={selectedType}
+                                  onChange={setSelectedType}
+                                  label="Type"
+                                  options={typesLabels}
+                                />
                 </div>
                 <Button type="submit" disabled={isLoading}>
                     {isLoading ? "Création..." : "Créer"}

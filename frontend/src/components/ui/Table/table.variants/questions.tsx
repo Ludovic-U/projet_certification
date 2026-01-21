@@ -8,7 +8,7 @@ export const questionsList: Column<Question>[] = [
         label: "ID",
         className: "w-15",
         render: (item) =>
-            <span className="font-bold text-grey">{item.id}</span>,
+            <span className="font-bold text-grey">{item.questionId}</span>,
     },
     {
         key: "label",
@@ -29,7 +29,7 @@ export const questionsList: Column<Question>[] = [
             <div className="flex gap-2 justify-center">
                 <Button size="sm" variant="primary">
                     <FontAwesomeIcon icon={Icons.gear} />
-                    Paramètres
+                    Modifier
                 </Button>
             </div>
         ),

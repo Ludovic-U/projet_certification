@@ -5,14 +5,16 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
+} 
+
+// la config de l'app est un fichier json ..\backend\config\app-config.json
 
 model User {
   userId    Int      @id @default(autoincrement())
   username  String   @unique
   firstname String
   lastname  String
-  password  String? 
+  password  String?
   email     String   @unique
   createdAt DateTime @default(now())
 
@@ -40,16 +42,17 @@ model UserSession {
 }
 
 model Client {
-  clientId    Int              @id @default(autoincrement())
-  clientName  String           @unique
-  clientType  String // TODO: en faire un enum
-  description String?
-  createdAt   DateTime         @default(now())
-  projects    Project[]
-  userRoles   ClientUserRole[]
+  clientId        Int              @id @default(autoincrement())
+  clientName      String           @unique
+  description     String?
+  secteur         String?
+  statusJuridique String?
+  createdAt       DateTime         @default(now())
+  projects        Project[]
+  userRoles       ClientUserRole[]
 }
 
-model ClientUserRole { // Role dans l'entreprise, pas dans l'appli, TODO: à éclaircir
+model ClientUserRole {
   clientId  Int
   userId    Int
   isManager Boolean @default(false) //TODO: à changer
@@ -109,14 +112,38 @@ model Project {
   projectDesc    String?
   createdAt      DateTime  @default(now())
   clientId       Int
+  SWOT_strength     String?
+  SWOT_weakness     String?
+  SWOT_opportunity  String?
+  SWOT_threat       String?
 
-  client         Client    @relation(fields: [clientId], references: [clientId])
-  manager        User      @relation("ProjectManager", fields: [projectManager], references: [userId])
-  actions        Action[]
+  client  Client   @relation(fields: [clientId], references: [clientId])
+  manager User     @relation("ProjectManager", fields: [projectManager], references: [userId])
+  actions Action[]
 
-  types     Type[] @relation("ProjectType")
-  questions Question[] @relation("ProjectQuestion")
-  responses Response[]
+  types           Type[]            @relation("ProjectType")
+  questions       Question[]        @relation("ProjectQuestion")
+  responses       Response[]
+  FinanceurProjet FinanceurProjet[]
+}
+
+model Financeur {
+  financeurId     Int               @id @default(autoincrement())
+  FinanceurName   String            @unique
+  FinanceurProjet FinanceurProjet[]
+}
+
+// The FinanceurProjet model serves as a join table to associate projects with financeurs and specify the percentage of funding provided by each financeur.
+model FinanceurProjet {
+  pourcentage Int
+  montant     Int
+  projectId   Int
+  financeurId Int
+
+  project   Project   @relation(fields: [projectId], references: [projectId])
+  financeur Financeur @relation(fields: [financeurId], references: [financeurId])
+
+  @@id([projectId, financeurId]) // Composite primary key  
 }
 
 model Action {
@@ -204,7 +231,7 @@ model Type {
   label  String
 
   questions Question[] @relation("TypeQuestion")
-  projects  Project[] @relation("ProjectType")
+  projects  Project[]  @relation("ProjectType")
 }
 
 // ==========================
@@ -213,6 +240,7 @@ model Type {
 model Question {
   questionId               Int      @id @default(autoincrement())
   label                    String
+  keyword                  String   @default("Mot clé")
   category                 String
   numberOfSelectionableOpt Int?
   isRelevant               Boolean?
@@ -220,10 +248,10 @@ model Question {
   shouldMultiply           Boolean?
   questionIdParent         Int?
 
-  types     Type[] @relation("TypeQuestion")
+  types     Type[]     @relation("TypeQuestion")
   options   Option[]
   responses Response[]
-  projects  Project[] @relation("ProjectQuestion")
+  projects  Project[]  @relation("ProjectQuestion")
 
   // Self relations
   parent   Question?  @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
@@ -243,6 +271,7 @@ model Option {
 model Response {
   responseId       Int     @id @default(autoincrement())
   label            String?
+  keyword          String?
   projectId        Int
   questionId       Int
   optionId         Int?

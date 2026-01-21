@@ -1,7 +1,6 @@
 "use client";
 
 import { Input, Button, Checkbox } from "@/components/ui"
-import { useState } from "react";
 
 interface Option {
     optionId: number;
@@ -11,15 +10,16 @@ interface Option {
 
 interface ReponseSelectProps {
     options: Option[];
+    value?: number[];
+    onChange?: (value: number[]) => void;
 }
 
-export default function ReponseSelect({ options }: ReponseSelectProps) {
-    const [reponses, setReponses] = useState<number[]>([]);
-
+export default function ReponseSelect({ options, value = [], onChange }: ReponseSelectProps) {
     const toggleOption = (id: number) => {
-        setReponses(prev  =>
-            prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]
-        );
+        const newValue = value.includes(id) 
+            ? value.filter(r => r !== id) 
+            : [...value, id];
+        onChange?.(newValue);
     };
     return (
         <>
@@ -29,7 +29,7 @@ export default function ReponseSelect({ options }: ReponseSelectProps) {
                  className="border my-2 pl-4 py-2 rounded-lg hover:border-dashed hover:border-primay">
                     <Checkbox
                     label={opt.label}
-                    checked={reponses.includes(opt.optionId)}
+                    checked={value.includes(opt.optionId)}
                     onCheckedChange={() => toggleOption(opt.optionId)}
                     />                   
                 </div>
