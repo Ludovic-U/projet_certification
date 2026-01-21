@@ -42,7 +42,7 @@ export default function IdeationPage() {
   const [swotProgress, setSwotProgress] = useState(0);
 
   // Store the response value
-  const [responseValue, setResponseValue] = useState<string>("");
+  const [responseValue, setResponseValue] = useState<string | string[] | number[]>("");
   // Store keyword for response
   const [responseKeyword, setResponseKeyword] = useState<string>("");
 
@@ -84,6 +84,14 @@ export default function IdeationPage() {
 
   const handleOpenQuestion = (question: Question) => {
     setSelectedQuestion(question);
+    // Initialize response value based on question type
+    if (question.hasMultipleOpenResponse) {
+      setResponseValue([""]);
+    } else if ((question.options?.length ?? 0) > 0) {
+      setResponseValue([]);
+    } else {
+      setResponseValue("");
+    }
     modalResponse.openModal();
   };
 
@@ -91,12 +99,7 @@ export default function IdeationPage() {
     if (question.shouldMultiply) return () => <div>Question répétée</div>;
     if (question.hasMultipleOpenResponse) return ReponsesPlusieurs;
     if ((question.options?.length ?? 0) > 0)
-      return (props: any) => (
-        <ReponseSelect
-          options={(question.options ?? []).map((o) => ({ label: o, value: o }))}
-          {...props}
-        />
-      );
+      return ReponseSelect;
     return ReponseUnique;
   };
 
@@ -136,7 +139,7 @@ export default function IdeationPage() {
             questions.slice(0).map((q: Question) => (
               <div
                 key={q.questionId}
-                className="p-3 border w-[360px] rounded-lg flex justify-between"
+                className="p-3 border w-90 rounded-lg flex justify-between"
               >
                 <p className="truncate">{q.label}</p>
                 <Button size="sm" onClick={() => handleOpenQuestion(q)}>
@@ -161,10 +164,23 @@ export default function IdeationPage() {
           }}
           onSkip={() => modalResponse.closeModal()}
         >
-          {React.createElement(getResponseForm(selectedQuestion), {
-            value: responseValue,
-            onChange: setResponseValue,
-          })}
+          {selectedQuestion.hasMultipleOpenResponse ? (
+            <ReponsesPlusieurs
+              value={responseValue as string[]}
+              onChange={setResponseValue as (v: string[]) => void}
+            />
+          ) : (selectedQuestion.options?.length ?? 0) > 0 ? (
+            <ReponseSelect
+              options={(selectedQuestion.options ?? []).map((opt, idx) => ({ id: idx, label: opt, optionId: idx, questionId: Number(selectedQuestion.questionId) }))}
+              value={responseValue as number[]}
+              onChange={setResponseValue as (v: number[]) => void}
+            />
+          ) : (
+            <ReponseUnique
+              value={responseValue as string}
+              onChange={setResponseValue as (v: string) => void}
+            />
+          )}
         </ModalQuestion>
       )}
     </div>

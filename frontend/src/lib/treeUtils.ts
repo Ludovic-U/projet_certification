@@ -61,12 +61,13 @@ export function d3ToReactFlow(root: HierarchyNode<Question>): { nodes: Node[]; e
 
     root.descendants().forEach(node => {
         const isRoot = node.depth === 0;
+        const questionData = node.data as Question;
 
         // Inverser x et y pour un layout horizontal (gauche à droite)
         // D3 tree : x = vertical, y = horizontal
         // ReactFlow : x = horizontal, y = vertical
         nodes.push({
-            id: node.data.id.toString(),
+            id: questionData.questionId.toString(),
             type: "question",
             position: { 
                 x: (node.y ?? 0),  // Profondeur → axe horizontal
@@ -83,9 +84,9 @@ export function d3ToReactFlow(root: HierarchyNode<Question>): { nodes: Node[]; e
 
         if (node.parent) {
             edges.push({
-                id: `n-${node.parent.data.id}-n${node.data.id}`,
-                source: node.parent.data.id.toString(),
-                target: node.data.id.toString(),
+                id: `n-${node.parent.data.questionId}-n${node.data.questionId}`,
+                source: node.parent.data.questionId.toString(),
+                target: node.data.questionId.toString(),
             });
         }
     });

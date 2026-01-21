@@ -130,7 +130,7 @@ export default function QuestionsPage() {
                 ...q,
                 id: q.questionId,
               }))}
-              columns={columnsWithDelete}
+              columns={columnsWithDelete as any}
             />
           </div>
         ) : (

@@ -5,7 +5,7 @@
 // import { Gantt, Willow } from "@svar-ui/react-gantt";
 // import "@svar-ui/react-gantt/all.css";
 
-// export default function ConceptionPage() {
+export default function ConceptionPage() {
 //     const { config } =  useConfig();
 
 //     // Données d'exemple pour le diagramme de Gantt
@@ -71,4 +71,5 @@
 //             </section>
 //         </div>
 //     );
-// }
+    return <div>Conception Page</div>;
+}

@@ -57,26 +57,26 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
   const [typesLabels, setTypesLabels] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string[]>([]);
 
-  const onSubmit = async () => {
+  const handleSubmit = async (data: CreateQuestionInputs) => {
     // Get the IDs of selected types
     const selectedIds = types
-      .filter((t) => selectedType.includes(t.label))
+      .filter((t) => data.typesLabels.includes(t.label))
       .map((t) => t.typeId);
     try {
       await api_backend.post(`question/create`, {
-        label,
-        category,
-        numberOfSelectionableOpt: options.length,
-        hasMultipleOpenResponse,
-        shouldMultiply,
-        ...(questionIdParent && { questionIdParent }),
-        ...(options && { options }),
+        label: data.label,
+        category: data.category,
+        numberOfSelectionableOpt: data.options.length,
+        hasMultipleOpenResponse: data.hasMultipleOpenResponse,
+        shouldMultiply: data.shouldMultiply,
+        ...(data.questionIdParent && { questionIdParent: data.questionIdParent }),
+        ...(data.options && { options: data.options }),
         ...(selectedIds && { types: selectedIds }),
       })
       .then(response => {console.log(response)});
 
       console.log("Question created successfully");
-      console.log(options)
+      console.log(data.options)
     } catch (error) {
       console.log(error);
     }
@@ -103,7 +103,7 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
         className="select-none flex flex-col items-center"
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit({
+          handleSubmit({
             label,
             keyword,
             category,
