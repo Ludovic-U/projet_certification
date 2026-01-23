@@ -18,23 +18,31 @@ import { getData } from '../data';
 
 const mask = "yyyy.MM.dd";
 
+// this is for the tooltip content when you hover on a task
 function MyTooltipContent({ data }: { data: any }) {
     if (!data) return null;
 
+    const { users } = getData();
+    const assignees = [data.to1, data.to2].map(id => users.find(u => u.id === id)?.label).filter(Boolean).join(', ');
+
     return (
-        <div className="data">
-            <div className="text">
-                <span className="caption">{data.type}:</span>
-                {data.text}
+        <div className="data bg-white p-3 rounded-lg shadow-lg border max-w-xs">
+            <div className="text mb-2">
+                <span className="caption font-semibold text-gray-700">{data.type}:</span>
+                <span className="ml-1 text-gray-900">{data.details}</span>
             </div>
-            <div className="text">
-                <span className="caption">start:</span>
-                {format(data.start, mask)}
+            <div className="text mb-2">
+                <span className="caption font-semibold text-gray-700">Assigned to:</span>
+                <span className="ml-1 text-gray-900">{assignees || 'N/A'}</span>
+            </div>
+            <div className="text mb-2">
+                <span className="caption font-semibold text-gray-700">Start:</span>
+                <span className="ml-1 text-gray-900">{(() => { try { return format(data.start, mask); } catch { return 'N/A'; } })()}</span>
             </div>
             {data.end && (
                 <div className="text">
-                    <span className="caption">end:</span>
-                    {format(data.end, mask)}
+                    <span className="caption font-semibold text-gray-700">End:</span>
+                    <span className="ml-1 text-gray-900">{(() => { try { return format(data.end, mask); } catch { return 'N/A'; } })()}</span>
                 </div>
             )}
         </div>
@@ -59,16 +67,22 @@ export default function ConceptionPage() {
     ];
 
     // Define only the fields you want to include
-    const keys = ["text", "type", "start", "end", "duration", "progress", "details"];
+    const keys = ["text", "type", "start", "end", "duration", "progress", "details", "to1", "to2"];
     const editorItems = keys.map((key) => getEditorItems().find((op: any) => op.key === key)).filter(Boolean);
 
-    // Add a custom field to assign the responsible user
+    // Add custom fields to assign responsible users
     editorItems.splice(3, 0, {
-        key: 'to',
+        key: 'to1',
         type: 'select',
-        label: 'Goes to',
+        label: 'Assigned to 1',
         options: data.users,
-        config: { placeholder: 'Select the person' },
+        comp: 'select',
+    });
+    editorItems.splice(4, 0, {
+        key: 'to2',
+        type: 'select',
+        label: 'Assigned to 2',
+        options: data.users,
         comp: 'select',
     });
 

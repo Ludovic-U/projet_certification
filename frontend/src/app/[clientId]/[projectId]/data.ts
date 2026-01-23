@@ -9,7 +9,8 @@ export function getData() {
             parent: 0,
             type: "task",
             details: "Planifier le projet",
-            to: 1,
+            to1: 1,
+            to2: null,
         },
         {
             id: 2,
@@ -31,7 +32,8 @@ export function getData() {
             parent: 2,
             type: "task",
             details: "Développer l'interface utilisateur",
-            to: 1,
+            to1: 1,
+            to2: null,
         },
         {
             id: 22,
@@ -42,7 +44,8 @@ export function getData() {
             parent: 2,
             type: "task",
             details: "Développer la logique serveur",
-            to: 2,
+            to1: 2,
+            to2: null,
         },
         {
             id: 3,
@@ -53,7 +56,8 @@ export function getData() {
             parent: 0,
             type: "task",
             details: "Tester le produit",
-            to: 2,
+            to1: 2,
+            to2: null,
         },
         {
             id: 4,
