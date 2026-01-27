@@ -1,104 +1,206 @@
-export function getData() {
-    const tasks = [
-        {
-            id: 1,
-            start: new Date(2025, 9, 19),
-            end: new Date(2025, 9, 25),
-            text: "Planification",
-            progress: 100,
-            parent: 0,
-            type: "task",
-            details: "Planifier le projet",
-            to1: 1,
-            to2: null,
-        },
-        {
-            id: 2,
-            start: new Date(2025, 9, 26),
-            end: new Date(2025, 10, 2),
-            text: "Développement",
-            progress: 50,
-            parent: 0,
-            type: "summary",
-            open: true,
-            details: "Développer les fonctionnalités",
-        },
-        {
-            id: 21,
-            start: new Date(2025, 9, 26),
-            end: new Date(2025, 9, 29),
-            text: "Frontend",
-            progress: 100,
-            parent: 2,
-            type: "task",
-            details: "Développer l'interface utilisateur",
-            to1: 1,
-            to2: null,
-        },
-        {
-            id: 22,
-            start: new Date(2025, 9, 30),
-            end: new Date(2025, 10, 2),
-            text: "Backend",
-            progress: 0,
-            parent: 2,
-            type: "task",
-            details: "Développer la logique serveur",
-            to1: 2,
-            to2: null,
-        },
-        {
-            id: 3,
-            start: new Date(2025, 10, 3),
-            end: new Date(2025, 10, 10),
-            text: "Test",
-            progress: 0,
-            parent: 0,
-            type: "task",
-            details: "Tester le produit",
-            to1: 2,
-            to2: null,
-        },
-        {
-            id: 4,
-            start: new Date(2025, 10, 11),
-            end: new Date(2025, 10, 15),
-            text: "Déploiement",
-            progress: 0,
-            parent: 0,
-            type: "task",
-            details: "Déployer en production",
-            to: 1,
-        },
-        {
-            id: 5,
-            start: new Date(2025, 10, 15),
-            end: new Date(2025, 10, 15),
-            text: "Projet Terminé",
-            progress: 0,
-            parent: 0,
-            type: "milestone",
-            details: "Fin du projet",
-        },
-    ];
-
-    const links = [
-        { id: 1, source: 1, target: 21, type: "e2s" },
-        { id: 2, source: 21, target: 22, type: "e2s" },
-        { id: 3, source: 22, target: 3, type: "e2s" },
-        { id: 4, source: 3, target: 4, type: "e2s" },
-        { id: 5, source: 4, target: 5, type: "e2s" },
-    ];
-
-    const scales = [
-        { unit: "month", step: 1, format: "MMMM yyyy" },
-        { unit: "day", step: 1, format: "d" },
-    ];
-
-    const users = [
-        { id: 1, label: "David" },
-        { id: 2, label: "Olivia" },
-    ];
-
-    return { tasks, links, scales, users };
+export interface Task {
+  id: number;
+  text: string;
+  start: Date;
+  end: Date;
+  progress: number;
+  parent: number;
+  type: 'task' | 'milestone' | 'project';
+  details: string;
+  notes: string;
+  files: string[];
+  to1: number;
+  to2: number;
 }
+
+export interface Link {
+  id: number;
+  source: number;
+  target: number;
+  type: number;
+}
+
+export interface User {
+  id: number;
+  label: string;
+}
+
+export interface GanttData {
+  tasks: Task[];
+  links: Link[];
+  users: User[];
+}
+
+export const getData = (): GanttData => ({
+  tasks: [
+    {
+      id: 1,
+      text: 'Project Planning',
+      start: new Date(2026, 0, 1),
+      end: new Date(2026, 0, 15),
+      progress: 100,
+      parent: 0,
+      type: 'project',
+      details: 'Initial project planning and requirement gathering',
+      notes: '',
+      files: [],
+      to1: 1,
+      to2: 2
+    },
+    {
+      id: 2,
+      text: 'Requirements Gathering',
+      start: new Date(2026, 0, 1),
+      end: new Date(2026, 0, 5),
+      progress: 100,
+      parent: 1,
+      type: 'task',
+      details: 'Gather and document requirements',
+      notes: '',
+      files: [],
+      to1: 1,
+      to2: 2
+    },
+    {
+      id: 3,
+      text: 'Planning Meeting',
+      start: new Date(2026, 0, 6),
+      end: new Date(2026, 0, 10),
+      progress: 100,
+      parent: 1,
+      type: 'milestone',
+      details: 'Kickoff meeting',
+      notes: '',
+      files: [],
+      to1: 1,
+      to2: 2
+    },
+    {
+      id: 4,
+      text: 'Design Phase',
+      start: new Date(2026, 0, 16),
+      end: new Date(2026, 1, 15),
+      progress: 75,
+      parent: 0,
+      type: 'project',
+      details: 'UI/UX design and architecture planning',
+      notes: '',
+      files: [],
+      to1: 2,
+      to2: 3
+    },
+    {
+      id: 5,
+      text: 'Wireframing',
+      start: new Date(2026, 0, 16),
+      end: new Date(2026, 0, 25),
+      progress: 80,
+      parent: 4,
+      type: 'task',
+      details: 'Create wireframes',
+      notes: '',
+      files: [],
+      to1: 2,
+      to2: 3
+    },
+    {
+      id: 6,
+      text: 'Design Review',
+      start: new Date(2026, 0, 26),
+      end: new Date(2026, 0, 26),
+      progress: 0,
+      parent: 4,
+      type: 'milestone',
+      details: 'Design review milestone',
+      notes: '',
+      files: [],
+      to1: 2,
+      to2: 3
+    },
+    {
+      id: 7,
+      text: 'Development',
+      start: new Date(2026, 1, 16),
+      end: new Date(2026, 3, 30),
+      progress: 45,
+      parent: 0,
+      type: 'project',
+      details: 'Core feature development',
+      notes: '',
+      files: [],
+      to1: 3,
+      to2: 4
+    },
+    {
+      id: 8,
+      text: 'Frontend Development',
+      start: new Date(2026, 1, 16),
+      end: new Date(2026, 2, 15),
+      progress: 60,
+      parent: 7,
+      type: 'task',
+      details: 'Build frontend components',
+      notes: '',
+      files: [],
+      to1: 3,
+      to2: 4
+    },
+    {
+      id: 9,
+      text: 'Backend Development',
+      start: new Date(2026, 2, 16),
+      end: new Date(2026, 3, 15),
+      progress: 30,
+      parent: 7,
+      type: 'task',
+      details: 'Develop backend APIs',
+      notes: '',
+      files: [],
+      to1: 4,
+      to2: 1
+    },
+    {
+      id: 10,
+      text: 'Testing',
+      start: new Date(2026, 3, 1),
+      end: new Date(2026, 4, 15),
+      progress: 20,
+      parent: 0,
+      type: 'task',
+      details: 'QA testing and bug fixes',
+      notes: '',
+      files: [],
+      to1: 4,
+      to2: 1
+    },
+    {
+      id: 11,
+      text: 'Deployment',
+      start: new Date(2026, 4, 16),
+      end: new Date(2026, 4, 31),
+      progress: 0,
+      parent: 0,
+      type: 'milestone',
+      details: 'Production deployment and monitoring',
+      notes: '',
+      files: [],
+      to1: 1,
+      to2: 3
+    }
+  ],
+  links: [
+    { id: 1, source: 2, target: 3, type: 0 },
+    { id: 2, source: 1, target: 4, type: 0 },
+    { id: 3, source: 5, target: 6, type: 0 },
+    { id: 4, source: 4, target: 7, type: 0 },
+    { id: 5, source: 8, target: 9, type: 0 },
+    { id: 6, source: 7, target: 10, type: 0 },
+    { id: 7, source: 10, target: 11, type: 0 }
+  ],
+  users: [
+    { id: 1, label: 'John Doe' },
+    { id: 2, label: 'Jane Smith' },
+    { id: 3, label: 'Mike Johnson' },
+    { id: 4, label: 'Sarah Williams' }
+  ]
+});
