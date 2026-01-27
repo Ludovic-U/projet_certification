@@ -106,6 +106,7 @@ model Project {
   projectName    String    @unique
   startDate      DateTime?
   endDate        DateTime?
+  tasks          Task[]
   projectManager Int
   projectStage   String?
   projectStatus  String?
@@ -196,13 +197,52 @@ model Budget {
 }
 
 model Task {
-  taskId      Int     @id @default(autoincrement())
-  subActionId Int     @map("sub_action_id")
-  name        String
-  description String?
-
-  subAction       SubAction        @relation(fields: [subActionId], references: [subActionId])
+  taskId          Int         @id @default(autoincrement())
+  subActionId     Int         @map("sub_action_id")
+  taskName        String
+  taskStart       DateTime    @default(now())
+  taskEnd         DateTime
+  taskProject     Task[]      @relation(fields: [projectId], references: [projectId])
+  taskProject     Task        @relation(fields: [])
+  taskType        String
+  taskDesc        String?
+  taskFiles       File[]
+  taskProgress    Int         @default(0)
+  
+  subAction       SubAction   @relation(fields: [subActionId], references: [subActionId])
+  
   taskAssignments TaskAssignment[]
+
+}
+
+model File {
+  fileId          Int @id @default(autoincrement())
+  taskId          Int
+  taskFile            File[] @relation(fields: [taskId], references: [taskId])
+  
+  name            String
+  url             String
+  size            Int
+  mimeType        String
+
+  uploadedAt      DateTime    @default(now())
+
+}
+
+model DepensesGantt {
+  depenseQte Int 
+  depenseCost Int
+  depenseType String
+
+}
+
+model employeeGantt {
+  employeeQte Int
+  employeeCost Int
+  employeeActor String?
+  employeePilot String
+  employeeNbd Int             @default(1)
+  
 }
 
 model TaskAssignment {
