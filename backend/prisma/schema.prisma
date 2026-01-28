@@ -202,11 +202,13 @@ model Task {
   taskName        String
   taskStart       DateTime    @default(now())
   taskEnd         DateTime
-  taskProject     Task[]      @relation(fields: [projectId], references: [projectId])
-  taskProject     Task        @relation(fields: [])
+  projectId       Int    
+  taskProject     Project       @relation(fields: [projectId], references : [projectId])
   taskType        String
   taskDesc        String?
   taskFiles       File[]
+  taskDepenses    DepensesGantt[]
+  taskEmployee    employeeGantt[]
   taskProgress    Int         @default(0)
   
   subAction       SubAction   @relation(fields: [subActionId], references: [subActionId])
@@ -218,7 +220,7 @@ model Task {
 model File {
   fileId          Int @id @default(autoincrement())
   taskId          Int
-  taskFile            File[] @relation(fields: [taskId], references: [taskId])
+  taskFile        Task @relation(fields: [taskId], references: [taskId])
   
   name            String
   url             String
@@ -230,6 +232,9 @@ model File {
 }
 
 model DepensesGantt {
+  depenseId Int @id @default(autoincrement())
+  taskId  Int
+  depenseTask   Task  @relation(fields: [taskId], references: [taskId])
   depenseQte Int 
   depenseCost Int
   depenseType String
@@ -237,6 +242,9 @@ model DepensesGantt {
 }
 
 model employeeGantt {
+  depenseId Int @id @default(autoincrement())
+  taskId Int 
+  employeeTask Task @relation(fields: [taskId], references: [taskId])
   employeeQte Int
   employeeCost Int
   employeeActor String?
