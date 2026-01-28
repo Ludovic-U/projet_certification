@@ -144,24 +144,21 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
     setResponseValue("");
     setSelectedOptions([]);
     setMultipleResponses([""]);
-    setResponseKeyword("");
     
     // Utiliser questionId en priorité, sinon id
     const questionId = question.questionId || question.id;
     
-    // Fetch response and set response value
-    try {
-      const res = await api_backend.get(
-        `/response/get/project/${projectId}/question/${questionId}`
-      );
-      if (res.data && res.data.length > 0) {
-        setResponseValue(res.data[0].label);
-      } else {
-        setResponseValue("");
-      }
-    } catch (error: any) {
-      console.log("Aucune réponse trouvée pour cette question (404 attendu)");
+    // Find existing response in projectResponses
+    const existingResponse = projectResponses.find(
+      (r: any) => r.questionId === Number(questionId)
+    );
+    
+    if (existingResponse) {
+      setResponseValue(existingResponse.label || "");
+      setResponseKeyword(existingResponse.keyword || "");
+    } else {
       setResponseValue("");
+      setResponseKeyword("");
     }
     
     modal.openModal();
@@ -328,7 +325,7 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
               modal={modal}
               question={question.label || "question"}
               questionId={question.id?.toString() || "id"}
-              keyword={question.keyword}
+              keyword={responseKeyword}
               onValidate={handleValidate}
               onSkip={handleSkip}
               onKeywordChange={setResponseKeyword}

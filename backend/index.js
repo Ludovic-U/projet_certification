@@ -1,16 +1,18 @@
-const express = require("express");
-const clientRoutes = require("./routes/clientRoutes");
-const projectRoutes = require("./routes/projectRoutes");
-const financeurRoutes = require('./routes/financeurRoutes');
-const configRoutes = require('./routes/configRoutes');
-const meRoutes = require("./routes/meRoutes");
-const userRoutes = require("./routes/userRoutes");
-const questionRoutes = require("./routes/questionRoutes");
-const responseRoutes = require("./routes/responseRoutes");
-const typeRoutes = require("./routes/typeRoutes");
-const optionRoutes = require("./routes/optionRoutes");
-const cookieParser = require("cookie-parser");
-const { authenticateUser } = require("./middlewares/auth");
+import express from "express";
+import clientRoutes from "./routes/clientRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import financeurRoutes from './routes/financeurRoutes.js';
+import configRoutes from './routes/configRoutes.js';
+import meRoutes from "./routes/meRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import questionRoutes from "./routes/questionRoutes.js";
+import responseRoutes from "./routes/responseRoutes.js";
+import typeRoutes from "./routes/typeRoutes.js";
+import optionRoutes from "./routes/optionRoutes.js";
+import mistralRoutes from "./routes/mistralRoutes.js";
+import cookieParser from "cookie-parser";
+import { authenticateUser } from "./middlewares/auth.js";
+
 const app = express();
 
 //json
@@ -48,8 +50,9 @@ app.use("/api/type", typeRoutes);
 app.use("/api/option", optionRoutes);
 app.use('/api/financeur', authenticateUser, financeurRoutes);
 app.use('/api/config', authenticateUser, configRoutes);
+app.use('/api/mistral', mistralRoutes); 
 
-module.exports = app; // export the app instance
+export default app; // export the app instance
 
 // start server
 const PORT = process.env.PORT;

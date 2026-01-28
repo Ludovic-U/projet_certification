@@ -1,0 +1,38 @@
+{
+    "Gantt": [
+        {
+            "id": 0,
+            "title": "<Nom de la tâche>",
+            "start_date": "<YYYY-MM-DD>",
+            "end_date": "<YYYY-MM-DD>",
+            "progress_percent": 0,
+            "parent_id": null,
+            "type": "<Type de tâche>",
+            "description": "<Description de la tâche>",
+            "note": "<Note supplémentaire>",
+            "assignees": [
+                {
+                    "name": "<Nom personne>",
+                    "hours_assigned": 0,
+                    "daily_cost": 0
+                }
+            ],
+            "expenses": [
+                {
+                    "type": "<Type de dépense>", 
+                    "name": "<Nom dépense>",
+                    "unit": "<Unité>",
+                    "unit_price": 0
+                }
+            ],
+            "deliverables": [
+                {
+                    "name": "<Nom livrable>",
+                    "delivered": false,
+                    "uploaded": false,
+                    "file_path": "<Chemin fichier>"
+                }
+            ]
+        }
+    ]
+}
