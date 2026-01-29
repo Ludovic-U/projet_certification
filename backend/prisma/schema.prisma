@@ -21,10 +21,7 @@ model User {
   userSessions UserSession[]
 
   roles               UserRole[] // Existing relation
-  taskAssignments     TaskAssignment[] // Existing relation
   clientUserRoles     ClientUserRole[] // Existing relation
-  projects            Project[]        @relation("ProjectManager") // Existing relation
-  subActionsPiloteGrt SubAction[]      @relation("PiloteGrt") // Fixed relation
 }
 
 model UserSession {
@@ -104,14 +101,14 @@ model RolePermission {
 model Project {
   projectId      Int       @id @default(autoincrement())
   projectName    String    @unique
-  startDate      DateTime?
+  startDate      DateTime? @default(now())
   endDate        DateTime?
   tasks          Task[]
-  projectManager Int
-  projectStage   String?
-  projectStatus  String?
+  projectType    String
+  projectProgress Int @default(0) 
   projectDesc    String?
   createdAt      DateTime  @default(now())
+  projectNote    String?
   clientId       Int
   SWOT_strength     String?
   SWOT_weakness     String?
@@ -119,8 +116,6 @@ model Project {
   SWOT_threat       String?
 
   client  Client   @relation(fields: [clientId], references: [clientId])
-  manager User     @relation("ProjectManager", fields: [projectManager], references: [userId])
-  actions Action[]
 
   types           Type[]            @relation("ProjectType")
   questions       Question[]        @relation("ProjectQuestion")
@@ -147,45 +142,20 @@ model FinanceurProjet {
   @@id([projectId, financeurId]) // Composite primary key  
 }
 
-model Action {
-  actionId   Int      @id @default(autoincrement())
-  actionName String
-  actionObj  String?
-  projectId  Int
-  startDate  DateTime
-
-  project    Project     @relation(fields: [projectId], references: [projectId])
-  subActions SubAction[]
-}
-
-model SubAction {
-  subActionId Int      @id @default(autoincrement())
-  actionId    Int
-  description String?
-  piloteGrtId Int?
-  startDate   DateTime
-  endDate     DateTime
-
-  action       Action        @relation(fields: [actionId], references: [actionId])
-  piloteGrt    User?         @relation("PiloteGrt", fields: [piloteGrtId], references: [userId]) // Fixed relation
-  deliverables Deliverable[]
-  budgets      Budget[]
-  tasks        Task[]
-}
-
 model Deliverable {
   deliverableId Int      @id @default(autoincrement())
-  subActionId   Int
+  
+  delivered     Boolean @default(false)
+  uploaded      Boolean @default(false)
+  filepath      String? 
   file          String
   startDate     DateTime
   endDate       DateTime
 
-  subAction SubAction @relation(fields: [subActionId], references: [subActionId])
 }
 
 model Budget {
   budgetId       Int            @id @default(autoincrement())
-  subActionId    Int
   category       BudgetCategory
   nature         String?
   quantity       Int?
@@ -193,16 +163,18 @@ model Budget {
   avgUnitCostTtc Decimal?
   total          Decimal?
 
-  subAction SubAction @relation(fields: [subActionId], references: [subActionId])
 }
 
 model Task {
   taskId          Int         @id @default(autoincrement())
-  subActionId     Int         @map("sub_action_id")
   taskName        String
   taskStart       DateTime    @default(now())
   taskEnd         DateTime
-  projectId       Int    
+  parentId       Int?
+  parent         Task? @relation("TaskHierarchy", fields: [parentId], references: [taskId])
+  children        Task[] @relation("TaskHierarchy")
+  taskParentId    Int      
+  projectId       Int
   taskProject     Project       @relation(fields: [projectId], references : [projectId])
   taskType        String
   taskDesc        String?
@@ -211,9 +183,7 @@ model Task {
   taskEmployee    employeeGantt[]
   taskProgress    Int         @default(0)
   
-  subAction       SubAction   @relation(fields: [subActionId], references: [subActionId])
   
-  taskAssignments TaskAssignment[]
 
 }
 
@@ -242,7 +212,7 @@ model DepensesGantt {
 }
 
 model employeeGantt {
-  depenseId Int @id @default(autoincrement())
+  employeeId Int @id @default(autoincrement())
   taskId Int 
   employeeTask Task @relation(fields: [taskId], references: [taskId])
   employeeQte Int
@@ -253,15 +223,14 @@ model employeeGantt {
   
 }
 
-model TaskAssignment {
-  userId Int
-  taskId Int
-
-  user User @relation(fields: [userId], references: [userId])
-  task Task @relation(fields: [taskId], references: [taskId])
-
-  @@id([userId, taskId]) // Composite primary key
-}
+//   userId Int
+//   taskId Int
+//
+//   user User @relation(fields: [userId], references: [userId])
+//   task Task @relation(fields: [taskId], references: [taskId])
+//
+//   @@id([userId, taskId]) // Composite primary key
+// }
 
 enum BudgetCategory {
   MOYENS_HUMAINS_INTERNES
