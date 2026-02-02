@@ -7,7 +7,23 @@ import { marked } from "marked";
 dotenv.config();
 
 const apiKey = process.env.MISTRAL_API_KEY;
-const client = new Mistral({apiKey: apiKey});
+const client = new Mistral({ apiKey: apiKey });
+
+export async function CallMistralAPI(prompt) {
+    const chatResponse = await client.chat.complete({
+        model: "mistral-large-latest",
+        messages: [{ role: 'user', content: prompt }],
+        responseFormat: { type: 'json_object' },
+    });
+
+    // prix des tokens 0.5$ par million de tokens pour mistral-large-3
+    const prix = (chatResponse.usage.promptTokens * 0.5 / 1000000) + (chatResponse.usage.completionTokens * 2 / 1000000);
+
+    console.log("cette opération a couté : " + prix + " $");
+    return chatResponse.choices[0].message.content;
+}
+
+// Format attendu pour le Gantt
 const ganttExpectedForma = `{
     "Gantt": [
         {
@@ -48,6 +64,7 @@ const ganttExpectedForma = `{
 }
 `;
 
+// Appel de l'API Mistral pour générer le Gantt
 export async function GenerateGanttMistralAPI(textContent) {
     try {
 
@@ -57,28 +74,43 @@ export async function GenerateGanttMistralAPI(textContent) {
             \n\nLe format attendu pour le Gantt est le suivant:\n${ganttExpectedForma}
             \n\nAssure toi que le JSON retourné est valide et respecte bien le format demandé.    `
             : 'How far is the moon from earth?';
-        
-        const chatResponse = await client.chat.complete({
-            model: "mistral-large-latest",
-            messages: [{role: 'user', content: prompt}],
-            responseFormat: {type: 'json_object'},
-        });
 
-         // prix des tokens 0.5$ par million de tokens pour mistral-large-3
-         const prix = (chatResponse.usage.promptTokens * 0.5 / 1000000) + (chatResponse.usage.completionTokens * 2 / 1000000);
+        return CallMistralAPI(prompt);
 
-        console.log("cette opération a couté : " + prix + " $");
-        
-        //  const parsedResponse = marked.parse(chatResponse.choices[0].message.content);
-        //  return parsedResponse;
-        return chatResponse.choices[0].message.content;
-        // return chatResponse
     } catch (err) {
-        console.error('OCR Error:', err);
-        return { error: 'OCR processing failed', details: err.message };
+        console.error('Mistral API Error:', err);
+        return { error: 'Mistral API Error', details: err.message };
     }
 }
 
+// Lire un document et en extraire le texte via OCR
+export async function MistralOCR(filePath) {
+    if (!apiKey) throw new Error('Missing MISTRAL_API_KEY');
+    if (!filePath) throw new Error('filePath is required');
+
+
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+
+    // Upload et récupère l'URL signée
+    const documentUrl = await uploadFile(filePath);
+
+    // Lance l'OCR avec l'URL
+    const response = await client.ocr.process({
+        model: 'mistral-ocr-latest',
+        document: {
+            type: 'document_url',
+            documentUrl: documentUrl,
+        },
+        includeImageBase64: true,
+    });
+
+    // Supprimer le fichier temporaire
+    fs.unlinkSync(filePath);
+
+    return response;
+}
+
+// Upload un fichier et retourne son URL signée
 async function uploadFile(filePath) {
     const fileName = path.basename(filePath);
     const fileBuffer = fs.readFileSync(filePath);
@@ -96,33 +128,11 @@ async function uploadFile(filePath) {
     const signedUrl = await client.files.getSignedUrl({
         fileId: uploadedFile.id
     });
-    
+
     return signedUrl.url;
 }
 
-// Lire un document et en extraire le texte via OCR
-export async function MistralOCR(filePath) {
-    if (!apiKey) throw new Error('Missing MISTRAL_API_KEY');
-    if (!filePath) throw new Error('filePath is required');
+// Genere un arbre de question/réponse à partir d'un texte
+export async function GenerateIdeationMistralAPI(textContent) {
 
-    
-    const fileContent = fs.readFileSync(filePath, 'utf-8');    
-
-    // Upload et récupère l'URL signée
-    const documentUrl = await uploadFile(filePath);
-
-    // Lance l'OCR avec l'URL
-    const response = await client.ocr.process({
-        model: 'mistral-ocr-latest',
-        document: {
-            type: 'document_url',
-            documentUrl: documentUrl,
-        },
-        includeImageBase64: true,
-    });
-
-    // Supprimer le fichier temporaire
-      fs.unlinkSync(filePath);
-
-    return response;
 }
