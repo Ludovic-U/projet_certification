@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { getProject } from "@/backend/routes/projectRoutes.js";
 
-const globalForPrisma = globalThis as unknow as {
+const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
@@ -48,17 +48,21 @@ export interface GanttData {
   users: User[];
 }
 
-export const getData = async (): Promise<GanttData> => {
-  const projects = await prisma.project.findMany({
-    include: {tasks: true}
+export const getData = async (clientId: string): Promise<GanttData> => {
+  const res = await fetch ('https:localhost:5432/Project/getByClientId/${clientId}',{
+    credentials: 'include',
+  });
+ if (!res.ok) throw new Error('Failed to fetch projects');
 
-  })
+ const projects = await res.json();
+  
   
 
-  const ganttTask = []
+  const ganttTask = projects.flatMap((project: any) => [
 
-  for (const project of projects) {
-    ganttTask.push({
+  
+
+    { 
       id: project.projectId,
       text: project.projectName,
       description: project.projectDesc,
@@ -74,10 +78,8 @@ export const getData = async (): Promise<GanttData> => {
       files: [],
       to1: 0,
       to2: 0
-    })
-
-      for (const task of project.tasks) {
-      ganttTask.push ({
+    },
+    ...project.tasks.map((task: any ) => ({
       id: task.taskId,
       text: task.taskName,
       start: task.taskStart,
@@ -91,14 +93,13 @@ export const getData = async (): Promise<GanttData> => {
       files: [],
       to1: 0,
       to2: 0
-      
-    })
-  }
-  }
+    }))
+    
+ ]); 
 
-  
-  return { tasks: ganttTask, links: [], users: [] }
-  });
+return { tasks: ganttTask, links: [], users: [] }
+  };
+
   // tasks: [
   //   {
   //     id: 1,
