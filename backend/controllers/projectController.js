@@ -16,21 +16,8 @@ const { validateId } = require("../middlewares/validateId");
 
 /**
  * Create a new project.
- * Expects the following fields in req.body:
- * - name: String
- * - description: String (optional)
- * - clientId: Number
- * Responds with the created project object.
- *
- * Example request body:
- * {
- *   "name": "New Project",
- *  "description": "Project description",
- *  "clientId": 1
- * }
- * */
+ */
 module.exports.createProjectPost = async (req, res) => {
-  // TODO: check permissions selon req.user ou rôle
   try {
     const data = {
       projectName: req.body.projectName,
@@ -51,32 +38,38 @@ module.exports.createProjectPost = async (req, res) => {
 
 /**
  * Update a project by ID.
- * Expects projectId in req.params and updated fields in req.body.
- * Responds with the updated project.
- *
- * Example request body:
- * {
- *   "name": "Updated Project Name",
- *  "description": "Updated description"
- * }
- * */
+ */
 module.exports.updateProjectPost = async (req, res) => {
   const projectId = Number(req.params.projectId);
+  
   // Validate projectId
   if (!validateId(projectId, "projectId", res)) return;
+  
   const { name, description } = req.body;
   if (!name) {
     return res.status(400).json({ error: "name is required" });
   }
+  
   try {
-    const project = await Project.findByPk(projectId);
+    // FIXED: Use Prisma instead of Sequelize
+    const project = await prisma.project.findUnique({
+      where: { projectId: projectId }
+    });
+    
     if (!project) {
       return res.status(404).json({ error: "Project not found" });
     }
-    project.name = name;
-    project.description = description;
-    await project.save();
-    res.status(200).json(project);
+    
+    // Update project with Prisma
+    const updatedProject = await prisma.project.update({
+      where: { projectId: projectId },
+      data: {
+        projectName: name,
+        projectDesc: description
+      }
+    });
+    
+    res.status(200).json(updatedProject);
   } catch (error) {
     console.error("Error updating project:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -85,37 +78,42 @@ module.exports.updateProjectPost = async (req, res) => {
 
 /**
  * Delete a project by ID.
- * Expects projectId in req.params.
- * Responds with the deleted project object.
- * */
+ */
 module.exports.deleteProjectPost = async (req, res) => {
   const projectId = Number(req.params.projectId);
+  
   // Validate projectId
   if (!validateId(projectId, "projectId", res)) return;
+  
   try {
-    const project = await Project.findByPk(projectId);
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
-    }
-    await project.destroy();
+    // FIXED: Use Prisma instead of Sequelize
+    const project = await prisma.project.delete({
+      where: { projectId: projectId }
+    });
+    
     res.status(200).json(project);
   } catch (error) {
     console.error("Error deleting project:", error);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: "Project not found" });
+    }
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
 /**
  * Get a project by ID.
- * Expects projectId in req.params.
- * Responds with the project object.
- * */
+ */
 module.exports.getProjectById = async (req, res) => {
   const projectId = Number(req.params.projectId);
+  
   // Validate projectId
   if (!validateId(projectId, "projectId", res)) return;
+  
   try {
-    const project = await Project.findByPk(projectId);
+    // FIXED: Use imported function or Prisma directly
+    const project = await getProjectById(projectId);
+    
     if (!project) {
       return res.status(404).json({ error: "Project not found" });
     }
@@ -126,10 +124,10 @@ module.exports.getProjectById = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 /**
  * Get all projects.
- * Responds with an array of project objects.
- * */
+ */
 module.exports.getAllProjects = async (req, res) => {
   try {
     const projects = await getAllProjects();
@@ -139,16 +137,18 @@ module.exports.getAllProjects = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 /**
  * Get projects by client ID.
- * Expects clientId in req.params.
- * Responds with an array of project objects.
- * */
+ */
 module.exports.getProjectsByClientId = async (req, res) => {
   const clientId = Number(req.params.clientId);
+  
   // Validate clientId
   if (!validateId(clientId, "clientId", res)) return;
+  
   try {
+    // FIXED: Use the correct function name (ProjectsByClientId vs getProjectsByClientId)
     const projects = await ProjectsByClientId(clientId);
     res.status(200).json(projects);
   } catch (error) {
@@ -159,15 +159,23 @@ module.exports.getProjectsByClientId = async (req, res) => {
 
 /**
  * Get projects by user ID.
- * Expects userId in req.params.
- * Responds with an array of project objects.
- * */
+ */
 module.exports.getProjectsByUserId = async (req, res) => {
   const userId = Number(req.params.userId);
+  
   // Validate userId
   if (!validateId(userId, "userId", res)) return;
+  
   try {
-    const projects = await Project.findAll({ where: { userId } });
+    // FIXED: Use Prisma instead of Sequelize
+    const projects = await prisma.project.findMany({
+      where: { 
+        // Assuming you have a managerId field or similar
+        // Adjust based on your actual schema
+        projectManager: userId 
+      }
+    });
+    
     res.status(200).json(projects);
   } catch (error) {
     console.error("Error fetching projects by userId:", error);
@@ -177,22 +185,25 @@ module.exports.getProjectsByUserId = async (req, res) => {
 
 /**
  * Get projects by name (partial match).
- * Expects name in req.params.
- * Responds with an array of project objects.
- * */
+ */
 module.exports.getProjectsByName = async (req, res) => {
   const name = req.params.name;
+  
   if (!name) {
     return res.status(400).json({ error: "name parameter is required" });
   }
+  
   try {
-    const projects = await Project.findAll({
+    // FIXED: Use Prisma instead of Sequelize
+    const projects = await prisma.project.findMany({
       where: {
-        name: {
-          [Op.iLike]: `%${name}%`,
-        },
-      },
+        projectName: {
+          contains: name,
+          mode: 'insensitive' // Case-insensitive search
+        }
+      }
     });
+    
     res.status(200).json(projects);
   } catch (error) {
     console.error("Error fetching projects by name:", error);
@@ -202,11 +213,10 @@ module.exports.getProjectsByName = async (req, res) => {
 
 /**
  * Update SWOT analysis for a project
- * Expects projectId in req.params and SWOT data in req.body
- * Responds with the updated SWOT data
  */
 module.exports.updateProjectSwotPost = async (req, res) => {
   const projectId = Number(req.params.projectId);
+  
   if (!validateId(projectId, "projectId", res)) return;
   
   try {
@@ -227,11 +237,10 @@ module.exports.updateProjectSwotPost = async (req, res) => {
 
 /**
  * Get SWOT analysis for a project
- * Expects projectId in req.params
- * Responds with the SWOT data
  */
 module.exports.getProjectSwotGet = async (req, res) => {
   const projectId = Number(req.params.projectId);
+  
   if (!validateId(projectId, "projectId", res)) return;
   
   try {

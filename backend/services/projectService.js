@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 module.exports.createProject = async (data) => {
   try {
-    const managerId = Number(data.projectManager ?? data.managerId ?? 1); // adapter si nécessaire
+    const managerId = Number(data.projectManager ?? data.managerId ?? 1);
     const clientId = Number(data.clientId);
 
     if (!Number.isInteger(managerId) || managerId <= 0) {
@@ -21,10 +21,8 @@ module.exports.createProject = async (data) => {
         projectStage: data.projectStage ?? "Idéation",
         projectStatus: data.projectStatus ?? "en cours",
         projectDesc: data.projectDesc ?? null,
-        // connect relations via nested connect (do not include the scalar fields projectManager/clientId here)
         manager: { connect: { userId: managerId } },
         client: { connect: { clientId: clientId } },
-        // Connecter les types si fournis
         types: Array.isArray(data.types) && data.types.length > 0 
           ? { connect: data.types.map(id => ({ typeId: Number(id) })) } 
           : undefined,
@@ -48,8 +46,6 @@ module.exports.getAllProjects = async () => {
   // never used
 };
 
-// TODO: Update
-
 module.exports.deleteProject = async (projectId) => {
   try {
     return await prisma.project.delete({
@@ -66,7 +62,19 @@ module.exports.deleteProject = async (projectId) => {
 module.exports.getProjectById = async (projectId) => {
   const project = await prisma.project.findUnique({
     where: { projectId: projectId },
-    include: { types: true, questions: true },
+    include: { 
+      types: true, 
+      questions: true,
+      tasks: {
+        include: {
+          taskFiles: true,
+          taskDepenses: true,
+          taskEmployee: true,
+          children: true,
+          parent: true
+        }
+      }
+    },
   });
 
   if (!project) {
@@ -112,10 +120,26 @@ module.exports.ProjectsByClientId = async (clientId) => {
             },
           },
         },
+        // ADDED: Include tasks with their relations
+        tasks: {
+          include: {
+            taskFiles: true,
+            taskDepenses: true,
+            taskEmployee: true,
+            children: true,
+            parent: true
+          },
+          orderBy: {
+            taskStart: 'asc'
+          }
+        },
       },
+      orderBy: {
+        startDate: 'asc'
+      }
     });
 
-    // Transformer les données pour correspondre au type Project frontend
+    // Format projects for Gantt chart
     const formattedProjects = projects.map((project) => ({
       projectId: project.projectId,
       projectName: project.projectName,
@@ -124,8 +148,33 @@ module.exports.ProjectsByClientId = async (clientId) => {
       ChefDeProjet: project.manager 
         ? `${project.manager.firstname} ${project.manager.lastname}` 
         : "N/A",
-      types: project.types.map((t) => t.label), // Array de strings
-      financeurs: project.FinanceurProjet.map((fp) => fp.financeur.FinanceurName), // Array de strings
+      types: project.types.map((t) => t.label),
+      financeurs: project.FinanceurProjet.map((fp) => fp.financeur.FinanceurName),
+      // Project data for Gantt
+      startDate: project.startDate,
+      endDate: project.endDate,
+      projectStage: project.projectStage,
+      projectProgress: project.projectProgress || 0,
+      createdAt: project.createdAt,
+      // Include tasks for Gantt
+      tasks: project.tasks.map(task => ({
+        taskId: task.taskId,
+        taskName: task.taskName,
+        taskStart: task.taskStart,
+        taskEnd: task.taskEnd,
+        taskProgress: task.taskProgress || 0,
+        taskDesc: task.taskDesc || '',
+        taskParentId: task.taskParentId || 0,
+        parentId: task.parentId || 0,
+        projectId: task.projectId,
+        taskType: task.taskType || 'task',
+        // Include nested data if needed
+        files: task.taskFiles,
+        expenses: task.taskDepenses,
+        employees: task.taskEmployee,
+        children: task.children,
+        parent: task.parent
+      }))
     }));
 
     return formattedProjects;

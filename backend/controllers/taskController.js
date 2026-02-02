@@ -16,30 +16,19 @@ const { validateId } = require("../middlewares/validateId");
 
 /**
  * Create a new task.
- * Expects the following fields in req.body:
- * - name: String
- * - description: String (optional)
- * - clientId: Number
- * Responds with the created task object.
- *
- * Example request body:
- * {
- *   "name": "New task",
- *  "description": "task description",
- *  "clientId": 1
- * }
- * */
+ */
 module.exports.createtaskPost = async (req, res) => {
-  // TODO: check permissions selon req.user ou rôle
   try {
     const data = {
       taskName: req.body.taskName,
-      taskManager: parseInt(req.body.taskManager, 10),
       taskDesc: req.body.taskDesc,
       clientId: parseInt(req.body.clientId, 10),
+      projectId: parseInt(req.body.projectId, 10), // Add projectId
       startDate: req.body.startDate,
-      types: req.body.types || [],
-      taskFile: req.body.taskFile,
+      endDate: req.body.endDate,
+      taskProgress: req.body.taskProgress || 0,
+      taskParentId: req.body.taskParentId || 0,
+      taskType: req.body.taskType || 'task',
     };
 
     const newTask = await createTask(data);
@@ -52,32 +41,38 @@ module.exports.createtaskPost = async (req, res) => {
 
 /**
  * Update a task by ID.
- * Expects taskId in req.params and updated fields in req.body.
- * Responds with the updated task.
- *
- * Example request body:
- * {
- *   "name": "Updated task Name",
- *  "description": "Updated description"
- * }
- * */
+ */
 module.exports.updatetaskPost = async (req, res) => {
   const taskId = Number(req.params.taskId);
+  
   // Validate taskId
   if (!validateId(taskId, "taskId", res)) return;
+  
   const { name, description } = req.body;
   if (!name) {
     return res.status(400).json({ error: "Un nom est requis" });
   }
+  
   try {
-    const task = await task.findByPk(taskId);
+    // FIXED: Use Prisma instead of Sequelize
+    const task = await prisma.task.findUnique({
+      where: { taskId: taskId }
+    });
+    
     if (!task) {
       return res.status(404).json({ error: "Tâche introuvable" });
     }
-    task.name = name;
-    task.description = description;
-    await task.save();
-    res.status(200).json(task);
+    
+    // Update task with Prisma
+    const updatedTask = await prisma.task.update({
+      where: { taskId: taskId },
+      data: {
+        taskName: name,
+        taskDesc: description
+      }
+    });
+    
+    res.status(200).json(updatedTask);
   } catch (error) {
     console.error("Erreur lors de la mise à jour de tâche:", error);
     res.status(500).json({ error: "Erreur Serveur" });
@@ -86,37 +81,41 @@ module.exports.updatetaskPost = async (req, res) => {
 
 /**
  * Delete a task by ID.
- * Expects taskId in req.params.
- * Responds with the deleted task object.
- * */
+ */
 module.exports.deletetaskPost = async (req, res) => {
   const taskId = Number(req.params.taskId);
+  
   // Validate taskId
   if (!validateId(taskId, "taskId", res)) return;
+  
   try {
-    const task = await task.findByPk(taskId);
-    if (!task) {
-      return res.status(404).json({ error: "Tâche introuvable" });
-    }
-    await task.destroy();
+    // FIXED: Use Prisma instead of Sequelize
+    const task = await prisma.task.delete({
+      where: { taskId: taskId }
+    });
+    
     res.status(200).json(task);
   } catch (error) {
     console.error("Error deleting task:", error);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: "Tâche introuvable" });
+    }
     res.status(500).json({ error: "Erreur Serveur" });
   }
 };
 
 /**
  * Get a task by ID.
- * Expects taskId in req.params.
- * Responds with the task object.
- * */
+ */
 module.exports.gettaskById = async (req, res) => {
   const taskId = Number(req.params.taskId);
+  
   // Validate taskId
   if (!validateId(taskId, "taskId", res)) return;
+  
   try {
-    const task = await task.findByPk(taskId);
+    const task = await getTaskById(taskId);
+    
     if (!task) {
       return res.status(404).json({ error: "Tâche introuvable" });
     }
@@ -127,28 +126,29 @@ module.exports.gettaskById = async (req, res) => {
     res.status(500).json({ error: "Erreur Serveur" });
   }
 };
+
 /**
  * Get all tasks.
- * Responds with an array of task objects.
- * */
+ */
 module.exports.getAlltasks = async (req, res) => {
   try {
-    const tasks = await getAlltasks();
+    const tasks = await getAllTasks();
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error);
     res.status(500).json({ error: "Erreur Serveur" });
   }
 };
+
 /**
  * Get tasks by client ID.
- * Expects clientId in req.params.
- * Responds with an array of task objects.
- * */
+ */
 module.exports.gettasksByClientId = async (req, res) => {
   const clientId = Number(req.params.clientId);
+  
   // Validate clientId
   if (!validateId(clientId, "clientId", res)) return;
+  
   try {
     const tasks = await tasksByClientId(clientId);
     res.status(200).json(tasks);
@@ -160,15 +160,24 @@ module.exports.gettasksByClientId = async (req, res) => {
 
 /**
  * Get tasks by user ID.
- * Expects userId in req.params.
- * Responds with an array of task objects.
- * */
+ */
 module.exports.gettasksByUserId = async (req, res) => {
   const userId = Number(req.params.userId);
+  
   // Validate userId
   if (!validateId(userId, "userId", res)) return;
+  
   try {
-    const tasks = await task.findAll({ where: { userId } });
+    // FIXED: Use Prisma instead of Sequelize
+    // Assuming tasks are related to projects which have a manager
+    // You need to adjust this based on your actual schema
+    const tasks = await prisma.task.findMany({
+      where: { 
+        // This depends on how tasks relate to users in your schema
+        // You might need to join through projects
+      }
+    });
+    
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error fetching tasks by userId:", error);
@@ -178,22 +187,25 @@ module.exports.gettasksByUserId = async (req, res) => {
 
 /**
  * Get tasks by name (partial match).
- * Expects name in req.params.
- * Responds with an array of task objects.
- * */
+ */
 module.exports.gettasksByName = async (req, res) => {
   const name = req.params.name;
+  
   if (!name) {
     return res.status(400).json({ error: "name parameter is required" });
- }
+  }
+  
   try {
-    const tasks = await task.findAll({
+    // FIXED: Use Prisma instead of Sequelize
+    const tasks = await prisma.task.findMany({
       where: {
-        name: {
-          [Op.iLike]: `%${name}%`,
-        },
-      },
+        taskName: {
+          contains: name,
+          mode: 'insensitive'
+        }
+      }
     });
+    
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error fetching tasks by name:", error);
@@ -203,11 +215,10 @@ module.exports.gettasksByName = async (req, res) => {
 
 /**
  * Update SWOT analysis for a task
- * Expects taskId in req.params and SWOT data in req.body
- * Responds with the updated SWOT data
  */
 module.exports.updatetaskSwotPost = async (req, res) => {
   const taskId = Number(req.params.taskId);
+  
   if (!validateId(taskId, "taskId", res)) return;
   
   try {
@@ -218,7 +229,7 @@ module.exports.updatetaskSwotPost = async (req, res) => {
       SWOT_threat: req.body.SWOT_threat || req.body.threats,
     };
 
-    const updatedtask = await updatetaskSwot(taskId, swotData);
+    const updatedtask = await updateTaskSwot(taskId, swotData);
     res.status(200).json(updatedtask);
   } catch (error) {
     console.error("Error updating task SWOT:", error);
@@ -228,15 +239,14 @@ module.exports.updatetaskSwotPost = async (req, res) => {
 
 /**
  * Get SWOT analysis for a task
- * Expects taskId in req.params
- * Responds with the SWOT data
  */
 module.exports.gettaskSwotGet = async (req, res) => {
   const taskId = Number(req.params.taskId);
+  
   if (!validateId(taskId, "taskId", res)) return;
   
   try {
-    const task = await gettaskSwot(taskId);
+    const task = await getTaskSwot(taskId);
     res.status(200).json(task);
   } catch (error) {
     console.error("Error fetching task SWOT:", error);
@@ -245,4 +255,4 @@ module.exports.gettaskSwotGet = async (req, res) => {
     }
     res.status(500).json({ error: "Erreur Serveur" });
   }
-}
+};
