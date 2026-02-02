@@ -3,11 +3,11 @@ import { FontAwesomeIcon, Icons } from "@/lib/icons";
 
 
 export type Project = {
-  projectId: number;
-  projectName: string;
-  ChefDeProjet: string;
-  types: string[];
-  financeurs: string[];
+    projectId: number;
+    projectName: string;
+    ChefDeProjet: string;
+    types: string[];
+    financeurs: string[];
 };
 
 //Nom du projet, nom chef de projet (par défault l’admin_client), Types(s), Financeurs
@@ -47,8 +47,12 @@ export const projectsList: Column<Project>[] = [
     {
         key: "actions",
         label: "Actions",
-        render: () => (
-            <Button size="sm" variant="primary">
+        render: (item, onEditClick) => (
+            <Button
+                size="sm"
+                variant="primary"
+                onClick={(e) => onEditClick?.(item, e)}
+            >
                 <FontAwesomeIcon icon={Icons.gear} />
                 Modifier
             </Button>

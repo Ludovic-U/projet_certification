@@ -3,9 +3,10 @@
 import { PageHeader, Button, Card, Table } from "@/components/ui";
 import { useParams, useRouter } from "next/navigation";
 import { useLocalStorage } from "@/context/LocalStorageContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Column } from "@/components/ui/Table/table.types";
 import { useConfig } from "@/context/ConfigContext";
+import api_backend from "@/api/axiosInstance";
 
 export default function VueEnsemblePage() {
     const router = useRouter();
@@ -21,28 +22,73 @@ export default function VueEnsemblePage() {
     const reportingProgress = 20;
 
     // Todo list state
-    const [todos, setTodos] = useState<{ id: number; text: string; completed: boolean }[]>([]);
+    const [todos, setTodos] = useState<{ id: number; text: string; completed: boolean; assignedTo?: number; assignedToName?: string; deadline?: string }[]>([]);
     const [newTodoText, setNewTodoText] = useState("");
+    const [newTodoAssignedTo, setNewTodoAssignedTo] = useState<number | undefined>(undefined);
+    const [newTodoDeadline, setNewTodoDeadline] = useState("");
+    const [users, setUsers] = useState<{ userId: number; firstname: string; lastname: string }[]>([]);
+
+    const params = useParams();
+
+    // Fetch users by client
+    useEffect(() => {
+        if (params.clientId) {
+            api_backend.get(`/user/by-client/${params.clientId}`)
+                .then(res => setUsers(res.data))
+                .catch(err => console.error("Error fetching users:", err));
+        }
+    }, [params.clientId]);
+
+    // Fetch todos for the project
+    useEffect(() => {
+        if (params.projectId) {
+            api_backend.get(`/todo/project/${params.projectId}`)
+                .then(res => setTodos(res.data))
+                .catch(err => console.error("Error fetching todos:", err));
+        }
+    }, [params.projectId]);
 
     const addTodo = () => {
-        if (newTodoText.trim()) {
-            setTodos([...todos, { id: Date.now(), text: newTodoText, completed: false }]);
-            setNewTodoText("");
+        if (newTodoText.trim() && params.projectId) {
+            const todoData = {
+                text: newTodoText,
+                projectId: Number(params.projectId),
+                assignedTo: newTodoAssignedTo,
+                deadline: newTodoDeadline || undefined,
+            };
+
+            api_backend.post('/todo/create', todoData)
+                .then(res => {
+                    setTodos([res.data, ...todos]);
+                    setNewTodoText("");
+                    setNewTodoAssignedTo(undefined);
+                    setNewTodoDeadline("");
+                })
+                .catch(err => console.error("Error creating todo:", err));
         }
     };
 
     const toggleTodo = (id: number) => {
-        setTodos(todos.map(todo => 
-            todo.id === id ? { ...todo, completed: !todo.completed } : todo
-        ));
+        const todo = todos.find(t => t.id === id);
+        if (!todo) return;
+
+        api_backend.put(`/todo/${id}`, { completed: !todo.completed })
+            .then(res => {
+                setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+            })
+            .catch(err => console.error("Error updating todo:", err));
     };
 
     const deleteTodo = (id: number) => {
-        setTodos(todos.filter(todo => todo.id !== id));
+        api_backend.delete(`/todo/${id}`)
+            .then(() => {
+                setTodos(todos.filter(todo => todo.id !== id));
+            })
+            .catch(err => console.error("Error deleting todo:", err));
     };
 
     // Colonnes pour la Table des todos
-    const todoColumns: Column<{ id: number; text: string; completed: boolean }>[] = [
+    const todoColumns: Column<{ id: number; text: string; completed: boolean; assignedTo?: number; assignedToName?: string; deadline?: string }>[] = [
         {
             key: "completed",
             label: "",
@@ -64,9 +110,17 @@ export default function VueEnsemblePage() {
             key: "text",
             label: "Tâche",
             render: (todo) => (
-                <span className={`${todo.completed ? 'line-through text-grey' : 'text-greydarker'}`}>
-                    {todo.text}
-                </span>
+                <div className="flex flex-col gap-0.5">
+                    <span className={`${todo.completed ? 'line-through text-grey' : 'text-greydarker'}`}>
+                        {todo.text}
+                    </span>
+                    {(todo.assignedToName || todo.deadline) && (
+                        <div className="flex gap-2 text-xs text-grey">
+                            {todo.assignedToName && <span>👤 {todo.assignedToName}</span>}
+                            {todo.deadline && <span>📅 {new Date(todo.deadline).toLocaleDateString()}</span>}
+                        </div>
+                    )}
+                </div>
             )
         },
         {
@@ -131,8 +185,6 @@ export default function VueEnsemblePage() {
             }
         ];
 
-    const params = useParams();
-
     return (
         <div className="h-full flex flex-col">
             <PageHeader title={"Projet " + (data?.projectName ?? "")} description={config?.subtitles.overview}/>
@@ -162,14 +214,36 @@ export default function VueEnsemblePage() {
                                 </Button>
                             </div>
                             
-                            <input
-                                type="text"
-                                value={newTodoText}
-                                onChange={(e) => setNewTodoText(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && addTodo()}
-                                placeholder="Nouvelle tâche..."
-                                className="w-full px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
-                            />
+                            <div className="flex flex-col gap-2">
+                                <input
+                                    type="text"
+                                    value={newTodoText}
+                                    onChange={(e) => setNewTodoText(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && addTodo()}
+                                    placeholder="Nouvelle tâche..."
+                                    className="w-full px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
+                                />
+                                <div className="flex gap-2">
+                                    <select
+                                        value={newTodoAssignedTo || ""}
+                                        onChange={(e) => setNewTodoAssignedTo(e.target.value ? Number(e.target.value) : undefined)}
+                                        className="flex-1 px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
+                                    >
+                                        <option value="">Non assigné</option>
+                                        {users.map(user => (
+                                            <option key={user.userId} value={user.userId}>
+                                                {user.firstname} {user.lastname}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="date"
+                                        value={newTodoDeadline}
+                                        onChange={(e) => setNewTodoDeadline(e.target.value)}
+                                        className="flex-1 px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
+                                    />
+                                </div>
+                            </div>
 
                             <div className="flex-1 overflow-y-auto max-h-100">
                                 {todos.length === 0 ? (

@@ -64,21 +64,25 @@ module.exports.updateProjectPost = async (req, res) => {
   const projectId = Number(req.params.projectId);
   // Validate projectId
   if (!validateId(projectId, "projectId", res)) return;
-  const { name, description } = req.body;
-  if (!name) {
-    return res.status(400).json({ error: "name is required" });
-  }
   try {
-    const project = await Project.findByPk(projectId);
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
-    }
-    project.name = name;
-    project.description = description;
-    await project.save();
-    res.status(200).json(project);
+    const data = {
+      projectName: req.body.projectName,
+      projectManager: req.body.projectManager,
+      projectDesc: req.body.projectDesc,
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      projectStage: req.body.projectStage,
+      projectStatus: req.body.projectStatus,
+      types: req.body.types,
+    };
+
+    const updatedProject = await updateProject(projectId, data);
+    res.status(200).json(updatedProject);
   } catch (error) {
     console.error("Error updating project:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
+    }
     res.status(500).json({ error: "Internal server error" });
   }
 };

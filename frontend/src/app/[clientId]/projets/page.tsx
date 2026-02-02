@@ -31,6 +31,7 @@ export default function ProjectsPage() {
 
     const [projects, setProjects] = useState<any[]>([]);
     const [clientName, setClientName] = useState<string>("");
+    const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
     const fetchProjects = () => {
         api_backend.get(`/project/getByClientId/${params.clientId}`)
@@ -71,6 +72,22 @@ export default function ProjectsPage() {
         router.push(`/${params.clientId}/${project.projectId}/vue_ensemble`);
     };
 
+    const handleEditProject = (project: any, event: React.MouseEvent) => {
+        event.stopPropagation();
+        setSelectedProject(project);
+        modal.openModal();
+    };
+
+    const handleAddProject = () => {
+        setSelectedProject(null);
+        modal.openModal();
+    };
+
+    const handleModalClose = () => {
+        setSelectedProject(null);
+        modal.closeModal();
+    };
+
     
     const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
@@ -92,7 +109,7 @@ export default function ProjectsPage() {
                     <div>
                         <Tooltip content="Ajouter un projet" position="rightBottom">
                             <Button
-                            onClick={modal.openModal}
+                            onClick={handleAddProject}
                             size="sm">
                                 <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
                                     <FontAwesomeIcon icon={Icons.plus}/>
@@ -101,18 +118,29 @@ export default function ProjectsPage() {
                             </Button>
                         </Tooltip>
                         <Modal modal={modal}
-                        title="AJOUTER UN PROJET"
-                        description="Entrez les informations du nouveau projet">
+                        title={selectedProject ? "MODIFIER LE PROJET" : "AJOUTER UN PROJET"}
+                        description={selectedProject ? "Modifiez les informations du projet" : "Entrez les informations du nouveau projet"}>
                             <CreateProjectForm 
                                 clientId={Number(params.clientId)}
+                                initialData={selectedProject}
                                 onSubmit={(formData) => {
-                                    // Handle form submission logic here
-                                    // Example: send formData to backend and refresh users list
-                                    api_backend.post('/project/create', { ...formData, clientId: params.clientId })
-                                        .then(response => {
-                                            modal.closeModal();
-                                            fetchProjects(); // ou router.refresh()
-                                        })
+                                    if (selectedProject) {
+                                        // Mode édition
+                                        api_backend.put(`/project/${selectedProject.projectId}`, { ...formData, clientId: params.clientId })
+                                            .then(response => {
+                                                handleModalClose();
+                                                fetchProjects();
+                                            })
+                                            .catch(err => console.error(err));
+                                    } else {
+                                        // Mode création
+                                        api_backend.post('/project/create', { ...formData, clientId: params.clientId })
+                                            .then(response => {
+                                                handleModalClose();
+                                                fetchProjects();
+                                            })
+                                            .catch(err => console.error(err));
+                                    }
                                 }}
                                 isLoading={false}/>
                         </Modal>
@@ -128,12 +156,14 @@ export default function ProjectsPage() {
                 <TableResponsive<any>
                  data={currentData}
                  columns={projectsList}
-                 onRowClick={(project) => handleRowClick(project)}/>
+                 onRowClick={(project) => handleRowClick(project)}
+                 onEditClick={(project, event) => handleEditProject(project, event)}/>
 
                 <Table<any>
                  data={currentData}
                  columns={projectsList}
-                 onRowClick={(project) => handleRowClick(project)}/>
+                 onRowClick={(project) => handleRowClick(project)}
+                 onEditClick={(project, event) => handleEditProject(project, event)}/>
                  {totalPages > 1 && (
                     <div className="flex justify-center mt-10">
                         <Pagination

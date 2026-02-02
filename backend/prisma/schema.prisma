@@ -25,6 +25,7 @@ model User {
   clientUserRoles     ClientUserRole[] // Existing relation
   projects            Project[]        @relation("ProjectManager") // Existing relation
   subActionsPiloteGrt SubAction[]      @relation("PiloteGrt") // Fixed relation
+  todos               Todo[]           @relation("TodoAssignments")
 }
 
 model UserSession {
@@ -125,6 +126,20 @@ model Project {
   questions       Question[]        @relation("ProjectQuestion")
   responses       Response[]
   FinanceurProjet FinanceurProjet[]
+  todos           Todo[]
+}
+
+model Todo {
+  todoId     Int       @id @default(autoincrement())
+  text       String
+  completed  Boolean   @default(false)
+  projectId  Int
+  assignedTo Int?
+  deadline   DateTime?
+  createdAt  DateTime  @default(now())
+
+  project      Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  assignedUser User?   @relation("TodoAssignments", fields: [assignedTo], references: [userId], onDelete: SetNull)
 }
 
 model Financeur {

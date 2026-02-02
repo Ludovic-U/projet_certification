@@ -48,7 +48,56 @@ module.exports.getAllProjects = async () => {
   // never used
 };
 
-// TODO: Update
+module.exports.updateProject = async (projectId, data) => {
+  try {
+    const validProjectId = Number(projectId);
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+
+    const updateData = {};
+
+    if (data.projectName !== undefined) updateData.projectName = data.projectName;
+    if (data.projectDesc !== undefined) updateData.projectDesc = data.projectDesc;
+    if (data.startDate !== undefined) updateData.startDate = data.startDate ? new Date(data.startDate) : null;
+    if (data.endDate !== undefined) updateData.endDate = data.endDate ? new Date(data.endDate) : null;
+    if (data.projectStage !== undefined) updateData.projectStage = data.projectStage;
+    if (data.projectStatus !== undefined) updateData.projectStatus = data.projectStatus;
+
+    if (data.projectManager !== undefined && data.projectManager !== null) {
+      const managerId = Number(data.projectManager);
+      if (!Number.isInteger(managerId) || managerId <= 0) {
+        throw new Error(`updateProject: invalid projectManager id (${data.projectManager})`);
+      }
+      updateData.manager = { connect: { userId: managerId } };
+    }
+
+    if (Array.isArray(data.types)) {
+      updateData.types = {
+        set: data.types.map((id) => ({ typeId: Number(id) })),
+      };
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { projectId: validProjectId },
+      data: updateData,
+      include: {
+        manager: true,
+        client: true,
+        types: true,
+        questions: true,
+      },
+    });
+
+    return updatedProject;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du projet :", error);
+    if (error.code === "P2025") {
+      throw new Error("Project not found");
+    }
+    throw error;
+  }
+};
 
 module.exports.deleteProject = async (projectId) => {
   try {
@@ -94,12 +143,14 @@ module.exports.ProjectsByClientId = async (clientId) => {
         },
         manager: {
           select: {
+            userId: true,
             firstname: true,
             lastname: true,
           },
         },
         types: {
           select: {
+            typeId: true,
             label: true,
           },
         },
@@ -119,12 +170,16 @@ module.exports.ProjectsByClientId = async (clientId) => {
     const formattedProjects = projects.map((project) => ({
       projectId: project.projectId,
       projectName: project.projectName,
+      projectManager: project.projectManager,
+      projectDesc: project.projectDesc,
+      startDate: project.startDate,
       clientId: project.client.clientId,
       clientName: project.client.clientName,
       ChefDeProjet: project.manager 
         ? `${project.manager.firstname} ${project.manager.lastname}` 
         : "N/A",
       types: project.types.map((t) => t.label), // Array de strings
+      typeIds: project.types.map((t) => t.typeId), // Array de numbers
       financeurs: project.FinanceurProjet.map((fp) => fp.financeur.FinanceurName), // Array de strings
     }));
 

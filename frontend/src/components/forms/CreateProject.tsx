@@ -21,6 +21,7 @@ interface CreateProjectFormProps {
     isLoading: boolean;
     apiError?: string;
     clientId: number;
+    initialData?: any;
 }
 // TODO : code redondant avec CreateQuestion.tsx
 interface Type {
@@ -35,8 +36,8 @@ interface User {
   username: string;
 }
 
-export default function CreateProjectForm({ onSubmit, isLoading, apiError, clientId }: CreateProjectFormProps) {
-    const { register, handleSubmit, formState: { errors } } = useForm<CreateProjectInputs>();
+export default function CreateProjectForm({ onSubmit, isLoading, apiError, clientId, initialData }: CreateProjectFormProps) {
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateProjectInputs>();
     const [typesLabels, setTypesLabels] = useState<string[]>([]);
     const [selectedType, setSelectedType] = useState<string[]>([]);
     const [types, setTypes] = useState<Type[]>([]);
@@ -60,6 +61,46 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError, clien
 
     fetchData();
   }, [clientId]);
+
+    // Pré-remplir le formulaire si initialData est fourni
+    useEffect(() => {
+      if (initialData && types.length > 0) {
+        // Formater la date au format YYYY-MM-DD pour l'input date
+        let formattedDate = initialData.startDate || "";
+        if (formattedDate) {
+          formattedDate = new Date(formattedDate).toISOString().split('T')[0];
+        }
+
+        const initialTypeIds = Array.isArray(initialData.typeIds)
+          ? initialData.typeIds
+          : Array.isArray(initialData.types) && typeof initialData.types[0] === "number"
+          ? initialData.types
+          : [];
+
+        const initialTypeLabels = Array.isArray(initialData.types) && typeof initialData.types[0] === "string"
+          ? initialData.types
+          : [];
+
+        reset({
+          projectName: initialData.projectName || "",
+          projectManager: initialData.projectManager !== undefined && initialData.projectManager !== null
+            ? Number(initialData.projectManager)
+            : undefined,
+          projectDesc: initialData.projectDesc || "",
+          startDate: formattedDate || "",
+          types: initialTypeIds,
+        });
+
+        if (initialTypeLabels.length > 0) {
+          setSelectedType(initialTypeLabels);
+        } else if (initialTypeIds.length > 0) {
+          const selectedLabels = initialTypeIds.map((typeId: number) =>
+            types.find(t => t.typeId === typeId)?.label
+          ).filter(Boolean);
+          setSelectedType(selectedLabels);
+        }
+      }
+    }, [initialData, reset, types]);
 
     return (
         <>
@@ -124,7 +165,7 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError, clien
                                 />
                 </div>
                 <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Création..." : "Créer"}
+                    {isLoading ? (initialData ? "Modification..." : "Création...") : (initialData ? "Modifier" : "Créer")}
                 </Button>
             </form>
         </>

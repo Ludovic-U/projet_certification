@@ -10,6 +10,7 @@ import responseRoutes from "./routes/responseRoutes.js";
 import typeRoutes from "./routes/typeRoutes.js";
 import optionRoutes from "./routes/optionRoutes.js";
 import mistralRoutes from "./routes/mistralRoutes.js";
+import todoRoutes from "./routes/todoRoutes.js";
 import cookieParser from "cookie-parser";
 import { authenticateUser } from "./middlewares/auth.js";
 
@@ -51,6 +52,7 @@ app.use("/api/option", optionRoutes);
 app.use('/api/financeur', authenticateUser, financeurRoutes);
 app.use('/api/config', authenticateUser, configRoutes);
 app.use('/api/mistral', mistralRoutes); 
+app.use('/api/todo', authenticateUser, todoRoutes);
 
 export default app; // export the app instance
 

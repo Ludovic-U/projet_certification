@@ -136,3 +136,8 @@ async function uploadFile(filePath) {
 export async function GenerateIdeationMistralAPI(textContent) {
 
 }
+
+// Simple wrapper used by controller tests
+export async function testMistralAPI(testContent) {
+    return GenerateGanttMistralAPI(testContent)
+}
