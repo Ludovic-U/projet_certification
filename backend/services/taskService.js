@@ -1,40 +1,20 @@
 const { PrismaClient } = require('@prisma/client');
-const { PrismaTask } = require('@prisma/task');
 const prisma = new PrismaClient();
-const task = new PrismaTask();
 
 module.exports.createTask = async (data) => {
   try {
-    const managerId = Number(data.projectManager ?? data.managerId ?? 1); // adapter si nécessaire
-    const clientId = Number(data.clientId);
-
-    if (!Number.isInteger(managerId) || managerId <= 0) {
-      throw new Error(`createTask: invalid projectManager id (${data.projectManager})`);
-    }
-    if (!Number.isInteger(clientId) || clientId <= 0) {
-      throw new Error(`createTask: invalid clientId (${data.clientId})`);
-    }
-
-    const newtask = await prisma.task.create({
+    // Note: Your schema doesn't have a manager field on Task
+    // Task is connected to Project, not directly to User
+    const newTask = await prisma.task.create({
       data: {
         taskName: data.taskName,
-        startDate: data.startDate ? new Date(data.taskStart) : new Date(),
-        endDate: data.endDate ? new Date(data.taskEnd) : null,
-        taskProgress: data.taskProgress ?? `en cours (${data.taskProgress})`,
-        taskDesc: data.taskDesc ?? null,
-        // connect relations via nested connect (do not include the scalar fields projectManager/clientId here)
-        manager: { connect: { userId: managerId } },
-        client: { connect: { clientId: clientId } },
-        // Connecter les types si fournis
-        types: Array.isArray(data.types) && data.types.length > 0 
-          ? { connect: data.types.map(id => ({ typeId: Number(id) })) } 
-          : undefined,
-      },
-      include: {
-        manager: true,
-        client: true,
-        types: true,
-        questions: true,
+        taskStart: data.startDate ? new Date(data.startDate) : new Date(),
+        taskEnd: data.endDate ? new Date(data.endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default: 7 days from now
+        taskProgress: data.taskProgress || 0,
+        taskDesc: data.taskDesc || null,
+        taskParentId: data.taskParentId || 0,
+        projectId: Number(data.projectId),
+        taskType: data.taskType || 'task',
       },
     });
 
@@ -45,11 +25,21 @@ module.exports.createTask = async (data) => {
   }
 };
 
-module.exports.getAllTask = async () => {
-  // never used
+module.exports.getAllTasks = async () => {
+  try {
+    return await prisma.task.findMany({
+      include: {
+        taskProject: true,
+        taskFiles: true,
+        taskDepenses: true,
+        taskEmployee: true
+      }
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des tâches :", error);
+    throw error;
+  }
 };
-
-// TODO: Update
 
 module.exports.deleteTask = async (taskId) => {
   try {
@@ -67,7 +57,14 @@ module.exports.deleteTask = async (taskId) => {
 module.exports.getTaskById = async (taskId) => {
   const task = await prisma.task.findUnique({
     where: { taskId: taskId },
-    include: { types: true, questions: true },
+    include: { 
+      taskProject: true,
+      taskFiles: true,
+      taskDepenses: true,
+      taskEmployee: true,
+      children: true,
+      parent: true
+    },
   });
 
   if (!task) {
@@ -77,84 +74,80 @@ module.exports.getTaskById = async (taskId) => {
   return task;
 };
 
-module.exports.TaskByClientId = async (clientId) => {
+module.exports.TasksByClientId = async (clientId) => {
   try {
     const validClientId = Number(clientId);
     if (!Number.isInteger(validClientId) || validClientId <= 0) {
       throw new Error("Invalid clientId");
     }
 
-    const task = await prisma.task.findMany({
+    // Get tasks through projects
+    const projects = await prisma.project.findMany({
       where: { clientId: validClientId },
       include: {
+        tasks: {
+          include: {
+            taskFiles: true,
+            taskDepenses: true,
+            taskEmployee: true,
+            children: true,
+            parent: true
+          }
+        },
         client: {
           select: {
             clientId: true,
             clientName: true,
           },
-        },
-        manager: {
-          select: {
-            firstname: true,
-            lastname: true,
-          },
-        },
-        types: {
-          select: {
-            label: true,
-          },
-        },
-           },
-          },
-        },
+        }
       },
     });
 
-    // Transformer les données pour correspondre au type task frontend
-    const formattedtasks = tasks.map((task) => ({
-      taskId: task.taskId,
-      taskName: task.taskName,
-      clientId: task.client.clientId,
-      clientName: task.client.clientName,
-      ChefDeProjet: task.manager 
-        ? `${project.manager.firstname} ${project.manager.lastname}` 
-        : "N/A",
-      types: task.types.map((t) => t.label), // Array de strings
-      financeurs: task.FinanceurProjet.map((fp) => fp.financeur.FinanceurName), // Array de strings
-    }));
+    // Flatten tasks from all projects
+    const allTasks = projects.flatMap(project => 
+      project.tasks.map(task => ({
+        ...task,
+        clientId: project.client.clientId,
+        clientName: project.client.clientName,
+        projectName: project.projectName
+      }))
+    );
 
-    return formattedtasks;
+    return allTasks;
   } catch (error) {
     console.error("Erreur lors de la récupération des tâches :", error);
     throw error;
   }
 }
 
-// SWOT Functions
-module.exports.updatetaskSwot = async (taskId, swotData) => {
+// SWOT Functions - Note: Your Task model doesn't have SWOT fields
+// You might need to add them to your schema first
+module.exports.updateTaskSwot = async (taskId, swotData) => {
   try {
-    const validTaskId = Number(TaskId);
+    const validTaskId = Number(taskId);
     if (!Number.isInteger(validTaskId) || validTaskId <= 0) {
       throw new Error("Invalid taskId");
     }
 
+    // Check if task exists
+    const task = await prisma.task.findUnique({
+      where: { taskId: validTaskId }
+    });
+
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    // Note: Your Task model doesn't have SWOT fields
+    // You would need to add them to your Prisma schema first
+    // For now, we'll just update basic task info
     const updateData = {};
-    if (swotData.SWOT_strength !== undefined) updateData.SWOT_strength = swotData.SWOT_strength;
-    if (swotData.SWOT_weakness !== undefined) updateData.SWOT_weakness = swotData.SWOT_weakness;
-    if (swotData.SWOT_opportunity !== undefined) updateData.SWOT_opportunity = swotData.SWOT_opportunity;
-    if (swotData.SWOT_threat !== undefined) updateData.SWOT_threat = swotData.SWOT_threat;
+    if (swotData.taskProgress !== undefined) updateData.taskProgress = swotData.taskProgress;
+    if (swotData.taskDesc !== undefined) updateData.taskDesc = swotData.taskDesc;
 
     const updatedTask = await prisma.task.update({
       where: { taskId: validTaskId },
       data: updateData,
-      select: {
-        taskId: true,
-        taskName: true,
-        SWOT_strength: true,
-        SWOT_weakness: true,
-        SWOT_opportunity: true,
-        SWOT_threat: true,
-      },
     });
 
     return updatedTask;
@@ -164,27 +157,30 @@ module.exports.updatetaskSwot = async (taskId, swotData) => {
   }
 };
 
-module.exports.gettaskSwot = async (taskId) => {
+module.exports.getTaskSwot = async (taskId) => {
   try {
     const validTaskId = Number(taskId);
-    if (!Number.isInteger(validtaskId) || validtaskId <= 0) {
+    if (!Number.isInteger(validTaskId) || validTaskId <= 0) {
       throw new Error("Invalid taskId");
     }
 
     const task = await prisma.task.findUnique({
-      where: { taskId: validtaskId },
+      where: { taskId: validTaskId },
       select: {
         taskId: true,
         taskName: true,
-        SWOT_strength: true,
-        SWOT_weakness: true,
-        SWOT_opportunity: true,
-        SWOT_threat: true,
+        taskDesc: true,
+        taskProgress: true,
+        // Note: Add SWOT fields to your schema if needed
+        // SWOT_strength: true,
+        // SWOT_weakness: true,
+        // SWOT_opportunity: true,
+        // SWOT_threat: true,
       },
     });
 
     if (!task) {
-      throw new Error("task not found");
+      throw new Error("Task not found");
     }
 
     return task;

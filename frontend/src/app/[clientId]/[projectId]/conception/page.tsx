@@ -64,10 +64,8 @@ const isDateInRange = (d: Date, start: Date, end: Date) => {
  * Handles the entire Gantt chart interface including task management, timeline rendering, and user interactions.
  */
 const GanttChart = () => {
-  
-
   // Load initial data from the data source
-  const [data, setDate] = useState<{ tasks: Task[]; links: Link[]; users: any[] }> ({
+  const [data, setData] = useState<{ tasks: Task[]; links: Link[]; users: any[] }>({
     tasks: [],
     links: [],
     users: [],
@@ -78,8 +76,12 @@ const GanttChart = () => {
   useEffect(() => {
     let mounted = true;
     
-    getData()
-    .then((res)=> {
+    // Get clientId from URL params or context
+    // For now, using a default value
+    const clientId = '1';
+    
+    getData(clientId)
+    .then((res) => {
       if (mounted) {
         setData(res);
         setTasks(res.tasks);
@@ -92,17 +94,16 @@ const GanttChart = () => {
 
     return () => {
       mounted = false;
-    }
+    };
   }, []);
 
-    if (loading) {
-  return (
-    <div className="flex items-center justify-center h-screen text-white">
-      Loading Gantt…
-    </div>
-  );
-}
-  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-white">
+        Loading Gantt…
+      </div>
+    );
+  }
 
   // State for tasks and links
   const [tasks, setTasks] = useState<Task[]>([]);

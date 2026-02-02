@@ -5,21 +5,32 @@ const prisma = new PrismaClient();
 const { findSession, extendSession } = require('../services/sessionService');
 
 module.exports.authenticateUser = async (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json({ error: 'No token' });
-  const payload = verifyJWT(token);
-  if (!payload) return res.status(401).json({ error: 'Invalid token' });
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    
+    const payload = verifyJWT(token);
+    if (!payload) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
 
-  const session = await findSession(payload.userId, token);
-  if (!session) return res.status(401).json({ error: 'Session not found' });
+    const session = await findSession(payload.userId, token);
+    if (!session) {
+      return res.status(401).json({ error: 'Session not found or expired' });
+    }
 
-  extendSession(session.id); // pas besoin de await, si ça échoue, pas grave.
+    // Optional: extend session (fire and forget)
+    extendSession(session.id).catch(err => {
+      console.error('Failed to extend session:', err);
+      // Don't fail auth if extending fails
+    });
 
-  req.user = payload;
-  // no response because we want to continue to the next middleware or route handler.
-  next();
+    req.user = payload;
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return res.status(500).json({ error: 'Authentication failed' });
+  }
 };
-
-
-
-

@@ -1,19 +1,18 @@
-import { getProject } from "@/backend/routes/projectRoutes.js";
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-
-  log: ['error','warn']
-})
-
-if (process.env.NODE_ENV !== 'Production') {
-  globalForPrisma.prisma = prisma;
-}
+// import { PrismaClient } from "@prisma/client";
+//
+// const globalForPrisma = globalThis as unknown as {
+//   prisma: PrismaClient | undefined;
+// }
+//
+// export const prisma =
+//   globalForPrisma.prisma ??
+//   new PrismaClient({
+//     log: ['error', 'warn']
+//   });
+//
+// if (process.env.NODE_ENV !== 'production') {
+//   globalForPrisma.prisma = prisma;
+// }
 
 export interface Task {
   id: number;
@@ -48,57 +47,75 @@ export interface GanttData {
   users: User[];
 }
 
-export const getData = async (clientId: string): Promise<GanttData> => {
-  const res = await fetch ('https:localhost:5432/Project/getByClientId/${clientId}',{
-    credentials: 'include',
-  });
- if (!res.ok) throw new Error('Failed to fetch projects');
+export const getData = async (clientId?: string): Promise<GanttData> => {
+  try {
+    if (!clientId) {
+      // Return default data if no clientId provided (for development)
+      return {
+        tasks: [],
+        links: [],
+        users: []
+      };
+    }
 
- const projects = await res.json();
-  
-  
-
-  const ganttTask = projects.flatMap((project: any) => [
-
-  
-
-    { 
-      id: project.projectId,
-      text: project.projectName,
-      description: project.projectDesc,
-      start: project.startDate,
-      end : project.endDate,
-      status: project.projectStage,
-      progress: project.projectProgress,
-      created: project.createdAt,
-      parent: 0,
-      type: 'project',
-      details: '',
-      notes: '',
-      files: [],
-      to1: 0,
-      to2: 0
-    },
-    ...project.tasks.map((task: any ) => ({
-      id: task.taskId,
-      text: task.taskName,
-      start: task.taskStart,
-      end: task.taskEnd,
-      progress: task.taskProgress,
-      parent: project.projectId,
-      type: 'task',
-      description: task.taskDesc  ?? '',
-      details: '',
-      notes: '',
-      files: [],
-      to1: 0,
-      to2: 0
-    }))
+    const res = await fetch(`http://localhost:5432/project/getByClientId/${clientId}`, {
+      credentials: 'include',
+    });
     
- ]); 
+    if (!res.ok) throw new Error('Failed to fetch projects');
 
-return { tasks: ganttTask, links: [], users: [] }
-  };
+    const projects = await res.json();
+    
+    const ganttTask = projects.flatMap((project: any) => [
+      { 
+        id: project.projectId,
+        text: project.projectName,
+        description: project.projectDesc,
+        start: new Date(project.startDate),
+        end: new Date(project.endDate),
+        status: project.projectStage,
+        progress: project.projectProgress || 0,
+        created: new Date(project.createdAt),
+        parent: 0,
+        type: 'project' as const,
+        details: '',
+        notes: '',
+        files: [],
+        to1: 0,
+        to2: 0
+      },
+      ...(project.tasks || []).map((task: any) => ({
+        id: task.taskId,
+        text: task.taskName,
+        start: new Date(task.taskStart),
+        end: new Date(task.taskEnd),
+        progress: task.taskProgress || 0,
+        parent: project.projectId,
+        type: 'task' as const,
+        description: task.taskDesc ?? '',
+        details: '',
+        notes: '',
+        files: [],
+        to1: 0,
+        to2: 0
+      }))
+    ]);
+
+    return { 
+      tasks: ganttTask, 
+      links: [], 
+      users: [] 
+    };
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    // Return default data on error
+    return {
+      tasks: [],
+      links: [],
+      users: []
+    };
+  }
+};
 
   // tasks: [
   //   {
