@@ -9,8 +9,30 @@ export interface Task {
   details: string;
   notes: string;
   files: string[];
-  to1: number;
-  to2: number;
+  assigneeIds: number[]; // Array of user IDs
+  // Livrable and goal
+  livrableIds?: number[];
+  goal?: string;
+  // Budget fields
+  budget?: {
+    // Moyen humain
+    personnelDays: number;
+    personnelCost: number;
+    internsDays: number;
+    internsCost: number;
+    // Amenagements
+    amenagementsDescription: string;
+    fittingsCost: number;
+    // Equipements pedagogiques
+    educationalEquipmentCost: number;
+    // Prestations
+    subcontractorCost: number;
+    travelCost: number;
+    otherPrestationsCost: number;
+    // Communications
+    communicationCost: number;
+    overheadRate: number;
+  };
 }
 
 export interface Link {
@@ -25,10 +47,17 @@ export interface User {
   label: string;
 }
 
+export interface Livrable {
+  id: number;
+  label: string;
+  description: string;
+}
+
 export interface GanttData {
   tasks: Task[];
   links: Link[];
   users: User[];
+  livrables: Livrable[];
 }
 
 export const getData = (): GanttData => ({
@@ -44,8 +73,7 @@ export const getData = (): GanttData => ({
       details: 'Initial project planning and requirement gathering',
       notes: '',
       files: [],
-      to1: 1,
-      to2: 2
+      assigneeIds: [1, 2]
     },
     {
       id: 2,
@@ -58,8 +86,7 @@ export const getData = (): GanttData => ({
       details: 'Gather and document requirements',
       notes: '',
       files: [],
-      to1: 1,
-      to2: 2
+      assigneeIds: [1, 2]
     },
     {
       id: 3,
@@ -72,8 +99,7 @@ export const getData = (): GanttData => ({
       details: 'Kickoff meeting',
       notes: '',
       files: [],
-      to1: 1,
-      to2: 2
+      assigneeIds: [1, 2]
     },
     {
       id: 4,
@@ -86,8 +112,7 @@ export const getData = (): GanttData => ({
       details: 'UI/UX design and architecture planning',
       notes: '',
       files: [],
-      to1: 2,
-      to2: 3
+      assigneeIds: [2, 3]
     },
     {
       id: 5,
@@ -100,8 +125,7 @@ export const getData = (): GanttData => ({
       details: 'Create wireframes',
       notes: '',
       files: [],
-      to1: 2,
-      to2: 3
+      assigneeIds: [2, 3]
     },
     {
       id: 6,
@@ -114,8 +138,7 @@ export const getData = (): GanttData => ({
       details: 'Design review milestone',
       notes: '',
       files: [],
-      to1: 2,
-      to2: 3
+      assigneeIds: [2, 3]
     },
     {
       id: 7,
@@ -128,8 +151,7 @@ export const getData = (): GanttData => ({
       details: 'Core feature development',
       notes: '',
       files: [],
-      to1: 3,
-      to2: 4
+      assigneeIds: [3, 4]
     },
     {
       id: 8,
@@ -142,8 +164,7 @@ export const getData = (): GanttData => ({
       details: 'Build frontend components',
       notes: '',
       files: [],
-      to1: 3,
-      to2: 4
+      assigneeIds: [3, 4]
     },
     {
       id: 9,
@@ -156,8 +177,7 @@ export const getData = (): GanttData => ({
       details: 'Develop backend APIs',
       notes: '',
       files: [],
-      to1: 4,
-      to2: 1
+      assigneeIds: [4, 1]
     },
     {
       id: 10,
@@ -170,8 +190,7 @@ export const getData = (): GanttData => ({
       details: 'QA testing and bug fixes',
       notes: '',
       files: [],
-      to1: 4,
-      to2: 1
+      assigneeIds: [4, 1]
     },
     {
       id: 11,
@@ -184,8 +203,7 @@ export const getData = (): GanttData => ({
       details: 'Production deployment and monitoring',
       notes: '',
       files: [],
-      to1: 1,
-      to2: 3
+      assigneeIds: [1, 3]
     }
   ],
   links: [
@@ -202,5 +220,6 @@ export const getData = (): GanttData => ({
     { id: 2, label: 'Jane Smith' },
     { id: 3, label: 'Mike Johnson' },
     { id: 4, label: 'Sarah Williams' }
-  ]
+  ],
+  livrables: []
 });
