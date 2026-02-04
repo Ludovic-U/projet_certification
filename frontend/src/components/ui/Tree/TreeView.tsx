@@ -70,6 +70,12 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
       return { nodes: [], edges: [] };
     }
 
+    const hasRoot = questions.some((q) => q.parentId === null);
+    if (!hasRoot) {
+      console.warn("Pas de racine trouvée - arbre vide");
+      return { nodes: [], edges: [] };
+    }
+
     const root = buildHierarchy(questions);
     const laidOutRoot = computeTreeLayout(root);
     const { nodes, edges } = d3ToReactFlow(laidOutRoot);

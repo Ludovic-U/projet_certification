@@ -23,6 +23,23 @@ export const questionsList: Column<Question>[] = [
             <span className="inline-block border px-3 py-1 rounded-full text-xs font-bold">{item.category}</span>
     },
     {
+        key: "types",
+        label: "Types",
+        render: (item: any) => (
+            <div className="flex gap-2 flex-wrap">
+                {item.typeLabels && item.typeLabels.length > 0 ? (
+                    item.typeLabels.map((typeLabel: string, index: number) => (
+                        <span key={index} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">
+                            {typeLabel}
+                        </span>
+                    ))
+                ) : (
+                    <span className="text-gray-500 text-xs">Aucun type</span>
+                )}
+            </div>
+        )
+    },
+    {
         key: "actions",
         label: "Actions",
         render: (item) => (

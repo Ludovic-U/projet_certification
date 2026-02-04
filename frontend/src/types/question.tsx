@@ -11,7 +11,7 @@ export interface Question extends Record<string, unknown> {
   options?: string[];
   shouldMultiply?: boolean;
   parentId?: number | null;
-  addType?: number[];
+  types?: (number | { typeId: number; label: string })[];
   removeType?: number[];
   addProject?: number[];
   removeProject?: number[];

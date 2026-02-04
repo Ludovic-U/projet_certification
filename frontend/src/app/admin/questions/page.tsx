@@ -13,7 +13,7 @@ import { questionsList } from "@/components/ui/Table/table.variants/questions";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
 import CreateQuestionForm from "@/components/forms/CreateQuestion";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import api_backend from "@/api/axiosInstance";
 import { Question } from "@/types/question";
 import TreeView from "@/components/ui/Tree/TreeView";
@@ -21,11 +21,11 @@ import { useProjectQuestion } from "@/hooks/useProjectQuestions";
 
 
 export default function QuestionsPage() {
-  const [questions, setQuestions] = useState([]);
-  const [types, setTypes] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [types, setTypes] = useState<{ typeId: number; label: string }[]>([]);
+  const [categories, setCategories] = useState<{ questionCategoryId: number; label: string }[]>([]);
+  const [selectedTypeLabel, setSelectedTypeLabel] = useState<string | null>("Général");
+  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>("analyse opportunité");
   const [pagination, setPagination] = useState({
     totalItems: 0,
     currentPage: 1,
@@ -39,31 +39,43 @@ export default function QuestionsPage() {
   const projectQuestions = useProjectQuestion(1).questions;
 
   useEffect(() => {
-    setTreeQuestions(projectQuestions);
-  }, [projectQuestions]);
-
-  useEffect(() => {
     // Filter questions based on selected type and category
     let filteredQuestions = projectQuestions;
 
-    console.log("Filtering questions with type:", selectedTypeId, "and category:", selectedCategoryId);
-
-    // Filter by type
-    if (selectedTypeId !== null) {
+    // Filter by type label
+    if (selectedTypeLabel !== null) {
+      const typeIdToLabel = new Map(types.map((t: any) => [t.typeId, t.label]));
       filteredQuestions = filteredQuestions.filter((q: Question) => {
-        return q.addType?.includes(selectedTypeId) || q.addType?.includes(Number(selectedTypeId));
+        return q.types?.some((typeItem: any) => {
+          if (typeof typeItem === "object" && typeItem?.label) {
+            return typeItem.label === selectedTypeLabel;
+          }
+          return typeIdToLabel.get(typeItem?.typeId ?? typeItem) === selectedTypeLabel;
+        });
       });
     }
 
-    // // Filter by category
-    // if (selectedCategoryId !== null) {
-    //   filteredQuestions = filteredQuestions.filter((q: Question) => {
-    //     return q.category === selectedCategoryId || q.category === String(selectedCategoryId);
-    //   });
-    // }
+    // Filter by category label
+    if (selectedCategoryLabel !== null) {
+      const categoryIdToLabel = new Map(
+        categories.map((c: any) => [c.questionCategoryId, c.label])
+      );
+      filteredQuestions = filteredQuestions.filter((q: Question) => {
+        const categoryLabel =
+          typeof q.category === "string"
+            ? q.category
+            : q.questionCategory?.label || categoryIdToLabel.get(q.category);
+        return categoryLabel === selectedCategoryLabel;
+      });
+    }
 
-    setTreeQuestions(filteredQuestions);
-  }, [projectQuestions, selectedTypeId, selectedCategoryId]);
+    setTreeQuestions(
+      filteredQuestions.map((q: Question) => ({
+        ...q,
+        status: "skipped",
+      }))
+    );
+  }, [projectQuestions, selectedTypeLabel, selectedCategoryLabel, types, categories]);
 
   useEffect(() => {
     // Fetch types list
@@ -71,6 +83,7 @@ export default function QuestionsPage() {
       try {
         const res = await api_backend.get("/type/get");
         setTypes(res.data);
+        console.log("Types récupérés:", res.data);
       } catch (error) {
         console.error(error);
       }
@@ -85,6 +98,7 @@ export default function QuestionsPage() {
       try {
         const res = await api_backend.get("/question/categories");
         setCategories(res.data);
+        console.log("Catégories récupérées:", res.data);
       } catch (error) {
         console.error(error);
       }
@@ -153,9 +167,9 @@ export default function QuestionsPage() {
           {types.map((type: any) => (
             <button
               key={type.typeId}
-              onClick={() => setSelectedTypeId(type.typeId)}
+              onClick={() => setSelectedTypeLabel(type.label)}
               className={`shrink-0 px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
-                selectedTypeId === type.typeId
+                selectedTypeLabel === type.label
                   ? "bg-primary text-white shadow-md"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
               }`}
@@ -175,9 +189,9 @@ export default function QuestionsPage() {
           {categories.map((category: any) => (
             <button
               key={category.questionCategoryId}
-              onClick={() => setSelectedCategoryId(category.questionCategoryId)}
+              onClick={() => setSelectedCategoryLabel(category.label)}
               className={`shrink-0 px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
-                selectedCategoryId === category.questionCategoryId
+                selectedCategoryLabel === category.label
                   ? "bg-primary text-white shadow-md"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
               }`}
@@ -239,10 +253,24 @@ export default function QuestionsPage() {
         {questions && questions.length > 0 ? (
           <div>
             <Table
-              data={questions.map((q: Question) => ({
-                ...q,
-                id: q.questionId,
-              }))}
+              data={questions.map((q: Question) => {
+                // Map type objects/IDs to labels
+                const typeLabels = q.types?.map((typeItem: any) => {
+                  // If it's an object with label, use the label directly
+                  if (typeof typeItem === 'object' && typeItem.label) {
+                    return typeItem.label;
+                  }
+                  // Otherwise, find by ID
+                  const type = types.find((t: any) => String(t.typeId) === String(typeItem.typeId || typeItem));
+                  return type?.label || String(typeItem.typeId || typeItem);
+                }) || [];
+                
+                return {
+                  ...q,
+                  id: q.questionId,
+                  typeLabels,
+                };
+              })}
               columns={columnsWithDelete as any}
             />
           </div>

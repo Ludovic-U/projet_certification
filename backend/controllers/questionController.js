@@ -88,6 +88,7 @@ module.exports.getAllQuestions = async (req, res) => {
     const limit = Number(req.query.limit) || 10;
 
     const questions = await questionService.getAllQuestions(page, limit);
+    console.log("Questions with types:", JSON.stringify(questions.data[0], null, 2));
     res.status(200).json(questions);
   } catch (error) {
     console.error("Error fetching questions:", error);
