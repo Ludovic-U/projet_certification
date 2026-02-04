@@ -1,20 +1,52 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams } from 'next/navigation';
 import { Task, Link, Livrable, ViewMode, EditorTab, HistoryState, MenuPosition } from '../types';
-import { getData } from '../../data';
+import { fetchGanttData, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, createDeliverable as apiCreateLivrable, createTask as apiCreateTask, GanttData } from '@/api/ganttApi';
 import { createEmptyBudget } from '../utils/budgetUtils';
 import { getDateRange } from '../utils/timelineUtils';
 import { DEFAULT_DAY_WIDTH, MAX_HISTORY_STATES, MIN_START_DATE } from '../constants';
 
+// Counter for generating temporary negative task IDs (avoids INT4 overflow)
+let tempIdCounter = -1;
+
+// Generate a unique temporary task ID (negative to distinguish from real IDs)
+const generateTempId = (): number => {
+  tempIdCounter--;
+  return tempIdCounter;
+};
+
+// Helper to create empty initial data
+const createEmptyGanttData = (): GanttData => ({
+  tasks: [],
+  links: [],
+  users: [],
+  livrables: []
+});
+
+// Extended Task interface with subActionId for API operations
+export interface ExtendedTask extends Task {
+  subActionId?: number | null;
+  actionId?: number;
+}
+
 export const useGanttState = () => {
-  // Load initial data from the data source
-  const data = useMemo(() => getData(), []);
+  const params = useParams();
+  const projectId = params?.projectId ? parseInt(params.projectId as string, 10) : null;
+
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // State for Gantt data
+  const [data, setData] = useState<GanttData>(createEmptyGanttData());
+  
+  // State for tasks, links, and users (extracted from data for easier updates)
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [links, setLinks] = useState<Link[]>([]);
+  const [users, setUsers] = useState<{ id: number; label: string }[]>([]);
 
   // State for livrables (local, mutable)
-  const [livrables, setLivrables] = useState<Livrable[]>(data.livrables);
-
-  // State for tasks and links
-  const [tasks, setTasks] = useState<Task[]>(data.tasks);
-  const [links, setLinks] = useState<Link[]>(data.links);
+  const [livrables, setLivrables] = useState<Livrable[]>([]);
 
   // UI state for editing and interactions
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -46,8 +78,8 @@ export const useGanttState = () => {
   const [showTaskList, setShowTaskList] = useState(true);
 
   // History for undo/redo functionality
-  const [history, setHistory] = useState<HistoryState[]>([{ tasks: data.tasks, links: data.links }]);
-  const [historyIndex, setHistoryIndex] = useState(0);
+  const [history, setHistory] = useState<HistoryState[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   // Dragging and interaction state
   const [draggingTask, setDraggingTask] = useState<Task | null>(null);
@@ -70,25 +102,59 @@ export const useGanttState = () => {
   const [cursorX, setCursorX] = useState<number | null>(null);
 
   // Current visible date range for the timeline
-  const [currentDateRange, setCurrentDateRange] = useState(() => {
-    if (data.tasks.length === 0) {
-      const today = new Date();
-      return {
-        start: new Date(today.getFullYear(), 0, 1),
-        end: new Date(today.getFullYear(), 11, 31)
-      };
-    }
-    const dates = data.tasks.flatMap(t => [t.start.getTime(), t.end.getTime()]);
-    const minDate = new Date(Math.min(...dates));
-    const maxDate = new Date(Math.max(...dates));
-    minDate.setDate(1);
-    const end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
-    return { start: minDate, end };
-  });
+  const [currentDateRange, setCurrentDateRange] = useState(() => ({
+    start: new Date(new Date().getFullYear(), 0, 1),
+    end: new Date(new Date().getFullYear(), 11, 31)
+  }));
 
   // Refs for DOM elements
   const timelineRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
+
+  // Fetch data from API on mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!projectId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        const ganttData = await fetchGanttData(projectId);
+        
+        setData(ganttData);
+        setTasks(ganttData.tasks || []);
+        setLinks(ganttData.links || []);
+        setUsers(ganttData.users || []);
+        setLivrables(ganttData.livrables || []);
+
+        // Initialize history with initial state
+        const initialState = {
+          tasks: ganttData.tasks || [],
+          links: ganttData.links || []
+        };
+        setHistory([initialState]);
+        setHistoryIndex(0);
+
+        // Set initial date range based on tasks
+        if (ganttData.tasks && ganttData.tasks.length > 0) {
+          setCurrentDateRange(getDateRange(ganttData.tasks, MIN_START_DATE));
+        }
+      } catch (err) {
+        console.error('Error loading Gantt data:', err);
+        setError('Failed to load Gantt data. Using offline mode.');
+        // Initialize with empty data but allow the app to work
+        setHistory([{ tasks: [], links: [] }]);
+        setHistoryIndex(0);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [projectId]);
 
   // Reset pxPerDay on view change to sensible defaults
   useEffect(() => {
@@ -169,37 +235,55 @@ export const useGanttState = () => {
   }, [tasks, isDraggingAny]);
 
   // Add new livrable handler
-  const handleAddLivrable = () => {
-    if (newLivrableLabel.trim() && editingTask) {
-      const newId = Math.max(...livrables.map(l => l.id), 0) + 1;
-      const newLivrable: Livrable = {
-        id: newId,
-        label: newLivrableLabel.trim(),
-        description: newLivrableDescription.trim()
-      };
-      // Add to local state
-      setLivrables(prev => [...prev, newLivrable]);
-      // Assign to editing task (array to support multiple livrables)
-      setEditingTask({
-        ...editingTask,
-        livrableIds: [...(editingTask.livrableIds || []), newId]
-      });
-      setShowAddLivrable(false);
-      setNewLivrableLabel('');
-      setNewLivrableDescription('');
+  const handleAddLivrable = async () => {
+    if (newLivrableLabel.trim() && editingTask && projectId) {
+      try {
+        const newLivrable = await apiCreateLivrable(projectId, {
+          label: newLivrableLabel.trim(),
+          description: newLivrableDescription.trim()
+        });
+        
+        // Add to local state
+        setLivrables(prev => [...prev, newLivrable]);
+        // Assign to editing task (array to support multiple livrables)
+        setEditingTask({
+          ...editingTask,
+          livrableIds: [...(editingTask.livrableIds || []), newLivrable.id]
+        });
+        setShowAddLivrable(false);
+        setNewLivrableLabel('');
+        setNewLivrableDescription('');
+      } catch (err) {
+        console.error('Error creating livrable:', err);
+        // Fallback to local creation
+        const newId = Math.max(...livrables.map(l => l.id), 0) + 1;
+        const localLivrable: Livrable = {
+          id: newId,
+          label: newLivrableLabel.trim(),
+          description: newLivrableDescription.trim()
+        };
+        setLivrables(prev => [...prev, localLivrable]);
+        setEditingTask({
+          ...editingTask,
+          livrableIds: [...(editingTask.livrableIds || []), newId]
+        });
+        setShowAddLivrable(false);
+        setNewLivrableLabel('');
+        setNewLivrableDescription('');
+      }
     }
   };
 
   // Save state to history
-  const saveState = (nextTasks: Task[] = tasks, nextLinks: Link[] = links) => {
+  const saveState = useCallback((nextTasks: Task[] = tasks, nextLinks: Link[] = links) => {
     const newState = { tasks: [...nextTasks], links: [...nextLinks] };
     setHistory(prev => {
       const newHistory = prev.slice(0, historyIndex + 1);
       newHistory.push(newState);
-      return newHistory.slice(-MAX_HISTORY_STATES); // Keep last MAX_HISTORY_STATES states
+      return newHistory.slice(-MAX_HISTORY_STATES);
     });
     setHistoryIndex(prev => Math.min(prev + 1, MAX_HISTORY_STATES - 1));
-  };
+  }, [historyIndex, tasks, links]);
 
   // Undo action
   const undo = () => {
@@ -222,9 +306,9 @@ export const useGanttState = () => {
   };
 
   // Add new task
-  const addTask = () => {
-    const newTask: Task = {
-      id: Math.max(...tasks.map(t => t.id), 0) + 1,
+  const addTask = async () => {
+    const newTask: ExtendedTask = {
+      id: generateTempId(), // Temporary negative ID until saved
       text: 'New Task',
       start: new Date(),
       end: new Date(),
@@ -235,8 +319,11 @@ export const useGanttState = () => {
       notes: '',
       files: [],
       assigneeIds: [],
-      budget: createEmptyBudget()
+      budget: createEmptyBudget(),
+      subActionId: null,
     };
+
+    // Optimistically add to local state
     const nextTasks = [...tasks, newTask];
     setTasks(nextTasks);
     saveState(nextTasks, links);
@@ -245,9 +332,9 @@ export const useGanttState = () => {
   };
 
   // Add child task
-  const addChildTask = (parentId: number) => {
-    const newTask: Task = {
-      id: Math.max(...tasks.map(t => t.id), 0) + 1,
+  const addChildTask = async (parentId: number) => {
+    const newTask: ExtendedTask = {
+      id: generateTempId(), // Temporary negative ID until saved
       text: 'New Subtask',
       start: new Date(),
       end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -258,8 +345,11 @@ export const useGanttState = () => {
       notes: '',
       files: [],
       assigneeIds: [],
-      budget: createEmptyBudget()
+      budget: createEmptyBudget(),
+      subActionId: null,
     };
+
+    // Optimistically add to local state
     const nextTasks = [...tasks, newTask];
     setTasks(nextTasks);
     saveState(nextTasks, links);
@@ -267,29 +357,106 @@ export const useGanttState = () => {
   };
 
   // Delete task
-  const deleteTask = (id: number) => {
+  const deleteTask = async (id: number) => {
     const nextTasks = tasks.filter(t => t.id !== id);
     const nextLinks = links.filter(l => l.source !== id && l.target !== id);
+    
+    // Optimistically update local state
     setTasks(nextTasks);
     setLinks(nextLinks);
     saveState(nextTasks, nextLinks);
     setShowEditor(false);
     setContextMenu(null);
+
+    // Sync with API if we have a valid projectId
+    if (projectId && id > 0) {
+      try {
+        await apiDeleteTask(projectId, id);
+      } catch (err) {
+        console.error('Error deleting task from API:', err);
+        // Task was already removed from local state, so we keep it that way
+      }
+    }
   };
 
-  // Update task
-  const updateTask = () => {
+  // Update task (handles both create and update)
+  const updateTask = async () => {
     if (editingTask) {
       if (editingTask.type !== 'milestone' && editingTask.start > editingTask.end) {
         alert('Start date must be before end date');
         return;
       }
-      const nextTasks = tasks.map(t => t.id === editingTask.id ? editingTask : t);
-      setTasks(nextTasks);
-      saveState(nextTasks, links);
+      
+      // Check if this is a new task (negative ID indicates temporary local task)
+      const isNewTask = editingTask.id < 0;
+      
+      if (isNewTask) {
+        // Create new task via API
+        if (projectId) {
+          try {
+            const createdTask = await apiCreateTask(projectId, {
+              text: editingTask.text,
+              start: editingTask.start,
+              end: editingTask.end,
+              progress: editingTask.progress,
+              // Send 0 if parent is a temporary ID (negative), otherwise send the real ID
+              parent: editingTask.parent < 0 ? 0 : editingTask.parent,
+              type: editingTask.type,
+              details: editingTask.details,
+              notes: editingTask.notes,
+              files: editingTask.files || [],
+              goal: editingTask.goal,
+              assigneeIds: editingTask.assigneeIds || [],
+              livrableIds: editingTask.livrableIds || []
+            });
+            
+            // Update local state with the real task ID from the server
+            // Also update any child tasks that have the old temporary ID as their parent
+            const oldTempId = editingTask.id;
+            const nextTasks = tasks.map(t => {
+              if (t.id === oldTempId) {
+                return { ...editingTask, id: createdTask.id };
+              }
+              // Update child's parent ID if it references the old temp ID
+              if (t.parent === oldTempId) {
+                return { ...t, parent: createdTask.id };
+              }
+              return t;
+            });
+            setTasks(nextTasks);
+            saveState(nextTasks, links);
+          } catch (err) {
+            console.error('Error creating task in API:', err);
+            // Still update local state
+            const nextTasks = tasks.map(t => t.id === editingTask.id ? editingTask : t);
+            setTasks(nextTasks);
+            saveState(nextTasks, links);
+          }
+        } else {
+          // No projectId, just update local state
+          const nextTasks = tasks.map(t => t.id === editingTask.id ? editingTask : t);
+          setTasks(nextTasks);
+          saveState(nextTasks, links);
+        }
+      } else {
+        // Update existing task
+        const nextTasks = tasks.map(t => t.id === editingTask.id ? editingTask : t);
+        setTasks(nextTasks);
+        saveState(nextTasks, links);
+        
+        // Sync with API if we have a valid projectId and a real task ID
+        if (projectId && editingTask.id > 0) {
+          try {
+            await apiUpdateTask(projectId, editingTask.id, editingTask);
+          } catch (err) {
+            console.error('Error updating task in API:', err);
+          }
+        }
+      }
+      
+      setShowEditor(false);
+      setEditingTask(null);
     }
-    setShowEditor(false);
-    setEditingTask(null);
   };
 
   return {
@@ -298,6 +465,9 @@ export const useGanttState = () => {
     livrables,
     tasks,
     links,
+    users,
+    isLoading,
+    error,
     
     // UI State
     editingTask,

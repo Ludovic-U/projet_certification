@@ -66,7 +66,7 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
         <div className="w-32 px-3 py-2 font-semibold text-white">Progress</div>
       </div>
       {/* Task list rows */}
-      <div ref={taskListRef} className="flex-1 overflow-y-auto" onScroll={handleTaskListScroll}>
+      <div ref={taskListRef} className="flex-1 overflow-y-auto pl-[10px]" onScroll={handleTaskListScroll}>
         {getVisibleTasks().map(task => {
           const isExpanded = expandedTasks.has(task.id);
           const indent = getTaskDepth(task.id, tasks) * 24;

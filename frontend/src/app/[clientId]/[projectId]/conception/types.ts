@@ -1,6 +1,13 @@
-import { Task, Link, Livrable } from '../data';
+import { Task, Link, Livrable, User } from '../data';
 
-export type { Task, Link, Livrable };
+export type { Task, Link, Livrable, User };
+
+export interface GanttData {
+  tasks: Task[];
+  links: Link[];
+  users: User[];
+  livrables: Livrable[];
+}
 
 export interface ImportedTask extends Omit<Task, 'start' | 'end'> {
   start: string;

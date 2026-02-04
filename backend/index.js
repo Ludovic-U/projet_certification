@@ -1,6 +1,7 @@
 const express = require("express");
 const clientRoutes = require("./routes/clientRoutes");
 const projectRoutes = require("./routes/projectRoutes");
+const ganttRoutes = require("./routes/ganttRoutes");
 const financeurRoutes = require('./routes/financeurRoutes');
 const configRoutes = require('./routes/configRoutes');
 const meRoutes = require("./routes/meRoutes");
@@ -48,6 +49,7 @@ app.use("/api/type", typeRoutes);
 app.use("/api/option", optionRoutes);
 app.use('/api/financeur', authenticateUser, financeurRoutes);
 app.use('/api/config', authenticateUser, configRoutes);
+app.use('/api/gantt', authenticateUser, ganttRoutes);
 
 module.exports = app; // export the app instance
 

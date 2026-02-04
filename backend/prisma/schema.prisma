@@ -120,6 +120,7 @@ model Project {
   client  Client   @relation(fields: [clientId], references: [clientId])
   manager User     @relation("ProjectManager", fields: [projectManager], references: [userId])
   actions Action[]
+  tasks  Task[]
 
   types           Type[]            @relation("ProjectType")
   questions       Question[]        @relation("ProjectQuestion")
@@ -179,7 +180,11 @@ model Deliverable {
   startDate     DateTime
   endDate       DateTime
 
-  subAction SubAction @relation(fields: [subActionId], references: [subActionId])
+  subAction  SubAction       @relation(fields: [subActionId], references: [subActionId])
+  tasks      TaskLivrable[]
+  // Livrable fields for frontend compatibility
+  label       String?  // Alias for 'file' in frontend
+  description String?
 }
 
 model Budget {
@@ -197,12 +202,28 @@ model Budget {
 
 model Task {
   taskId      Int     @id @default(autoincrement())
-  subActionId Int     @map("sub_action_id")
+  subActionId Int?    @map("sub_action_id")
+  projectId   Int?    @map("project_id")
   name        String
   description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  progress    Int      @default(0)
+  parentId    Int?
+  type        String   @default("task") // 'task', 'milestone', 'project'
+  details     String?
+  notes       String?
+  files       String[] // JSON array
+  goal        String?
 
-  subAction       SubAction        @relation(fields: [subActionId], references: [subActionId])
+  subAction       SubAction?       @relation(fields: [subActionId], references: [subActionId], onDelete: SetNull)
+  project         Project?         @relation(fields: [projectId], references: [projectId])
   taskAssignments TaskAssignment[]
+  parent          Task?            @relation("TaskHierarchy", fields: [parentId], references: [taskId])
+  children        Task[]           @relation("TaskHierarchy")
+  linksSource     TaskLink[]       @relation("TaskSource")
+  linksTarget     TaskLink[]       @relation("TaskTarget")
+  livrables       TaskLivrable[]
 }
 
 model TaskAssignment {
@@ -213,6 +234,28 @@ model TaskAssignment {
   task Task @relation(fields: [taskId], references: [taskId])
 
   @@id([userId, taskId]) // Composite primary key
+}
+
+// Task Link model for Gantt chart dependencies
+model TaskLink {
+  linkId  Int @id @default(autoincrement())
+  source Int
+  target Int
+  type   Int @default(0) // 0: finish-to-start, 1: start-to-start, etc.
+
+  sourceTask Task @relation("TaskSource", fields: [source], references: [taskId])
+  targetTask Task @relation("TaskTarget", fields: [target], references: [taskId])
+}
+
+// Task Livrable join table
+model TaskLivrable {
+  taskId     Int
+  livrableId Int
+
+  task     Task      @relation(fields: [taskId], references: [taskId])
+  livrable Deliverable @relation(fields: [livrableId], references: [deliverableId])
+
+  @@id([taskId, livrableId])
 }
 
 enum BudgetCategory {

@@ -1,6 +1,7 @@
 import { Task, Link, ImportedTask } from '../types';
 import { createEmptyBudget } from '../utils/budgetUtils';
 import * as XLSX from 'xlsx';
+import { createTask as apiCreateTask } from '@/api/ganttApi';
 
 interface UseGanttExportImportProps {
   tasks: Task[];
@@ -11,6 +12,7 @@ interface UseGanttExportImportProps {
   data: {
     users: { id: number; label: string }[];
   };
+  projectId: number | null;
 }
 
 export const useGanttExportImport = ({
@@ -20,7 +22,55 @@ export const useGanttExportImport = ({
   setLinks,
   saveState,
   data,
+  projectId,
 }: UseGanttExportImportProps) => {
+  
+  // Helper to save tasks to API
+  const saveTasksToApi = async (tasksToSave: Task[]) => {
+    if (!projectId) return;
+    
+    // Filter only tasks with valid IDs (not negative/Date.now IDs which are local only)
+    const validTasks = tasksToSave.filter(t => t.id > 0 && t.id < 1000000000000);
+    
+    // Sort tasks: parents first, then children (to ensure parent IDs exist when creating children)
+    const sortedTasks = [...validTasks].sort((a, b) => {
+      // If a is parent of b, a should come first
+      if (a.id === b.parent) return -1;
+      if (b.id === a.parent) return 1;
+      // Otherwise sort by ID
+      return a.id - b.id;
+    });
+    
+    // Track ID mapping from old to new
+    const idMapping = new Map<number, number>();
+    
+    for (const task of sortedTasks) {
+      try {
+        // Map old parent ID to new parent ID if needed
+        const mappedParent = task.parent ? idMapping.get(task.parent) || 0 : 0;
+        
+        const createdTask = await apiCreateTask(projectId, {
+          text: task.text,
+          start: task.start,
+          end: task.end,
+          progress: task.progress,
+          parent: mappedParent,
+          type: task.type,
+          details: task.details,
+          notes: task.notes,
+          files: task.files || [],
+          assigneeIds: task.assigneeIds || [],
+          livrableIds: task.livrableIds || [],
+          goal: task.goal,
+        });
+        
+        // Store the ID mapping for this task
+        idMapping.set(task.id, createdTask.id);
+      } catch (err) {
+        console.error('Error saving task to API:', err);
+      }
+    }
+  };
   
   // Export data to JSON
   const exportData = () => {
@@ -34,11 +84,11 @@ export const useGanttExportImport = ({
   };
 
   // Import data from JSON
-  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const importData = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         try {
           const result = event.target?.result;
           if (typeof result === 'string') {
@@ -59,6 +109,10 @@ export const useGanttExportImport = ({
             setTasks(nextTasks);
             setLinks(nextLinks);
             saveState(nextTasks, nextLinks);
+            
+            // Save imported tasks to API
+            await saveTasksToApi(nextTasks);
+            alert('Data imported successfully');
           }
         } catch {
           alert('Invalid file format');
@@ -169,11 +223,11 @@ export const useGanttExportImport = ({
   };
 
   // Import from CSV
-  const importFromCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const importFromCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         try {
           const result = event.target?.result;
           if (typeof result === 'string') {
@@ -214,8 +268,12 @@ export const useGanttExportImport = ({
             }
             
             if (newTasks.length > 0) {
-              setTasks([...tasks, ...newTasks]);
-              saveState([...tasks, ...newTasks], links);
+              const updatedTasks = [...tasks, ...newTasks];
+              setTasks(updatedTasks);
+              saveState(updatedTasks, links);
+              
+              // Save imported tasks to API
+              await saveTasksToApi(updatedTasks);
               alert(`Successfully imported ${newTasks.length} tasks`);
             } else {
               alert('No valid tasks found in the CSV file. Make sure the file has the correct headers.');
@@ -230,11 +288,11 @@ export const useGanttExportImport = ({
   };
 
   // Import from Excel
-  const importFromExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         try {
           const data = new Uint8Array(event.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
@@ -266,8 +324,12 @@ export const useGanttExportImport = ({
           });
           
           if (newTasks.length > 0) {
-            setTasks([...tasks, ...newTasks]);
-            saveState([...tasks, ...newTasks], links);
+            const updatedTasks = [...tasks, ...newTasks];
+            setTasks(updatedTasks);
+            saveState(updatedTasks, links);
+            
+            // Save imported tasks to API
+            await saveTasksToApi(updatedTasks);
             alert(`Successfully imported ${newTasks.length} tasks`);
           } else {
             alert('No tasks found in the Excel file');

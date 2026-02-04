@@ -24,7 +24,12 @@ import { DAY_MS } from './constants';
 import { toUTC } from './utils/dateUtils';
 import { MIN_PX_PER_DAY, MAX_PX_PER_DAY } from './constants';
 
+import { useParams } from 'next/navigation';
+
 const GanttChart = () => {
+  const params = useParams();
+  const projectId = params?.projectId ? parseInt(params.projectId as string, 10) : null;
+  
   // Use custom hooks for state management
   const ganttState = useGanttState();
   
@@ -73,6 +78,7 @@ const GanttChart = () => {
     setLinks: ganttState.setLinks,
     saveState: ganttState.saveState,
     data: ganttState.data,
+    projectId,
   });
 
   // Calculate timeline columns and groups
