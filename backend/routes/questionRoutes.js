@@ -7,6 +7,9 @@ const router = Router();
 router.post("/create", questionController.createQuestion);
 
 router.get("/get", questionController.getAllQuestions);
+router.get("/categories", questionController.getAllCategories);
+router.post("/categories", questionController.createCategory);
+router.delete("/categories/:categoryId", questionController.deleteCategory);
 router.get(
   "/get/:questionId",
   validateId("questionId"),

@@ -321,3 +321,79 @@ module.exports.getSubQuestions = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+/**
+ * Get all question categories.
+ *
+ * @async
+ * @function getAllCategories
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns an array of question categories.
+ * - 500: Internal server error.
+ */
+module.exports.getAllCategories = async (_, res) => {
+  try {
+    const categories = await questionService.getAllCategories();
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Create a new question category.
+ *
+ * @async
+ * @function createCategory
+ * @param {Object} req.body - Request payload.
+ * @param {string} req.body.label - The category label (required).
+ * @returns {Promise<void>} Sends:
+ * - 201: Created, returns the created category object.
+ * - 400: Missing required field ('label').
+ * - 500: Internal server error.
+ */
+module.exports.createCategory = async (req, res) => {
+  const { label } = req.body;
+
+  if (!label) {
+    return res.status(400).json({ error: "label is required" });
+  }
+
+  try {
+    const category = await questionService.createCategory({ label });
+    res.status(201).json(category);
+  } catch (error) {
+    console.error("Error creating category:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Delete a question category by ID.
+ *
+ * @async
+ * @function deleteCategory
+ * @param {Object} req.params - Request params.
+ * @param {string} req.params.categoryId - The category ID to delete.
+ * @returns {Promise<void>} Sends:
+ * - 200: OK, returns the deleted category.
+ * - 500: Internal server error.
+ */
+module.exports.deleteCategory = async (req, res) => {
+  const { categoryId } = req.params;
+
+  try {
+    const category = await questionService.deleteCategory(Number(categoryId));
+    res.status(200).json(category);
+  } catch (error) {
+    if (error.message === "Category deletion forbidden") {
+      return res.status(403).json({ error: "Category deletion forbidden" });
+    }
+    if (error.message === "Category not found") {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    console.error("Error deleting category:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

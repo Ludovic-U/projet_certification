@@ -31,6 +31,11 @@ interface ProjectType {
   label: string;
 }
 
+interface QuestionCategory {
+  questionCategoryId: number;
+  label: string;
+}
+
 export default function AdminConfigPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,21 +44,24 @@ export default function AdminConfigPage() {
   const [secteurClients, setSecteurClients] = useState<string[]>([]);
   const [projets, setProjets] = useState<ProjectType[]>([]);
   const [juridiquesClients, setJuridiquesClients] = useState<string[]>([]);
+  const [questionCategories, setQuestionCategories] = useState<QuestionCategory[]>([]);
   
   const { control, handleSubmit, reset, formState } = useForm<AppConfig>();
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const [configResponse, typesResponse] = await Promise.all([
+        const [configResponse, typesResponse, categoriesResponse] = await Promise.all([
           api_backend.get('/config'),
-          api_backend.get('/type/get')
+          api_backend.get('/type/get'),
+          api_backend.get('/question/categories')
         ]);
         
         reset(configResponse.data);
         setSecteurClients(configResponse.data.types?.secteur_clients || []);
         setJuridiquesClients(configResponse.data.types?.juridiques_clients || []);
         setProjets(typesResponse.data || []);
+        setQuestionCategories(categoriesResponse.data || []);
       } catch (error) {
         setMessage({ type: 'error', text: 'Erreur lors du chargement de la configuration' });
       } finally {
@@ -123,6 +131,30 @@ export default function AdminConfigPage() {
       setMessage({ type: 'success', text: 'Type de projet supprimé avec succès' });
     } catch (error: any) {
       const errorMsg = error.response?.data?.error || 'Erreur lors de la suppression du type';
+      setMessage({ type: 'error', text: errorMsg });
+    }
+  };
+
+  const addQuestionCategory = async (label: string) => {
+    if (!label.trim()) return;
+    
+    try {
+      const response = await api_backend.post('/question/categories', { label: label.trim() });
+      setQuestionCategories([...questionCategories, response.data]);
+      setMessage({ type: 'success', text: 'Catégorie de question ajoutée avec succès' });
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error || 'Erreur lors de l\'ajout de la catégorie';
+      setMessage({ type: 'error', text: errorMsg });
+    }
+  };
+
+  const removeQuestionCategory = async (categoryId: number) => {
+    try {
+      await api_backend.delete(`/question/categories/${categoryId}`);
+      setQuestionCategories(questionCategories.filter(c => c.questionCategoryId !== categoryId));
+      setMessage({ type: 'success', text: 'Catégorie de question supprimée avec succès' });
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error || 'Erreur lors de la suppression de la catégorie';
       setMessage({ type: 'error', text: errorMsg });
     }
   };
@@ -417,6 +449,62 @@ export default function AdminConfigPage() {
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Catégories de Questions */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-2">Catégories de Questions</h3>
+            <div className="flex gap-2 mb-2">
+              <Input
+                id="new-category"
+                placeholder="Ajouter une catégorie de question"
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const input = e.currentTarget;
+                    addQuestionCategory(input.value);
+                    input.value = '';
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById('new-category') as HTMLInputElement;
+                  addQuestionCategory(input.value);
+                  input.value = '';
+                }}
+              >
+                Ajouter
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {questionCategories.map((category) => {
+                const isProtected = category.label.trim().toLowerCase() === "analyse opportunité";
+
+                return (
+                  <div
+                    key={category.questionCategoryId}
+                    className="bg-orange-100 px-3 py-1 rounded-full flex items-center gap-2"
+                  >
+                    <span>{category.label}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeQuestionCategory(category.questionCategoryId)}
+                      className={
+                        isProtected
+                          ? "text-red-300 font-bold cursor-not-allowed"
+                          : "text-red-500 hover:text-red-700 font-bold"
+                      }
+                      disabled={isProtected}
+                      title={isProtected ? "Cette catégorie est protégée" : "Supprimer"}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

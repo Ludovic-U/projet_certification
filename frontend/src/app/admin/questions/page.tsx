@@ -13,12 +13,19 @@ import { questionsList } from "@/components/ui/Table/table.variants/questions";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
 import CreateQuestionForm from "@/components/forms/CreateQuestion";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import api_backend from "@/api/axiosInstance";
 import { Question } from "@/types/question";
+import TreeView from "@/components/ui/Tree/TreeView";
+import { useProjectQuestion } from "@/hooks/useProjectQuestions";
+
 
 export default function QuestionsPage() {
   const [questions, setQuestions] = useState([]);
+  const [types, setTypes] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [pagination, setPagination] = useState({
     totalItems: 0,
     currentPage: 1,
@@ -26,6 +33,65 @@ export default function QuestionsPage() {
     totalPages: 0,
   }); // Pagination default Infos
   const modal = useModal();
+
+  // treeview questions state
+  const [treeQuestions, setTreeQuestions] = useState<Question[]>([]);
+  const projectQuestions = useProjectQuestion(1).questions;
+
+  useEffect(() => {
+    setTreeQuestions(projectQuestions);
+  }, [projectQuestions]);
+
+  useEffect(() => {
+    // Filter questions based on selected type and category
+    let filteredQuestions = projectQuestions;
+
+    console.log("Filtering questions with type:", selectedTypeId, "and category:", selectedCategoryId);
+
+    // Filter by type
+    if (selectedTypeId !== null) {
+      filteredQuestions = filteredQuestions.filter((q: Question) => {
+        return q.addType?.includes(selectedTypeId) || q.addType?.includes(Number(selectedTypeId));
+      });
+    }
+
+    // // Filter by category
+    // if (selectedCategoryId !== null) {
+    //   filteredQuestions = filteredQuestions.filter((q: Question) => {
+    //     return q.category === selectedCategoryId || q.category === String(selectedCategoryId);
+    //   });
+    // }
+
+    setTreeQuestions(filteredQuestions);
+  }, [projectQuestions, selectedTypeId, selectedCategoryId]);
+
+  useEffect(() => {
+    // Fetch types list
+    const fetchTypes = async () => {
+      try {
+        const res = await api_backend.get("/type/get");
+        setTypes(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchTypes();
+  }, []);
+
+  useEffect(() => {
+    // Fetch categories list
+    const fetchCategories = async () => {
+      try {
+        const res = await api_backend.get("/question/categories");
+        setCategories(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     // Fecth questions list
@@ -77,6 +143,59 @@ export default function QuestionsPage() {
         title="Liste des questions"
         description="Consultez la liste des questions et accèdez aux détails"
       />
+      
+      {/* TYPE FILTER SECTION */}
+      <section className="w-full bg-gray-50 px-6 py-4 mb-6 rounded-lg border border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Types de projets</h3>
+        <div className="flex items-center gap-3 overflow-x-auto">
+          
+          {/* Type Rectangles */}
+          {types.map((type: any) => (
+            <button
+              key={type.typeId}
+              onClick={() => setSelectedTypeId(type.typeId)}
+              className={`shrink-0 px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
+                selectedTypeId === type.typeId
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+              }`}
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* CATEGORY FILTER SECTION */}
+      <section className="w-full bg-gray-50 px-6 py-4 mb-6 rounded-lg border border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Catégories de questions</h3>
+        <div className="flex items-center gap-3 overflow-x-auto">
+          
+          {/* Category Rectangles */}
+          {categories.map((category: any) => (
+            <button
+              key={category.questionCategoryId}
+              onClick={() => setSelectedCategoryId(category.questionCategoryId)}
+              className={`shrink-0 px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
+                selectedCategoryId === category.questionCategoryId
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+              }`}
+            >
+              {category.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* TREEVIEW SECTION */}
+      <section className="w-full bg-white px-6 py-4 mb-6 rounded-lg border border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Arbre des questions</h3>
+        <div className="h-125 border border-gray-300 rounded-lg">
+          <TreeView questions={treeQuestions} /> 
+        </div>
+      </section>
+
       <section>
         {/* ADD BTN + SEARCHBAR */}
         <div className="flex items-center justify-between">
@@ -115,12 +234,6 @@ export default function QuestionsPage() {
               />
             </Modal>
           </div>
-          <Input
-            type="search"
-            leftIcon={<FontAwesomeIcon icon={Icons.search} />}
-            placeholder="Recherchez dans cette liste..."
-            className="w-70"
-          />
         </div>
 
         {questions && questions.length > 0 ? (

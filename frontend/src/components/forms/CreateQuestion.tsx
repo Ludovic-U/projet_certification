@@ -30,6 +30,11 @@ interface Type {
   label: string;
 }
 
+interface QuestionCategory {
+  questionCategoryId: number;
+  label: string;
+}
+
 interface CreateQuestionFormProps {
     onSubmit: (data: CreateQuestionInputs) => void;
     isLoading: boolean;
@@ -40,18 +45,14 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
   // const { register, handleSubmit, formState: { errors } } = useForm<CreateQuestionInputs>();
   const [label, setLabel] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [category, setCategory] = useState("ideation");
+  const [category, setCategory] = useState("");
   const [hasMultipleOpenResponse, setHasMultipleOpenResponse] = useState(false);
   const [shouldMultiply, setShouldMultiply] = useState(false);
   const [allowMultiple, setAllowMultiple] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
   const [questionIdParent, setQuestionIdParent] = useState("");
 
-  //TODO: fetch categories from backend
-  const categories = [
-    { value: "ideation", label: "Idéation" },
-    { value: "conception", label: "Conception" },
-  ];
+  const [categories, setCategories] = useState<QuestionCategory[]>([]);
 
   const [types, setTypes] = useState<Type[]>([]);
   const [typesLabels, setTypesLabels] = useState<string[]>([]);
@@ -96,6 +97,23 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
 
     fetchTypeList();
   }, []);
+
+  useEffect(() => {
+    // fetch Question Categories
+    const fetchCategories = async () => {
+      try {
+        const res = await api_backend.get(`/question/categories`);
+        setCategories(res.data);
+        if (!category && res.data?.length > 0) {
+          setCategory(res.data[0].label);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchCategories();
+  }, [category]);
 
   return (
     <>
@@ -143,7 +161,7 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
             <Select
               className="flex-1"
               label="Catégorie"
-              options={categories}
+              options={categories.map((c) => ({ value: c.label, label: c.label }))}
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             />

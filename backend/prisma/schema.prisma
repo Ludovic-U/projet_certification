@@ -239,7 +239,7 @@ enum BudgetCategory {
 }
 
 // ==========================
-// Type Models
+// Project Type Models
 // ==========================
 model Type {
   typeId Int    @id @default(autoincrement())
@@ -252,6 +252,13 @@ model Type {
 // ==========================
 // Question & Response Models
 // ==========================
+model QuestionCategory {
+  questionCategoryId Int       @id @default(autoincrement())
+  label              String    @unique
+
+  questions Question[]
+}
+
 model Question {
   questionId               Int      @id @default(autoincrement())
   label                    String
@@ -262,11 +269,13 @@ model Question {
   hasMultipleOpenResponse  Boolean?
   shouldMultiply           Boolean?
   questionIdParent         Int?
+  questionCategoryId       Int?
 
   types     Type[]     @relation("TypeQuestion")
   options   Option[]
   responses Response[]
   projects  Project[]  @relation("ProjectQuestion")
+  questionCategory QuestionCategory? @relation(fields: [questionCategoryId], references: [questionCategoryId])
 
   // Self relations
   parent   Question?  @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])

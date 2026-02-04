@@ -318,3 +318,65 @@ module.exports.getSubQuestions = async (questionIdParent) => {
 
   return parentQuestion.children;
 };
+
+/**
+ * Get all question categories.
+ *
+ * @async
+ * @function getAllCategories
+ * @returns {Promise<Array<Object>>} List of all question categories.
+ */
+module.exports.getAllCategories = async () => {
+  return await prisma.questionCategory.findMany({
+    include: {
+      questions: {
+        select: {
+          questionId: true,
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Create a new question category.
+ *
+ * @async
+ * @function createCategory
+ * @param {Object} data - The category data to create.
+ * @param {string} data.label - The category label.
+ * @returns {Promise<Object>} The created category.
+ */
+module.exports.createCategory = async (data) => {
+  return await prisma.questionCategory.create({
+    data: {
+      label: data.label,
+    },
+  });
+};
+
+/**
+ * Delete a question category by ID.
+ *
+ * @async
+ * @function deleteCategory
+ * @param {number} questionCategoryId - The category ID to delete.
+ * @returns {Promise<Object>} The deleted category.
+ */
+module.exports.deleteCategory = async (questionCategoryId) => {
+  const category = await prisma.questionCategory.findUnique({
+    where: { questionCategoryId },
+  });
+
+  if (!category) {
+    throw new Error("Category not found");
+  }
+
+  if (category.label?.trim().toLowerCase() === "analyse opportunité") {
+    throw new Error("Category deletion forbidden");
+  }
+
+  return await prisma.questionCategory.delete({
+    where: { questionCategoryId },
+  });
+};
