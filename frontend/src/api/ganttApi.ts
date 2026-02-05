@@ -20,6 +20,13 @@ export interface SubAction {
   endDate: string;
 }
 
+// Type for file upload response
+interface FileUploadResponse {
+  url: string;
+  originalName: string;
+  filename: string;
+}
+
 // Type for API task response (dates as strings)
 interface ApiTaskResponse {
   id: number;
@@ -220,4 +227,18 @@ export const formatDateForApi = (date: Date | string | null | undefined): string
 export const formatDateFromApi = (dateString: string | null | undefined): Date | null => {
   if (!dateString) return null;
   return new Date(dateString);
+};
+
+/**
+ * Upload a file to the server
+ */
+export const uploadFile = async (file: File): Promise<FileUploadResponse> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await api.post<FileUploadResponse>('/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
 };
