@@ -43,6 +43,7 @@ module.exports.createTask = async (req, res) => {
   
   try {
     const taskData = {
+      projectId, 
       subActionId,
       name: req.body.text || req.body.name,
       description: req.body.details || req.body.description,
@@ -79,7 +80,9 @@ module.exports.updateTask = async (req, res) => {
   if (!validateId(taskId, 'taskId', res)) return;
   
   try {
+    console.log('updateTask - received files:', req.body.files);
     const taskData = {
+      projectId,
       name: req.body.text !== undefined ? req.body.text : req.body.name,
       description: req.body.details !== undefined ? req.body.details : req.body.description,
       startDate: req.body.start,

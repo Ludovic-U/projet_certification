@@ -12,7 +12,30 @@ const typeRoutes = require("./routes/typeRoutes");
 const optionRoutes = require("./routes/optionRoutes");
 const cookieParser = require("cookie-parser");
 const { authenticateUser } = require("./middlewares/auth");
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const app = express();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 //json
 app.use(express.json());
@@ -50,6 +73,30 @@ app.use("/api/option", optionRoutes);
 app.use('/api/financeur', authenticateUser, financeurRoutes);
 app.use('/api/config', authenticateUser, configRoutes);
 app.use('/api/gantt', authenticateUser, ganttRoutes);
+
+// File upload endpoint
+app.post('/api/upload', authenticateUser, upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  // Return full URL including backend port
+  const backendPort = process.env.PORT || 4000;
+  const fileUrl = `http://localhost:${backendPort}/uploads/${req.file.filename}`;
+  res.json({ 
+    url: fileUrl,
+    originalName: req.file.originalname,
+    filename: req.file.filename
+  });
+});
+
+// Serve uploaded files with CORS headers
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 module.exports = app; // export the app instance
 

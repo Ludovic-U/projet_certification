@@ -303,6 +303,7 @@ module.exports.createTask = async (taskData) => {
 module.exports.updateTask = async (taskId, taskData) => {
   try {
     const {
+      projectId,
       name,
       description,
       startDate,
@@ -333,6 +334,7 @@ module.exports.updateTask = async (taskId, taskData) => {
 
     // Update the task
     const updateData = {};
+    if (projectId !== undefined) updateData.projectId = projectId;
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
@@ -342,7 +344,10 @@ module.exports.updateTask = async (taskId, taskData) => {
     if (type !== undefined) updateData.type = type;
     if (details !== undefined) updateData.details = details;
     if (notes !== undefined) updateData.notes = notes;
-    if (files !== undefined) updateData.files = files;
+    if (files !== undefined) {
+      console.log('updateTask - saving files to DB:', files);
+      updateData.files = files;
+    }
     if (goal !== undefined) updateData.goal = goal;
 
     const task = await prisma.task.update({
