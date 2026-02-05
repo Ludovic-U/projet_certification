@@ -73,14 +73,14 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
       <div className="flex items-center justify-between px-4 py-4 gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <Calendar className="w-7 h-7 text-blue-400" />
-          <h1 className="text-2xl font-bold text-white">Gantt-Chart</h1>
+          <h1 className="text-2xl font-bold text-white">Diagramme de Gantt</h1>
         </div>
         <div className="flex gap-2 flex-wrap items-center">
           <button
             onClick={undo}
             disabled={historyIndex === 0}
             className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Undo"
+            title="Annuler"
           >
             <Undo className="w-4 h-4" />
           </button>
@@ -88,7 +88,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             onClick={redo}
             disabled={historyIndex === historyLength - 1}
             className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Redo"
+            title="Rétablir"
           >
             <Redo className="w-4 h-4" />
           </button>
@@ -97,36 +97,36 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
               onClick={() => setViewMode('day')}
               className={`px-3 py-2 text-white rounded-lg transition-colors ${viewMode === 'day' ? 'bg-blue-600' : 'bg-slate-700 hover:bg-slate-600'}`}
             >
-              Day
+              Jour
             </button>
             <button
               onClick={() => setViewMode('week')}
               className={`px-3 py-2 text-white rounded-lg transition-colors ${viewMode === 'week' ? 'bg-blue-600' : 'bg-slate-700 hover:bg-slate-600'}`}
             >
-              Week
+              Semaine
             </button>
             <button
               onClick={() => setViewMode('month')}
               className={`px-3 py-2 text-white rounded-lg transition-colors ${viewMode === 'month' ? 'bg-blue-600' : 'bg-slate-700 hover:bg-slate-600'}`}
             >
-              Month
+              Mois
             </button>
           </div>
           <div className="flex gap-1 ml-2">
-            <button onClick={() => zoomBy(-2)} className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Zoom out">
+            <button onClick={() => zoomBy(-2)} className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Zoom arrière">
               <ZoomOut className="w-4 h-4" />
             </button>
-            <button onClick={() => zoomBy(2)} className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Zoom in">
+            <button onClick={() => zoomBy(2)} className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Zoom avant">
               <ZoomIn className="w-4 h-4" />
             </button>
           </div>
-          <button onClick={() => scrollToDate(today)} className="px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Jump to today">Today</button>
+          <button onClick={() => scrollToDate(today)} className="px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Aller à aujourd'hui">Aujourd'hui</button>
           <button
             onClick={addTask}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ml-2"
           >
             <Plus className="w-4 h-4" />
-            Add Task
+            Ajouter une tâche
           </button>
           <div className="relative">
               <button
@@ -135,7 +135,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
                   setMenuOpen(!menuOpen);
                 }}
                 className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
-                title="More options"
+                title="Plus d'options"
               >
               <MoreHorizontal className="w-4 h-4" />
             </button>
@@ -156,7 +156,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       <Download className="w-4 h-4" />
-                      Export
+                      Exporter
                     </div>
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -208,7 +208,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       <Upload className="w-4 h-4" />
-                      Import
+                      Importer
                     </div>
                     <ChevronRight className="w-4 h-4" />
                   </button>

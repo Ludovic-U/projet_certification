@@ -43,7 +43,7 @@ export const isDateInRange = (d: Date, start: Date, end: Date) => {
 };
 
 export const formatDate = (date: Date) => {
-  return new Date(date).toLocaleDateString('en-US', { 
+  return new Date(date).toLocaleDateString('fr-FR', { 
     year: 'numeric', 
     month: '2-digit', 
     day: '2-digit' 

@@ -51,7 +51,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-slate-700 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">Edit Task</h2>
+              <h2 className="text-2xl font-bold text-white">Modifier la tâche</h2>
               <button
                 onClick={() => {
                   setShowEditor(false);
@@ -73,7 +73,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                General
+                Général
               </button>
               <button
                 onClick={() => setEditorTab('moyenHumain')}
@@ -93,7 +93,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Interns
+                Stagiaires
               </button>
               <button
                 onClick={() => setEditorTab('amenagements')}
@@ -103,7 +103,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Amenagements
+                Aménagements
               </button>
               <button
                 onClick={() => setEditorTab('equipementsPedagogiques')}
@@ -113,7 +113,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Equipements pedagogiques
+                Équipements pédagogiques
               </button>
               <button
                 onClick={() => setEditorTab('prestations')}
@@ -142,13 +142,14 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Task Name
+                      Nom de la tâche
                     </label>
                     <input
                       type="text"
                       value={editingTask.text}
                       onChange={(e) => setEditingTask({ ...editingTask, text: e.target.value })}
                       className="w-full px-4 py-2 bg-slate-700 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nom de la tâche..."
                     />
                   </div>
 
@@ -168,16 +169,16 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                       }}
                       className="w-full px-4 py-2 bg-slate-700 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="task">Task</option>
-                      <option value="milestone">Milestone</option>
-                      <option value="project">Project</option>
+                      <option value="task">Tâche</option>
+                      <option value="milestone">Jalon</option>
+                      <option value="project">Projet</option>
                     </select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Start Date
+                        Date de début
                       </label>
                       <input
                         type="date"
@@ -192,7 +193,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     {editingTask.type !== 'milestone' && (
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                          End Date
+                          Date de fin
                         </label>
                         <input
                           type="date"
@@ -206,7 +207,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Progress: {editingTask.progress}%
+                      Progression : {editingTask.progress}%
                     </label>
                     <input
                       type="range"
@@ -220,19 +221,20 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Details
+                      Détails
                     </label>
                     <textarea
                       value={editingTask.details}
                       onChange={(e) => setEditingTask({ ...editingTask, details: e.target.value })}
                       rows={3}
                       className="w-full px-4 py-2 bg-slate-700 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Détails de la tâche..."
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Assigned to
+                      Assigné à
                     </label>
                     <Select
                       isMulti
@@ -278,7 +280,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                           color: 'white',
                         }),
                       }}
-                      placeholder="Select assignees..."
+                      placeholder="Sélectionner des personnes..."
                     />
                   </div>
 
@@ -299,7 +301,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                         className="text-xs text-green-400 hover:text-green-300 flex items-center gap-1 px-2 py-1 rounded bg-green-600/20 hover:bg-green-600/30 transition-colors"
                       >
                         <Plus className="w-5 h-5" />
-                        Add New
+                        Ajouter
                       </button>
                     </div>
                     {showAddLivrable ? (
@@ -309,7 +311,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                             type="text"
                             value={newLivrableLabel}
                             onChange={(e) => setNewLivrableLabel(e.target.value)}
-                            placeholder="Livrable name..."
+                            placeholder="Nom du livrable..."
                             className="w-full px-3 py-2 bg-slate-700 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                             autoFocus
                           />
@@ -317,7 +319,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                             type="text"
                             value={newLivrableDescription}
                             onChange={(e) => setNewLivrableDescription(e.target.value)}
-                            placeholder="Description (optional)..."
+                            placeholder="Description (optionnel)..."
                             className="w-full px-3 py-2 bg-slate-700 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                           />
                           <div className="flex gap-2">
@@ -327,7 +329,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                               className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                               <Plus className="w-4 h-4" />
-                              Add
+                              Ajouter
                             </button>
                             <button
                               onClick={() => {
@@ -337,7 +339,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                               }}
                               className="px-3 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors"
                             >
-                              Cancel
+                              Annuler
                             </button>
                           </div>
                         </div>
@@ -364,7 +366,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                                     });
                                   }}
                                   className="p-2 hover:bg-slate-600 rounded text-slate-400 hover:text-red-400 transition-colors"
-                                  title="Remove livrable"
+                                  title="Supprimer le livrable"
                                 >
                                   <X className="w-4 h-4" />
                                 </button>
@@ -373,7 +375,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                           })}
                         </div>
                       ) : (
-                        <div className="text-sm text-slate-500 italic">No livrable selected. Click &quot;Add New&quot; to create one.</div>
+                        <div className="text-sm text-slate-500 italic">Aucun livrable sélectionné. Cliquez sur « Ajouter » pour en créer un.</div>
                       )
                     )}
                   </div>
@@ -381,12 +383,12 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   {/* Goal */}
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2 flex items-center gap-2">
-                      Goal {editingTask.livrableIds && editingTask.livrableIds.length > 0 && editingTask.goal && editingTask.goal.trim() ? (
+                      Objectif {editingTask.livrableIds && editingTask.livrableIds.length > 0 && editingTask.goal && editingTask.goal.trim() ? (
                         <span className="inline-flex items-center gap-1 text-xs text-green-400 bg-green-600/20 px-2 py-0.5 rounded">
-                          ✓ Task will auto-complete when saved
+                          ✓ La tâche sera automatiquement marquée comme terminée lors de l'enregistrement
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-500">(required with livrable for 100% completion)</span>
+                        <span className="text-xs text-slate-500">(requis avec livrable pour 100% de completion)</span>
                       )}
                     </label>
                     <textarea
@@ -394,7 +396,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                       onChange={(e) => setEditingTask({ ...editingTask, goal: e.target.value })}
                       rows={3}
                       className="w-full px-4 py-2 bg-slate-700 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Describe the goal that must be achieved before this task can be marked as 100% complete..."
+                      placeholder="Décrivez l'objectif qui doit être atteint pour que cette tâche puisse être marquée comme terminée à 100%..."
                     />
                   </div>
                 </div>
@@ -404,7 +406,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Personnel Days
+                        Jours de personnel
                       </label>
                       <input
                         type="number"
@@ -419,7 +421,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Personnel Cost (€)
+                        Coût du personnel (€)
                       </label>
                       <input
                         type="number"
@@ -436,11 +438,11 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 </div>
               ) : editorTab === 'interns' ? (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-4">Interns</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Stagiaires</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Interns Days
+                        Jours de stagiaires
                       </label>
                       <input
                         type="number"
@@ -455,7 +457,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Interns Cost (€)
+                        Coût des stagiaires (€)
                       </label>
                       <input
                         type="number"
@@ -472,7 +474,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 </div>
               ) : editorTab === 'amenagements' ? (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-4">Amenagements</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Aménagements</h3>
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
                       Description
@@ -498,12 +500,12 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                       })}
                       rows={4}
                       className="w-full px-4 py-2 bg-slate-700 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Describe the fittings/amenagements you have..."
+                      placeholder="Décrivez les aménagements/améhorissements que vous avez..."
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Fittings Cost (€)
+                      Coût des aménagements (€)
                     </label>
                     <input
                       type="number"
@@ -519,10 +521,10 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 </div>
               ) : editorTab === 'equipementsPedagogiques' ? (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-4">Equipements pedagogiques</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Équipements pédagogiques</h3>
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Educational Equipment Cost (€)
+                      Coût des équipements pédagogiques (€)
                     </label>
                     <input
                       type="number"
@@ -542,7 +544,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Subcontractor Cost (€)
+                        Coût de la sous-traitance (€)
                       </label>
                       <input
                         type="number"
@@ -557,7 +559,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Travel Cost (€)
+                        Coût des déplacements (€)
                       </label>
                       <input
                         type="number"
@@ -572,7 +574,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Other Prestations Cost (€)
+                        Coût des autres prestations (€)
                       </label>
                       <input
                         type="number"
@@ -587,7 +589,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Overhead Rate (%)
+                        Taux de frais généraux (%)
                       </label>
                       <input
                         type="number"
@@ -608,7 +610,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   <h3 className="text-lg font-semibold text-white mb-4">Communications</h3>
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Communication Cost (€)
+                      Coût des communications (€)
                     </label>
                     <input
                       type="number"
@@ -631,15 +633,15 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 return (
                   <div className="mt-6 bg-blue-600/20 border border-blue-500/50 p-4 rounded-lg">
                     <div className="flex justify-between text-slate-300 mb-2">
-                      <span>Subtotal:</span>
+                      <span>Total :</span>
                       <span>{subtotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
                     </div>
                     <div className="flex justify-between text-slate-300 mb-2">
-                      <span>Overhead ({budget.overheadRate}%):</span>
+                      <span>Frais généraux ({budget.overheadRate}%) :</span>
                       <span>{overhead.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
                     </div>
                     <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-600">
-                      <span>Total Budget:</span>
+                      <span>Budget total :</span>
                       <span>{total.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
                     </div>
                   </div>
@@ -655,7 +657,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 }}
                 className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
               >
-                Close
+                Fermer
               </button>
               <div className="flex gap-2">
                 <button
@@ -663,14 +665,14 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete
+                  Supprimer
                 </button>
                 <button
                   onClick={updateTask}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Save className="w-4 h-4" />
-                  Save
+                  Enregistrer
                 </button>
               </div>
             </div>

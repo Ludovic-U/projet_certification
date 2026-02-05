@@ -39,7 +39,7 @@ export const GanttContextMenu: React.FC<GanttContextMenuProps> = ({
           className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Add Child Task
+          Ajouter une sous-tâche
         </button>
         <div className="border-t border-slate-700 my-1" />
         <button
@@ -51,14 +51,14 @@ export const GanttContextMenu: React.FC<GanttContextMenuProps> = ({
           className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2"
         >
           <Edit className="w-4 h-4" />
-          Edit
+          Modifier
         </button>
         <button
           onClick={() => deleteTask(contextMenu.task.id)}
           className="w-full px-4 py-2 text-left text-red-400 hover:bg-slate-700 flex items-center gap-2"
         >
           <Trash2 className="w-4 h-4" />
-          Delete
+          Supprimer
         </button>
       </div>
     </>

@@ -89,7 +89,7 @@ const GanttChart = () => {
 
   // Helper functions for date conversion
   const xFromDate = (d: Date) => ((toUTC(d) - toUTC(getBaseStart(ganttState.viewMode, ganttState.currentDateRange))) / DAY_MS) * ganttState.pxPerDay;
-  const dateFromX = (x: number) => startOfDay(new Date(toUTC(getBaseStart(ganttState.viewMode, ganttState.currentDateRange)) + x * DAY_MS));
+  const dateFromX = (x: number) => startOfDay(new Date(toUTC(getBaseStart(ganttState.viewMode, ganttState.currentDateRange)) + (x / ganttState.pxPerDay) * DAY_MS));
 
   const totalTimelineWidth = useMemo(() => columns.reduce((s, c) => s + c.width, 0), [columns]);
 
@@ -174,13 +174,13 @@ const GanttChart = () => {
             <button
               onClick={() => ganttState.setShowTaskList(!ganttState.showTaskList)}
               className={`absolute top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-r-lg hover:bg-slate-700 transition-all ${ganttState.showTaskList ? 'left-[32rem] border-l-0' : 'left-0 border'}`}
-              title={ganttState.showTaskList ? 'Hide task list' : 'Show task list'}
+              title={ganttState.showTaskList ? 'Masquer la liste des tâches' : 'Afficher la liste des tâches'}
             >
               {ganttState.showTaskList ? (
-                <span className="text-white text-sm whitespace-nowrap">Hide Task List</span>
+                <span className="text-white text-sm whitespace-nowrap">Masquer la liste</span>
               ) : (
                 <>
-                  <span className="text-white text-sm whitespace-nowrap">Show Task List</span>
+                  <span className="text-white text-sm whitespace-nowrap">Afficher la liste</span>
                 </>
               )}
             </button>
@@ -246,6 +246,9 @@ const GanttChart = () => {
           tasks={ganttState.tasks}
           setTasks={ganttState.setTasks}
           data={ganttState.data}
+          projectId={projectId}
+          updateTask={ganttState.updateTask}
+          updateSelectedTask={ganttState.updateSelectedTask}
         />
 
         {/* Tooltip on task hover */}

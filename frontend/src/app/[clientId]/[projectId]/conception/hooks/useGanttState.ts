@@ -56,6 +56,12 @@ export const useGanttState = () => {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState<{ task: Task; x: number; y: number } | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const selectedTaskRef = useRef<Task | null>(null);
+
+  // Keep ref in sync with selectedTask state
+  useEffect(() => {
+    selectedTaskRef.current = selectedTask;
+  }, [selectedTask]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [importMenuOpen, setImportMenuOpen] = useState(false);
@@ -112,47 +118,47 @@ export const useGanttState = () => {
   const taskListRef = useRef<HTMLDivElement>(null);
 
   // Fetch data from API on mount
+  const loadData = async () => {
+    if (!projectId) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const ganttData = await fetchGanttData(projectId);
+      
+      setData(ganttData);
+      setTasks(ganttData.tasks || []);
+      setLinks(ganttData.links || []);
+      setUsers(ganttData.users || []);
+      setLivrables(ganttData.livrables || []);
+
+      // Initialize history with initial state
+      const initialState = {
+        tasks: ganttData.tasks || [],
+        links: ganttData.links || []
+      };
+      setHistory([initialState]);
+      setHistoryIndex(0);
+
+      // Set initial date range based on tasks
+      if (ganttData.tasks && ganttData.tasks.length > 0) {
+        setCurrentDateRange(getDateRange(ganttData.tasks, MIN_START_DATE));
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement des données du diagramme de Gantt :', err);
+      setError('Échec du chargement des données. Utilisation du mode hors ligne.');
+      // Initialize with empty data but allow the app to work
+      setHistory([{ tasks: [], links: [] }]);
+      setHistoryIndex(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      if (!projectId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-        const ganttData = await fetchGanttData(projectId);
-        
-        setData(ganttData);
-        setTasks(ganttData.tasks || []);
-        setLinks(ganttData.links || []);
-        setUsers(ganttData.users || []);
-        setLivrables(ganttData.livrables || []);
-
-        // Initialize history with initial state
-        const initialState = {
-          tasks: ganttData.tasks || [],
-          links: ganttData.links || []
-        };
-        setHistory([initialState]);
-        setHistoryIndex(0);
-
-        // Set initial date range based on tasks
-        if (ganttData.tasks && ganttData.tasks.length > 0) {
-          setCurrentDateRange(getDateRange(ganttData.tasks, MIN_START_DATE));
-        }
-      } catch (err) {
-        console.error('Error loading Gantt data:', err);
-        setError('Failed to load Gantt data. Using offline mode.');
-        // Initialize with empty data but allow the app to work
-        setHistory([{ tasks: [], links: [] }]);
-        setHistoryIndex(0);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadData();
   }, [projectId]);
 
@@ -309,13 +315,13 @@ export const useGanttState = () => {
   const addTask = async () => {
     const newTask: ExtendedTask = {
       id: generateTempId(), // Temporary negative ID until saved
-      text: 'New Task',
+      text: '',  // Empty instead of 'New Task'
       start: new Date(),
       end: new Date(),
       progress: 0,
       parent: 0,
       type: 'task',
-      details: 'New task description',
+      details: '',  // Empty instead of 'New task description'
       notes: '',
       files: [],
       assigneeIds: [],
@@ -335,13 +341,13 @@ export const useGanttState = () => {
   const addChildTask = async (parentId: number) => {
     const newTask: ExtendedTask = {
       id: generateTempId(), // Temporary negative ID until saved
-      text: 'New Subtask',
+      text: '',  // Empty instead of 'New Subtask'
       start: new Date(),
       end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       progress: 0,
       parent: parentId,
       type: 'task',
-      details: 'New subtask description',
+      details: '',  // Empty instead of 'New subtask description'
       notes: '',
       files: [],
       assigneeIds: [],
@@ -383,7 +389,7 @@ export const useGanttState = () => {
   const updateTask = async () => {
     if (editingTask) {
       if (editingTask.type !== 'milestone' && editingTask.start > editingTask.end) {
-        alert('Start date must be before end date');
+        alert('La date de début doit être antérieure à la date de fin');
         return;
       }
       
@@ -459,6 +465,24 @@ export const useGanttState = () => {
     }
   };
 
+  // Update selected task (for Task Summary panel)
+  const updateSelectedTask = async (filesToSave?: string[]) => {
+    const taskToUpdate = selectedTaskRef.current;
+    if (taskToUpdate && projectId && taskToUpdate.id > 0) {
+      try {
+        // Use provided files or fall back to ref
+        const files = filesToSave || taskToUpdate.files;
+        console.log('Saving task files to DB:', files);
+        await apiUpdateTask(projectId, taskToUpdate.id, { ...taskToUpdate, files });
+        console.log('Task saved successfully');
+        // Refresh tasks to ensure files and other updates are synced
+        await loadData();
+      } catch (err) {
+        console.error('Error updating selected task in API:', err);
+      }
+    }
+  };
+
   return {
     // Data
     data,
@@ -468,6 +492,7 @@ export const useGanttState = () => {
     users,
     isLoading,
     error,
+    loadData,
     
     // UI State
     editingTask,
@@ -563,5 +588,6 @@ export const useGanttState = () => {
     addChildTask,
     deleteTask,
     updateTask,
+    updateSelectedTask,
   };
 };

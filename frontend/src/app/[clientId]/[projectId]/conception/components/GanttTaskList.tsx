@@ -60,10 +60,10 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
     <div className="w-[32rem] border-r border-slate-700 bg-slate-800 flex flex-col overflow-hidden">
       {/* Header row */}
       <div className="flex border-b border-slate-700 bg-slate-800 flex-shrink-0">
-        <div className="flex-1 px-3 py-2 font-semibold text-white border-r border-slate-600">Task name</div>
-        <div className="w-32 px-3 py-2 font-semibold text-white border-r border-slate-600">Start</div>
-        <div className="w-40 px-3 py-2 font-semibold text-white border-r border-slate-600">Assignees</div>
-        <div className="w-32 px-3 py-2 font-semibold text-white">Progress</div>
+        <div className="flex-1 px-3 py-2 font-semibold text-white border-r border-slate-600">Nom de la tâche</div>
+        <div className="w-32 px-3 py-2 font-semibold text-white border-r border-slate-600">Début</div>
+        <div className="w-40 px-3 py-2 font-semibold text-white border-r border-slate-600">Assigné à</div>
+        <div className="w-32 px-3 py-2 font-semibold text-white">Progression</div>
       </div>
       {/* Task list rows */}
       <div ref={taskListRef} className="flex-1 overflow-y-auto pl-[10px]" onScroll={handleTaskListScroll}>
@@ -130,7 +130,7 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
                 {task.progress === 100 ? (
                   <div className="flex items-center gap-1 text-green-400">
                     <Check className="w-4 h-4" />
-                    <span className="text-xs font-medium">Completed</span>
+                    <span className="text-xs font-medium">Terminé</span>
                   </div>
                 ) : (
                   <>

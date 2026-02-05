@@ -112,10 +112,10 @@ export const useGanttExportImport = ({
             
             // Save imported tasks to API
             await saveTasksToApi(nextTasks);
-            alert('Data imported successfully');
+            alert('Données importées avec succès');
           }
         } catch {
-          alert('Invalid file format');
+          alert('Format de fichier invalide');
         }
       };
       reader.readAsText(file);
@@ -233,7 +233,7 @@ export const useGanttExportImport = ({
           if (typeof result === 'string') {
             const lines = result.split('\n');
             if (lines.length < 2) {
-              alert('CSV file is empty or has no data rows');
+              alert('Le fichier CSV est vide ou ne contient pas de lignes de données');
               return;
             }
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
@@ -274,9 +274,9 @@ export const useGanttExportImport = ({
               
               // Save imported tasks to API
               await saveTasksToApi(updatedTasks);
-              alert(`Successfully imported ${newTasks.length} tasks`);
+              alert(`${newTasks.length} tâches importées avec succès`);
             } else {
-              alert('No valid tasks found in the CSV file. Make sure the file has the correct headers.');
+              alert('Aucune tâche valide trouvée dans le fichier CSV. Assurez-vous que le fichier possède les bons en-têtes.');
             }
           }
         } catch {
@@ -299,7 +299,7 @@ export const useGanttExportImport = ({
           const tasksSheet = workbook.Sheets['Tasks'];
           
           if (!tasksSheet) {
-            alert('Excel file must contain a sheet named "Tasks"');
+            alert('Le fichier Excel doit contenir une feuille nommée "Tâches"');
             return;
           }
           
@@ -330,12 +330,12 @@ export const useGanttExportImport = ({
             
             // Save imported tasks to API
             await saveTasksToApi(updatedTasks);
-            alert(`Successfully imported ${newTasks.length} tasks`);
+            alert(`${newTasks.length} tâches importées avec succès`);
           } else {
-            alert('No tasks found in the Excel file');
+            alert('Aucune tâche trouvée dans le fichier Excel');
           }
         } catch {
-          alert('Invalid Excel format');
+          alert('Format Excel invalide');
         }
       };
       reader.readAsArrayBuffer(file);

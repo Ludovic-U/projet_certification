@@ -22,7 +22,7 @@ export const generateColumns = (
         key: `${cursor.getUTCFullYear()}-${cursor.getUTCMonth()}`,
         start: new Date(cursor),
         end: endOfMonth(cursor),
-        label: cursor.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        label: cursor.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }),
         width,
       });
       cursor = startOfMonth(addMonths(cursor, 1));
@@ -39,7 +39,7 @@ export const generateColumns = (
         key: `W${week}-${year}-${cursor.getTime()}`,
         start: new Date(cursor),
         end: addDays(cursor, 6),
-        label: `W${week} ${year}`,
+        label: `S${week} ${year}`,
         width,
       });
       cursor = addWeeks(cursor, 1);
@@ -53,7 +53,7 @@ export const generateColumns = (
         key: `${cursor.getTime()}`,
         start: new Date(cursor),
         end: new Date(cursor),
-        label: cursor.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' }),
+        label: cursor.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' }),
         width: pxPerDay,
       });
       cursor = addDays(cursor, 1);
@@ -80,7 +80,7 @@ export const generateColumns = (
   } else {
     // Group by month name + year
     let currentMonth = cols.length ? `${cols[0].start.getUTCFullYear()}-${cols[0].start.getUTCMonth()}` : undefined;
-    let currentLabel = cols.length ? cols[0].start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
+    let currentLabel = cols.length ? cols[0].start.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
     let acc = 0;
     for (const c of cols) {
       const key = `${c.start.getUTCFullYear()}-${c.start.getUTCMonth()}`;
@@ -88,7 +88,7 @@ export const generateColumns = (
       if (key !== currentMonth) {
         groups.push({ key: currentMonth, label: currentLabel, width: acc });
         currentMonth = key;
-        currentLabel = c.start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        currentLabel = c.start.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
         acc = 0;
       }
       acc += c.width;
