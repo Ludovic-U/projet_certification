@@ -3,6 +3,7 @@ import { Calendar, Plus, Undo, Redo, MoreHorizontal, ZoomIn, ZoomOut } from 'luc
 import { ViewMode, MenuPosition } from '../types';
 import { PortalMenu } from './PortalMenu';
 import { FileSpreadsheet, Download, Upload, ChevronRight } from 'lucide-react';
+import { MistralModal } from './MistralModal';
 
 interface GanttToolbarProps {
   viewMode: ViewMode;
@@ -36,6 +37,8 @@ interface GanttToolbarProps {
   importFromExcel: (e: React.ChangeEvent<HTMLInputElement>) => void;
   importData: (e: React.ChangeEvent<HTMLInputElement>) => void;
   importMistralGantt: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  mistralModalOpen: boolean;
+  setMistralModalOpen: (open: boolean) => void;
 }
 
 export const GanttToolbar: React.FC<GanttToolbarProps> = ({
@@ -69,6 +72,8 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   importFromExcel,
   importData,
   importMistralGantt,
+  mistralModalOpen,
+  setMistralModalOpen,
 }) => {
   return (
     <div className="bg-slate-800 border-b border-slate-700 flex-shrink-0">
@@ -243,11 +248,29 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
                     </PortalMenu>
                   )}
                 </div>
+                {/* Mistral Modal */}
+                <button
+                  className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2"
+                  onClick={() => {
+                    setMistralModalOpen(true);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    Mistral
+                  </div>
+                </button>
               </PortalMenu>
             )}
           </div>
         </div>
       </div>
+      {/* Mistral Modal */}
+      <MistralModal 
+        isOpen={mistralModalOpen} 
+        onClose={() => setMistralModalOpen(false)} 
+      />
     </div>
   );
 };

@@ -65,6 +65,7 @@ export const useGanttState = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [importMenuOpen, setImportMenuOpen] = useState(false);
+  const [mistralModalOpen, setMistralModalOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState<MenuPosition>({ top: 0, left: 0 });
   const [exportMenuPosition, setExportMenuPosition] = useState<MenuPosition>({ top: 0, left: 0 });
   const [importMenuPosition, setImportMenuPosition] = useState<MenuPosition>({ top: 0, left: 0 });
@@ -505,6 +506,7 @@ export const useGanttState = () => {
     menuOpen,
     exportMenuOpen,
     importMenuOpen,
+    mistralModalOpen,
     menuPosition,
     exportMenuPosition,
     importMenuPosition,
@@ -560,6 +562,7 @@ export const useGanttState = () => {
     setMenuOpen,
     setExportMenuOpen,
     setImportMenuOpen,
+    setMistralModalOpen,
     setMenuPosition,
     setExportMenuPosition,
     setImportMenuPosition,
