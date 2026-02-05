@@ -35,6 +35,7 @@ interface GanttToolbarProps {
   importFromCSV: (e: React.ChangeEvent<HTMLInputElement>) => void;
   importFromExcel: (e: React.ChangeEvent<HTMLInputElement>) => void;
   importData: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  importMistralGantt: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const GanttToolbar: React.FC<GanttToolbarProps> = ({
@@ -67,6 +68,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   importFromCSV,
   importFromExcel,
   importData,
+  importMistralGantt,
 }) => {
   return (
     <div className="bg-slate-800 border-b border-slate-700 flex-shrink-0">
@@ -232,6 +234,11 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
                         <Upload className="w-4 h-4" />
                         JSON
                         <input type="file" accept=".json" onChange={importData} className="hidden" />
+                      </label>
+                      <label className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
+                        <Upload className="w-4 h-4 text-purple-400" />
+                        Mistral
+                        <input type="file" accept=".json" onChange={importMistralGantt} className="hidden" />
                       </label>
                     </PortalMenu>
                   )}

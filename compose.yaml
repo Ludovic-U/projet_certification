@@ -27,6 +27,8 @@ services:
       - 4000:4000
     environment:
       DATABASE_URL: ${DATABASE}
+    volumes:
+      - ./backend/uploads:/app/uploads
     depends_on:
       - db
   db:

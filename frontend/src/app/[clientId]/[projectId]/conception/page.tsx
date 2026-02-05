@@ -165,6 +165,7 @@ const GanttChart = () => {
           importFromCSV={exportImport.importFromCSV}
           importFromExcel={exportImport.importFromExcel}
           importData={exportImport.importData}
+          importMistralGantt={exportImport.importMistralGantt}
         />
 
         {/* Main Gantt Chart Area */}

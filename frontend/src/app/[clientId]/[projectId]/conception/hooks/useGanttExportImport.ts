@@ -1,5 +1,9 @@
 import { Task, Link, ImportedTask } from '../types';
 import { createEmptyBudget } from '../utils/budgetUtils';
+import { 
+  transformMistralJSONToGanttTasks, 
+  parseMistralJSON 
+} from '../utils/mistralUtils';
 import * as XLSX from 'xlsx';
 import { createTask as apiCreateTask } from '@/api/ganttApi';
 
@@ -342,6 +346,44 @@ export const useGanttExportImport = ({
     }
   };
 
+  // Import from Mistral JSON
+  const importMistralGantt = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const result = event.target?.result;
+          if (typeof result === 'string') {
+            const mistralJSON = parseMistralJSON(result);
+            
+            if (!mistralJSON) {
+              alert('Format Mistral JSON invalide');
+              return;
+            }
+            
+            const newTasks = transformMistralJSONToGanttTasks(mistralJSON, tasks);
+            
+            if (newTasks.length > 0) {
+              const updatedTasks = [...tasks, ...newTasks];
+              setTasks(updatedTasks);
+              saveState(updatedTasks, links);
+              
+              // Save imported tasks to API
+              await saveTasksToApi(updatedTasks);
+              alert(`${newTasks.length} tâches importées depuis Mistral avec succès`);
+            } else {
+              alert('Aucune tâche trouvée dans le fichier Mistral');
+            }
+          }
+        } catch {
+          alert('Erreur lors de l\'importation du fichier Mistral');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
   return {
     exportData,
     importData,
@@ -350,5 +392,6 @@ export const useGanttExportImport = ({
     exportToMSProject,
     importFromCSV,
     importFromExcel,
+    importMistralGantt,
   };
 };

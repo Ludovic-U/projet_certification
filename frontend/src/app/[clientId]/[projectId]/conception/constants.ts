@@ -13,7 +13,7 @@ export const DEFAULT_DAY_WIDTH: Record<ViewMode, number> = {
 export const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Minimum start date for timeline
-export const MIN_START_DATE = new Date(2026, 0, 1);
+export const MIN_START_DATE = new Date(2026, 0, 1); //TODO: adjust as needed
 
 // Maximum history states to keep
 export const MAX_HISTORY_STATES = 20;
