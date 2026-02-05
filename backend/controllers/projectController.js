@@ -158,19 +158,20 @@ module.exports.getProjectsByClientId = async (req, res) => {
 };
 
 /**
- * Get projects by user ID.
- * Expects userId in req.params.
- * Responds with an array of project objects.
- * */
-module.exports.getProjectsByUserId = async (req, res) => {
+ * Get projects by user ID (accessible projects).
+ * Returns projects where user is manager, assigned to tasks, or client manager.
+ * GET /api/project/user/:userId
+ */
+module.exports.getProjectsByUserIdGet = async (req, res) => {
   const userId = Number(req.params.userId);
-  // Validate userId
+  
   if (!validateId(userId, "userId", res)) return;
+  
   try {
-    const projects = await Project.findAll({ where: { userId } });
+    const projects = await getProjectsByUserId(userId);
     res.status(200).json(projects);
   } catch (error) {
-    console.error("Error fetching projects by userId:", error);
+    console.error('Error fetching projects by userId:', error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

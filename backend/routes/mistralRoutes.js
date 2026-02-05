@@ -1,11 +1,10 @@
-import express from 'express';
-import multer from 'multer';
-import { testMistral } from '../controllers/mistralController.js';
+const express = require('express');
+const multer = require('multer');
+const { testMistral } = require('../controllers/mistralController');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
 router.post('/generateGanttviaMistral', upload.single('file'), testMistral);
-// router.post('/testUploadFile', upload.single('file'), testMistral);
 
-export default router;
+module.exports = router;

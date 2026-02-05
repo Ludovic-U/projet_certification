@@ -1,15 +1,14 @@
-import { Mistral } from '@mistralai/mistralai';
-import * as dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
-import { marked } from "marked";
+const { Mistral } = require('@mistralai/mistralai');
+const dotenv = require('dotenv');
+const fs = require('fs');
+const path = require('path');
 
 dotenv.config();
 
 const apiKey = process.env.MISTRAL_API_KEY;
 const client = new Mistral({ apiKey: apiKey });
 
-export async function CallMistralAPI(prompt) {
+exports.CallMistralAPI = async (prompt) => {
     const chatResponse = await client.chat.complete({
         model: "mistral-large-latest",
         messages: [{ role: 'user', content: prompt }],
@@ -21,7 +20,7 @@ export async function CallMistralAPI(prompt) {
 
     console.log("cette opération a couté : " + prix + " $");
     return chatResponse.choices[0].message.content;
-}
+};
 
 // Format attendu pour le Gantt
 const ganttExpectedForma = `{
@@ -65,7 +64,7 @@ const ganttExpectedForma = `{
 `;
 
 // Appel de l'API Mistral pour générer le Gantt
-export async function GenerateGanttMistralAPI(textContent) {
+exports.GenerateGanttMistralAPI = async (textContent, projectId = 1) => {
     try {
 
         const prompt = textContent.trim()
@@ -75,7 +74,15 @@ export async function GenerateGanttMistralAPI(textContent) {
             \n\nAssure toi que le JSON retourné est valide et respecte bien le format demandé.    `
             : 'How far is the moon from earth?';
 
-        return CallMistralAPI(prompt);
+            // appel call mistral api 
+        // for loop sur chaque task du json
+    
+        // appel du controlelr gantt pour créer chaque task 
+
+        // appel du controller dépense si la task a une depense 
+
+        // ensuite return le json pour debug.
+        return exports.CallMistralAPI(prompt); // json
 
     } catch (err) {
         console.error('Mistral API Error:', err);
@@ -84,7 +91,7 @@ export async function GenerateGanttMistralAPI(textContent) {
 }
 
 // Lire un document et en extraire le texte via OCR
-export async function MistralOCR(filePath) {
+exports.MistralOCR = async (filePath) => {
     if (!apiKey) throw new Error('Missing MISTRAL_API_KEY');
     if (!filePath) throw new Error('filePath is required');
 
@@ -92,7 +99,7 @@ export async function MistralOCR(filePath) {
     const fileContent = fs.readFileSync(filePath, 'utf-8');
 
     // Upload et récupère l'URL signée
-    const documentUrl = await uploadFile(filePath);
+    const documentUrl = await exports.uploadFile(filePath);
 
     // Lance l'OCR avec l'URL
     const response = await client.ocr.process({
@@ -111,7 +118,7 @@ export async function MistralOCR(filePath) {
 }
 
 // Upload un fichier et retourne son URL signée
-async function uploadFile(filePath) {
+exports.uploadFile = async (filePath) => {
     const fileName = path.basename(filePath);
     const fileBuffer = fs.readFileSync(filePath);
 
@@ -133,6 +140,6 @@ async function uploadFile(filePath) {
 }
 
 // Genere un arbre de question/réponse à partir d'un texte
-export async function GenerateIdeationMistralAPI(textContent) {
+exports.GenerateIdeationMistralAPI = async (textContent) => {
 
 }

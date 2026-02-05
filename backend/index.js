@@ -10,6 +10,7 @@ const questionRoutes = require("./routes/questionRoutes");
 const responseRoutes = require("./routes/responseRoutes");
 const typeRoutes = require("./routes/typeRoutes");
 const optionRoutes = require("./routes/optionRoutes");
+const mistralRoutes = require('./routes/mistralRoutes');
 const cookieParser = require("cookie-parser");
 const { authenticateUser } = require("./middlewares/auth");
 const multer = require('multer');
@@ -73,6 +74,8 @@ app.use("/api/option", optionRoutes);
 app.use('/api/financeur', authenticateUser, financeurRoutes);
 app.use('/api/config', authenticateUser, configRoutes);
 app.use('/api/gantt', authenticateUser, ganttRoutes);
+app.use('/api/mistral', authenticateUser, mistralRoutes);
+
 
 // File upload endpoint
 app.post('/api/upload', authenticateUser, upload.single('file'), (req, res) => {

@@ -1,7 +1,7 @@
-import * as mistralService from "../services/mistralService.js";
-import fs from 'fs';
+const mistralService = require("../services/mistralService");
+const fs = require('fs');
 
-export const testMistral = async (req, res) => {
+exports.testMistral = async (req, res) => {
   try {
     // Vérifier la présence d'un fichier ou de texte
     const text = req.body.text || "";
@@ -21,7 +21,7 @@ export const testMistral = async (req, res) => {
     // Combiner le texte du fichier et le texte entré
     const combinedText = [fileText, text].filter(t => t && t.trim().length > 0).join("\n");
     
-    const response = await mistralService.testMistralAPI(combinedText);
+    const response = await mistralService.GenerateGanttMistralAPI(combinedText);
 
     res.status(200).json(response);
   } catch (error) {

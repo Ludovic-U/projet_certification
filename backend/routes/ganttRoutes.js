@@ -8,7 +8,8 @@ const {
   deleteTaskLink,
   createDeliverable,
   getSubActions,
-  bulkUpdateTasks
+  bulkUpdateTasks,
+  importGanttData
 } = require('../controllers/ganttController');
 const { authenticateUser } = require('../middlewares/auth');
 const router = Router();
@@ -42,5 +43,8 @@ router.delete('/:projectId/links/:linkId', deleteTaskLink);
 
 // POST /api/gantt/:projectId/deliverables - Create a new deliverable
 router.post('/:projectId/deliverables', createDeliverable);
+
+// POST /api/gantt/import/:projectId - Import Mistral JSON data
+router.post('/import/:projectId', importGanttData);
 
 module.exports = router;
