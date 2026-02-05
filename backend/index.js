@@ -98,7 +98,7 @@ app.use('/uploads', (req, res, next) => {
   next();
 }, express.static(path.join(__dirname, 'uploads')));
 
-module.exports = app; // export the app instance
+export default app; // export the app instance
 
 // start server
 const PORT = process.env.PORT;

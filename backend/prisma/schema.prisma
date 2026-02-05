@@ -321,7 +321,7 @@ model Response {
   responseIdParent Int?
 
   project  Project  @relation(fields: [projectId], references: [projectId])
-  question Question @relation(fields: [questionId], references: [questionId])
+  question Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
   option   Option?  @relation(fields: [optionId], references: [optionId])
 
   // Self relations
