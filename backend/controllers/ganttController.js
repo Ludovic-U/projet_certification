@@ -7,7 +7,10 @@ const {
   createTaskLink,
   deleteTaskLink,
   createDeliverable,
-  getSubActionsForProject
+  getSubActionsForProject,
+  createTaskExpense,
+  createTaskAssigneeDetail,
+  createTaskDeliverableStatus
 } = require('../services/ganttService');
 const { validateId } = require('../middlewares/validateId');
 
@@ -305,6 +308,17 @@ module.exports.importGanttData = async (req, res) => {
     for (const taskData of tasks) {
       console.log('Creating task with data:', JSON.stringify(taskData, null, 2));
       
+      // Get original ID (handle different field names consistently)
+      const originalId = taskData.id !== undefined ? taskData.id : 
+                        (taskData.id_tache !== undefined ? taskData.id_tache : taskData.taskId);
+      
+      console.log('Original ID:', originalId);
+      
+      if (originalId === undefined) {
+        console.log('Warning: Task missing ID field, skipping...');
+        continue;
+      }
+      
       // Extract fields with flexible naming for Mistral response
       const taskInput = {
         projectId,
@@ -325,18 +339,93 @@ module.exports.importGanttData = async (req, res) => {
       console.log('Mapped task input:', JSON.stringify(taskInput, null, 2));
 
       const created = await createTask(taskInput);
-      idMap.set(taskData.id || taskData.id_tache || taskData.taskId, created.taskId);
+      idMap.set(originalId, created.id);  // createTask returns 'id', not 'taskId'
       createdTasks.push(created);
+      
+      console.log('Created task with new ID:', created.id, ', mapped from original ID:', originalId);
+      
+      // Create expenses for this task (from Mistral)
+      if (taskData.expenses && Array.isArray(taskData.expenses)) {
+        for (const expense of taskData.expenses) {
+          try {
+            await createTaskExpense({
+              taskId: created.id,
+              type: expense.type || 'other',
+              name: expense.name || '',
+              unit: expense.unit || null,
+              unitPrice: expense.unit_price || expense.unitPrice || null
+            });
+          } catch (expenseErr) {
+            console.error('Error creating expense:', expenseErr);
+          }
+        }
+      }
+      
+      // Create assignee details for this task (from Mistral)
+      if (taskData.assignees && Array.isArray(taskData.assignees)) {
+        for (const assignee of taskData.assignees) {
+          try {
+            await createTaskAssigneeDetail({
+              taskId: created.id,
+              assigneeName: assignee.name || '',
+              hoursAssigned: assignee.hours_assigned || assignee.hoursAssigned || null,
+              dailyCost: assignee.daily_cost || assignee.dailyCost || null
+            });
+          } catch (assigneeErr) {
+            console.error('Error creating assignee detail:', assigneeErr);
+          }
+        }
+      }
+      
+      // Create deliverables for this task (from Mistral)
+      if (taskData.deliverables && Array.isArray(taskData.deliverables)) {
+        for (const deliverable of taskData.deliverables) {
+          try {
+            await createTaskDeliverableStatus({
+              taskId: created.id,
+              name: deliverable.name || '',
+              delivered: deliverable.delivered || false,
+              uploaded: deliverable.uploaded || false,
+              filePath: deliverable.file_path || deliverable.filePath || null
+            });
+          } catch (deliverableErr) {
+            console.error('Error creating deliverable status:', deliverableErr);
+          }
+        }
+      }
     }
 
     // Second pass: update parent references and create links
+    console.log('Starting second pass - idMap entries:', Array.from(idMap.entries()));
+    
     for (let i = 0; i < tasks.length; i++) {
       const taskData = tasks[i];
-      const newTaskId = idMap.get(taskData.id);
+      
+      // Get original ID (handle different field names consistently)
+      const originalId = taskData.id !== undefined ? taskData.id : 
+                        (taskData.id_tache !== undefined ? taskData.id_tache : taskData.taskId);
+      
+      const newTaskId = idMap.get(originalId);
+      
+      // Skip if this task wasn't created (shouldn't happen)
+      if (!newTaskId) {
+        console.log('Warning: Task not found in idMap for original ID:', originalId);
+        continue;
+      }
+      
+      // Check both parent (no underscore) and parent_id (with underscore) for compatibility
+      const originalParentId = taskData.parent_id !== undefined ? taskData.parent_id : taskData.parent;
+
+      console.log(`Processing task: originalId=${originalId}, newTaskId=${newTaskId}, originalParentId=${originalParentId}`);
+      console.log(`  idMap.has(${originalParentId}) = ${idMap.has(originalParentId)}`);
 
       // Update parent reference if needed
-      if (taskData.parent && taskData.parent !== 0 && idMap.has(taskData.parent)) {
-        await updateTask(newTaskId, { parentId: idMap.get(taskData.parent) });
+      if (originalParentId && originalParentId !== 0 && idMap.has(originalParentId)) {
+        const newParentId = idMap.get(originalParentId);
+        console.log(`  Updating parent: setting parentId=${newParentId} for task ${newTaskId}`);
+        await updateTask(newTaskId, { parentId: newParentId });
+      } else {
+        console.log(`  NOT updating parent: originalParentId=${originalParentId}, idMap.has=${idMap.has(originalParentId)}`);
       }
 
       // Create links if dependencies exist

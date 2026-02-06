@@ -28,7 +28,7 @@ interface FileUploadResponse {
 }
 
 // Type for API task response (dates as strings)
-interface ApiTaskResponse {
+export interface ApiTaskResponse {
   id: number;
   text: string;
   start: string | null;
@@ -49,7 +49,7 @@ interface ApiTaskResponse {
 /**
  * Convert API task response to Task type (dates as Date objects)
  */
-const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
+export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
   id: apiTask.id,
   text: apiTask.text,
   start: apiTask.start ? new Date(apiTask.start) : new Date(),

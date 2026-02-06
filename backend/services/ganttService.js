@@ -50,7 +50,10 @@ module.exports.getGanttData = async (projectId) => {
           include: {
             livrable: true
           }
-        }
+        },
+        expenses: true,
+        assigneeDetails: true,
+        deliverables: true
       }
     });
 
@@ -108,13 +111,42 @@ module.exports.getGanttData = async (projectId) => {
           include: {
             livrable: true
           }
-        }
+        },
+        expenses: true,
+        assigneeDetails: true,
+        deliverables: true
       }
     });
 
-    // Build task map
+    // Build task map with budget aggregation from expenses and assigneeDetails
     const taskMap = new Map();
     allTasks.forEach(task => {
+      // Aggregate expenses into budget format
+      const expenses = task.expenses || [];
+      const assigneeDetails = task.assigneeDetails || [];
+      
+      // Calculate Moyen Humain (human resources) totals
+      const moyenHumainCost = assigneeDetails.reduce((sum, a) => sum + (a.dailyCost || 0) * (a.hoursAssigned || 0) / 8, 0); // Assume 8h/day
+      const personnelDays = assigneeDetails.reduce((sum, a) => sum + (a.hoursAssigned || 0) / 8, 0);
+      
+      // Categorize expenses by type
+      const expensesByType = {
+        'moyen-humain': expenses.filter(e => e.type === 'moyen-humain' || e.type === 'moyen_humain'),
+        'amenagements': expenses.filter(e => e.type === 'amenagements' || e.type === 'amenagement-mobilier'),
+        'equipements': expenses.filter(e => e.type === 'equipements' || e.type === 'equipements_pedagogiques'),
+        'prestations': expenses.filter(e => e.type === 'prestations'),
+        'communication': expenses.filter(e => e.type === 'communication' || e.type === 'communication-evenementiel'),
+      };
+      
+      // Get expenses total by category
+      const fittingsCost = expensesByType.amenagements.reduce((sum, e) => sum + (e.unitPrice || 0) * (e.unit ? parseInt(e.unit) : 1), 0);
+      const educationalEquipmentCost = expensesByType.equipements.reduce((sum, e) => sum + (e.unitPrice || 0) * (e.unit ? parseInt(e.unit) : 1), 0);
+      const subcontractorCost = expensesByType.prestations.reduce((sum, e) => sum + (e.unitPrice || 0) * (e.unit ? parseInt(e.unit) : 1), 0);
+      const communicationCost = expensesByType.communication.reduce((sum, e) => sum + (e.unitPrice || 0) * (e.unit ? parseInt(e.unit) : 1), 0);
+      
+      // Create description from expenses
+      const expensesDescription = expenses.map(e => `${e.name || ''} (${e.type || ''}): ${e.unitPrice || 0}€`).join('\n');
+      
       taskMap.set(task.taskId, {
         id: task.taskId,
         text: task.name,
@@ -129,6 +161,45 @@ module.exports.getGanttData = async (projectId) => {
         assigneeIds: task.taskAssignments.map(ta => ta.userId),
         livrableIds: task.livrables.map(tl => tl.livrableId),
         goal: task.goal,
+        // Budget aggregated from expenses
+        budget: {
+          personnelDays: Math.round(personnelDays * 10) / 10,
+          personnelCost: Math.round(moyenHumainCost * 100) / 100,
+          internsDays: 0,
+          internsCost: 0,
+          amenagementsDescription: expensesDescription || '',
+          fittingsCost: Math.round(fittingsCost * 100) / 100,
+          educationalEquipmentCost: Math.round(educationalEquipmentCost * 100) / 100,
+          subcontractorCost: Math.round(subcontractorCost * 100) / 100,
+          travelCost: 0,
+          otherPrestationsCost: 0,
+          communicationCost: Math.round(communicationCost * 100) / 100,
+          overheadRate: 0
+        },
+        // Raw data for advanced editing
+        expenses: expenses.map(e => ({
+          id: e.id,
+          taskId: e.taskId,
+          type: e.type,
+          name: e.name,
+          unit: e.unit,
+          unitPrice: e.unitPrice
+        })),
+        assigneeDetails: assigneeDetails.map(a => ({
+          id: a.id,
+          taskId: a.taskId,
+          name: a.assigneeName,
+          hoursAssigned: a.hoursAssigned,
+          dailyCost: a.dailyCost
+        })),
+        deliverables: (task.deliverables || []).map(d => ({
+          id: d.id,
+          taskId: d.taskId,
+          name: d.name,
+          delivered: d.delivered,
+          uploaded: d.uploaded,
+          filePath: d.filePath
+        }))
       });
     });
 
@@ -588,6 +659,103 @@ module.exports.getSubActionsForProject = async (projectId) => {
     }));
   } catch (error) {
     console.error('Error fetching subActions:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a task expense
+ * @param {Object} expenseData - Expense data
+ * @returns {Promise<Object>} Created expense
+ */
+module.exports.createTaskExpense = async (expenseData) => {
+  try {
+    const { taskId, type, name, unit, unitPrice } = expenseData;
+
+    const expense = await prisma.taskExpense.create({
+      data: {
+        taskId,
+        type: type || 'other',
+        name: name || '',
+        unit: unit || null,
+        unitPrice: unitPrice || null
+      }
+    });
+
+    return {
+      id: expense.id,
+      taskId: expense.taskId,
+      type: expense.type,
+      name: expense.name,
+      unit: expense.unit,
+      unitPrice: expense.unitPrice
+    };
+  } catch (error) {
+    console.error('Error creating task expense:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a task assignee detail
+ * @param {Object} assigneeData - Assignee data
+ * @returns {Promise<Object>} Created assignee detail
+ */
+module.exports.createTaskAssigneeDetail = async (assigneeData) => {
+  try {
+    const { taskId, assigneeName, hoursAssigned, dailyCost } = assigneeData;
+
+    const assigneeDetail = await prisma.taskAssigneeDetail.create({
+      data: {
+        taskId,
+        assigneeName: assigneeName || '',
+        hoursAssigned: hoursAssigned || null,
+        dailyCost: dailyCost || null
+      }
+    });
+
+    return {
+      id: assigneeDetail.id,
+      taskId: assigneeDetail.taskId,
+      assigneeName: assigneeDetail.assigneeName,
+      hoursAssigned: assigneeDetail.hoursAssigned,
+      dailyCost: assigneeDetail.dailyCost
+    };
+  } catch (error) {
+    console.error('Error creating task assignee detail:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a task deliverable status
+ * @param {Object} deliverableData - Deliverable status data
+ * @returns {Promise<Object>} Created deliverable status
+ */
+module.exports.createTaskDeliverableStatus = async (deliverableData) => {
+  try {
+    const { taskId, name, delivered, uploaded, filePath } = deliverableData;
+
+    const deliverableStatus = await prisma.taskDeliverableStatus.create({
+      data: {
+        taskId,
+        name: name || '',
+        delivered: delivered || false,
+        uploaded: uploaded || false,
+        filePath: filePath || null
+      }
+    });
+
+    return {
+      id: deliverableStatus.id,
+      taskId: deliverableStatus.taskId,
+      name: deliverableStatus.name,
+      delivered: deliverableStatus.delivered,
+      uploaded: deliverableStatus.uploaded,
+      filePath: deliverableStatus.filePath
+    };
+  } catch (error) {
+    console.error('Error creating task deliverable status:', error);
     throw error;
   }
 };

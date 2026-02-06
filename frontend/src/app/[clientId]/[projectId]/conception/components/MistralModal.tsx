@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { X, Upload, FileText } from 'lucide-react';
 import api_backend from '@/api/axiosInstance';
 import { 
   transformMistralJSONToGanttTasks, 
-  parseMistralJSON 
+  parseMistralJSON,
+  type MistralGanttJSON
 } from '../utils/mistralUtils';
 import { Task, Link } from '../../data';
 import { createEmptyBudget } from '../utils/budgetUtils';
+import { convertApiTaskToTask, type ApiTaskResponse } from '@/api/ganttApi';
 
 interface MistralModalProps {
   isOpen: boolean;
@@ -27,6 +30,8 @@ export const MistralModal: React.FC<MistralModalProps> = ({
   setLinks, 
   saveState 
 }) => {
+  const params = useParams();
+  const projectId = params?.projectId ? parseInt(params.projectId as string, 10) : null;
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -78,13 +83,19 @@ export const MistralModal: React.FC<MistralModalProps> = ({
     onClose();
   };
 
-  const handleImportToGantt = () => {
+  const handleImportToGantt = async () => {
     if (!result) {
       alert('Aucun résultat à importer');
       return;
     }
 
+    if (!projectId) {
+      alert('ID de projet non valide');
+      return;
+    }
+
     try {
+      console.log('Résultat à importer:', result);
       // Handle both direct object and wrapped response
       const dataToParse = typeof result === 'string' ? result : JSON.stringify(result);
       const mistralJSON = parseMistralJSON(dataToParse);
@@ -94,21 +105,41 @@ export const MistralModal: React.FC<MistralModalProps> = ({
         return;
       }
 
-      const newTasks = transformMistralJSONToGanttTasks(mistralJSON, tasks);
+      // Get the tasks from Mistral JSON directly (don't transform yet)
+      const mistralTasks = mistralJSON.Gantt || [];
 
-      if (newTasks.length > 0) {
-        const updatedTasks = [...tasks, ...newTasks];
-        setTasks(updatedTasks);
-        setLinks(links);
-        saveState(updatedTasks, links);
-        alert(`${newTasks.length} tâches importées dans le Gantt avec succès`);
+      if (mistralTasks.length > 0) {
+        // Call backend API to persist tasks - send original Mistral data
+        // The backend will handle ID mapping and parent relationships
+        const response = await api_backend.post(`/gantt/import/${projectId}`, mistralTasks);
+        
+        if (response.data && response.data.tasks) {
+          // Convert API response tasks to Gantt format
+          const savedTasks = response.data.tasks.map((apiTask: ApiTaskResponse) => 
+            convertApiTaskToTask(apiTask)
+          );
+          
+          const updatedTasks = [...tasks, ...savedTasks];
+          setTasks(updatedTasks);
+          setLinks(links);
+          saveState(updatedTasks, links);
+          alert(`${savedTasks.length} tâches importées et sauvegardées dans la base de données avec succès`);
+        } else {
+          // Fallback: transform locally if API doesn't return tasks
+          const newTasks = transformMistralJSONToGanttTasks(mistralJSON, tasks);
+          const updatedTasks = [...tasks, ...newTasks];
+          setTasks(updatedTasks);
+          setLinks(links);
+          saveState(updatedTasks, links);
+          alert(`${newTasks.length} tâches importées (attention: non sauvegardées dans la base de données)`);
+        }
         handleClose();
       } else {
         alert('Aucune tâche valide trouvée dans le résultat');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de l\'importation:', error);
-      alert('Erreur lors de l\'importation du résultat');
+      alert('Erreur lors de l\'importation du résultat: ' + (error.response?.data?.error || error.message));
     }
   };
 

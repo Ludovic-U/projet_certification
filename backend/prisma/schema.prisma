@@ -224,6 +224,9 @@ model Task {
   linksSource     TaskLink[]       @relation("TaskSource")
   linksTarget     TaskLink[]       @relation("TaskTarget")
   livrables       TaskLivrable[]
+  expenses        TaskExpense[]
+  assigneeDetails TaskAssigneeDetail[]
+  deliverables    TaskDeliverableStatus[]
 }
 
 model TaskAssignment {
@@ -256,6 +259,47 @@ model TaskLivrable {
   livrable Deliverable @relation(fields: [livrableId], references: [deliverableId])
 
   @@id([taskId, livrableId])
+}
+
+// Task Expense model for Mistral import - tracks expenses per task
+model TaskExpense {
+  id          Int     @id @default(autoincrement())
+  taskId      Int
+  type        String  // expense type (e.g., 'prestations', 'equipement', etc.)
+  name        String  // expense name/description
+  unit        String? // unit (e.g., 'forfait', 'année', etc.)
+  unitPrice   Float?  // unit price
+
+  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// Task Assignee Detail model for Mistral import - tracks hours and cost per assignee
+model TaskAssigneeDetail {
+  id           Int     @id @default(autoincrement())
+  taskId       Int
+  assigneeName String  // name of the assignee (from Mistral)
+  hoursAssigned Float?  // hours assigned to this task
+  dailyCost    Float?  // daily cost rate
+
+  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// Task Deliverable Status model for Mistral import - tracks deliverable status per task
+model TaskDeliverableStatus {
+  id        Int     @id @default(autoincrement())
+  taskId    Int
+  name      String  // deliverable name
+  delivered Boolean @default(false)
+  uploaded  Boolean @default(false)
+  filePath  String? // path to uploaded file
+
+  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+
+  @@index([taskId])
 }
 
 enum BudgetCategory {
