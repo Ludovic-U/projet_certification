@@ -183,22 +183,22 @@ export const useGanttState = () => {
       if (menuOpen && menuButtonRef.current) {
         const rect = menuButtonRef.current.getBoundingClientRect();
         setMenuPosition({ 
-          top: rect.bottom + 8 + window.scrollY, 
-          left: rect.left + window.scrollX - 140
+          top: rect.bottom + 8, 
+          left: rect.left
         });
       }
       if (exportMenuOpen && exportMenuRef.current) {
         const rect = exportMenuRef.current.getBoundingClientRect();
         setExportMenuPosition({ 
-          top: rect.top + window.scrollY, 
-          left: rect.right + window.scrollX 
+          top: rect.top - 4, 
+          left: rect.right + 8
         });
       }
       if (importMenuOpen && importMenuRef.current) {
         const rect = importMenuRef.current.getBoundingClientRect();
         setImportMenuPosition({ 
-          top: rect.top + window.scrollY, 
-          left: rect.right + window.scrollX 
+          top: rect.top - 4, 
+          left: rect.right + 8
         });
       }
     };
@@ -214,8 +214,8 @@ export const useGanttState = () => {
         if (exportMenuRef.current) {
           const rect = exportMenuRef.current.getBoundingClientRect();
           setExportMenuPosition({ 
-            top: rect.top + window.scrollY, 
-            left: rect.right + window.scrollX 
+            top: rect.top - 4, 
+            left: rect.right + 8
           });
         }
       });
@@ -228,8 +228,8 @@ export const useGanttState = () => {
         if (importMenuRef.current) {
           const rect = importMenuRef.current.getBoundingClientRect();
           setImportMenuPosition({ 
-            top: rect.top + window.scrollY, 
-            left: rect.right + window.scrollX 
+            top: rect.top - 4, 
+            left: rect.right + 8
           });
         }
       });

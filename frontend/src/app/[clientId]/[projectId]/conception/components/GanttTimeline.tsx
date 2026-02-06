@@ -1,5 +1,4 @@
 import React from 'react';
-import { GripVertical } from 'lucide-react';
 import { Task, Column, Group } from '../types';
 import { ROW_HEIGHT } from '../constants';
 import { formatDate, startOfDay, isDateInRange } from '../utils/dateUtils';
@@ -92,150 +91,225 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
   };
 
   return (
-    <div ref={timelineRef} className="flex-1 overflow-x-auto bg-slate-800 min-w-0" onScroll={handleTimelineScroll} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
+    <div 
+      ref={timelineRef} 
+      className="flex-1 overflow-x-auto bg-slate-900/50 backdrop-blur-sm min-w-0 custom-scrollbar"
+      onScroll={handleTimelineScroll}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+    >
       <div className="relative" style={{ width: `${totalTimelineWidth}px` }}>
         {/* Sticky timeline headers */}
-        <div className="sticky top-0 z-20 bg-slate-800">
+        <div className="sticky top-0 z-20 bg-slate-800/95 backdrop-blur shadow-lg">
           {/* Group row */}
           <div className="flex border-b border-slate-700">
             {groups.map((g) => (
               <div
                 key={g.key}
-                className="px-3 py-2 text-center text-sm font-semibold text-slate-300 border-r border-slate-700"
+                className="px-4 py-3 text-center text-sm font-semibold text-slate-300 border-r border-slate-700 flex items-center justify-center bg-slate-800/50"
                 style={{ width: `${g.width}px` }}
               >
-                {g.label}
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-400" />
+                  {g.label}
+                </span>
               </div>
             ))}
           </div>
           {/* Unit row */}
           <div className="flex border-b border-slate-700">
-            {columns.map((col) => (
-              <div
-                key={col.key}
-                className={`px-3 py-2 text-center text-xs font-medium text-slate-300 border-r border-slate-700 ${isDateInRange(today, col.start, col.end) ? 'bg-slate-700/40' : ''}`}
-                style={{ width: `${col.width}px` }}
-              >
-                {col.label}
-              </div>
-            ))}
+            {columns.map((col) => {
+              const isToday = isDateInRange(today, col.start, col.end);
+              const isWeekend = col.label === 'Sat' || col.label === 'Sun';
+              
+              return (
+                <div
+                  key={col.key}
+                  className={`
+                    px-2 py-2 text-center text-xs font-medium border-r border-slate-700 flex flex-col items-center justify-center
+                    ${isToday ? 'bg-blue-500/20 text-blue-400' : 'text-slate-400'}
+                    ${isWeekend ? 'bg-slate-800/50' : ''}
+                  `}
+                  style={{ width: `${col.width}px` }}
+                >
+                  <span className={isToday ? 'text-blue-400 font-bold' : ''}>{col.label}</span>
+                  {isToday && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1 animate-pulse" />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Task bars and grid lines */}
         <div className="relative" onMouseMove={handleTimelineMouseMove} onMouseLeave={handleTimelineMouseLeave}>
-          {/* Today marker */}
-          <div className="pointer-events-none absolute top-0 bottom-0 w-[2px] bg-red-500/80 z-30" style={{ left: `${todayX}px` }} />
+          {/* Today marker - enhanced */}
+          <div 
+            className="pointer-events-none absolute top-0 bottom-0 w-[2px] bg-gradient-to-b from-red-500 via-red-400 to-red-500 z-30 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+            style={{ left: `${todayX}px` }}
+          >
+            <div className="absolute -top-1 -left-1.5 w-4 h-4 bg-red-500 rounded-full shadow-lg flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full" />
+            </div>
+          </div>
+          
+          {/* Cursor tooltip */}
           {cursorX !== null && (
             <>
-              <div className="pointer-events-none absolute top-0 bottom-0 w-px bg-white/40 z-30" style={{ left: `${cursorX}px` }} />
-              <div className="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-1/2 text-xs bg-slate-900 text-slate-200 px-2 py-1 rounded border border-slate-700" style={{ top: 0, left: `${cursorX}px` }}>
-                {formatDate(startOfDay(dateFromX(cursorX)))}
+              <div className="pointer-events-none absolute top-0 bottom-0 w-px bg-white/30 z-30" style={{ left: `${cursorX}px` }} />
+              <div 
+                className="pointer-events-none absolute z-40 -translate-x-1/2 translate-y-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 shadow-xl flex items-center gap-2"
+                style={{ top: 0, left: `${cursorX}px` }}
+              >
+                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                <span className="text-sm font-medium text-white">
+                  {formatDate(startOfDay(dateFromX(cursorX)))}
+                </span>
               </div>
             </>
           )}
-          {getVisibleTasks().map((task) => (
-            <div
-              key={task.id}
-              className="relative border-b border-slate-700"
-              style={{ height: `${ROW_HEIGHT}px` }}
-            >
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex">
-                {columns.map((col) => (
-                  <div
-                    key={col.key}
-                    className="border-r border-slate-700"
-                    style={{ width: `${col.width}px` }}
-                  />
-                ))}
-              </div>
+          
+          {/* Grid lines with subtle styling */}
+          <div className="absolute inset-0 flex">
+            {columns.map((col) => (
+              <div
+                key={col.key}
+                className={`
+                  border-r border-slate-800/50
+                  ${isDateInRange(today, col.start, col.end) ? 'bg-blue-500/5' : ''}
+                `}
+                style={{ width: `${col.width}px` }}
+              />
+            ))}
+          </div>
 
-              {task.type === 'milestone' ? (
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 shadow-lg hover:shadow-xl transition-all cursor-move z-10"
-                  style={{
-                    left: `${xFromDate(new Date(task.start)) - 10}px`,
-                    backgroundColor: '#a855f7',
-                    width: '20px',
-                    height: '20px',
-                    clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
-                  }}
-                  onMouseDown={(e) => handleMouseDown(task, e as React.MouseEvent<HTMLDivElement>)}
-                  onClick={() => {
-                    if (wasDragged) {
-                      setWasDragged(false);
-                      return;
-                    }
-                    setSelectedTask(task);
-                  }}
-                  onDoubleClick={() => {
-                    setEditingTask(task);
-                    setShowEditor(true);
-                  }}
-                  onContextMenu={(e) => handleTaskContextMenu(task, e)}
-                  onMouseEnter={(e) => handleTaskMouseEnter(task, e)}
-                  onMouseLeave={handleTaskMouseLeave}
-                />
-              ) : (
-                <div
-                  className="group absolute top-1/2 -translate-y-1/2 rounded-lg shadow-lg hover:shadow-xl transition-all cursor-move z-10"
-                  style={{
-                    ...getTaskStyle(task),
-                    backgroundColor: getTaskColor(task.progress),
-                    height: '32px'
-                  }}
-                  onMouseDown={(e) => handleMouseDown(task, e as React.MouseEvent<HTMLDivElement>)}
-                  onClick={() => {
-                    if (wasDragged) {
-                      setWasDragged(false);
-                      return;
-                    }
-                    setSelectedTask(task);
-                  }}
-                  onDoubleClick={() => {
-                    setEditingTask(task);
-                    setShowEditor(true);
-                  }}
-                  onContextMenu={(e) => handleTaskContextMenu(task, e)}
-                  onMouseEnter={(e) => handleTaskMouseEnter(task, e)}
-                  onMouseLeave={handleTaskMouseLeave}
-                >
-                  {/* Resize handles */}
+          {getVisibleTasks().map((task) => {
+            const isMilestone = task.type === 'milestone';
+            const isCompleted = task.progress === 100;
+            
+            return (
+              <div
+                key={task.id}
+                className="relative border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors"
+                style={{ height: `${ROW_HEIGHT}px` }}
+              >
+                {isMilestone ? (
                   <div
-                    className="absolute inset-y-0 left-0 w-4 cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 group-hover:bg-white/30 rounded-l z-20 border-l-2 border-white/70 flex items-center justify-center"
-                    onMouseDown={(e) => { e.stopPropagation(); setResizingTask({ task, side: 'left' }); setDragOffset({ x: e.clientX, y: e.clientY }); }}
-                    title="Redimensionner le début"
+                    className="absolute top-1/2 -translate-y-1/2 cursor-move z-10 group"
+                    style={{
+                      left: `${xFromDate(new Date(task.start)) - 12}px`,
+                    }}
+                    onMouseDown={(e) => handleMouseDown(task, e as React.MouseEvent<HTMLDivElement>)}
+                    onClick={() => {
+                      if (wasDragged) {
+                        setWasDragged(false);
+                        return;
+                      }
+                      setSelectedTask(task);
+                    }}
+                    onDoubleClick={() => {
+                      setEditingTask(task);
+                      setShowEditor(true);
+                    }}
+                    onContextMenu={(e) => handleTaskContextMenu(task, e)}
+                    onMouseEnter={(e) => handleTaskMouseEnter(task, e)}
+                    onMouseLeave={handleTaskMouseLeave}
                   >
-                    <GripVertical className="pointer-events-none w-3 h-3 text-white/90" />
-                  </div>
-                  <div
-                    className="absolute inset-y-0 right-0 w-4 cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 group-hover:bg-white/30 rounded-r z-20 border-r-2 border-white/70 flex items-center justify-center"
-                    onMouseDown={(e) => { e.stopPropagation(); setResizingTask({ task, side: 'right' }); setDragOffset({ x: e.clientX, y: e.clientY }); }}
-                    title="Redimensionner la fin"
-                  >
-                    <GripVertical className="pointer-events-none w-3 h-3 text-white/90" />
-                  </div>
-                  {/* Visual grip hints */}
-                  <GripVertical className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 w-3 h-3 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10" />
-                  <GripVertical className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 w-3 h-3 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10" />
-                  <div className="h-full flex items-center justify-between px-3 text-white text-sm font-medium">
-                    <span className="truncate">{task.text}</span>
-                    <div className="flex flex-col items-end text-xs">
-                      <span>{task.progress}%</span>
-                      <span className="opacity-75">{formatDate(task.start)}</span>
+                    {/* Milestone diamond with glow - always purple */}
+                    <div 
+                      className={`
+                        w-6 h-6 shadow-lg transition-all duration-200 bg-purple-500
+                        hover:scale-110 hover:shadow-purple-400/30
+                      `}
+                      style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }}
+                    >
+                      {isCompleted && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-emerald-900" fill="currentColor" viewBox="0 0 20 20">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* Progress overlay */}
+                ) : (
                   <div
-                    className="absolute bottom-0 left-0 h-1 bg-white/30 rounded-b-lg"
-                    style={{ width: `${task.progress}%` }}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+                    className="group absolute top-1/2 -translate-y-1/2 cursor-move z-10"
+                    style={{
+                      ...getTaskStyle(task),
+                      minWidth: '40px',
+                    }}
+                    onMouseDown={(e) => handleMouseDown(task, e as React.MouseEvent<HTMLDivElement>)}
+                    onClick={() => {
+                      if (wasDragged) {
+                        setWasDragged(false);
+                        return;
+                      }
+                      setSelectedTask(task);
+                    }}
+                    onDoubleClick={() => {
+                      setEditingTask(task);
+                      setShowEditor(true);
+                    }}
+                    onContextMenu={(e) => handleTaskContextMenu(task, e)}
+                    onMouseEnter={(e) => handleTaskMouseEnter(task, e)}
+                    onMouseLeave={handleTaskMouseLeave}
+                  >
+                    {/* Task bar with gradient based on progress */}
+                    <div
+                      className={`
+                        h-8 rounded-lg shadow-lg transition-all duration-200 relative overflow-hidden
+                        ${isCompleted ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-blue-500 to-blue-400'}
+                        group-hover:shadow-blue-400/25 group-hover:scale-[1.02]
+                      `}
+                      style={{ 
+                        background: isCompleted 
+                          ? undefined 
+                          : `linear-gradient(to right, ${getTaskColor(task.progress)}, ${getTaskColor(task.progress)}aa)`
+                      }}
+                    >
+                      {/* Animated shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shine_1s_ease-in-out]" />
+                      
+                      {/* Inner shadow */}
+                      <div className="absolute inset-0 rounded-lg ring-1 ring-black/10" />
+
+                      {/* Progress overlay */}
+                      <div
+                        className="absolute bottom-0 left-0 h-1 bg-white/30 rounded-b-lg"
+                        style={{ width: `${task.progress}%` }}
+                      />
+
+                      {/* Content */}
+                      <div className="h-full flex items-center justify-between px-3 text-white text-sm font-medium relative z-10">
+                        <span className="truncate drop-shadow-md">{task.text}</span>
+                        <div className="flex flex-col items-end text-xs opacity-90">
+                          <span className="font-bold">{task.progress}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Resize handles - more visible */}
+                    <div
+                      className="absolute inset-y-0 left-0 w-5 cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center"
+                      onMouseDown={(e) => { e.stopPropagation(); setResizingTask({ task, side: 'left' }); setDragOffset({ x: e.clientX, y: e.clientY }); }}
+                      title="Resize start"
+                    >
+                      <div className="w-1 h-6 bg-white/40 rounded-full hover:bg-white/80 transition-colors" />
+                    </div>
+                    <div
+                      className="absolute inset-y-0 right-0 w-5 cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center"
+                      onMouseDown={(e) => { e.stopPropagation(); setResizingTask({ task, side: 'right' }); setDragOffset({ x: e.clientX, y: e.clientY }); }}
+                      title="Resize end"
+                    >
+                      <div className="w-1 h-6 bg-white/40 rounded-full hover:bg-white/80 transition-colors" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

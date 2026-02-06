@@ -15,6 +15,9 @@ export interface Task {
   goal?: string;
   // Budget fields
   budget?: {
+    // Expense lines for each category
+    expenseLines: ExpenseLine[];
+    // Legacy fields for backward compatibility
     // Moyen humain
     personnelDays: number;
     personnelCost: number;
@@ -33,6 +36,13 @@ export interface Task {
     communicationCost: number;
     overheadRate: number;
   };
+}
+
+export interface ExpenseLine {
+  id: string;
+  nature: string; // Nature de dépense
+  unites: number; // Unités (quantity)
+  prix: number; // Prix unitaire
 }
 
 export interface Link {
