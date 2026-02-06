@@ -4,6 +4,7 @@ import { ViewMode, MenuPosition } from '../types';
 import { PortalMenu } from './PortalMenu';
 import { FileSpreadsheet, Download, Upload, ChevronRight } from 'lucide-react';
 import { MistralModal } from './MistralModal';
+import { Task, Link } from '../../data';
 
 interface GanttToolbarProps {
   viewMode: ViewMode;
@@ -39,6 +40,11 @@ interface GanttToolbarProps {
   importMistralGantt: (e: React.ChangeEvent<HTMLInputElement>) => void;
   mistralModalOpen: boolean;
   setMistralModalOpen: (open: boolean) => void;
+  tasks: Task[];
+  links: Link[];
+  setTasks: (tasks: Task[]) => void;
+  setLinks: (links: Link[]) => void;
+  saveState: (nextTasks?: Task[], nextLinks?: Link[]) => void;
 }
 
 export const GanttToolbar: React.FC<GanttToolbarProps> = ({
@@ -74,6 +80,11 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   importMistralGantt,
   mistralModalOpen,
   setMistralModalOpen,
+  tasks,
+  links,
+  setTasks,
+  setLinks,
+  saveState,
 }) => {
   return (
     <div className="bg-slate-800 border-b border-slate-700 flex-shrink-0">
@@ -269,7 +280,12 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
       {/* Mistral Modal */}
       <MistralModal 
         isOpen={mistralModalOpen} 
-        onClose={() => setMistralModalOpen(false)} 
+        onClose={() => setMistralModalOpen(false)}
+        tasks={tasks}
+        links={links}
+        setTasks={setTasks}
+        setLinks={setLinks}
+        saveState={saveState}
       />
     </div>
   );

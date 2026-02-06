@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
+const bcrypt = require('bcrypt')
 const prisma = new PrismaClient()
 
 async function main() {
@@ -97,8 +98,110 @@ async function main() {
       });
     }
   }
-}
 
+  // Créer un client de test
+  const client = await prisma.client.upsert({
+    where: { clientName: 'F2S' },
+    update: {},
+    create: {
+      clientName: 'F2S',
+      description: 'Figure de Skills - Entreprise de formation',
+      secteur: 'Formation',
+      statusJuridique: 'SAS'
+    }
+  });
+  console.log('Client créé:', client.clientName);
+
+  // Créer un utilisateur de test (super_admin)
+  const hashedPassword = await bcrypt.hash('password123', 10);
+  const testUser = await prisma.user.upsert({
+    where: { email: 'admin@f2s.fr' },
+    update: {},
+    create: {
+      username: 'admin',
+      firstname: 'Admin',
+      lastname: 'F2S',
+      email: 'admin@f2s.fr',
+      password: hashedPassword
+    }
+  });
+  console.log('Utilisateur créé:', testUser.email);
+
+  // Assigner le rôle super_admin à l'utilisateur
+  const superAdminRole = await prisma.role.findUnique({ where: { roleName: 'super_admin' } });
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: { userId: testUser.userId, roleId: superAdminRole.roleId }
+    },
+    update: {},
+    create: {
+      userId: testUser.userId,
+      roleId: superAdminRole.roleId
+    }
+  });
+
+  // Assigner l'utilisateur comme manager du client
+  await prisma.clientUserRole.upsert({
+    where: {
+      clientId_userId: { clientId: client.clientId, userId: testUser.userId }
+    },
+    update: {},
+    create: {
+      clientId: client.clientId,
+      userId: testUser.userId,
+      isManager: true
+    }
+  });
+
+  // Créer un projet de test
+  const project = await prisma.project.upsert({
+    where: { projectName: 'Projet Test F2S' },
+    update: {},
+    create: {
+      projectName: 'Projet Test F2S',
+      projectDesc: 'Projet de test pour le diagramme de Gantt',
+      projectManager: testUser.userId,
+      clientId: client.clientId,
+      projectStatus: 'en cours',
+      projectStage: 'Idéation',
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-12-31')
+    }
+  });
+  console.log('Projet créé:', project.projectName);
+
+  // Créer des tâches de test
+  const tasks = [
+    { name: 'Phase 1: kick-off', description: 'Réunion de lancement du projet', progress: 100, type: 'milestone' },
+    { name: 'Phase 2: Conception', description: 'Phase de conception', progress: 50, type: 'task' },
+    { name: 'Phase 3: Développement', description: 'Phase de développement', progress: 25, type: 'task' },
+    { name: 'Phase 4: Tests', description: 'Phase de tests', progress: 0, type: 'task' },
+    { name: 'Phase 5: Livraison', description: 'Livraison du projet', progress: 0, type: 'milestone' }
+  ];
+
+  for (const task of tasks) {
+    const created = await prisma.task.create({
+      data: {
+        ...task,
+        projectId: project.projectId,
+        startDate: new Date('2025-02-01'),
+        endDate: new Date('2025-02-15'),
+        details: task.description,
+        notes: '',
+        files: [],
+        goal: 'Objectif: ' + task.description
+      }
+    });
+    console.log('Tâche créée:', created.name);
+  }
+
+  console.log('✅ Données de test créées avec succès!');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('Email: admin@f2s.fr');
+  console.log('Mot de passe: password123');
+  console.log('Client: F2S');
+  console.log('Projet: Projet Test F2S');
+}
 
 main()
   .then(() => console.log("Seeding terminé ✅"))

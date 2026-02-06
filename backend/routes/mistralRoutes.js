@@ -1,4 +1,4 @@
-const express = require('express');
+const Router = require('express');
 const multer = require('multer');
 const { testMistral } = require('../controllers/mistralController');
 

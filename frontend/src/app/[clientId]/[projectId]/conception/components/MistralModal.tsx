@@ -1,13 +1,32 @@
 import React, { useState } from 'react';
 import { X, Upload, FileText } from 'lucide-react';
 import api_backend from '@/api/axiosInstance';
+import { 
+  transformMistralJSONToGanttTasks, 
+  parseMistralJSON 
+} from '../utils/mistralUtils';
+import { Task, Link } from '../../data';
+import { createEmptyBudget } from '../utils/budgetUtils';
 
 interface MistralModalProps {
   isOpen: boolean;
   onClose: () => void;
+  tasks: Task[];
+  links: Link[];
+  setTasks: (tasks: Task[]) => void;
+  setLinks: (links: Link[]) => void;
+  saveState: (nextTasks?: Task[], nextLinks?: Link[]) => void;
 }
 
-export const MistralModal: React.FC<MistralModalProps> = ({ isOpen, onClose }) => {
+export const MistralModal: React.FC<MistralModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  tasks, 
+  links, 
+  setTasks, 
+  setLinks, 
+  saveState 
+}) => {
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -57,6 +76,40 @@ export const MistralModal: React.FC<MistralModalProps> = ({ isOpen, onClose }) =
     setResult(null);
     setLoading(false);
     onClose();
+  };
+
+  const handleImportToGantt = () => {
+    if (!result) {
+      alert('Aucun résultat à importer');
+      return;
+    }
+
+    try {
+      // Handle both direct object and wrapped response
+      const dataToParse = typeof result === 'string' ? result : JSON.stringify(result);
+      const mistralJSON = parseMistralJSON(dataToParse);
+
+      if (!mistralJSON) {
+        alert('Format de résultat invalide');
+        return;
+      }
+
+      const newTasks = transformMistralJSONToGanttTasks(mistralJSON, tasks);
+
+      if (newTasks.length > 0) {
+        const updatedTasks = [...tasks, ...newTasks];
+        setTasks(updatedTasks);
+        setLinks(links);
+        saveState(updatedTasks, links);
+        alert(`${newTasks.length} tâches importées dans le Gantt avec succès`);
+        handleClose();
+      } else {
+        alert('Aucune tâche valide trouvée dans le résultat');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'importation:', error);
+      alert('Erreur lors de l\'importation du résultat');
+    }
   };
 
   if (!isOpen) return null;
@@ -153,6 +206,15 @@ export const MistralModal: React.FC<MistralModalProps> = ({ isOpen, onClose }) =
               >
                 Annuler
               </button>
+              {result && !loading && (
+                <button
+                  type="button"
+                  onClick={handleImportToGantt}
+                  className="px-6 py-2 rounded-lg font-semibold text-white flex items-center gap-2 bg-green-600 hover:bg-green-700 transition-colors"
+                >
+                  📥 Importer dans le Gantt
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={loading || (!text && !file)}

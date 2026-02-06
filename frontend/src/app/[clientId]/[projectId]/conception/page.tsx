@@ -168,6 +168,11 @@ const GanttChart = () => {
           importMistralGantt={exportImport.importMistralGantt}
           mistralModalOpen={ganttState.mistralModalOpen}
           setMistralModalOpen={ganttState.setMistralModalOpen}
+          tasks={ganttState.tasks}
+          links={ganttState.links}
+          setTasks={ganttState.setTasks}
+          setLinks={ganttState.setLinks}
+          saveState={ganttState.saveState}
         />
 
         {/* Main Gantt Chart Area */}
