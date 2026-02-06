@@ -1,6 +1,6 @@
-import { Task, Link, Livrable, User } from '../data';
+import { Task, Link, Livrable, User, ExpenseLine } from '../data';
 
-export type { Task, Link, Livrable, User };
+export type { Task, Link, Livrable, User, ExpenseLine };
 
 export interface GanttData {
   tasks: Task[];

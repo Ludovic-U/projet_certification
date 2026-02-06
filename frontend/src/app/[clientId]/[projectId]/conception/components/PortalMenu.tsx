@@ -17,11 +17,27 @@ export const PortalMenu = ({ children, isOpen, onClose, position }: PortalMenuPr
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div
-        className="absolute bg-slate-800 border border-slate-700 rounded-lg shadow-xl py-1 z-[70] min-w-[140px]"
-        style={{ top: position.top, left: position.left }}
+        className="fixed bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-1 z-[70] min-w-[180px]"
+        style={{ 
+          top: position.top, 
+          left: position.left,
+          animation: 'fadeIn 0.15s ease-out',
+        }}
       >
         {children}
       </div>
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </>,
     document.body
   );

@@ -23,6 +23,7 @@ import { startOfDay } from './utils/dateUtils';
 import { DAY_MS } from './constants';
 import { toUTC } from './utils/dateUtils';
 import { MIN_PX_PER_DAY, MAX_PX_PER_DAY } from './constants';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 import { useParams } from 'next/navigation';
 
@@ -89,7 +90,7 @@ const GanttChart = () => {
 
   // Helper functions for date conversion
   const xFromDate = (d: Date) => ((toUTC(d) - toUTC(getBaseStart(ganttState.viewMode, ganttState.currentDateRange))) / DAY_MS) * ganttState.pxPerDay;
-  const dateFromX = (x: number) => startOfDay(new Date(toUTC(getBaseStart(ganttState.viewMode, ganttState.currentDateRange)) + x * DAY_MS));
+  const dateFromX = (x: number) => startOfDay(new Date(toUTC(getBaseStart(ganttState.viewMode, ganttState.currentDateRange)) + (x / ganttState.pxPerDay) * DAY_MS));
 
   const totalTimelineWidth = useMemo(() => columns.reduce((s, c) => s + c.width, 0), [columns]);
 
@@ -153,8 +154,11 @@ const GanttChart = () => {
           importMenuOpen={ganttState.importMenuOpen}
           setImportMenuOpen={ganttState.setImportMenuOpen}
           menuPosition={ganttState.menuPosition}
+          setMenuPosition={ganttState.setMenuPosition}
           exportMenuPosition={ganttState.exportMenuPosition}
+          setExportMenuPosition={ganttState.setExportMenuPosition}
           importMenuPosition={ganttState.importMenuPosition}
+          setImportMenuPosition={ganttState.setImportMenuPosition}
           menuButtonRef={ganttState.menuButtonRef}
           exportMenuRef={ganttState.exportMenuRef}
           importMenuRef={ganttState.importMenuRef}
@@ -173,16 +177,49 @@ const GanttChart = () => {
             {/* Toggle button on the edge between panels */}
             <button
               onClick={() => ganttState.setShowTaskList(!ganttState.showTaskList)}
-              className={`absolute top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-r-lg hover:bg-slate-700 transition-all ${ganttState.showTaskList ? 'left-[32rem] border-l-0' : 'left-0 border'}`}
+              className={`
+                absolute top-1/2 -translate-y-1/2 z-50
+                flex items-center gap-2 px-3 py-3
+                bg-slate-800 border border-slate-700
+                rounded-r-xl shadow-lg
+                transition-all duration-300 ease-out
+                hover:bg-slate-700 hover:border-slate-600 hover:shadow-xl
+                ${ganttState.showTaskList 
+                  ? 'left-[36rem] border-l-0 bg-slate-800/90 backdrop-blur-sm' 
+                  : 'left-0 border bg-slate-800/95 backdrop-blur-sm'
+                }
+              `}
               title={ganttState.showTaskList ? 'Hide task list' : 'Show task list'}
             >
-              {ganttState.showTaskList ? (
-                <span className="text-white text-sm whitespace-nowrap">Hide Task List</span>
-              ) : (
-                <>
-                  <span className="text-white text-sm whitespace-nowrap">Show Task List</span>
-                </>
-              )}
+              <div className={`
+                flex items-center justify-center w-8 h-8 rounded-lg
+                transition-all duration-300
+                ${ganttState.showTaskList 
+                  ? 'bg-blue-500/20 text-blue-400' 
+                  : 'bg-emerald-500/20 text-emerald-400'
+                }
+              `}>
+                {ganttState.showTaskList ? (
+                  <PanelLeftClose className="w-5 h-5" />
+                ) : (
+                  <PanelLeftOpen className="w-5 h-5" />
+                )}
+              </div>
+              <span className={`
+                text-sm font-medium whitespace-nowrap
+                transition-all duration-300
+                ${ganttState.showTaskList ? 'text-slate-400' : 'text-white'}
+              `}>
+                {ganttState.showTaskList ? 'Hide' : 'Show'}
+              </span>
+              <span className="text-slate-500 text-xs">
+                {ganttState.showTaskList ? '' : 'List'}
+              </span>
+              {/* Animated indicator dot */}
+              <div className={`
+                absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full
+                ${ganttState.showTaskList ? 'bg-blue-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}
+              `} />
             </button>
             
             {/* Left panel: Task list with details */}
