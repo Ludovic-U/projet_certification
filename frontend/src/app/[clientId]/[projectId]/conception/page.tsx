@@ -166,6 +166,8 @@ const GanttChart = () => {
           importFromExcel={exportImport.importFromExcel}
           importData={exportImport.importData}
           importMistralGantt={exportImport.importMistralGantt}
+          mistralModalOpen={ganttState.mistralModalOpen}
+          setMistralModalOpen={ganttState.setMistralModalOpen}
         />
 
         {/* Main Gantt Chart Area */}
