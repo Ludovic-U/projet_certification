@@ -26,6 +26,7 @@ interface UseGanttHandlersProps {
   setTooltipPos: (pos: { x: number; y: number }) => void;
   setContextMenu: (menu: { task: Task; x: number; y: number } | null) => void;
   setCursorX: (x: number | null) => void;
+  setCursorY: (y: number | null) => void;
   timelineRef: React.RefObject<HTMLDivElement | null>;
   taskListRef: React.RefObject<HTMLDivElement | null>;
   lastClientXRef: React.MutableRefObject<number | null>;
@@ -35,6 +36,7 @@ interface UseGanttHandlersProps {
   draggingProgress: { task: Task; startX: number; startProgress: number } | null;
   dragOffset: { x: number; y: number };
   dragStartPositions: Map<number, { start: Date; end: Date }>;
+  onTaskUpdate?: (updatedTasks: Task[]) => void;
 }
 
 export const useGanttHandlers = ({
@@ -59,6 +61,7 @@ export const useGanttHandlers = ({
   setTooltipPos,
   setContextMenu,
   setCursorX,
+  setCursorY,
   timelineRef,
   taskListRef,
   lastClientXRef,
@@ -68,6 +71,7 @@ export const useGanttHandlers = ({
   draggingProgress,
   dragOffset,
   dragStartPositions,
+  onTaskUpdate,
 }: UseGanttHandlersProps) => {
   
   // Smooth drag animation frame tick
@@ -179,26 +183,27 @@ export const useGanttHandlers = ({
     dragStartMapRef.current.clear();
     draggingIdsRef.current.clear();
     let didSnap = false;
+    let updatedTasks: Task[] = [];
     if (draggingTask) {
       const affectedIds = new Set(dragStartPositions.keys());
-      const nextTasks = tasks.map(t => {
+      updatedTasks = tasks.map(t => {
         if (!affectedIds.has(t.id)) return t;
         const s = startOfDay(new Date(t.start));
         const e = t.type === 'milestone' ? s : startOfDay(new Date(t.end));
         return { ...t, start: s, end: e };
       });
-      setTasks(nextTasks);
-      saveState(nextTasks, links);
+      setTasks(updatedTasks);
+      saveState(updatedTasks, links);
       didSnap = true;
     } else if (resizingTask) {
-      const nextTasks = tasks.map(t => {
+      updatedTasks = tasks.map(t => {
         if (t.id !== resizingTask.task.id) return t;
         const s = startOfDay(new Date(t.start));
         const e = t.type === 'milestone' ? s : startOfDay(new Date(t.end));
         return { ...t, start: s, end: e };
       });
-      setTasks(nextTasks);
-      saveState(nextTasks, links);
+      setTasks(updatedTasks);
+      saveState(updatedTasks, links);
       didSnap = true;
     } else if (draggingProgress) {
       saveState();
@@ -206,12 +211,21 @@ export const useGanttHandlers = ({
     if (!didSnap && !draggingProgress && (draggingTask || resizingTask)) {
       saveState();
     }
+    
+    // Call onTaskUpdate callback to save to DB (only for real tasks, not temp ones)
+    if (onTaskUpdate && updatedTasks.length > 0) {
+      const realTasks = updatedTasks.filter(t => t.id > 0);
+      if (realTasks.length > 0) {
+        onTaskUpdate(realTasks);
+      }
+    }
+    
     setDraggingTask(null);
     setResizingTask(null);
     setDraggingProgress(null);
     setDragStartPositions(new Map());
     setIsDraggingAny(false);
-  }, [rafId, draggingActiveRef, pendingDeltaPx, dragStartMapRef, draggingIdsRef, draggingTask, resizingTask, draggingProgress, dragStartPositions, tasks, links, setTasks, saveState, setDraggingTask, setResizingTask, setDraggingProgress, setDragStartPositions, setIsDraggingAny]);
+  }, [rafId, draggingActiveRef, pendingDeltaPx, dragStartMapRef, draggingIdsRef, draggingTask, resizingTask, draggingProgress, dragStartPositions, tasks, links, setTasks, saveState, onTaskUpdate, setDraggingTask, setResizingTask, setDraggingProgress, setDragStartPositions, setIsDraggingAny]);
 
   const handleTaskMouseEnter = useCallback((task: Task, e: React.MouseEvent<HTMLElement>) => {
     setHoveredTask(task);
@@ -257,15 +271,19 @@ export const useGanttHandlers = ({
     if (!scroller) return;
     lastClientXRef.current = e.clientX;
     const rect = scroller.getBoundingClientRect();
+    const currentTargetRect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) + scroller.scrollLeft;
     const clamped = Math.max(0, Math.min(x, totalTimelineWidth));
     setCursorX(clamped);
-  }, [timelineRef, lastClientXRef, totalTimelineWidth, setCursorX]);
+    // Use currentTarget (the task area div) for accurate Y positioning
+    setCursorY(e.clientY - currentTargetRect.top);
+  }, [timelineRef, lastClientXRef, totalTimelineWidth, setCursorX, setCursorY]);
 
   const handleTimelineMouseLeave = useCallback(() => {
     lastClientXRef.current = null;
     setCursorX(null);
-  }, [lastClientXRef, setCursorX]);
+    setCursorY(null);
+  }, [lastClientXRef, setCursorX, setCursorY]);
 
   return {
     handleMouseDown,

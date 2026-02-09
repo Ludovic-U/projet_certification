@@ -100,6 +100,7 @@ export const useGanttState = () => {
 
   // Cursor position for timeline interaction
   const [cursorX, setCursorX] = useState<number | null>(null);
+  const [cursorY, setCursorY] = useState<number | null>(null);
 
   // Current visible date range for the timeline
   const [currentDateRange, setCurrentDateRange] = useState(() => ({
@@ -514,6 +515,7 @@ export const useGanttState = () => {
     draggingActiveRef,
     lastClientXRef,
     cursorX,
+    cursorY,
     timelineRef,
     taskListRef,
     menuButtonRef,
@@ -553,6 +555,7 @@ export const useGanttState = () => {
     setIsDraggingAny,
     setDragStartPositions,
     setCursorX,
+    setCursorY,
     
     // Actions
     handleAddLivrable,
