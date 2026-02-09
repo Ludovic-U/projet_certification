@@ -29,6 +29,9 @@ interface GanttTaskSummaryProps {
   data: {
     users: { id: number; label: string }[];
   };
+  projectId: number | null;
+  updateTask: () => Promise<void>;
+  updateSelectedTask: (filesToSave?: string[]) => Promise<void>;
 }
 
 interface SavedNote {
@@ -155,12 +158,12 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
             <div className={`px-3 py-1 rounded-full text-xs font-medium capitalize border ${typeColors.bg} ${typeColors.text} ${typeColors.border}`}>
               {selectedTask.type}
             </div>
-            <h3 className="text-lg font-semibold text-white">Task Details</h3>
+            <h3 className="text-lg font-semibold text-white">Détails de la tâche</h3>
           </div>
           <button
             onClick={() => setSelectedTask(null)}
             className="p-2 hover:bg-slate-700 rounded-lg transition-colors group"
-            title="Close panel"
+            title="Fermer le panneau"
           >
             <X className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
           </button>
@@ -178,7 +181,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
               <Clock className="w-4 h-4 text-slate-400" />
-              Progress
+              Progression
             </span>
             <span className="text-sm font-bold text-white">{selectedTask.progress}%</span>
           </div>
@@ -195,7 +198,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
           <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
             <div className="flex items-center gap-2 text-slate-400 mb-1">
               <Calendar className="w-4 h-4" />
-              <span className="text-xs font-medium">Start</span>
+              <span className="text-xs font-medium">Début</span>
             </div>
             <p className="text-white font-medium">{formatDate(selectedTask.start)}</p>
           </div>
@@ -203,7 +206,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
             <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
               <div className="flex items-center gap-2 text-slate-400 mb-1">
                 <Calendar className="w-4 h-4" />
-                <span className="text-xs font-medium">End</span>
+                <span className="text-xs font-medium">Fin</span>
               </div>
               <p className="text-white font-medium">{formatDate(selectedTask.end)}</p>
             </div>
@@ -211,14 +214,14 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
           <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
             <div className="flex items-center gap-2 text-slate-400 mb-1">
               <User className="w-4 h-4" />
-              <span className="text-xs font-medium">Assignee</span>
+              <span className="text-xs font-medium">Attribué à</span>
             </div>
-            <p className="text-white font-medium truncate">{getAssignees(selectedTask, data.users) || 'Unassigned'}</p>
+            <p className="text-white font-medium truncate">{getAssignees(selectedTask, data.users) || 'Non attribué'}</p>
           </div>
           <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
             <div className="flex items-center gap-2 text-slate-400 mb-1">
               <CheckCircle2 className="w-4 h-4" />
-              <span className="text-xs font-medium">Status</span>
+              <span className="text-xs font-medium">Statut</span>
             </div>
             <p className="text-white font-medium capitalize">{selectedTask.type}</p>
           </div>
@@ -245,7 +248,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
         {selectedTask.livrableIds && selectedTask.livrableIds.length > 0 && (
           <SectionBox 
             icon={<FolderOpen className="w-5 h-5" />}
-            title={`Deliverables (${selectedTask.livrableIds.length})`}
+            title={`Livrables (${selectedTask.livrableIds.length})`}
             isExpanded={expandedSections.livrables}
             onToggle={() => toggleSection('livrables')}
           >
@@ -285,7 +288,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
                     <button
                       onClick={() => handleDeleteNote(note.id)}
                       className="text-slate-500 hover:text-red-400 transition-colors p-1 hover:bg-slate-700 rounded"
-                      title="Delete note"
+                      title="Supprimer la note"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -295,7 +298,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
                       <div className="w-2 h-2 rounded-full bg-blue-400" />
                     </div>
                     <p className="text-xs text-slate-500">
-                      {new Date(note.createdAt).toLocaleString('en-US', { 
+                      {new Date(note.createdAt).toLocaleString('fr-FR', { 
                         month: 'short',
                         day: 'numeric',
                         hour: '2-digit',
@@ -316,7 +319,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
                 onChange={(e) => setNewNote(e.target.value)}
                 rows={4}
                 className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Write your note here..."
+                placeholder="Écrivez votre note ici..."
                 autoFocus
               />
               <div className="flex gap-2">
@@ -326,7 +329,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1 justify-center"
                 >
                   <Save className="w-4 h-4" />
-                  Save
+                  Enregistrer
                 </button>
                 <button
                   onClick={() => {
@@ -335,7 +338,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
                   }}
                   className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors"
                 >
-                  Cancel
+                  Annuler
                 </button>
               </div>
             </div>
@@ -345,7 +348,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
               className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-blue-400 rounded-xl border border-slate-700 border-dashed hover:border-blue-500 hover:bg-slate-700 transition-all w-full"
             >
               <FileText className="w-5 h-5" />
-              <span>Add Note</span>
+              <span>Ajouter une note</span>
             </button>
           )}
         </SectionBox>
@@ -353,7 +356,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
         {/* Files Section - Collapsible */}
         <SectionBox 
           icon={<Link2 className="w-5 h-5" />}
-          title={`Files (${selectedTask.files?.length || 0})`}
+          title={`Fichiers (${selectedTask.files?.length || 0})`}
           isExpanded={expandedSections.files}
           onToggle={() => toggleSection('files')}
         >
@@ -380,7 +383,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
                       <button
                         onClick={() => handleDeleteFile(index)}
                         className="text-slate-500 hover:text-red-400 transition-colors p-1.5 hover:bg-slate-700 rounded-lg opacity-0 group-hover:opacity-100"
-                        title="Delete file"
+                        title="Supprimer le fichier"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -401,7 +404,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
               />
               <div className="flex items-center justify-center gap-3 px-4 py-4 bg-slate-800 border-2 border-dashed border-slate-600 rounded-xl text-slate-400 group-hover:border-blue-500 group-hover:text-blue-400 group-hover:bg-slate-700/50 transition-all">
                 <Upload className="w-5 h-5" />
-                <span className="text-sm font-medium">Drop files or click to upload</span>
+                <span className="text-sm font-medium">Déposez des fichiers ou cliquez pour télécharger</span>
               </div>
             </div>
           </div>

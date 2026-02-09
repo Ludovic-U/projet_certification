@@ -48,6 +48,9 @@ export const useGanttState = () => {
   // State for livrables (local, mutable)
   const [livrables, setLivrables] = useState<Livrable[]>([]);
 
+  // State for current version ID (used when creating/updating tasks)
+  const [versionId, setVersionId] = useState<number | null>(null);
+
   // UI state for editing and interactions
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showEditor, setShowEditor] = useState(false);
@@ -118,8 +121,8 @@ export const useGanttState = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
 
-  // Fetch data from API on mount
-  const loadData = async () => {
+  // Fetch data from API
+  const loadData = async (versionId?: number) => {
     if (!projectId) {
       setIsLoading(false);
       return;
@@ -128,13 +131,18 @@ export const useGanttState = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const ganttData = await fetchGanttData(projectId);
+      const ganttData = await fetchGanttData(projectId, versionId);
       
       setData(ganttData);
       setTasks(ganttData.tasks || []);
       setLinks(ganttData.links || []);
       setUsers(ganttData.users || []);
       setLivrables(ganttData.livrables || []);
+      
+      // Set version ID if provided
+      if (versionId !== undefined) {
+        setVersionId(versionId);
+      }
 
       // Initialize history with initial state
       const initialState = {
@@ -414,7 +422,8 @@ export const useGanttState = () => {
               files: editingTask.files || [],
               goal: editingTask.goal,
               assigneeIds: editingTask.assigneeIds || [],
-              livrableIds: editingTask.livrableIds || []
+              livrableIds: editingTask.livrableIds || [],
+              versionId: versionId || null
             });
             
             // Update local state with the real task ID from the server
@@ -581,6 +590,7 @@ export const useGanttState = () => {
     setIsDraggingAny,
     setDragStartPositions,
     setCursorX,
+    setVersionId,
     
     // Actions
     handleAddLivrable,

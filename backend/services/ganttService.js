@@ -4,33 +4,43 @@ const prisma = new PrismaClient();
 /**
  * Get all tasks for a project with all related data
  * @param {number} projectId - The project ID
+ * @param {number} [versionId] - Optional version ID to filter tasks
  * @returns {Promise<Object>} Gantt data object with tasks, links, users, livrables
  */
-module.exports.getGanttData = async (projectId) => {
+module.exports.getGanttData = async (projectId, versionId = null) => {
   try {
-    // Get all tasks directly associated with this project OR via subAction->action OR truly orphaned tasks
-    // "Truly orphaned" means: no project_id, no sub_action_id, AND no parent
-    const projectTasks = await prisma.task.findMany({
-      where: {
-        OR: [
-          { projectId: projectId },
-          {
-            subAction: {
-              action: {
-                projectId: projectId
-              }
+    // Build the where clause with optional version filter
+    const whereClause = {
+      OR: [
+        { projectId: projectId },
+        {
+          subAction: {
+            action: {
+              projectId: projectId
             }
-          },
-          // Include only truly orphaned tasks (no project association AND no parent)
-          {
-            AND: [
-              { projectId: null },
-              { subActionId: null },
-              { parentId: null }
-            ]
           }
+        }
+      ]
+    };
+    
+    // Add orphaned tasks filter (no project, no subAction, no parent)
+    if (!versionId) {
+      whereClause.OR.push({
+        AND: [
+          { projectId: null },
+          { subActionId: null },
+          { parentId: null }
         ]
-      },
+      });
+    }
+    
+    // Add version filter if provided
+    if (versionId) {
+      whereClause.versionId = versionId;
+    }
+    
+    const projectTasks = await prisma.task.findMany({
+      where: whereClause,
       include: {
         taskAssignments: {
           include: {
@@ -46,11 +56,7 @@ module.exports.getGanttData = async (projectId) => {
         children: true,
         linksSource: true,
         linksTarget: true,
-        livrables: {
-          include: {
-            livrable: true
-          }
-        },
+        tasks: true,
         expenses: true,
         assigneeDetails: true,
         deliverables: true
@@ -107,11 +113,7 @@ module.exports.getGanttData = async (projectId) => {
         children: true,
         linksSource: true,
         linksTarget: true,
-        livrables: {
-          include: {
-            livrable: true
-          }
-        },
+        tasks: true,
         expenses: true,
         assigneeDetails: true,
         deliverables: true
@@ -159,7 +161,7 @@ module.exports.getGanttData = async (projectId) => {
         notes: task.notes,
         files: task.files || [],
         assigneeIds: task.taskAssignments.map(ta => ta.userId),
-        livrableIds: task.livrables.map(tl => tl.livrableId),
+        livrableIds: task.tasks.map(t => t.deliverableId),
         goal: task.goal,
         // Budget aggregated from expenses
         budget: {
@@ -285,6 +287,7 @@ module.exports.createTask = async (taskData) => {
   try {
     const {
       projectId,
+      versionId,
       name,
       description,
       startDate,
@@ -300,10 +303,11 @@ module.exports.createTask = async (taskData) => {
       livrableIds = []
     } = taskData;
 
-    // Create the task with projectId
+    // Create the task with projectId and optional versionId
     const task = await prisma.task.create({
       data: {
         projectId: projectId || null,
+        versionId: versionId || null,
         name: name || 'New Task',
         description: description || null,
         startDate: startDate ? new Date(startDate) : null,
@@ -336,11 +340,13 @@ module.exports.createTask = async (taskData) => {
 
     // Create task-livrable relations if provided
     if (livrableIds && livrableIds.length > 0) {
-      await prisma.taskLivrable.createMany({
-        data: livrableIds.map(livrableId => ({
-          taskId: task.taskId,
-          livrableId: Number(livrableId)
-        }))
+      await prisma.task.update({
+        where: { taskId: task.taskId },
+        data: {
+          tasks: {
+            connect: livrableIds.map(livrableId => ({ deliverableId: Number(livrableId) }))
+          }
+        }
       });
     }
 
@@ -375,6 +381,7 @@ module.exports.updateTask = async (taskId, taskData) => {
   try {
     const {
       projectId,
+      versionId,
       name,
       description,
       startDate,
@@ -395,7 +402,7 @@ module.exports.updateTask = async (taskId, taskData) => {
       where: { taskId },
       include: {
         taskAssignments: true,
-        livrables: true
+        tasks: true
       }
     });
 
@@ -406,6 +413,7 @@ module.exports.updateTask = async (taskId, taskData) => {
     // Update the task
     const updateData = {};
     if (projectId !== undefined) updateData.projectId = projectId;
+    if (versionId !== undefined) updateData.versionId = versionId;
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
@@ -455,16 +463,15 @@ module.exports.updateTask = async (taskId, taskData) => {
 
     // Update task-livrable relations if provided
     if (livrableIds !== undefined) {
-      // Remove old relations
-      await prisma.taskLivrable.deleteMany({
-        where: { taskId }
+      // Remove old relations and add new ones
+      await prisma.task.update({
+        where: { taskId },
+        data: {
+          tasks: {
+            set: livrableIds.map(livrableId => ({ deliverableId: Number(livrableId) }))
+          }
+        }
       });
-      // Add new relations
-      if (livrableIds.length > 0) {
-        await prisma.taskLivrable.createMany({
-          data: livrableIds.map(livrableId => ({ taskId, livrableId }))
-        });
-      }
     }
 
     return {
@@ -479,7 +486,7 @@ module.exports.updateTask = async (taskId, taskData) => {
       notes: task.notes,
       files: task.files || [],
       assigneeIds: assigneeIds !== undefined ? assigneeIds : task.taskAssignments.map(ta => ta.userId),
-      livrableIds: livrableIds !== undefined ? livrableIds : currentTask.livrables.map(tl => tl.livrableId),
+      livrableIds: livrableIds !== undefined ? livrableIds : currentTask.tasks.map(t => t.deliverableId),
       goal: task.goal,
     };
   } catch (error) {
@@ -505,7 +512,6 @@ async function deleteTaskAndChildren(tx, taskId) {
   }
   
   // Now delete related data for this task
-  await tx.taskLivrable.deleteMany({ where: { taskId } });
   await tx.taskAssignment.deleteMany({ where: { taskId } });
   await tx.taskLink.deleteMany({
     where: {
@@ -756,6 +762,188 @@ module.exports.createTaskDeliverableStatus = async (deliverableData) => {
     };
   } catch (error) {
     console.error('Error creating task deliverable status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get all versions for a project
+ * @param {number} projectId - The project ID
+ * @returns {Promise<Array>} List of versions
+ */
+module.exports.getVersionsForProject = async (projectId) => {
+  try {
+    const versions = await prisma.version.findMany({
+      where: { projectId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { tasks: true, links: true }
+        }
+      }
+    });
+    
+    return versions.map(v => ({
+      versionId: v.versionId,
+      projectId: v.projectId,
+      name: v.name,
+      description: v.description,
+      isActive: v.isActive,
+      createdAt: v.createdAt,
+      updatedAt: v.updatedAt,
+      taskCount: v._count.tasks,
+      linkCount: v._count.links
+    }));
+  } catch (error) {
+    console.error('Error fetching versions:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new version
+ * @param {Object} versionData - Version data
+ * @returns {Promise<Object>} Created version
+ */
+module.exports.createVersion = async (versionData) => {
+  try {
+    const { projectId, name, description, isActive } = versionData;
+
+    // If this version should be active, deactivate all other versions
+    if (isActive) {
+      await prisma.version.updateMany({
+        where: { projectId },
+        data: { isActive: false }
+      });
+    }
+
+    const version = await prisma.version.create({
+      data: {
+        projectId,
+        name: name || 'Nouvelle version',
+        description: description || null,
+        isActive: isActive || false
+      }
+    });
+
+    return {
+      versionId: version.versionId,
+      projectId: version.projectId,
+      name: version.name,
+      description: version.description,
+      isActive: version.isActive,
+      createdAt: version.createdAt,
+      updatedAt: version.updatedAt
+    };
+  } catch (error) {
+    console.error('Error creating version:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a version
+ * @param {number} versionId - Version ID
+ * @param {Object} versionData - Updated version data
+ * @returns {Promise<Object>} Updated version
+ */
+module.exports.updateVersion = async (versionId, versionData) => {
+  try {
+    const { name, description, isActive } = versionData;
+
+    const version = await prisma.version.update({
+      where: { versionId },
+      data: {
+        name,
+        description,
+        isActive
+      }
+    });
+
+    if (!version) {
+      throw new Error('Version not found');
+    }
+
+    return {
+      versionId: version.versionId,
+      projectId: version.projectId,
+      name: version.name,
+      description: version.description,
+      isActive: version.isActive,
+      createdAt: version.createdAt,
+      updatedAt: version.updatedAt
+    };
+  } catch (error) {
+    console.error('Error updating version:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a version
+ * @param {number} versionId - Version ID
+ * @returns {Promise<Object>} Deletion result
+ */
+module.exports.deleteVersion = async (versionId) => {
+  try {
+    // First, unlink tasks from this version
+    await prisma.task.updateMany({
+      where: { versionId },
+      data: { versionId: null }
+    });
+
+    // Delete links associated with this version
+    await prisma.taskLink.deleteMany({
+      where: { versionId }
+    });
+
+    // Delete the version
+    await prisma.version.delete({
+      where: { versionId }
+    });
+
+    return { message: 'Version deleted successfully', versionId };
+  } catch (error) {
+    console.error('Error deleting version:', error);
+    throw error;
+  }
+};
+
+/**
+ * Set a version as active (deactivates others)
+ * @param {number} projectId - Project ID
+ * @param {number} versionId - Version ID to activate
+ * @returns {Promise<Object>} Updated version
+ */
+module.exports.setActiveVersion = async (projectId, versionId) => {
+  try {
+    // Deactivate all versions for this project
+    await prisma.version.updateMany({
+      where: { projectId },
+      data: { isActive: false }
+    });
+
+    // Activate the specified version
+    const version = await prisma.version.update({
+      where: { versionId },
+      data: { isActive: true }
+    });
+
+    if (!version) {
+      throw new Error('Version not found');
+    }
+
+    return {
+      versionId: version.versionId,
+      projectId: version.projectId,
+      name: version.name,
+      description: version.description,
+      isActive: version.isActive,
+      createdAt: version.createdAt,
+      updatedAt: version.updatedAt
+    };
+  } catch (error) {
+    console.error('Error activating version:', error);
     throw error;
   }
 };

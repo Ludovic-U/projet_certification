@@ -27,6 +27,19 @@ interface FileUploadResponse {
   filename: string;
 }
 
+// Version type
+export interface Version {
+  versionId: number;
+  projectId: number;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  taskCount?: number;
+  linkCount?: number;
+}
+
 // Type for API task response (dates as strings)
 export interface ApiTaskResponse {
   id: number;
@@ -68,8 +81,9 @@ export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
 /**
  * Fetch all Gantt data for a project
  */
-export const fetchGanttData = async (projectId: number): Promise<GanttData> => {
-  const response = await api.get(`/gantt/${projectId}`);
+export const fetchGanttData = async (projectId: number, versionId?: number): Promise<GanttData> => {
+  const url = versionId ? `/gantt/${projectId}?versionId=${versionId}` : `/gantt/${projectId}`;
+  const response = await api.get(url);
   const data = response.data;
   
   // Convert date strings to Date objects
@@ -240,5 +254,53 @@ export const uploadFile = async (file: File): Promise<FileUploadResponse> => {
       'Content-Type': 'multipart/form-data',
     },
   });
+  return response.data;
+};
+
+// ==================== VERSION API ====================
+
+/**
+ * Fetch all versions for a project
+ */
+export const fetchVersions = async (projectId: number): Promise<Version[]> => {
+  const response = await api.get(`/gantt/${projectId}/versions`);
+  return response.data;
+};
+
+/**
+ * Create a new version
+ */
+export const createVersion = async (
+  projectId: number,
+  versionData: { name: string; description?: string; isActive?: boolean }
+): Promise<Version> => {
+  const response = await api.post(`/gantt/${projectId}/versions`, versionData);
+  return response.data;
+};
+
+/**
+ * Update a version
+ */
+export const updateVersion = async (
+  projectId: number,
+  versionId: number,
+  versionData: { name?: string; description?: string; isActive?: boolean }
+): Promise<Version> => {
+  const response = await api.put(`/gantt/${projectId}/versions/${versionId}`, versionData);
+  return response.data;
+};
+
+/**
+ * Delete a version
+ */
+export const deleteVersion = async (projectId: number, versionId: number): Promise<void> => {
+  await api.delete(`/gantt/${projectId}/versions/${versionId}`);
+};
+
+/**
+ * Set a version as active (deactivates others)
+ */
+export const activateVersion = async (projectId: number, versionId: number): Promise<Version> => {
+  const response = await api.put(`/gantt/${projectId}/versions/${versionId}/activate`);
   return response.data;
 };

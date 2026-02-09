@@ -10,7 +10,12 @@ const {
   getSubActionsForProject,
   createTaskExpense,
   createTaskAssigneeDetail,
-  createTaskDeliverableStatus
+  createTaskDeliverableStatus,
+  getVersionsForProject,
+  createVersion,
+  updateVersion,
+  deleteVersion,
+  setActiveVersion
 } = require('../services/ganttService');
 const { validateId } = require('../middlewares/validateId');
 
@@ -20,11 +25,12 @@ const { validateId } = require('../middlewares/validateId');
  */
 module.exports.getGanttData = async (req, res) => {
   const projectId = Number(req.params.projectId);
+  const versionId = req.query.versionId ? Number(req.query.versionId) : null;
   
   if (!validateId(projectId, 'projectId', res)) return;
   
   try {
-    const data = await getGanttData(projectId);
+    const data = await getGanttData(projectId, versionId);
     res.status(200).json(data);
   } catch (error) {
     console.error('Error fetching Gantt data:', error);
@@ -48,6 +54,7 @@ module.exports.createTask = async (req, res) => {
     const taskData = {
       projectId, 
       subActionId,
+      versionId: req.body.versionId ? Number(req.body.versionId) : null,
       name: req.body.text || req.body.name,
       description: req.body.details || req.body.description,
       startDate: req.body.start,
@@ -86,6 +93,7 @@ module.exports.updateTask = async (req, res) => {
     console.log('updateTask - received files:', req.body.files);
     const taskData = {
       projectId,
+      versionId: req.body.versionId !== undefined ? (req.body.versionId ? Number(req.body.versionId) : null) : undefined,
       name: req.body.text !== undefined ? req.body.text : req.body.name,
       description: req.body.details !== undefined ? req.body.details : req.body.description,
       startDate: req.body.start,
@@ -453,5 +461,123 @@ module.exports.importGanttData = async (req, res) => {
     console.error('Error importing Gantt data:', error);
     console.error(error.stack);
     res.status(500).json({ error: 'Failed to import Gantt data: ' + error.message });
+  }
+};
+
+/**
+ * Get all versions for a project
+ * GET /api/gantt/:projectId/versions
+ */
+module.exports.getVersions = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  
+  try {
+    const versions = await getVersionsForProject(projectId);
+    res.status(200).json(versions);
+  } catch (error) {
+    console.error('Error fetching versions:', error);
+    res.status(500).json({ error: 'Failed to fetch versions' });
+  }
+};
+
+/**
+ * Create a new version
+ * POST /api/gantt/:projectId/versions
+ */
+module.exports.createVersion = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  
+  try {
+    const versionData = {
+      projectId,
+      name: req.body.name,
+      description: req.body.description || null,
+      isActive: req.body.isActive || false
+    };
+
+    const version = await createVersion(versionData);
+    res.status(201).json(version);
+  } catch (error) {
+    console.error('Error creating version:', error);
+    res.status(500).json({ error: error.message || 'Failed to create version' });
+  }
+};
+
+/**
+ * Update a version
+ * PUT /api/gantt/:projectId/versions/:versionId
+ */
+module.exports.updateVersion = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const versionId = Number(req.params.versionId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  if (!validateId(versionId, 'versionId', res)) return;
+  
+  try {
+    const versionData = {
+      name: req.body.name,
+      description: req.body.description,
+      isActive: req.body.isActive
+    };
+
+    const version = await updateVersion(versionId, versionData);
+    res.status(200).json(version);
+  } catch (error) {
+    console.error('Error updating version:', error);
+    if (error.message === 'Version not found') {
+      return res.status(404).json({ error: 'Version not found' });
+    }
+    res.status(500).json({ error: 'Failed to update version' });
+  }
+};
+
+/**
+ * Delete a version
+ * DELETE /api/gantt/:projectId/versions/:versionId
+ */
+module.exports.deleteVersion = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const versionId = Number(req.params.versionId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  if (!validateId(versionId, 'versionId', res)) return;
+  
+  try {
+    const result = await deleteVersion(versionId);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error deleting version:', error);
+    if (error.message === 'Version not found') {
+      return res.status(404).json({ error: 'Version not found' });
+    }
+    res.status(500).json({ error: 'Failed to delete version' });
+  }
+};
+
+/**
+ * Set a version as active (and deactivate others)
+ * PUT /api/gantt/:projectId/versions/:versionId/activate
+ */
+module.exports.activateVersion = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const versionId = Number(req.params.versionId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  if (!validateId(versionId, 'versionId', res)) return;
+  
+  try {
+    const version = await setActiveVersion(projectId, versionId);
+    res.status(200).json(version);
+  } catch (error) {
+    console.error('Error activating version:', error);
+    if (error.message === 'Version not found') {
+      return res.status(404).json({ error: 'Version not found' });
+    }
+    res.status(500).json({ error: 'Failed to activate version' });
   }
 };

@@ -120,7 +120,7 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
           <div className="flex border-b border-slate-700">
             {columns.map((col) => {
               const isToday = isDateInRange(today, col.start, col.end);
-              const isWeekend = col.label === 'Sat' || col.label === 'Sun';
+              const isWeekend = col.label === 'Sam' || col.label === 'Dim';
               
               return (
                 <div
@@ -294,14 +294,14 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
                     <div
                       className="absolute inset-y-0 left-0 w-5 cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center"
                       onMouseDown={(e) => { e.stopPropagation(); setResizingTask({ task, side: 'left' }); setDragOffset({ x: e.clientX, y: e.clientY }); }}
-                      title="Resize start"
+                      title="Redimensionner le début"
                     >
                       <div className="w-1 h-6 bg-white/40 rounded-full hover:bg-white/80 transition-colors" />
                     </div>
                     <div
                       className="absolute inset-y-0 right-0 w-5 cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center"
                       onMouseDown={(e) => { e.stopPropagation(); setResizingTask({ task, side: 'right' }); setDragOffset({ x: e.clientX, y: e.clientY }); }}
-                      title="Resize end"
+                      title="Redimensionner la fin"
                     >
                       <div className="w-1 h-6 bg-white/40 rounded-full hover:bg-white/80 transition-colors" />
                     </div>

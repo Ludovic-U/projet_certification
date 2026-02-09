@@ -74,25 +74,25 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
         <div className="flex-1 px-4 py-3 font-semibold text-slate-300 text-sm border-r border-slate-700 flex items-center">
           <span className="flex items-center gap-2">
             <Folder className="w-4 h-4 text-slate-400" />
-            Task Name
+            Nom de la tâche
           </span>
         </div>
         <div className="w-28 px-3 py-3 font-semibold text-slate-300 text-sm border-r border-slate-700 flex items-center justify-center">
           <span className="flex items-center gap-2">
             <CalendarIcon className="w-4 h-4" />
-            Start
+            Début
           </span>
         </div>
         <div className="w-36 px-3 py-3 font-semibold text-slate-300 text-sm border-r border-slate-700 flex items-center">
           <span className="flex items-center gap-2">
             <UserIcon className="w-4 h-4" />
-            Assignees
+            Attribué à
           </span>
         </div>
         <div className="w-28 px-3 py-3 font-semibold text-slate-300 text-sm flex items-center justify-center">
           <span className="flex items-center gap-2">
             <ProgressIcon className="w-4 h-4" />
-            Progress
+            Progression
           </span>
         </div>
       </div>
@@ -172,7 +172,7 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
                 
                 {hasChildren(task.id, tasks) && (
                   <span className="text-xs text-slate-500 bg-slate-700/50 px-2 py-0.5 rounded-full flex-shrink-0">
-                    {expandedTasks.has(task.id) ? 'Expanded' : 'Collapsed'}
+                    {expandedTasks.has(task.id) ? 'Développé' : 'Réduit'}
                   </span>
                 )}
               </div>
@@ -191,7 +191,7 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
                 {isCompleted ? (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/20 rounded-lg">
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-xs font-medium text-emerald-400">Done</span>
+                    <span className="text-xs font-medium text-emerald-400">Terminé</span>
                   </div>
                 ) : (
                   <>
@@ -262,9 +262,9 @@ const AssigneeAvatars: React.FC<{ assignees: string }> = ({ assignees }) => {
   const displayNames = names.slice(0, 3);
   const remaining = names.length - 3;
 
-  if (!assignees || assignees === 'Unassigned') {
+  if (!assignees || assignees === 'Non attribué') {
     return (
-      <span className="text-xs text-slate-500 italic">Unassigned</span>
+      <span className="text-xs text-slate-500 italic">Non attribué</span>
     );
   }
 

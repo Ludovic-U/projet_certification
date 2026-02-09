@@ -68,6 +68,24 @@ async function main() {
     });
   }
 
+  // Créer des types de projet
+  const typesList = [
+    { label: 'Formation' },
+    { label: 'Conseil' },
+    { label: 'Audit' },
+    { label: 'Accompagnement' },
+    { label: 'Développement' }
+  ];
+
+  for (const type of typesList) {
+    await prisma.type.upsert({
+      where: { label: type.label },
+      update: {},
+      create: type
+    });
+  }
+  console.log('Types créés');
+
   // Matrice rôle -> permissions
   const rolePermissionsMatrix = {
     super_admin: ["view_super_admin_dashboard", "user:create:any", "user:read:any", "user:update:any", "user:delete:any", "client:read:any",
@@ -106,8 +124,7 @@ async function main() {
     create: {
       clientName: 'F2S',
       description: 'Figure de Skills - Entreprise de formation',
-      secteur: 'Formation',
-      statusJuridique: 'SAS'
+      clientType: 'entreprise'
     }
   });
   console.log('Client créé:', client.clientName);
@@ -195,12 +212,186 @@ async function main() {
     console.log('Tâche créée:', created.name);
   }
 
+  // Créer des tâches avec relations parent-enfant
+  const parentTasks = await prisma.task.createMany({
+    data: [
+      { 
+        name: 'Phase 1: Kick-off', 
+        description: 'Réunion de lancement du projet', 
+        progress: 100, 
+        type: 'milestone',
+        projectId: project.projectId,
+        startDate: new Date('2025-02-01'),
+        endDate: new Date('2025-02-01'),
+        details: 'Réunion de lancement',
+        notes: '',
+        files: [],
+        goal: 'Lancer le projet'
+      },
+      { 
+        name: 'Phase 2: Conception', 
+        description: 'Phase de conception du projet', 
+        progress: 60, 
+        type: 'task',
+        projectId: project.projectId,
+        startDate: new Date('2025-02-02'),
+        endDate: new Date('2025-02-20'),
+        details: 'Conception détaillée',
+        notes: '',
+        files: [],
+        goal: 'Finaliser la conception'
+      },
+      { 
+        name: 'Phase 3: Développement', 
+        description: 'Phase de développement', 
+        progress: 30, 
+        type: 'task',
+        projectId: project.projectId,
+        startDate: new Date('2025-02-21'),
+        endDate: new Date('2025-03-15'),
+        details: 'Développement des fonctionnalités',
+        notes: '',
+        files: [],
+        goal: 'Développer les fonctionnalités'
+      }
+    ]
+  });
+  console.log('Tâches parentes créées');
+
+  // Récupérer les tâches créées
+  const phase2 = await prisma.task.findFirst({ where: { name: 'Phase 2: Conception' } });
+  const phase3 = await prisma.task.findFirst({ where: { name: 'Phase 3: Développement' } });
+
+  // Créer des sous-tâches pour Phase 2
+  if (phase2) {
+    await prisma.task.createMany({
+      data: [
+        { 
+          name: '2.1 Rédaction cahier des charges', 
+          description: 'Rédaction du cahier des charges fonctionnel', 
+          progress: 100, 
+          type: 'task',
+          projectId: project.projectId,
+          parentId: phase2.taskId,
+          startDate: new Date('2025-02-02'),
+          endDate: new Date('2025-02-08'),
+          details: 'Cahier des charges',
+          notes: '',
+          files: [],
+          goal: 'Finaliser le cahier des charges'
+        },
+        { 
+          name: '2.2 Conception technique', 
+          description: 'Conception de l\'architecture technique', 
+          progress: 50, 
+          type: 'task',
+          projectId: project.projectId,
+          parentId: phase2.taskId,
+          startDate: new Date('2025-02-09'),
+          endDate: new Date('2025-02-15'),
+          details: 'Architecture technique',
+          notes: '',
+          files: [],
+          goal: 'Définir l\'architecture'
+        },
+        { 
+          name: '2.3 Validation conception', 
+          description: 'Validation de la conception avec le client', 
+          progress: 0, 
+          type: 'task',
+          projectId: project.projectId,
+          parentId: phase2.taskId,
+          startDate: new Date('2025-02-16'),
+          endDate: new Date('2025-02-20'),
+          details: 'Validation client',
+          notes: '',
+          files: [],
+          goal: 'Obtenir la validation'
+        }
+      ]
+    });
+    console.log('Sous-tâches de Phase 2 créées');
+  }
+
+  // Créer des sous-tâches pour Phase 3
+  if (phase3) {
+    await prisma.task.createMany({
+      data: [
+        { 
+          name: '3.1 Développement backend', 
+          description: 'Développement de l\'API et base de données', 
+          progress: 40, 
+          type: 'task',
+          projectId: project.projectId,
+          parentId: phase3.taskId,
+          startDate: new Date('2025-02-21'),
+          endDate: new Date('2025-03-05'),
+          details: 'Backend API',
+          notes: '',
+          files: [],
+          goal: 'Développer l\'API'
+        },
+        { 
+          name: '3.2 Développement frontend', 
+          description: 'Développement de l\'interface utilisateur', 
+          progress: 20, 
+          type: 'task',
+          projectId: project.projectId,
+          parentId: phase3.taskId,
+          startDate: new Date('2025-02-28'),
+          endDate: new Date('2025-03-10'),
+          details: 'Interface utilisateur',
+          notes: '',
+          files: [],
+          goal: 'Développer l\'UI'
+        },
+        { 
+          name: '3.3 Tests et validation', 
+          description: 'Tests fonctionnels et validation', 
+          progress: 0, 
+          type: 'task',
+          projectId: project.projectId,
+          parentId: phase3.taskId,
+          startDate: new Date('2025-03-11'),
+          endDate: new Date('2025-03-15'),
+          details: 'Tests et QA',
+          notes: '',
+          files: [],
+          goal: 'Valider les fonctionnalités'
+        }
+      ]
+    });
+    console.log('Sous-tâches de Phase 3 créées');
+  }
+
+  // Créer des versions pour le projet
+  const version1 = await prisma.version.create({
+    data: {
+      projectId: project.projectId,
+      name: 'v1.0 - Brouillon',
+      description: 'Première version du planning',
+      isActive: true
+    }
+  });
+  console.log('Version créée:', version1.name);
+
+  const version2 = await prisma.version.create({
+    data: {
+      projectId: project.projectId,
+      name: 'v2.0 - Revue',
+      description: 'Version après revue client',
+      isActive: false
+    }
+  });
+  console.log('Version créée:', version2.name);
+
   console.log('✅ Données de test créées avec succès!');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('Email: admin@f2s.fr');
   console.log('Mot de passe: password123');
   console.log('Client: F2S');
   console.log('Projet: Projet Test F2S');
+  console.log('Versions: v1.0 - Brouillon, v2.0 - Revue');
 }
 
 main()

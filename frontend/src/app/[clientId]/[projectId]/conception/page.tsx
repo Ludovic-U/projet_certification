@@ -6,7 +6,7 @@
  * including drag-and-drop, resizing, progress tracking, and timeline visualization.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/ui';
 import { useGanttState } from './hooks/useGanttState';
 import { useGanttHandlers } from './hooks/useGanttHandlers';
@@ -26,10 +26,79 @@ import { MIN_PX_PER_DAY, MAX_PX_PER_DAY } from './constants';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 import { useParams } from 'next/navigation';
+import { fetchVersions, fetchGanttData, createVersion, deleteVersion as deleteVersionApi, activateVersion as activateVersionApi, Version } from '@/api/ganttApi';
 
 const GanttChart = () => {
   const params = useParams();
   const projectId = params?.projectId ? parseInt(params.projectId as string, 10) : null;
+  
+  // Version state
+  const [versions, setVersions] = useState<Version[]>([]);
+  const [currentVersion, setCurrentVersion] = useState<Version | null>(null);
+  const [versionLoading, setVersionLoading] = useState(false);
+
+  // Fetch versions on mount
+  useEffect(() => {
+    if (projectId) {
+      loadVersions();
+    }
+  }, [projectId]);
+
+  const loadVersions = async () => {
+    if (!projectId) return;
+    setVersionLoading(true);
+    try {
+      const data = await fetchVersions(projectId);
+      setVersions(data);
+      // Set first version as current if available
+      if (data.length > 0 && !currentVersion) {
+        const activeVersion = data.find(v => v.isActive);
+        setCurrentVersion(activeVersion || data[0]);
+      }
+    } catch (error) {
+      console.error('Error loading versions:', error);
+    } finally {
+      setVersionLoading(false);
+    }
+  };
+
+  const handleCreateVersion = async (name: string, description?: string) => {
+    if (!projectId) return;
+    try {
+      await createVersion(projectId, { name, description });
+      await loadVersions();
+    } catch (error) {
+      console.error('Error creating version:', error);
+    }
+  };
+
+  const handleDeleteVersion = async (versionId: number) => {
+    if (!projectId) return;
+    try {
+      await deleteVersionApi(projectId, versionId);
+      await loadVersions();
+    } catch (error) {
+      console.error('Error deleting version:', error);
+    }
+  };
+
+  const handleActivateVersion = async (versionId: number) => {
+    if (!projectId) return;
+    try {
+      await activateVersionApi(projectId, versionId);
+      await loadVersions();
+    } catch (error) {
+      console.error('Error activating version:', error);
+    }
+  };
+  
+  // Re-fetch Gantt data when currentVersion changes
+  useEffect(() => {
+    if (projectId && currentVersion !== undefined) {
+      ganttState.loadData(currentVersion?.versionId);
+      ganttState.setVersionId(currentVersion?.versionId || null);
+    }
+  }, [projectId, currentVersion]);
   
   // Use custom hooks for state management
   const ganttState = useGanttState();
@@ -177,6 +246,14 @@ const GanttChart = () => {
           setTasks={ganttState.setTasks}
           setLinks={ganttState.setLinks}
           saveState={ganttState.saveState}
+          // Version props
+          versions={versions}
+          currentVersion={currentVersion}
+          setCurrentVersion={setCurrentVersion}
+          onCreateVersion={handleCreateVersion}
+          onDeleteVersion={handleDeleteVersion}
+          onActivateVersion={handleActivateVersion}
+          projectId={projectId || 0}
         />
 
         {/* Main Gantt Chart Area */}

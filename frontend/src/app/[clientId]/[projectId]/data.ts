@@ -13,6 +13,8 @@ export interface Task {
   // Livrable and goal
   livrableIds?: number[];
   goal?: string;
+  // Version ID for task versioning
+  versionId?: number | null;
   // Budget fields
   budget?: {
     // Expense lines for each category

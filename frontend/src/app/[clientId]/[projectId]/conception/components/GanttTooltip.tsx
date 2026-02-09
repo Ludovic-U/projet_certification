@@ -39,7 +39,7 @@ export const GanttTooltip: React.FC<GanttTooltipProps> = ({
         </div>
         <div className="mb-2">
           <span className="font-semibold text-blue-400">Assigné à :</span>
-          <span className="ml-2 text-slate-300">{getAssignees(hoveredTask, data.users) || 'N/A'}</span>
+          <span className="ml-2 text-slate-300">{getAssignees(hoveredTask, data.users) || 'Non attribué'}</span>
         </div>
         <div className="mb-2">
           <span className="font-semibold text-blue-400">Début :</span>

@@ -14,13 +14,23 @@ import {
   Layout,
   List,
   CalendarDays,
-  Home
+  Home,
+  Undo,
+  Redo,
+  GitBranch,
+  ChevronDown,
+  PlusCircle,
+  Trash2,
+  Eye,
+  Star,
+  Check
 } from 'lucide-react';
 import { ViewMode, MenuPosition } from '../types';
 import { PortalMenu } from './PortalMenu';
-import { FileSpreadsheet, Download, Upload, ChevronRight } from 'lucide-react';
 import { MistralModal } from './MistralModal';
 import { Task, Link } from '../../data';
+import { Version } from '@/api/ganttApi';
+import { VersionSelector } from './VersionSelector';
 
 interface GanttToolbarProps {
   viewMode: ViewMode;
@@ -64,6 +74,14 @@ interface GanttToolbarProps {
   setTasks: (tasks: Task[]) => void;
   setLinks: (links: Link[]) => void;
   saveState: (nextTasks?: Task[], nextLinks?: Link[]) => void;
+  // Version-related props
+  versions: Version[];
+  currentVersion: Version | null;
+  setCurrentVersion: (version: Version | null) => void;
+  onCreateVersion: (name: string, description?: string) => void;
+  onDeleteVersion: (versionId: number) => void;
+  onActivateVersion: (versionId: number) => void;
+  projectId: number;
 }
 
 export const GanttToolbar: React.FC<GanttToolbarProps> = ({
@@ -107,11 +125,18 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   setTasks,
   setLinks,
   saveState,
+  versions,
+  currentVersion,
+  setCurrentVersion,
+  onCreateVersion,
+  onDeleteVersion,
+  onActivateVersion,
+  projectId,
 }) => {
   const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { value: 'day', label: 'Day', icon: <CalendarDays className="w-4 h-4" /> },
-    { value: 'week', label: 'Week', icon: <Layout className="w-4 h-4" /> },
-    { value: 'month', label: 'Month', icon: <List className="w-4 h-4" /> },
+    { value: 'day', label: 'Jour', icon: <CalendarDays className="w-4 h-4" /> },
+    { value: 'week', label: 'Semaine', icon: <Layout className="w-4 h-4" /> },
+    { value: 'month', label: 'Mois', icon: <List className="w-4 h-4" /> },
   ];
 
   // Calculate main menu position based on button
@@ -360,8 +385,8 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
               <Calendar className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Gantt Chart</h1>
-              <p className="text-xs text-slate-400">Project Timeline</p>
+              <h1 className="text-xl font-bold text-white">Diagramme de Gantt</h1>
+              <p className="text-xs text-slate-400">Chronologie du projet</p>
             </div>
           </div>
         </div>
@@ -374,13 +399,13 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
               onClick={undo}
               disabled={historyIndex === 0}
               icon={<Undo2 className="w-4 h-4" />}
-              tooltip="Undo"
+              tooltip="Annuler"
             />
             <ToolbarButton
               onClick={redo}
               disabled={historyIndex === historyLength - 1}
               icon={<Redo2 className="w-4 h-4" />}
-              tooltip="Redo"
+              tooltip="Rétablir"
             />
           </div>
 
@@ -407,12 +432,12 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             <ToolbarButton
               onClick={() => zoomBy(-2)}
               icon={<ZoomOut className="w-4 h-4" />}
-              tooltip="Zoom Out"
+              tooltip="Zoom arrière"
             />
             <ToolbarButton
               onClick={() => zoomBy(2)}
               icon={<ZoomIn className="w-4 h-4" />}
-              tooltip="Zoom In"
+              tooltip="Zoom avant"
             />
           </div>
 
@@ -422,8 +447,19 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white transition-all text-sm font-medium"
           >
             <Home className="w-4 h-4" />
-            <span className="hidden sm:inline">Today</span>
+            <span className="hidden sm:inline">Aujourd'hui</span>
           </button>
+
+          {/* Version Selector */}
+          <VersionSelector
+            versions={versions}
+            currentVersion={currentVersion}
+            setCurrentVersion={setCurrentVersion}
+            onCreateVersion={onCreateVersion}
+            onDeleteVersion={onDeleteVersion}
+            onActivateVersion={onActivateVersion}
+            projectId={projectId}
+          />
         </div>
 
         {/* Right Section - Add Task */}
@@ -434,7 +470,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/25 font-medium"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">Add Task</span>
+            <span className="hidden sm:inline">Ajouter une tâche</span>
           </button>
         </div>
       </div>
