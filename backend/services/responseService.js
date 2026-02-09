@@ -15,7 +15,37 @@ const { prisma } = require("../prisma/prismaClient");
  * @returns {Promise<Object>} The created response.
  */
 module.exports.createResponse = async (data) => {
-  return await prisma.response.create({ data });
+  const projectId = Number(data.projectId);
+  const questionId = Number(data.questionId);
+
+  if (!Number.isInteger(projectId) || projectId <= 0) {
+    throw new Error("Invalid projectId");
+  }
+
+  if (!Number.isInteger(questionId) || questionId <= 0) {
+    throw new Error("Invalid questionId");
+  }
+
+  const [project, question] = await Promise.all([
+    prisma.project.findUnique({ where: { projectId } }),
+    prisma.question.findUnique({ where: { questionId } }),
+  ]);
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  if (!question) {
+    throw new Error("Question not found");
+  }
+
+  return await prisma.response.create({
+    data: {
+      ...data,
+      projectId,
+      questionId,
+    },
+  });
 };
 
 /**

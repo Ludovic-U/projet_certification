@@ -170,6 +170,7 @@ module.exports.ProjectsByClientId = async (clientId) => {
     const formattedProjects = projects.map((project) => ({
       projectId: project.projectId,
       projectName: project.projectName,
+      goNogo: project.goNogo ?? null,
       projectManager: project.projectManager,
       projectDesc: project.projectDesc,
       startDate: project.startDate,
@@ -250,6 +251,30 @@ module.exports.getProjectSwot = async (projectId) => {
     return project;
   } catch (error) {
     console.error("Erreur lors de la récupération SWOT :", error);
+    throw error;
+  }
+};
+
+module.exports.updateProjectGoNogo = async (projectId, goNogo) => {
+  try {
+    const validProjectId = Number(projectId);
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { projectId: validProjectId },
+      data: { goNogo },
+      select: {
+        projectId: true,
+        projectName: true,
+        goNogo: true,
+      },
+    });
+
+    return updatedProject;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour go/nogo :", error);
     throw error;
   }
 };

@@ -57,7 +57,7 @@ const ModalQuestion : React.FC<ModalQuestionProps> = ({
              className="relative bg-light min-w-100 max-w-[80%] overflow-auto rounded-xl text-dark flex flex-col shadow-500base p-3">
                 {/* Header */}
                 <div className="flex items-center justify-between pl-4 mb-3">
-                    <span className="font-medium text-greydarker">Question {questionId}</span>
+                   <span className="font-bold text-dark">{question}</span>
                     <Button
                      size="iconS"
                      variant="secondary"
@@ -69,7 +69,7 @@ const ModalQuestion : React.FC<ModalQuestionProps> = ({
                 {/* Corps */}
                 <div className="bg-white rounded-lg flex flex-col justify-between p-4">
                     <div className="mb-3">
-                        <span className="font-bold text-dark">{question}</span>
+                        
                         {keyword && (
                             <div className="mt-2 text-sm text-greydarker">
                                 Mot-clé: <span className="font-semibold">{keyword}</span>

@@ -42,6 +42,12 @@ module.exports.createResponse = async (req, res) => {
     });
     res.status(201).json(response);
   } catch (error) {
+    if (error.message === "Invalid projectId" || error.message === "Invalid questionId") {
+      return res.status(400).json({ error: error.message });
+    }
+    if (error.message === "Project not found" || error.message === "Question not found") {
+      return res.status(404).json({ error: error.message });
+    }
     console.error("Error creating response:", error);
     res.status(500).json({ error: "Internal server error" });
   }

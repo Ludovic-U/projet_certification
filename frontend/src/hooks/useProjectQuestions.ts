@@ -11,9 +11,9 @@ export function useProjectQuestion(projectId: number) {
         async function fetchQuestions() {
             try {
                 setLoading(true);
-                const res = await api_backend.get(`/question/get`);
-                console.log("Questions de projet récupérées:", res.data.data);
-                const questionBase = Array.isArray(res.data.data) ? res.data.data : [];
+                const res = await api_backend.get(`/question/get/project/${projectId}`);
+                console.log("Questions de projet récupérées:", res.data);
+                const questionBase = Array.isArray(res.data) ? res.data : [];
                 
                 // Map les questions avec les options déjà présentes dans la réponse
                 const questionsWithOptions = questionBase.map((q: any) => ({
@@ -26,10 +26,7 @@ export function useProjectQuestion(projectId: number) {
                     status: "pending",
                     category: q.category,
                     numberOfSelectionableOpt: q.numberOfSelectionableOpt,
-                    options: (q.options || []).map((opt: any) => ({
-                        label: opt.label,
-                        value: opt.label
-                    })),
+                    options: (q.options || []).map((opt: any) => opt.label),
                     isRelevant: q.isRelevant,
                     hasMultipleOpenResponse: q.hasMultipleOpenResponse,
                     shouldMultiply: q.shouldMultiply,

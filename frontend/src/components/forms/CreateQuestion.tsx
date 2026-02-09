@@ -66,6 +66,7 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
     try {
       await api_backend.post(`question/create`, {
         label: data.label,
+        keyword: data.keyword,
         category: data.category,
         numberOfSelectionableOpt: data.options.length,
         hasMultipleOpenResponse: data.hasMultipleOpenResponse,

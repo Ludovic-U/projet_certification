@@ -113,6 +113,7 @@ model Project {
   projectDesc    String?
   createdAt      DateTime  @default(now())
   clientId       Int
+  goNogo         String?
   SWOT_strength     String?
   SWOT_weakness     String?
   SWOT_opportunity  String?

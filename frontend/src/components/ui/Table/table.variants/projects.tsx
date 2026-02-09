@@ -8,17 +8,23 @@ export type Project = {
     ChefDeProjet: string;
     types: string[];
     financeurs: string[];
+    goNogo?: string | null;
 };
 
 //Nom du projet, nom chef de projet (par défault l’admin_client), Types(s), Financeurs
 
 export const projectsList: Column<Project>[] = [
     {
-        key: "projectId",
-        label: "ID",
+        key: "goNogo",
+        label: "Go/NoGo",
         className: "w-15",
-        render: (item) =>
-            <span className="font-bold text-grey">{item.projectId}</span>
+        render: (item) => {
+            const value = item.goNogo?.toLowerCase();
+            const text = value ? value.toUpperCase() : "-";
+            const colorClass =
+                value === "go" ? "text-green-600" : value === "nogo" ? "text-red-600" : "text-grey";
+            return <span className={`font-bold ${colorClass}`}>{text}</span>;
+        }
     },
     {
         key: "projectName",

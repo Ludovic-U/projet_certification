@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { PageHeader, Card, Modal, Table, Button } from "@/components/ui";
@@ -36,10 +36,22 @@ export default function IdeationPage() {
   const [nodesState, setNodesState] = useState<Node[]>([]);
   const modalQuestions = useModal();
   const modalResponse = useModal();
+  const modalWasOpen = useRef(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
     null
   );
+  const [categories, setCategories] = useState<{ questionCategoryId: number; label: string }[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [swotProgress, setSwotProgress] = useState(0);
+  const [goDecision, setGoDecision] = useState<"go" | "nogo" | null>(null);
+  const [headerFill, setHeaderFill] = useState<
+    | {
+        color: "go" | "nogo";
+        direction: "in" | "out";
+        key: number;
+      }
+    | null
+  >(null);
 
   // Store the response value
   const [responseValue, setResponseValue] = useState<string | string[] | number[]>("");
@@ -74,13 +86,43 @@ export default function IdeationPage() {
     }
   }, [projectId]);
 
-  if (loading)
-    return (
-      <div className="flex">
-        Chargement des questions...
-        <LoadingSpinner />
-      </div>
-    );
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api_backend.get(`/question/categories`);
+        const fetchedCategories = res.data || [];
+        setCategories(fetchedCategories);
+        if (!selectedCategory) {
+          const defaultCategory = fetchedCategories.find(
+            (category: { label: string }) =>
+              category.label?.trim().toLowerCase() === "analyse opportunité"
+          );
+          if (defaultCategory) {
+            setSelectedCategory(defaultCategory.label);
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (modalWasOpen.current && !modalQuestions.isOpen) {
+      setSelectedCategory(null);
+    }
+    modalWasOpen.current = modalQuestions.isOpen;
+  }, [modalQuestions.isOpen]);
+
+  const getQuestionCategoryLabel = (question: Question) => {
+    if (typeof question.category === "string") {
+      return question.category;
+    }
+    const anyQuestion = question as any;
+    return anyQuestion.questionCategory?.label ?? anyQuestion.category?.label ?? "";
+  };
 
   const handleOpenQuestion = (question: Question) => {
     setSelectedQuestion(question);
@@ -95,28 +137,201 @@ export default function IdeationPage() {
     modalResponse.openModal();
   };
 
-  const getResponseForm = (question: Question) => {
-    if (question.shouldMultiply) return () => <div>Question répétée</div>;
-    if (question.hasMultipleOpenResponse) return ReponsesPlusieurs;
-    if ((question.options?.length ?? 0) > 0)
-      return ReponseSelect;
-    return ReponseUnique;
+  // const getResponseForm = (question: Question) => {
+  //   if (question.shouldMultiply) return () => <div>Question répétée</div>;
+  //   if (question.hasMultipleOpenResponse) return ReponsesPlusieurs;
+  //   if ((question.options?.length ?? 0) > 0)
+  //     return ReponseSelect;
+  //   return ReponseUnique;
+  // };
+
+  const filteredQuestions = useMemo(() => {
+    return selectedCategory
+      ? questions.filter((q) => getQuestionCategoryLabel(q) === selectedCategory)
+      : questions;
+  }, [questions, selectedCategory]);
+
+  const treeQuestions = useMemo(() => {
+    return filteredQuestions.map((q) => ({
+      ...q,
+      status: q.status ?? "pending",
+    }));
+  }, [filteredQuestions]);
+
+  const visibleCategories = categories.filter((category) =>
+    questions.some((q) => getQuestionCategoryLabel(q) === category.label)
+  );
+
+  const categoryColors = [
+    "#96776E",
+    "#A3B18A",
+    "#D98C6C",
+    "#6C8EBF",
+    "#B56576",
+    "#588157",
+  ];
+
+  const isOpportunitySelected =
+    selectedCategory?.trim().toLowerCase() === "analyse opportunité";
+
+  const goNogoKey = useMemo(() => {
+    if (!projectId) return null;
+    return `project_${projectId}_goNogo`;
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!goNogoKey) return;
+    const stored = data?.[goNogoKey];
+    const normalized = stored === "go" || stored === "nogo" ? stored : null;
+
+    if (normalized === goDecision) return;
+
+    setGoDecision(normalized);
+    if (normalized) {
+      setHeaderFill({ color: normalized, direction: "in", key: Date.now() });
+    } else {
+      setHeaderFill(null);
+    }
+  }, [data, goNogoKey, goDecision]);
+
+  useEffect(() => {
+    if (!isOpportunitySelected) {
+      setHeaderFill(null);
+      return;
+    }
+
+    if (goDecision) {
+      setHeaderFill({ color: goDecision, direction: "in", key: Date.now() });
+    }
+  }, [isOpportunitySelected, goDecision]);
+
+  const updateGoNogo = async (value: "go" | "nogo" | null) => {
+    try {
+      await api_backend.post(`/project/${projectId}/go-nogo`, {
+        goNogo: value,
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise a jour go/nogo:", error);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="flex">
+        Chargement des questions...
+        <LoadingSpinner />
+      </div>
+    );
+
+  const handleDecisionClick = (decision: "go" | "nogo") => {
+    if (goDecision === decision) {
+      setGoDecision(null);
+      setHeaderFill({ color: decision, direction: "out", key: Date.now() });
+      if (goNogoKey) {
+        removeItem(goNogoKey);
+      }
+      updateGoNogo(null);
+      return;
+    }
+
+    setGoDecision(decision);
+    setHeaderFill({ color: decision, direction: "in", key: Date.now() });
+    if (goNogoKey) {
+      setItem(goNogoKey, decision);
+    }
+    updateGoNogo(decision);
   };
 
   return (
     <div className="h-full flex flex-col">
-      <PageHeader title={"Projet " + (data?.projectName ?? "") + " - IDEATION"} description={config?.subtitles.overview}/>
+      <div className="relative overflow-hidden flex items-center justify-between gap-4 px-4 py-3 rounded-xl mb-6">
+        {headerFill && (
+          <div
+            key={headerFill.key}
+            className="absolute inset-0 pointer-events-none"
+          >
+            <span
+              className={`absolute left-1/2 top-1/2 h-16 w-16 rounded-full ${
+                headerFill.color === "go" ? "bg-green-200" : "bg-red-200"
+              } ${
+                headerFill.direction === "in"
+                  ? "animate-[circle-fill_700ms_ease-out_forwards]"
+                  : "animate-[circle-unfill_700ms_ease-in_forwards]"
+              }`}
+              onAnimationEnd={() => {
+                if (headerFill.direction === "out") {
+                  setHeaderFill(null);
+                }
+              }}
+            />
+          </div>
+        )}
+        <div className="relative z-10 flex-1">
+          <PageHeader
+            title={"Projet " + (data?.projectName ?? "") + " - IDEATION"}
+            description={config?.subtitles.overview}
+          />
+        </div>
+        {isOpportunitySelected && (
+          <div className="relative z-10 flex items-center gap-4">
+            <Button
+              className={`h-14 px-10 text-lg font-semibold bg-green-600 hover:bg-green-700 text-white transition-opacity duration-200 ${
+                goDecision === "nogo" ? "opacity-0 pointer-events-none" : "opacity-100"
+              }`}
+              onClick={() => handleDecisionClick("go")}
+            >
+              GO
+            </Button>
+            <Button
+              className={`h-14 px-10 text-lg font-semibold bg-red-600 hover:bg-red-700 text-white transition-opacity duration-200 ${
+                goDecision === "go" ? "opacity-0 pointer-events-none" : "opacity-100"
+              }`}
+              onClick={() => handleDecisionClick("nogo")}
+            >
+              NOGO
+            </Button>
+          </div>
+        )}
+      </div>
       <section className="flex flex-1 gap-4">
         {/* Colonne de gauche avec les Cards */}
         <div className="flex flex-col gap-4 w-[320px] min-w-[320px]">
-          <Card
-            color="#96776E"
-            title="Synthèse des projets"
-            max={questions.length}
-            progress={progress}
-            buttonLabel="voir toutes les questions"
-            onButtonClick={modalQuestions.openModal}
-          />
+          {visibleCategories.map((category, index) => {
+            const total = questions.filter(
+              (q) => getQuestionCategoryLabel(q) === category.label
+            ).length;
+            const completed = nodesState.filter((n) => {
+              const nodeQuestion = n.data as Question;
+              const nodeCategory = getQuestionCategoryLabel(nodeQuestion);
+              return (
+                nodeCategory === category.label &&
+                (n.data?.status === "answered" || n.data?.status === "skipped")
+              );
+            }).length;
+
+            return (
+              <Card
+                key={category.questionCategoryId}
+                color={categoryColors[index % categoryColors.length]}
+                title={category.label}
+                max={total}
+                progress={completed}
+                buttonLabel="voir les questions"
+                className={
+                  selectedCategory === category.label
+                    ? "ring-2 ring-dark shadow-700base"
+                    : ""
+                }
+                onButtonClick={() => {
+                  if (selectedCategory === category.label) {
+                    modalQuestions.openModal();
+                    return;
+                  }
+                  setSelectedCategory(category.label);
+                }}
+              />
+            );
+          })}
           <Card
             color="#4CAF50"
             title="Analyse SWOT"
@@ -129,14 +344,17 @@ export default function IdeationPage() {
 
         {/* Zone principale avec le TreeView */}
         <div className="flex rounded-xl flex-col bg-light flex-1 items-center justify-center">
-          <TreeView questions={questions} onNodesChange={setNodesState} />
+          <TreeView questions={treeQuestions} onNodesChange={setNodesState} />
         </div>
       </section>
 
-      <Modal modal={modalQuestions} title="Toutes les questions">
+      <Modal
+        modal={modalQuestions}
+        title={selectedCategory ? `Questions - ${selectedCategory}` : "Toutes les questions"}
+      >
         <div className="flex flex-col gap-3 p-4">
-          {questions.length > 0 ? (
-            questions.slice(0).map((q: Question) => (
+          {filteredQuestions.length > 0 ? (
+            filteredQuestions.slice(0).map((q: Question) => (
               <div
                 key={q.questionId}
                 className="p-3 border w-90 rounded-lg flex justify-between"
@@ -148,7 +366,7 @@ export default function IdeationPage() {
               </div>
             ))
           ) : (
-            <p>Aucune question pour ce projet.</p>
+            <p>Aucune question pour cette categorie.</p>
           )}
         </div>
       </Modal>

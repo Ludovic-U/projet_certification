@@ -27,6 +27,28 @@
   scrollbar-color: rgba(39, 39, 39, 0.6) transparent;
 }
 
+@keyframes circle-fill {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(30);
+    opacity: 1;
+  }
+}
+
+@keyframes circle-unfill {
+  0% {
+    transform: translate(-50%, -50%) scale(30);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.9;
+  }
+}
+
 @theme {
 
 /* TYPOGRAPHIE */

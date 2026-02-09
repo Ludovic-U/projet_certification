@@ -25,9 +25,14 @@ import { useParams } from "next/navigation";
 interface TreeViewProps {
   questions: Question[];
   onNodesChange?: (nodes: Node[]) => void;
+  revealByResponses?: boolean;
 }
 
-export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
+export default function TreeView({
+  questions,
+  onNodesChange,
+  revealByResponses = true,
+}: TreeViewProps) {
   const params = useParams();
   // Access dynamic route params
   const { projectId } = params;
@@ -58,10 +63,13 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
         setProjectResponses([]);
       }
     }
-    if (projectId) {
+    if (revealByResponses && projectId) {
       fetchResponses();
     }
-  }, [projectId]);
+    if (!revealByResponses) {
+      setProjectResponses([]);
+    }
+  }, [projectId, revealByResponses]);
   
   // Génération automatique du layout avec D3
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
@@ -90,8 +98,16 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
   // Update nodes with response status and visibility
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
+
+  useEffect(() => {
+    setEdges(initialEdges);
+  }, [initialEdges]);
   
   useEffect(() => {
+    if (!revealByResponses) {
+      setNodes(initialNodes.map((node) => ({ ...node, hidden: false })));
+      return;
+    }
     if (initialNodes.length === 0 || projectResponses.length === 0) {
       setNodes(initialNodes);
       return;
@@ -132,7 +148,7 @@ export default function TreeView({ questions, onNodesChange }: TreeViewProps) {
     
     console.log("Nodes mis à jour avec réponses:", updatedNodes);
     setNodes(updatedNodes);
-  }, [initialNodes, projectResponses]);
+  }, [initialNodes, projectResponses, revealByResponses]);
 
   // Notifier le parent quand les nodes changent
   useEffect(() => {

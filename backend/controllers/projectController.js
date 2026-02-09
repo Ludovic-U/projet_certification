@@ -11,6 +11,7 @@ const {
   ProjectsByClientId,
   updateProjectSwot,
   getProjectSwot,
+  updateProjectGoNogo,
 } = require("../services/projectService");
 const { validateId } = require("../middlewares/validateId");
 
@@ -243,6 +244,38 @@ module.exports.getProjectSwotGet = async (req, res) => {
     res.status(200).json(project);
   } catch (error) {
     console.error("Error fetching project SWOT:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Update go/nogo decision for a project
+ * Expects projectId in req.params and goNogo in req.body
+ * goNogo can be "go", "nogo", or null
+ */
+module.exports.updateProjectGoNogoPost = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+
+  const rawValue = req.body.goNogo;
+  const normalized =
+    typeof rawValue === "string" ? rawValue.trim().toLowerCase() : null;
+  const goNogo = normalized === "" ? null : normalized;
+
+  if (goNogo !== null && goNogo !== "go" && goNogo !== "nogo") {
+    return res
+      .status(400)
+      .json({ error: "goNogo must be 'go', 'nogo', or null" });
+  }
+
+  try {
+    const updatedProject = await updateProjectGoNogo(projectId, goNogo);
+    res.status(200).json(updatedProject);
+  } catch (error) {
+    console.error("Error updating project go/nogo:", error);
     if (error.message === "Project not found") {
       return res.status(404).json({ error: "Project not found" });
     }

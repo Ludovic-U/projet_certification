@@ -206,7 +206,7 @@ export default function QuestionsPage() {
       <section className="w-full bg-white px-6 py-4 mb-6 rounded-lg border border-gray-200">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">Arbre des questions</h3>
         <div className="h-125 border border-gray-300 rounded-lg">
-          <TreeView questions={treeQuestions} /> 
+          <TreeView questions={treeQuestions} revealByResponses={false} /> 
         </div>
       </section>
 
