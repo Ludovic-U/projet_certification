@@ -5,128 +5,114 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-} 
-
-// la config de l'app est un fichier json ..\backend\config\app-config.json
+}
 
 model User {
-  userId    Int      @id @default(autoincrement())
-  username  String   @unique
-  firstname String
-  lastname  String
-  password  String?
-  email     String   @unique
-  createdAt DateTime @default(now())
-
-  userSessions UserSession[]
-
-  roles               UserRole[] // Existing relation
-  taskAssignments     TaskAssignment[] // Existing relation
-  clientUserRoles     ClientUserRole[] // Existing relation
-  projects            Project[]        @relation("ProjectManager") // Existing relation
-  subActionsPiloteGrt SubAction[]      @relation("PiloteGrt") // Fixed relation
+  userId              Int              @id @default(autoincrement())
+  username            String           @unique
+  firstname           String
+  lastname            String
+  password            String?
+  email               String           @unique
+  createdAt           DateTime         @default(now())
+  clientUserRoles     ClientUserRole[]
+  projects            Project[]        @relation("ProjectManager")
+  subActionsPiloteGrt SubAction[]      @relation("PiloteGrt")
+  taskAssignments     TaskAssignment[]
+  assigneeDetails     TaskAssigneeDetail[]
+  roles               UserRole[]
+  userSessions        UserSession[]
   todos               Todo[]           @relation("TodoAssignments")
 }
 
 model UserSession {
   sessionId Int      @id @default(autoincrement())
   userId    Int
-  tokenHash String // Stocke le hash du token JWT
+  tokenHash String
   createdAt DateTime @default(now())
   expiresAt DateTime
   ip        String?
   userAgent String?
-
-  user User @relation(fields: [userId], references: [userId])
+  user      User     @relation(fields: [userId], references: [userId])
 
   @@index([userId])
 }
 
 model Client {
-  clientId        Int              @id @default(autoincrement())
-  clientName      String           @unique
-  description     String?
-  secteur         String?
-  statusJuridique String?
-  createdAt       DateTime         @default(now())
-  projects        Project[]
-  userRoles       ClientUserRole[]
+  clientId    Int              @id @default(autoincrement())
+  clientName  String           @unique
+  clientType  String
+  description String?
+  createdAt   DateTime         @default(now())
+  userRoles   ClientUserRole[]
+  projects    Project[]
 }
 
 model ClientUserRole {
   clientId  Int
   userId    Int
-  isManager Boolean @default(false) //TODO: à changer
+  isManager Boolean @default(false)
   position  String?
+  client    Client  @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  client Client @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@id([clientId, userId]) // Composite primary key
+  @@id([clientId, userId])
 }
 
 model Role {
-  roleId   Int     @id @default(autoincrement())
-  roleName String  @unique
-  roleDesc String?
-
-  userRoles       UserRole[]
+  roleId          Int              @id @default(autoincrement())
+  roleName        String           @unique
+  roleDesc        String?
   rolePermissions RolePermission[]
+  userRoles       UserRole[]
 }
 
 model UserRole {
   userId Int
   roleId Int
+  role   Role @relation(fields: [roleId], references: [roleId])
+  user   User @relation(fields: [userId], references: [userId])
 
-  user User @relation(fields: [userId], references: [userId])
-  role Role @relation(fields: [roleId], references: [roleId])
-
-  @@id([userId, roleId]) // Composite primary key
+  @@id([userId, roleId])
 }
 
 model Permission {
-  permId   Int     @id @default(autoincrement())
-  permName String  @unique
-  permDesc String?
-
+  permId          Int              @id @default(autoincrement())
+  permName        String           @unique
+  permDesc        String?
   rolePermissions RolePermission[]
 }
 
 model RolePermission {
-  roleId Int
-  permId Int
-
-  role       Role       @relation(fields: [roleId], references: [roleId])
+  roleId     Int
+  permId     Int
   permission Permission @relation(fields: [permId], references: [permId])
+  role       Role       @relation(fields: [roleId], references: [roleId])
 
-  @@id([roleId, permId]) // Composite primary key
+  @@id([roleId, permId])
 }
 
 model Project {
-  projectId      Int       @id @default(autoincrement())
-  projectName    String    @unique
+  projectId      Int        @id @default(autoincrement())
+  projectName    String     @unique
   startDate      DateTime?
   endDate        DateTime?
   projectManager Int
   projectStage   String?
   projectStatus  String?
   projectDesc    String?
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime   @default(now())
   clientId       Int
   goNogo         String?
-  SWOT_strength     String?
-  SWOT_weakness     String?
-  SWOT_opportunity  String?
-  SWOT_threat       String?
-
-  client  Client   @relation(fields: [clientId], references: [clientId])
-  manager User     @relation("ProjectManager", fields: [projectManager], references: [userId])
-  actions Action[]
-
-  types           Type[]            @relation("ProjectType")
-  questions       Question[]        @relation("ProjectQuestion")
-  responses       Response[]
-  FinanceurProjet FinanceurProjet[]
+  actions        Action[]
+  versions      Version[]
+  client         Client     @relation(fields: [clientId], references: [clientId])
+  manager        User       @relation("ProjectManager", fields: [projectManager], references: [userId])
+  responses      Response[]
+  questions      Question[] @relation("ProjectQuestion")
+  types          Type[]     @relation("ProjectType")
+  tasks          Task[]
+  FinanceurProjet     FinanceurProjet[]
   todos           Todo[]
 }
 
@@ -144,58 +130,55 @@ model Todo {
 }
 
 model Financeur {
-  financeurId     Int               @id @default(autoincrement())
-  FinanceurName   String            @unique
-  FinanceurProjet FinanceurProjet[]
+  financeurId      Int              @id @default(autoincrement())
+  FinanceurName    String           @unique
+  FinanceurProjet  FinanceurProjet[]
 }
 
-// The FinanceurProjet model serves as a join table to associate projects with financeurs and specify the percentage of funding provided by each financeur.
 model FinanceurProjet {
-  pourcentage Int
-  montant     Int
-  projectId   Int
-  financeurId Int
-
-  project   Project   @relation(fields: [projectId], references: [projectId])
-  financeur Financeur @relation(fields: [financeurId], references: [financeurId])
-
-  @@id([projectId, financeurId]) // Composite primary key  
+  projectId    Int
+  financeurId  Int
+  pourcentage  Int
+  montant      Decimal?
+  
+  project      Project   @relation(fields: [projectId], references: [projectId])
+  financeur    Financeur @relation(fields: [financeurId], references: [financeurId])
+  
+  @@id([projectId, financeurId])
 }
 
 model Action {
-  actionId   Int      @id @default(autoincrement())
+  actionId   Int         @id @default(autoincrement())
   actionName String
   actionObj  String?
   projectId  Int
   startDate  DateTime
-
   project    Project     @relation(fields: [projectId], references: [projectId])
   subActions SubAction[]
 }
 
 model SubAction {
-  subActionId Int      @id @default(autoincrement())
-  actionId    Int
-  description String?
-  piloteGrtId Int?
-  startDate   DateTime
-  endDate     DateTime
-
-  action       Action        @relation(fields: [actionId], references: [actionId])
-  piloteGrt    User?         @relation("PiloteGrt", fields: [piloteGrtId], references: [userId]) // Fixed relation
-  deliverables Deliverable[]
+  subActionId  Int           @id @default(autoincrement())
+  actionId     Int
+  description  String?
+  piloteGrtId  Int?
+  startDate    DateTime
+  endDate      DateTime
   budgets      Budget[]
+  deliverables Deliverable[]
+  action       Action        @relation(fields: [actionId], references: [actionId])
+  piloteGrt    User?         @relation("PiloteGrt", fields: [piloteGrtId], references: [userId])
   tasks        Task[]
 }
 
 model Deliverable {
-  deliverableId Int      @id @default(autoincrement())
+  deliverableId Int       @id @default(autoincrement())
   subActionId   Int
   file          String
   startDate     DateTime
   endDate       DateTime
-
-  subAction SubAction @relation(fields: [subActionId], references: [subActionId])
+  subAction     SubAction @relation(fields: [subActionId], references: [subActionId])
+  tasks         Task[]    @relation("TaskDeliverables")
 }
 
 model Budget {
@@ -207,18 +190,42 @@ model Budget {
   unit           String?
   avgUnitCostTtc Decimal?
   total          Decimal?
-
-  subAction SubAction @relation(fields: [subActionId], references: [subActionId])
+  subAction      SubAction      @relation(fields: [subActionId], references: [subActionId])
 }
 
 model Task {
   taskId      Int     @id @default(autoincrement())
-  subActionId Int     @map("sub_action_id")
+  subActionId Int?    @map("sub_action_id")
+  projectId   Int?    @map("project_id")
+  versionId   Int?    @map("version_id")
   name        String
   description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  progress    Int      @default(0)
+  parentId    Int?
+  type        String   @default("task") // 'task', 'milestone', 'project'
+  details     String?
+  notes       String?
+  files       String[] // JSON array
+  goal        String?
 
-  subAction       SubAction        @relation(fields: [subActionId], references: [subActionId])
+  subAction       SubAction?        @relation(fields: [subActionId], references: [subActionId], onDelete: SetNull)
+  project         Project?          @relation(fields: [projectId], references: [projectId])
+  version         Version?          @relation(fields: [versionId], references: [versionId], onDelete: SetNull)
   taskAssignments TaskAssignment[]
+  parent          Task?             @relation("TaskHierarchy", fields: [parentId], references: [taskId])
+  children        Task[]            @relation("TaskHierarchy")
+  linksSource     TaskLink[]        @relation("TaskSource")
+  linksTarget     TaskLink[]        @relation("TaskTarget")
+  expenses        TaskExpense[]
+  assigneeDetails TaskAssigneeDetail[]
+  deliverables    TaskDeliverableStatus[]
+  tasks         Deliverable[] @relation("TaskDeliverables")
+
+  @@index([projectId])
+  @@index([versionId])
+  @@index([parentId])
 }
 
 model TaskAssignment {
@@ -231,23 +238,90 @@ model TaskAssignment {
   @@id([userId, taskId]) // Composite primary key
 }
 
-enum BudgetCategory {
-  MOYENS_HUMAINS_INTERNES
-  AMENAGEMENTS_MOBILIER
-  EQUIPEMENTS_PEDAGOGIQUES
-  PRESTATIONS
-  COMMUNICATION_EVENEMENTIEL
+// Task Link model for Gantt chart dependencies
+model TaskLink {
+  linkId    Int     @id @default(autoincrement())
+  source    Int
+  target    Int
+  type      Int     @default(0)
+  versionId Int?
+
+  sourceTask Task    @relation("TaskSource", fields: [source], references: [taskId])
+  targetTask Task    @relation("TaskTarget", fields: [target], references: [taskId])
+  version    Version? @relation(fields: [versionId], references: [versionId], onDelete: SetNull)
+
+  @@index([source])
+  @@index([target])
+  @@index([versionId])
 }
 
-// ==========================
-// Project Type Models
-// ==========================
-model Type {
-  typeId Int    @id @default(autoincrement())
-  label  String
 
-  questions Question[] @relation("TypeQuestion")
+// Task Expense model for tracking task expenses
+model TaskExpense {
+  expenseId Int      @id @default(autoincrement())
+  taskId    Int
+  category  String
+  amount    Decimal
+  date      DateTime
+  description String?
+  vendor    String?
+
+  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// Task Assignee Detail model for tracking detailed assignee info
+model TaskAssigneeDetail {
+  id          Int    @id @default(autoincrement())
+  taskId      Int
+  userId      Int
+  role        String @default("member") // lead, member, reviewer, etc.
+  allocation  Int    @default(100) // percentage allocation
+
+  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [userId])
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+// Task Deliverable Status model
+model TaskDeliverableStatus {
+  id          Int      @id @default(autoincrement())
+  taskId      Int
+  name        String
+  status      String   @default("pending")
+  completedAt DateTime?
+  notes       String?
+
+  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// Version model for Gantt diagram versions
+model Version {
+  versionId   Int        @id @default(autoincrement())
+  projectId   Int        @map("project_id")
+  name        String
+  description String?
+  isActive    Boolean    @default(false) @map("is_active")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  project     Project    @relation(fields: [projectId], references: [projectId])
+  tasks       Task[]
+  links       TaskLink[]
+
+  @@index([projectId])
+}
+
+model Type {
+  typeId    Int        @id @default(autoincrement())
+  label     String
   projects  Project[]  @relation("ProjectType")
+  questions Question[] @relation("TypeQuestion")
 }
 
 // ==========================
@@ -261,9 +335,8 @@ model QuestionCategory {
 }
 
 model Question {
-  questionId               Int      @id @default(autoincrement())
+  questionId               Int        @id @default(autoincrement())
   label                    String
-  keyword                  String   @default("Mot clé")
   category                 String
   numberOfSelectionableOpt Int?
   isRelevant               Boolean?
@@ -284,29 +357,31 @@ model Question {
 }
 
 model Option {
-  optionId   Int    @id @default(autoincrement())
+  optionId   Int        @id @default(autoincrement())
   label      String
   questionId Int
-
-  question Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
-
-  responses Response[]
+  question   Question   @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
+  responses  Response[]
 }
 
 model Response {
-  responseId       Int     @id @default(autoincrement())
+  responseId       Int        @id @default(autoincrement())
   label            String?
-  keyword          String?
   projectId        Int
   questionId       Int
   optionId         Int?
   responseIdParent Int?
+  option           Option?    @relation(fields: [optionId], references: [optionId])
+  project          Project    @relation(fields: [projectId], references: [projectId])
+  question         Question   @relation(fields: [questionId], references: [questionId])
+  parent           Response?  @relation("ResponseHierarchy", fields: [responseIdParent], references: [responseId])
+  children         Response[] @relation("ResponseHierarchy")
+}
 
-  project  Project  @relation(fields: [projectId], references: [projectId])
-  question Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
-  option   Option?  @relation(fields: [optionId], references: [optionId])
-
-  // Self relations
-  parent   Response?  @relation("ResponseHierarchy", fields: [responseIdParent], references: [responseId])
-  children Response[] @relation("ResponseHierarchy")
+enum BudgetCategory {
+  MOYENS_HUMAINS_INTERNES
+  AMENAGEMENTS_MOBILIER
+  EQUIPEMENTS_PEDAGOGIQUES
+  PRESTATIONS
+  COMMUNICATION_EVENEMENTIEL
 }

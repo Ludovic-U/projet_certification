@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api_backend from "@/api/axiosInstance";
 
 export default function GenerateGanttPage() {
@@ -8,7 +8,88 @@ export default function GenerateGanttPage() {
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
   // const [inputMode, setInputMode] = useState("both"); // 'text', 'file', or 'both'
+
+  // Fetch projects on mount
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  async function fetchProjects() {
+    try {
+      // First get current user info
+      const meRes = await api_backend.get('/me');
+      console.log('User data:', meRes.data);
+      const clientId = meRes.data.user?.clientId;
+      console.log('Client ID:', clientId);
+      
+      if (!clientId) {
+        console.error('No clientId found in response');
+        return;
+      }
+      
+      // Then get projects for this client (following existing pattern)
+      const res = await api_backend.get(`/project/getByClientId/${clientId}`);
+      console.log('Projects response:', res.data);
+      setProjects(res.data || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error.response?.data || error.message);
+      if (error.response?.data?.error) {
+        alert(`Erreur: ${error.response.data.error}`);
+      }
+    }
+  }
+
+  async function downloadJSON() {
+    if (!result) {
+      alert("Aucun résultat à télécharger");
+      return;
+    }
+    
+    const dataStr = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mistral_gantt_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function importToProject() {
+    if (!result) {
+      alert("Aucun résultat à importer");
+      return;
+    }
+    
+    if (!selectedProjectId) {
+      setShowProjectSelector(true);
+      return;
+    }
+    
+    await doImport(selectedProjectId);
+  }
+
+  async function doImport(projectId) {
+    try {
+      const dataToImport = typeof result === 'string' ? JSON.parse(result) : result;
+      console.log('Importing to project:', projectId);
+      console.log('Data to import:', JSON.stringify(dataToImport, null, 2));
+      
+      const res = await api_backend.post(`/gantt/import/${projectId}`, dataToImport);
+      console.log('Import response:', res.data);
+      alert(`Import réussi ! ${res.data.count || 'Les tâches ont été importées.'}`);
+      setShowProjectSelector(false);
+    } catch (error) {
+      console.error('Error importing:', error.response?.data || error.message);
+      alert(`Erreur lors de l'import: ${error.response?.data?.error || error.message}`);
+    }
+  }
 
   async function generateGanttviaMistral(e) {
     e.preventDefault();
@@ -119,6 +200,51 @@ export default function GenerateGanttPage() {
         {result && (
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Résultat</h2>
+            
+            {/* Action Buttons */}
+            <div className="flex gap-4 mb-4">
+              <button 
+                onClick={downloadJSON}
+                className="flex-1 py-3 px-6 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-all duration-200 shadow-lg"
+              >
+                📥 Télécharger JSON
+              </button>
+              <button 
+                onClick={importToProject}
+                className="flex-1 py-3 px-6 rounded-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-lg"
+              >
+                📤 Importer vers projet
+              </button>
+            </div>
+            
+            {/* Project Selector Modal */}
+            {showProjectSelector && (
+              <div className="bg-gray-50 rounded-lg p-4 mb-4 border-2 border-indigo-200">
+                <h3 className="font-semibold text-gray-800 mb-3">Sélectionnez un projet</h3>
+                <select 
+                  value={selectedProjectId}
+                  onChange={(e) => {
+                    setSelectedProjectId(e.target.value);
+                    if (e.target.value) doImport(e.target.value);
+                  }}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                >
+                  <option value="">-- Choisir un projet --</option>
+                  {projects.map(project => (
+                    <option key={project.projectId || project.id} value={project.projectId || project.id}>
+                      {project.projectName}
+                    </option>
+                  ))}
+                </select>
+                <button 
+                  onClick={() => setShowProjectSelector(false)}
+                  className="mt-3 text-gray-600 hover:text-gray-800 underline"
+                >
+                  Annuler
+                </button>
+              </div>
+            )}
+            
             <div className="bg-gray-50 rounded-lg p-4 overflow-auto max-h-96">
               <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap wrap-break-words">
                 {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}

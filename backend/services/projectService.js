@@ -48,6 +48,81 @@ module.exports.getAllProjects = async () => {
   // never used
 };
 
+module.exports.getProjectsByUserId = async (userId) => {
+  try {
+    const validUserId = Number(userId);
+    if (!Number.isInteger(validUserId) || validUserId <= 0) {
+      throw new Error("Invalid userId: " + userId);
+    }
+
+    console.log('Fetching projects for userId:', validUserId);
+
+    // Get projects where user is:
+    // 1. Manager of the project
+    // 2. Assigned to tasks in the project
+    // 3. Manager of the client's projects (Project.client is a single relation)
+    const projects = await prisma.project.findMany({
+      where: {
+        OR: [
+          { projectManager: validUserId },
+          {
+            tasks: {
+              some: {
+                taskAssignments: {
+                  some: { userId: validUserId }
+                }
+              }
+            }
+          },
+          {
+            client: {
+              isManager: true,
+              userId: validUserId
+            }
+          }
+        ]
+      },
+      include: {
+        client: {
+          select: {
+            clientId: true,
+            clientName: true,
+          },
+        },
+        manager: {
+          select: {
+            userId: true,
+            firstname: true,
+            lastname: true,
+          },
+        },
+      },
+      orderBy: {
+        projectName: 'asc'
+      }
+    });
+
+    console.log('Found projects:', projects.length);
+
+    // Format the response
+    const formattedProjects = projects.map((project) => ({
+      projectId: project.projectId,
+      projectName: project.projectName,
+      clientId: project.client.clientId,
+      clientName: project.client.clientName,
+      managerName: project.manager 
+        ? `${project.manager.firstname} ${project.manager.lastname}` 
+        : "N/A",
+    }));
+
+    return formattedProjects;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des projets par utilisateur :", error.message);
+    console.error(error.stack);
+    throw error;
+  }
+};
+
 module.exports.updateProject = async (projectId, data) => {
   try {
     const validProjectId = Number(projectId);

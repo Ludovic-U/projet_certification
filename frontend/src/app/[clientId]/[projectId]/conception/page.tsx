@@ -1,130 +1,419 @@
 "use client";
 
-import { PageHeader } from "@/components/ui";
-import { useConfig } from "@/context/ConfigContext";
-import { useMemo, useState } from "react";
-import { Gantt, Willow } from "@svar-ui/react-gantt";
-import "@svar-ui/react-gantt/all.css";
+/**
+ * Gantt Chart Component for Project Conception
+ * This component provides a full-featured Gantt chart for managing project tasks,
+ * including drag-and-drop, resizing, progress tracking, and timeline visualization.
+ */
 
-export default function ConceptionPage() {
-     const { config } = useConfig();
-     const [api, setApi] = useState<any>();
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import { PageHeader } from '@/components/ui';
+import { useGanttState } from './hooks/useGanttState';
+import { useGanttHandlers } from './hooks/useGanttHandlers';
+import { useGanttExportImport } from './hooks/useGanttExportImport';
+import { GanttToolbar } from './components/GanttToolbar';
+import { GanttTaskList } from './components/GanttTaskList';
+import { GanttTimeline } from './components/GanttTimeline';
+import { GanttTaskEditor } from './components/GanttTaskEditor';
+import { GanttTaskSummary } from './components/GanttTaskSummary';
+import { GanttTooltip } from './components/GanttTooltip';
+import { GanttContextMenu } from './components/GanttContextMenu';
+import { generateColumns, getBaseStart } from './utils/timelineUtils';
+import { startOfDay } from './utils/dateUtils';
+import { DAY_MS } from './constants';
+import { toUTC } from './utils/dateUtils';
+import { MIN_PX_PER_DAY, MAX_PX_PER_DAY } from './constants';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
-     // Données pour le diagramme de Gantt
-     const data = useMemo(() => {
-         const tasks = [
-             {
-                 id: 1,
-                 start: new Date(2025, 9, 19),
-                 end: new Date(2025, 9, 25),
-                 text: "Planification & Préparation",
-                 progress: 100,
-                 parent: 0,
-                 type: "summary",
-                 open: true,
-                 details: "",
-             },
-             {
-                 id: 11,
-                 start: new Date(2025, 9, 19),
-                 end: new Date(2025, 9, 20),
-                 text: "Définir la date",
-                 progress: 100,
-                 parent: 1,
-                 type: "task",
-                 details: "Finaliser la date et l'heure du projet",
-                 to: 1,
-             },
-             {
-                 id: 12,
-                 start: new Date(2025, 9, 20),
-                 end: new Date(2025, 9, 21),
-                 text: "Créer la liste des invités",
-                 progress: 100,
-                 parent: 1,
-                 type: "task",
-                 details: "Établir la liste complète des participants",
-                 to: 2,
-             },
-             {
-                 id: 13,
-                 start: new Date(2025, 9, 21),
-                 end: new Date(2025, 9, 25),
-                 text: "Envoyer les invitations",
-                 progress: 80,
-                 parent: 1,
-                 type: "task",
-                 details: "Envoyer les invitations à tous les participants",
-                 to: 1,
-             },
-             {
-                 id: 2,
-                 start: new Date(2025, 9, 23),
-                 end: new Date(2025, 10, 3),
-                 text: "Décoration",
-                 progress: 0,
-                 parent: 0,
-                 type: "summary",
-                 open: true,
-                 details: "",
-             },
-             {
-                 id: 21,
-                 start: new Date(2025, 9, 23),
-                 end: new Date(2025, 9, 28),
-                 text: "Acheter les décorations",
-                 progress: 50,
-                 parent: 2,
-                 type: "task",
-                 details: "Acheter tous les éléments de décoration nécessaires",
-                 to: 2,
-             },
-             {
-                 id: 22,
-                 start: new Date(2025, 9, 28),
-                 end: new Date(2025, 10, 3),
-                 text: "Installer les décorations",
-                 progress: 0,
-                 parent: 2,
-                 type: "task",
-                 details: "Mettre en place toutes les décorations",
-                 to: 1,
-             },
-         ];
+import { useParams } from 'next/navigation';
+import { fetchVersions, fetchGanttData, createVersion, deleteVersion as deleteVersionApi, activateVersion as activateVersionApi, Version } from '@/api/ganttApi';
 
-         const links = [
-             { id: 1, source: 11, target: 13, type: "e2s" },
-             { id: 2, source: 12, target: 13, type: "e2s" },
-             { id: 3, source: 13, target: 21, type: "e2s" },
-             { id: 4, source: 21, target: 22, type: "e2s" },
-         ];
+const GanttChart = () => {
+  const params = useParams();
+  const projectId = params?.projectId ? parseInt(params.projectId as string, 10) : null;
+  
+  // Version state
+  const [versions, setVersions] = useState<Version[]>([]);
+  const [currentVersion, setCurrentVersion] = useState<Version | null>(null);
+  const [versionLoading, setVersionLoading] = useState(false);
 
-         const scales = [
-             { unit: "month", step: 1, format: "MMMM yyyy" },
-             { unit: "day", step: 1, format: "d" },
-         ];
+  // Fetch versions on mount
+  useEffect(() => {
+    if (projectId) {
+      loadVersions();
+    }
+  }, [projectId]);
 
-         const users = [
-             { id: 1, label: "David" },
-             { id: 2, label: "Olivia" },
-         ];
+  const loadVersions = async () => {
+    if (!projectId) return;
+    setVersionLoading(true);
+    try {
+      const data = await fetchVersions(projectId);
+      setVersions(data);
+      // Set first version as current if available
+      if (data.length > 0 && !currentVersion) {
+        const activeVersion = data.find(v => v.isActive);
+        setCurrentVersion(activeVersion || data[0]);
+      }
+    } catch (error) {
+      console.error('Error loading versions:', error);
+    } finally {
+      setVersionLoading(false);
+    }
+  };
 
-         return { tasks, links, scales, users };
-     }, []);
+  const handleCreateVersion = async (name: string, description?: string) => {
+    if (!projectId) return;
+    try {
+      await createVersion(projectId, { name, description });
+      await loadVersions();
+    } catch (error) {
+      console.error('Error creating version:', error);
+    }
+  };
 
-     return (
-         <div className="h-full flex flex-col">
-             <PageHeader title="Titre" description={config?.subtitles.conception} />
-             <section className="flex-1 p-4">
-                 <Willow>
-                     <Gantt
-                         init={setApi}
-                         tasks={data.tasks}
-                         links={data.links}
-                         scales={data.scales}
-                     />
-                 </Willow>
-             </section>
-         </div>
-     );
-}
+  const handleDeleteVersion = async (versionId: number) => {
+    if (!projectId) return;
+    try {
+      await deleteVersionApi(projectId, versionId);
+      await loadVersions();
+    } catch (error) {
+      console.error('Error deleting version:', error);
+    }
+  };
+
+  const handleActivateVersion = async (versionId: number) => {
+    if (!projectId) return;
+    try {
+      await activateVersionApi(projectId, versionId);
+      await loadVersions();
+    } catch (error) {
+      console.error('Error activating version:', error);
+    }
+  };
+  
+  // Re-fetch Gantt data when currentVersion changes
+  useEffect(() => {
+    if (projectId && currentVersion !== undefined) {
+      ganttState.loadData(currentVersion?.versionId);
+      ganttState.setVersionId(currentVersion?.versionId || null);
+    }
+  }, [projectId, currentVersion]);
+  
+  // Use custom hooks for state management
+  const ganttState = useGanttState();
+  
+  // Use custom hook for event handlers
+  const handlers = useGanttHandlers({
+    tasks: ganttState.tasks,
+    links: ganttState.links,
+    setTasks: ganttState.setTasks,
+    setDraggingTask: ganttState.setDraggingTask,
+    setResizingTask: ganttState.setResizingTask,
+    setDragOffset: ganttState.setDragOffset,
+    setWasDragged: ganttState.setWasDragged,
+    setDraggingProgress: ganttState.setDraggingProgress,
+    setIsDraggingAny: ganttState.setIsDraggingAny,
+    setDragStartPositions: ganttState.setDragStartPositions,
+    draggingIdsRef: ganttState.draggingIdsRef,
+    dragStartMapRef: ganttState.dragStartMapRef,
+    draggingActiveRef: ganttState.draggingActiveRef,
+    rafId: ganttState.rafId,
+    pendingDeltaPx: ganttState.pendingDeltaPx,
+    pxPerDay: ganttState.pxPerDay,
+    saveState: ganttState.saveState,
+    setHoveredTask: ganttState.setHoveredTask,
+    setTooltipPos: ganttState.setTooltipPos,
+    setContextMenu: ganttState.setContextMenu,
+    setCursorX: ganttState.setCursorX,
+    timelineRef: ganttState.timelineRef,
+    taskListRef: ganttState.taskListRef,
+    lastClientXRef: ganttState.lastClientXRef,
+    totalTimelineWidth: useMemo(() => {
+      const { columns } = generateColumns(ganttState.viewMode, getBaseStart(ganttState.viewMode, ganttState.currentDateRange), ganttState.currentDateRange, ganttState.pxPerDay);
+      return columns.reduce((s, c) => s + c.width, 0);
+    }, [ganttState.viewMode, ganttState.pxPerDay, ganttState.currentDateRange]),
+    draggingTask: ganttState.draggingTask,
+    resizingTask: ganttState.resizingTask,
+    draggingProgress: ganttState.draggingProgress,
+    dragOffset: ganttState.dragOffset,
+    dragStartPositions: ganttState.dragStartPositions,
+  });
+
+  // Use custom hook for export/import functions
+  const exportImport = useGanttExportImport({
+    tasks: ganttState.tasks,
+    links: ganttState.links,
+    setTasks: ganttState.setTasks,
+    setLinks: ganttState.setLinks,
+    saveState: ganttState.saveState,
+    data: ganttState.data,
+    projectId,
+  });
+
+  // Calculate timeline columns and groups
+  const { groups, columns } = useMemo(
+    () => generateColumns(ganttState.viewMode, getBaseStart(ganttState.viewMode, ganttState.currentDateRange), ganttState.currentDateRange, ganttState.pxPerDay),
+    [ganttState.viewMode, ganttState.pxPerDay, ganttState.currentDateRange]
+  );
+
+  // Helper functions for date conversion
+  const xFromDate = (d: Date) => ((toUTC(d) - toUTC(getBaseStart(ganttState.viewMode, ganttState.currentDateRange))) / DAY_MS) * ganttState.pxPerDay;
+  const dateFromX = (x: number) => startOfDay(new Date(toUTC(getBaseStart(ganttState.viewMode, ganttState.currentDateRange)) + (x / ganttState.pxPerDay) * DAY_MS));
+
+  const totalTimelineWidth = useMemo(() => columns.reduce((s, c) => s + c.width, 0), [columns]);
+
+  // Calculate today's position on timeline
+  const today = startOfDay(new Date());
+  const todayX = useMemo(() => {
+    const baseStart = getBaseStart(ganttState.viewMode, ganttState.currentDateRange);
+    return ((toUTC(today) - toUTC(baseStart)) / DAY_MS) * ganttState.pxPerDay;
+  }, [ganttState.viewMode, ganttState.pxPerDay, ganttState.currentDateRange]);
+
+  // Scroll to date function
+  const scrollToDate = (d: Date) => {
+    const el = ganttState.timelineRef.current;
+    if (!el) return;
+    const baseStart = getBaseStart(ganttState.viewMode, ganttState.currentDateRange);
+    const x = ((toUTC(d) - toUTC(baseStart)) / DAY_MS) * ganttState.pxPerDay;
+    el.scrollLeft = Math.max(0, x - el.clientWidth / 2);
+  };
+
+  // Zoom function
+  const zoomBy = (delta: number) => {
+    const el = ganttState.timelineRef.current;
+    const next = Math.min(MAX_PX_PER_DAY, Math.max(MIN_PX_PER_DAY, ganttState.pxPerDay + delta));
+    if (!el || next === ganttState.pxPerDay) {
+      ganttState.setPxPerDay(next);
+      return;
+    }
+    const centerX = el.scrollLeft + el.clientWidth / 2;
+    const centerDays = centerX / ganttState.pxPerDay;
+    ganttState.setPxPerDay(next);
+    // keep same center date
+    const newCenterX = centerDays * next;
+    el.scrollLeft = Math.max(0, newCenterX - el.clientWidth / 2);
+  };
+
+  return (
+    <div className="flex flex-col h-screen overflow-hidden">
+      {/* Page header */}
+      <PageHeader
+        title="Conception"
+        description="Planification et gestion des tâches du projet"
+      />
+      <div className={`flex-1 bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col overflow-hidden ${ganttState.selectedTask ? 'pr-96' : ''}`}>
+        {/* Toolbar with controls */}
+        <GanttToolbar
+          viewMode={ganttState.viewMode}
+          setViewMode={ganttState.setViewMode}
+          pxPerDay={ganttState.pxPerDay}
+          zoomBy={zoomBy}
+          scrollToDate={scrollToDate}
+          today={today}
+          addTask={ganttState.addTask}
+          undo={ganttState.undo}
+          redo={ganttState.redo}
+          historyIndex={ganttState.historyIndex}
+          historyLength={ganttState.history.length}
+          menuOpen={ganttState.menuOpen}
+          setMenuOpen={ganttState.setMenuOpen}
+          exportMenuOpen={ganttState.exportMenuOpen}
+          setExportMenuOpen={ganttState.setExportMenuOpen}
+          importMenuOpen={ganttState.importMenuOpen}
+          setImportMenuOpen={ganttState.setImportMenuOpen}
+          menuPosition={ganttState.menuPosition}
+          setMenuPosition={ganttState.setMenuPosition}
+          exportMenuPosition={ganttState.exportMenuPosition}
+          setExportMenuPosition={ganttState.setExportMenuPosition}
+          importMenuPosition={ganttState.importMenuPosition}
+          setImportMenuPosition={ganttState.setImportMenuPosition}
+          menuButtonRef={ganttState.menuButtonRef}
+          exportMenuRef={ganttState.exportMenuRef}
+          importMenuRef={ganttState.importMenuRef}
+          exportToCSV={exportImport.exportToCSV}
+          exportToExcel={exportImport.exportToExcel}
+          exportToMSProject={exportImport.exportToMSProject}
+          exportData={exportImport.exportData}
+          importFromCSV={exportImport.importFromCSV}
+          importFromExcel={exportImport.importFromExcel}
+          importData={exportImport.importData}
+          importMistralGantt={exportImport.importMistralGantt}
+          mistralModalOpen={ganttState.mistralModalOpen}
+          setMistralModalOpen={ganttState.setMistralModalOpen}
+          tasks={ganttState.tasks}
+          links={ganttState.links}
+          setTasks={ganttState.setTasks}
+          setLinks={ganttState.setLinks}
+          saveState={ganttState.saveState}
+          // Version props
+          versions={versions}
+          currentVersion={currentVersion}
+          setCurrentVersion={setCurrentVersion}
+          onCreateVersion={handleCreateVersion}
+          onDeleteVersion={handleDeleteVersion}
+          onActivateVersion={handleActivateVersion}
+          projectId={projectId || 0}
+        />
+
+        {/* Main Gantt Chart Area */}
+        <div className="flex-1 overflow-hidden" onMouseMove={handlers.handleMouseMove} onMouseUp={handlers.handleMouseUp}>
+          <div className="h-full max-w-[93vw] flex bg-slate-800 overflow-hidden relative">
+            {/* Toggle button on the edge between panels */}
+            <button
+              onClick={() => ganttState.setShowTaskList(!ganttState.showTaskList)}
+              className={`
+                absolute top-1/2 -translate-y-1/2 z-50
+                flex items-center gap-2 px-3 py-3
+                bg-slate-800 border border-slate-700
+                rounded-r-xl shadow-lg
+                transition-all duration-300 ease-out
+                hover:bg-slate-700 hover:border-slate-600 hover:shadow-xl
+                ${ganttState.showTaskList 
+                  ? 'left-[36rem] border-l-0 bg-slate-800/90 backdrop-blur-sm' 
+                  : 'left-0 border bg-slate-800/95 backdrop-blur-sm'
+                }
+              `}
+              title={ganttState.showTaskList ? 'Hide task list' : 'Show task list'}
+            >
+              <div className={`
+                flex items-center justify-center w-8 h-8 rounded-lg
+                transition-all duration-300
+                ${ganttState.showTaskList 
+                  ? 'bg-blue-500/20 text-blue-400' 
+                  : 'bg-emerald-500/20 text-emerald-400'
+                }
+              `}>
+                {ganttState.showTaskList ? (
+                  <PanelLeftClose className="w-5 h-5" />
+                ) : (
+                  <PanelLeftOpen className="w-5 h-5" />
+                )}
+              </div>
+              <span className={`
+                text-sm font-medium whitespace-nowrap
+                transition-all duration-300
+                ${ganttState.showTaskList ? 'text-slate-400' : 'text-white'}
+              `}>
+                {ganttState.showTaskList ? 'Hide' : 'Show'}
+              </span>
+              <span className="text-slate-500 text-xs">
+                {ganttState.showTaskList ? '' : 'List'}
+              </span>
+              {/* Animated indicator dot */}
+              <div className={`
+                absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full
+                ${ganttState.showTaskList ? 'bg-blue-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}
+              `} />
+            </button>
+            
+            {/* Left panel: Task list with details */}
+            {ganttState.showTaskList && (
+              <GanttTaskList
+                tasks={ganttState.tasks}
+                expandedTasks={ganttState.expandedTasks}
+                setExpandedTasks={ganttState.setExpandedTasks}
+                setSelectedTask={ganttState.setSelectedTask}
+                setEditingTask={ganttState.setEditingTask}
+                setShowEditor={ganttState.setShowEditor}
+                handleTaskContextMenu={handlers.handleTaskContextMenu}
+                deleteTask={ganttState.deleteTask}
+                wasDragged={ganttState.wasDragged}
+                setWasDragged={ganttState.setWasDragged}
+                setDraggingProgress={ganttState.setDraggingProgress}
+                taskListRef={ganttState.taskListRef}
+                handleTaskListScroll={handlers.handleTaskListScroll}
+                data={ganttState.data}
+              />
+            )}
+
+            {/* Right panel: Scrollable timeline */}
+            <GanttTimeline
+              tasks={ganttState.tasks}
+              columns={columns}
+              groups={groups}
+              totalTimelineWidth={totalTimelineWidth}
+              todayX={todayX}
+              today={today}
+              cursorX={ganttState.cursorX}
+              xFromDate={xFromDate}
+              dateFromX={dateFromX}
+              handleMouseDown={handlers.handleMouseDown}
+              handleTaskMouseEnter={handlers.handleTaskMouseEnter}
+              handleTaskMouseLeave={handlers.handleTaskMouseLeave}
+              handleTaskContextMenu={handlers.handleTaskContextMenu}
+              handleTimelineMouseMove={handlers.handleTimelineMouseMove}
+              handleTimelineMouseLeave={handlers.handleTimelineMouseLeave}
+              wasDragged={ganttState.wasDragged}
+              setWasDragged={ganttState.setWasDragged}
+              setSelectedTask={ganttState.setSelectedTask}
+              setEditingTask={ganttState.setEditingTask}
+              setShowEditor={ganttState.setShowEditor}
+              setResizingTask={ganttState.setResizingTask}
+              setDragOffset={ganttState.setDragOffset}
+              timelineRef={ganttState.timelineRef}
+              handleTimelineScroll={handlers.handleTimelineScroll}
+              handleMouseMove={handlers.handleMouseMove}
+              handleMouseUp={handlers.handleMouseUp}
+              expandedTasks={ganttState.expandedTasks}
+            />
+          </div>
+        </div>
+
+        {/* Side panel: Task details when a task is selected */}
+        <GanttTaskSummary
+          selectedTask={ganttState.selectedTask}
+          setSelectedTask={ganttState.setSelectedTask}
+          livrables={ganttState.livrables}
+          tasks={ganttState.tasks}
+          setTasks={ganttState.setTasks}
+          data={ganttState.data}
+          projectId={projectId}
+          updateTask={ganttState.updateTask}
+          updateSelectedTask={ganttState.updateSelectedTask}
+        />
+
+        {/* Tooltip on task hover */}
+        <GanttTooltip
+          hoveredTask={ganttState.hoveredTask}
+          tooltipPos={ganttState.tooltipPos}
+          tasks={ganttState.tasks}
+          data={ganttState.data}
+        />
+
+        {/* Right-click context menu */}
+        <GanttContextMenu
+          contextMenu={ganttState.contextMenu}
+          setContextMenu={ganttState.setContextMenu}
+          addChildTask={ganttState.addChildTask}
+          setEditingTask={ganttState.setEditingTask}
+          setShowEditor={ganttState.setShowEditor}
+          deleteTask={ganttState.deleteTask}
+        />
+
+        {/* Task editor modal */}
+        <GanttTaskEditor
+          showEditor={ganttState.showEditor}
+          editingTask={ganttState.editingTask}
+          setEditingTask={ganttState.setEditingTask}
+          setShowEditor={ganttState.setShowEditor}
+          editorTab={ganttState.editorTab}
+          setEditorTab={ganttState.setEditorTab}
+          livrables={ganttState.livrables}
+          showAddLivrable={ganttState.showAddLivrable}
+          setShowAddLivrable={ganttState.setShowAddLivrable}
+          newLivrableLabel={ganttState.newLivrableLabel}
+          setNewLivrableLabel={ganttState.setNewLivrableLabel}
+          newLivrableDescription={ganttState.newLivrableDescription}
+          setNewLivrableDescription={ganttState.setNewLivrableDescription}
+          handleAddLivrable={ganttState.handleAddLivrable}
+          deleteTask={ganttState.deleteTask}
+          updateTask={ganttState.updateTask}
+          data={ganttState.data}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default GanttChart;
