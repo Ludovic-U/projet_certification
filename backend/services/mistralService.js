@@ -145,6 +145,6 @@ exports.GenerateIdeationMistralAPI = async (textContent) => {
 }
 
 // Simple wrapper used by controller tests
-export async function testMistralAPI(testContent) {
-    return GenerateGanttMistralAPI(testContent)
-}
+exports.testMistralAPI = async (testContent) => {
+    return exports.GenerateGanttMistralAPI(testContent);
+};
