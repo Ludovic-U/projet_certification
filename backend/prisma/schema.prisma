@@ -41,7 +41,8 @@ model UserSession {
 model Client {
   clientId    Int              @id @default(autoincrement())
   clientName  String           @unique
-  clientType  String
+  statusJuridique String @default("SARL")
+  secteur String @default("BTP")
   description String?
   createdAt   DateTime         @default(now())
   userRoles   ClientUserRole[]
@@ -103,6 +104,9 @@ model Project {
   projectDesc    String?
   createdAt      DateTime   @default(now())
   clientId       Int
+  SWOT_opportunity String?
+  SWOT_strength String?
+  SWOT_weakness String?
   goNogo         String?
   actions        Action[]
   versions      Version[]
