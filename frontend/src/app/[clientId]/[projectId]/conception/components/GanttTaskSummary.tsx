@@ -101,22 +101,38 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
     setSelectedTask({ ...selectedTask, notes: JSON.stringify(updatedNotes) });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const fileArray = Array.from(files).map(file => ({
-        name: file.name,
-        url: URL.createObjectURL(file),
-        type: file.type,
-        size: file.size,
-      }));
-      
-      const updatedTasks = tasks.map(t => 
-        t.id === selectedTask.id 
-          ? { ...t, files: [...(t.files || []), ...fileArray.map(f => f.url)] } 
-          : t
-      );
-      setTasks(updatedTasks);
+      try {
+        // Upload each file to the server
+        const uploadedFiles: Array<{ name: string; url: string; type: string; size: number }> = [];
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const response = await uploadFile(file);
+          uploadedFiles.push({
+            name: file.name,
+            url: response.url,
+            type: file.type,
+            size: file.size,
+          });
+        }
+        
+        // Update tasks with uploaded file URLs and save to DB
+        const updatedTasks = tasks.map(t => 
+          t.id === selectedTask.id 
+            ? { ...t, files: [...(t.files || []), ...uploadedFiles.map(f => f.url)] } 
+            : t
+        );
+        setTasks(updatedTasks);
+        setSelectedTask({ ...selectedTask, files: [...(selectedTask.files || []), ...uploadedFiles.map(f => f.url)] });
+        
+        // Save task with new files to database
+        await updateSelectedTask(uploadedFiles.map(f => f.url));
+      } catch (error) {
+        console.error('Error uploading files:', error);
+        alert('Erreur lors du téléchargement des fichiers');
+      }
     }
   };
 
