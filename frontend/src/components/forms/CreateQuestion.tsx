@@ -2,7 +2,6 @@
 
 // import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon, Icons } from "@/lib/icons/icons";
 import {
   Input,
   Button,
@@ -36,12 +35,20 @@ interface QuestionCategory {
 }
 
 interface CreateQuestionFormProps {
-    onSubmit: (data: CreateQuestionInputs) => void;
-    isLoading: boolean;
-    apiError?: string;
+  onSubmit: (data: CreateQuestionInputs) => void;
+  isLoading: boolean;
+  apiError?: string;
+  initialValues?: Partial<CreateQuestionInputs>;
+  submitLabel?: string;
 }
 
-export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: CreateQuestionFormProps) {
+export default function CreateQuestionForm({
+  onSubmit,
+  isLoading,
+  apiError,
+  initialValues,
+  submitLabel,
+}: CreateQuestionFormProps) {
   // const { register, handleSubmit, formState: { errors } } = useForm<CreateQuestionInputs>();
   const [label, setLabel] = useState("");
   const [keyword, setKeyword] = useState("");
@@ -59,29 +66,7 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
   const [selectedType, setSelectedType] = useState<string[]>([]);
 
   const handleSubmit = async (data: CreateQuestionInputs) => {
-    // Get the IDs of selected types
-    const selectedIds = types
-      .filter((t) => data.typesLabels.includes(t.label))
-      .map((t) => t.typeId);
-    try {
-      await api_backend.post(`question/create`, {
-        label: data.label,
-        keyword: data.keyword,
-        category: data.category,
-        numberOfSelectionableOpt: data.options.length,
-        hasMultipleOpenResponse: data.hasMultipleOpenResponse,
-        shouldMultiply: data.shouldMultiply,
-        ...(data.questionIdParent && { questionIdParent: data.questionIdParent }),
-        ...(data.options && { options: data.options }),
-        ...(selectedIds && { types: selectedIds }),
-      })
-      .then(response => {console.log(response)});
-
-      console.log("Question created successfully");
-      console.log(data.options)
-    } catch (error) {
-      console.log(error);
-    }
+    onSubmit(data);
   };
 
   useEffect(() => {
@@ -115,6 +100,41 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
 
     fetchCategories();
   }, [category]);
+
+  useEffect(() => {
+    if (!initialValues) {
+      return;
+    }
+
+    if (typeof initialValues.label === "string") {
+      setLabel(initialValues.label);
+    }
+    if (typeof initialValues.keyword === "string") {
+      setKeyword(initialValues.keyword);
+    }
+    if (typeof initialValues.category === "string") {
+      setCategory(initialValues.category);
+    }
+    if (typeof initialValues.questionIdParent === "string") {
+      setQuestionIdParent(initialValues.questionIdParent);
+    }
+
+    setHasMultipleOpenResponse(Boolean(initialValues.hasMultipleOpenResponse));
+    setShouldMultiply(Boolean(initialValues.shouldMultiply));
+    setAllowMultiple(
+      typeof initialValues.allowMultiple === "boolean"
+        ? initialValues.allowMultiple
+        : (initialValues.options?.length ?? 0) > 0
+    );
+    setOptions(initialValues.options ?? []);
+    setSelectedType(initialValues.typesLabels ?? []);
+  }, [initialValues]);
+
+  useEffect(() => {
+    if (!allowMultiple && options.length > 0) {
+      setOptions([]);
+    }
+  }, [allowMultiple, options.length]);
 
   return (
     <>
@@ -208,8 +228,8 @@ export default function CreateQuestionForm({ onSubmit, isLoading, apiError }: Cr
           )}
         </div>
         <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Création..." : "Créer"}
-                </Button>
+          {isLoading ? "Création..." : submitLabel || "Créer"}
+        </Button>
       </form>
     </>
   );

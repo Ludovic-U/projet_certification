@@ -26,12 +26,14 @@ interface TreeViewProps {
   questions: Question[];
   onNodesChange?: (nodes: Node[]) => void;
   revealByResponses?: boolean;
+  onQuestionClick?: (question: Question, node: Node) => void;
 }
 
 export default function TreeView({
   questions,
   onNodesChange,
   revealByResponses = true,
+  onQuestionClick,
 }: TreeViewProps) {
   const params = useParams();
   // Access dynamic route params
@@ -156,8 +158,13 @@ export default function TreeView({
   }, [nodes, onNodesChange]);
 
   const handleNodeClick = async (_: any, node: Node) => {
-    setSelectedNode(node);
     const question = node.data as Question;
+    if (onQuestionClick) {
+      onQuestionClick(question, node);
+      return;
+    }
+
+    setSelectedNode(node);
     console.log("question :", question);
     console.log("questionId utilisé:", question.questionId || question.id);
     console.log("options :", question.options);

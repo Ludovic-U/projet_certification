@@ -12,7 +12,7 @@ import {
 import { questionsList } from "@/components/ui/Table/table.variants/questions";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import { useModal } from "@/hooks";
-import CreateQuestionForm from "@/components/forms/CreateQuestion";
+import CreateQuestionForm, { CreateQuestionInputs } from "@/components/forms/CreateQuestion";
 import { useEffect, useState } from "react";
 import api_backend from "@/api/axiosInstance";
 import { Question } from "@/types/question";
@@ -33,10 +33,59 @@ export default function QuestionsPage() {
     totalPages: 0,
   }); // Pagination default Infos
   const modal = useModal();
+  const editModal = useModal();
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [createInitialValues, setCreateInitialValues] = useState<
+    Partial<CreateQuestionInputs> | undefined
+  >(undefined);
 
   // treeview questions state
   const [treeQuestions, setTreeQuestions] = useState<Question[]>([]);
   const projectQuestions = useProjectQuestion(1).questions;
+
+  const getQuestionCategoryLabel = (question: Question) => {
+    if (typeof question.category === "string") {
+      return question.category;
+    }
+    const categoryLabel = (question as any).questionCategory?.label;
+    if (categoryLabel) {
+      return categoryLabel;
+    }
+    const categoryId =
+      (question as any).questionCategoryId ||
+      (question as any).questionCategory?.questionCategoryId;
+    return categories.find((c) => c.questionCategoryId === categoryId)?.label || "";
+  };
+
+  const getQuestionTypeLabels = (question: Question) => {
+    return (question.types || [])
+      .map((typeItem: any) => {
+        if (typeof typeItem === "object" && typeItem.label) {
+          return typeItem.label;
+        }
+        const typeId = typeof typeItem === "object" ? typeItem.typeId : typeItem;
+        return types.find((t) => String(t.typeId) === String(typeId))?.label;
+      })
+      .filter(Boolean) as string[];
+  };
+
+  const mapFormToPayload = (formData: CreateQuestionInputs) => {
+    const selectedIds = types
+      .filter((t) => formData.typesLabels.includes(t.label))
+      .map((t) => t.typeId);
+
+    return {
+      label: formData.label,
+      keyword: formData.keyword,
+      category: formData.category,
+      numberOfSelectionableOpt: formData.options.length,
+      hasMultipleOpenResponse: formData.hasMultipleOpenResponse,
+      shouldMultiply: formData.shouldMultiply,
+      ...(formData.questionIdParent && { questionIdParent: formData.questionIdParent }),
+      ...(formData.options && formData.options.length > 0 && { options: formData.options }),
+      ...(selectedIds && { types: selectedIds }),
+    };
+  };
 
   useEffect(() => {
     // Filter questions based on selected type and category
@@ -64,7 +113,7 @@ export default function QuestionsPage() {
         const categoryLabel =
           typeof q.category === "string"
             ? q.category
-            : q.questionCategory?.label || categoryIdToLabel.get(q.category);
+            : (q as any).questionCategory?.label || categoryIdToLabel.get(q.category);
         return categoryLabel === selectedCategoryLabel;
       });
     }
@@ -206,7 +255,14 @@ export default function QuestionsPage() {
       <section className="w-full bg-white px-6 py-4 mb-6 rounded-lg border border-gray-200">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">Arbre des questions</h3>
         <div className="h-125 border border-gray-300 rounded-lg">
-          <TreeView questions={treeQuestions} revealByResponses={false} /> 
+          <TreeView
+            questions={treeQuestions}
+            revealByResponses={false}
+            onQuestionClick={(question) => {
+              setEditingQuestion(question);
+              editModal.openModal();
+            }}
+          />
         </div>
       </section>
 
@@ -215,7 +271,13 @@ export default function QuestionsPage() {
         <div className="flex items-center justify-between">
           <div>
             <Tooltip content="Ajouter une question" position="rightBottom">
-              <Button onClick={modal.openModal} size="sm">
+              <Button
+                onClick={() => {
+                  setCreateInitialValues(undefined);
+                  modal.openModal();
+                }}
+                size="sm"
+              >
                 <div className="bg-primary rounded-full h-6 w-6 flex items-center justify-center">
                   <FontAwesomeIcon icon={Icons.plus} />
                 </div>
@@ -227,28 +289,101 @@ export default function QuestionsPage() {
               title="ajouter une question"
               description="Entrez les informations de la nouvelle question"
             >
-              <CreateQuestionForm 
+              <CreateQuestionForm
                 isLoading={false}
+                initialValues={createInitialValues}
                 onSubmit={(formData) => {
                   // After creating a question, refresh the questions list
-                  api_backend.post(`/question/create`, {...formData})
-                    .then(res => {
+                  const payload = mapFormToPayload(formData);
+                  api_backend
+                    .post(`/question/create`, payload)
+                    .then(() => {
                       modal.closeModal();
                       // Refetch questions to update the list
                       return api_backend.get(
                         `/question/get?page=${pagination.currentPage}&limit=${pagination.pageSize}`
                       );
                     })
-                    .then(res => {
+                    .then((res) => {
                       setQuestions(res.data.data);
                       setPagination((prev) => ({ ...prev, ...res.data.meta }));
                     })
-                    .catch(error => console.error(error));
+                    .catch((error) => console.error(error));
                 }}
+                submitLabel="Créer"
               />
             </Modal>
           </div>
         </div>
+
+        <Modal
+          modal={editModal}
+          title="modifier la question"
+          description="Mettez a jour les informations de la question"
+        >
+          {editingQuestion && (
+            <div className="flex flex-col gap-4">
+              <Button
+                size="sm"
+                onClick={() => {
+                  setCreateInitialValues({
+                    label: "",
+                    keyword: "",
+                    category: getQuestionCategoryLabel(editingQuestion),
+                    hasMultipleOpenResponse: false,
+                    shouldMultiply: false,
+                    allowMultiple: false,
+                    options: [],
+                    questionIdParent: String(editingQuestion.questionId),
+                    typesLabels: getQuestionTypeLabels(editingQuestion),
+                  });
+                  editModal.closeModal();
+                  modal.openModal();
+                }}
+              >
+                Ajouter question enfant
+              </Button>
+              <CreateQuestionForm
+                isLoading={false}
+                initialValues={{
+                  label: editingQuestion.label || "",
+                  keyword: editingQuestion.keyword || "",
+                  category: getQuestionCategoryLabel(editingQuestion),
+                  hasMultipleOpenResponse: Boolean(
+                    editingQuestion.hasMultipleOpenResponse
+                  ),
+                  shouldMultiply: Boolean(editingQuestion.shouldMultiply),
+                  allowMultiple: (editingQuestion.options?.length ?? 0) > 0,
+                  options: editingQuestion.options || [],
+                  questionIdParent:
+                    editingQuestion.parentId !== null &&
+                    editingQuestion.parentId !== undefined
+                      ? String(editingQuestion.parentId)
+                      : (editingQuestion as any).questionIdParent?.toString() || "",
+                  typesLabels: getQuestionTypeLabels(editingQuestion),
+                }}
+                submitLabel="Mettre a jour"
+                onSubmit={(formData) => {
+                  const payload = mapFormToPayload(formData);
+                  api_backend
+                    .patch(`/question/update/${editingQuestion.questionId}`, payload)
+                    .then(() => {
+                      editModal.closeModal();
+                      setEditingQuestion(null);
+                      return api_backend.get(
+                        `/question/get?page=${pagination.currentPage}&limit=${pagination.pageSize}`
+                      );
+                    })
+                    .then((res) => {
+                      setQuestions(res.data.data);
+                      setPagination((prev) => ({ ...prev, ...res.data.meta }));
+                    })
+                    .catch((error) => console.error(error));
+                }}
+              />
+            </div>
+          )}
+        </Modal>
 
         {questions && questions.length > 0 ? (
           <div>

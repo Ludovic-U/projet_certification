@@ -259,7 +259,7 @@ export default function IdeationPage() {
                   : "animate-[circle-unfill_700ms_ease-in_forwards]"
               }`}
               onAnimationEnd={() => {
-                if (headerFill.direction === "out") {
+                  if (headerFill.direction === "out") {
                   setHeaderFill(null);
                 }
               }}
