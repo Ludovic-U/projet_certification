@@ -90,16 +90,13 @@ export default function CreateQuestionForm({
       try {
         const res = await api_backend.get(`/question/categories`);
         setCategories(res.data);
-        if (!category && res.data?.length > 0) {
-          setCategory(res.data[0].label);
-        }
       } catch (error) {
         console.log(error);
       }
     };
 
     fetchCategories();
-  }, [category]);
+  }, []);
 
   useEffect(() => {
     if (!initialValues) {
@@ -129,6 +126,27 @@ export default function CreateQuestionForm({
     setOptions(initialValues.options ?? []);
     setSelectedType(initialValues.typesLabels ?? []);
   }, [initialValues]);
+
+  useEffect(() => {
+    if (categories.length === 0) {
+      return;
+    }
+
+    if (initialValues?.category) {
+      const normalized = initialValues.category.trim().toLowerCase();
+      const matched = categories.find(
+        (cat) => cat.label.trim().toLowerCase() === normalized
+      )?.label;
+      if (matched && matched !== category) {
+        setCategory(matched);
+      }
+      return;
+    }
+
+    if (!category) {
+      setCategory(categories[0].label);
+    }
+  }, [categories, initialValues?.category, category]);
 
   useEffect(() => {
     if (!allowMultiple && options.length > 0) {

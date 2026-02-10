@@ -125,6 +125,7 @@ module.exports.updateQuestion = async (req, res) => {
 
   const {
     label,
+    keyword,
     category,
     numberOfSelectionableOpt,
     isRelevant,
@@ -145,6 +146,7 @@ module.exports.updateQuestion = async (req, res) => {
   try {
     const question = await questionService.updateQuestion(questionId, {
       label,
+      keyword,
       category,
       numberOfSelectionableOpt,
       isRelevant,

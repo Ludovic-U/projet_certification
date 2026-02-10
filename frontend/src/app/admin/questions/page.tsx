@@ -41,7 +41,8 @@ export default function QuestionsPage() {
 
   // treeview questions state
   const [treeQuestions, setTreeQuestions] = useState<Question[]>([]);
-  const projectQuestions = useProjectQuestion(1).questions;
+  const { questions: projectQuestions, refetch: refetchProjectQuestions } =
+    useProjectQuestion(undefined, { mode: "all", pageSize: 1000 });
 
   const getQuestionCategoryLabel = (question: Question) => {
     if (typeof question.category === "string") {
@@ -55,6 +56,18 @@ export default function QuestionsPage() {
       (question as any).questionCategoryId ||
       (question as any).questionCategory?.questionCategoryId;
     return categories.find((c) => c.questionCategoryId === categoryId)?.label || "";
+  };
+
+  const normalizeCategoryLabel = (label: string) => {
+    if (!label) {
+      return label;
+    }
+    const normalized = label.trim().toLowerCase();
+    return (
+      categories.find(
+        (category) => category.label.trim().toLowerCase() === normalized
+      )?.label || label
+    );
   };
 
   const getQuestionTypeLabels = (question: Question) => {
@@ -258,8 +271,16 @@ export default function QuestionsPage() {
           <TreeView
             questions={treeQuestions}
             revealByResponses={false}
-            onQuestionClick={(question) => {
-              setEditingQuestion(question);
+            onQuestionClick={async (question) => {
+              try {
+                const res = await api_backend.get(
+                  `/question/get/${question.questionId}`
+                );
+                setEditingQuestion(res.data || question);
+              } catch (error) {
+                console.error(error);
+                setEditingQuestion(question);
+              }
               editModal.openModal();
             }}
           />
@@ -299,6 +320,7 @@ export default function QuestionsPage() {
                     .post(`/question/create`, payload)
                     .then(() => {
                       modal.closeModal();
+                      refetchProjectQuestions();
                       // Refetch questions to update the list
                       return api_backend.get(
                         `/question/get?page=${pagination.currentPage}&limit=${pagination.pageSize}`
@@ -348,13 +370,18 @@ export default function QuestionsPage() {
                 initialValues={{
                   label: editingQuestion.label || "",
                   keyword: editingQuestion.keyword || "",
-                  category: getQuestionCategoryLabel(editingQuestion),
+                  category: normalizeCategoryLabel(
+                    getQuestionCategoryLabel(editingQuestion)
+                  ),
                   hasMultipleOpenResponse: Boolean(
                     editingQuestion.hasMultipleOpenResponse
                   ),
                   shouldMultiply: Boolean(editingQuestion.shouldMultiply),
                   allowMultiple: (editingQuestion.options?.length ?? 0) > 0,
-                  options: editingQuestion.options || [],
+                  options:
+                    editingQuestion.options?.map((opt: any) =>
+                      typeof opt === "string" ? opt : opt.label
+                    ) || [],
                   questionIdParent:
                     editingQuestion.parentId !== null &&
                     editingQuestion.parentId !== undefined
@@ -370,6 +397,7 @@ export default function QuestionsPage() {
                     .then(() => {
                       editModal.closeModal();
                       setEditingQuestion(null);
+                      refetchProjectQuestions();
                       return api_backend.get(
                         `/question/get?page=${pagination.currentPage}&limit=${pagination.pageSize}`
                       );

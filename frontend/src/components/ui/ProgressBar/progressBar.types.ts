@@ -5,4 +5,5 @@ export interface ProgressBarProps {
     className?: string;
     color: string;
     showLabel?: boolean;
+    showPercent?: boolean;
 }

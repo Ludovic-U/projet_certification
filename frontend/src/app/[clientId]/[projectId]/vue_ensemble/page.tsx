@@ -14,7 +14,8 @@ export default function VueEnsemblePage() {
     const { config } = useConfig();
 
     // Progress placeholders (à remplacer par des calculs réels plus tard)
-    const ideationProgress = 0;
+    const [ideationProgress, setIdeationProgress] = useState(0);
+    const [ideationMax, setIdeationMax] = useState(0);
     const conceptionProgress = 20;
     const [skip, setSkip] = useState(0);
     const pilotageProgress = 60;
@@ -29,6 +30,59 @@ export default function VueEnsemblePage() {
     const [users, setUsers] = useState<{ userId: number; firstname: string; lastname: string }[]>([]);
 
     const params = useParams();
+
+    useEffect(() => {
+        if (!params.projectId) return;
+
+        const fetchIdeationProgress = async () => {
+            try {
+                const projectId = Number(params.projectId);
+                const [questionsRes, responsesRes, swotRes] = await Promise.all([
+                    api_backend.get(`/question/get/project/${projectId}`),
+                    api_backend.get(`/response/get/project/${projectId}`),
+                    api_backend.get(`/project/${projectId}/swot`),
+                ]);
+
+                const questions = Array.isArray(questionsRes.data)
+                    ? questionsRes.data
+                    : [];
+                const responses = Array.isArray(responsesRes.data)
+                    ? responsesRes.data
+                    : [];
+
+                const answeredQuestionIds = new Set<number>(
+                    responses
+                        .map((response: any) => Number(response.questionId))
+                        .filter((questionId: number) => Number.isInteger(questionId))
+                );
+
+                const totalQuestions = questions.length;
+                const answeredQuestions = answeredQuestionIds.size;
+
+                const swot = swotRes.data || {};
+                const swotFields = [
+                    swot.SWOT_strength,
+                    swot.SWOT_weakness,
+                    swot.SWOT_opportunity,
+                    swot.SWOT_threat,
+                ];
+                const swotCompleted = swotFields.filter(
+                    (value) => typeof value === "string" && value.trim() !== ""
+                ).length;
+
+                const totalItems = totalQuestions + swotFields.length;
+                const completedItems = answeredQuestions + swotCompleted;
+                setIdeationProgress(completedItems);
+                setIdeationMax(totalItems);
+            } catch (error) {
+                console.error("Erreur lors du chargement de l'avancement ideation:", error);
+                setIdeationProgress(0);
+                setIdeationMax(0);
+            }
+        };
+
+        fetchIdeationProgress();
+    }, [params.projectId]);
 
     // Fetch users by client
     useEffect(() => {
@@ -142,7 +196,10 @@ export default function VueEnsemblePage() {
     ];
 
     // Condition: tant que la somme n'atteint pas 200, afficher IDEATION + CONCEPTION uniquement
-    const showIdeationConception = (ideationProgress + conceptionProgress + skip) < 200;
+    const ideationPercent = ideationMax > 0
+        ? Math.round((ideationProgress / ideationMax) * 100)
+        : 0;
+    const showIdeationConception = (ideationPercent + conceptionProgress + skip) < 200;
 
     const cards = showIdeationConception
         ? [ // if true
@@ -150,6 +207,8 @@ export default function VueEnsemblePage() {
                 title: "IDEATION",
                 description: "Générer et structurer les idées initiales.",
                 progress: ideationProgress,
+                max: ideationMax,
+                showPercent: false,
                 color: "#D4B2A7",
                 path: (p: any) => `/${p.clientId}/${p.projectId}/ideation`
             },
@@ -270,6 +329,8 @@ export default function VueEnsemblePage() {
                           buttonLabel="Ouvrir"
                           color={card.color}
                           progress={card.progress}
+                                                    max={card.max}
+                                                    showPercent={card.showPercent}
                           onButtonClick={() => router.push(card.path(params))}
                         />
                     ))}

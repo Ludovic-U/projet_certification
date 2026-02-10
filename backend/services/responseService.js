@@ -41,9 +41,20 @@ module.exports.createResponse = async (data) => {
 
   return await prisma.response.create({
     data: {
-      ...data,
-      projectId,
-      questionId,
+      label: data.label ?? null,
+      keyword: data.keyword ?? null,
+      project: { connect: { projectId } },
+      question: { connect: { questionId } },
+      ...(data.optionId
+        ? { option: { connect: { optionId: Number(data.optionId) } } }
+        : {}),
+      ...(data.responseIdParent
+        ? {
+            parent: {
+              connect: { responseId: Number(data.responseIdParent) },
+            },
+          }
+        : {}),
     },
   });
 };

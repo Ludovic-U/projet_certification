@@ -342,6 +342,7 @@ model QuestionCategory {
 model Question {
   questionId               Int        @id @default(autoincrement())
   label                    String
+  keyword String
   category                 String
   numberOfSelectionableOpt Int?
   isRelevant               Boolean?
@@ -372,6 +373,7 @@ model Option {
 model Response {
   responseId       Int        @id @default(autoincrement())
   label            String?
+  keyword String?
   projectId        Int
   questionId       Int
   optionId         Int?

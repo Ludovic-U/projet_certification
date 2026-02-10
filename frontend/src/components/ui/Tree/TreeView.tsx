@@ -116,11 +116,15 @@ export default function TreeView({
     }
     
     // Create a map of questionId -> response data (status + keyword)
-    const responseMap = new Map<number, { exists: boolean; keyword?: string }>();
+    const responseMap = new Map<
+      number,
+      { exists: boolean; keyword?: string | null; skipped?: boolean }
+    >();
     projectResponses.forEach((response: any) => {
       responseMap.set(response.questionId, {
         exists: true,
-        keyword: response.keyword || null,
+        keyword: response.keyword ?? null,
+        skipped: response.label == null,
       });
     });
     
@@ -129,6 +133,7 @@ export default function TreeView({
       const questionId = node.data.questionId || node.data.id;
       const responseData = responseMap.get(Number(questionId));
       const hasResponse = responseData?.exists || false;
+      const isSkipped = responseData?.skipped || false;
       const parentId = node.data.parentId;
       
       // Check if parent has a response (if this is not root)
@@ -139,7 +144,7 @@ export default function TreeView({
         ...node,
         data: {
           ...node.data,
-          status: hasResponse ? "answered" : "pending",
+          status: hasResponse ? (isSkipped ? "skipped" : "answered") : "pending",
           // Use keyword from response if exists, otherwise keep question's keyword
           keyword: responseData?.keyword || node.data.keyword,
         },
@@ -284,7 +289,36 @@ export default function TreeView({
     }
   };
   // Passer la question
-  const handleSkip = () => updateNodeStatus("skipped");
+  const handleSkip = async () => {
+    if (!selectedNode) return;
+
+    const question = selectedNode.data as Question;
+    const questionId = question.questionId || question.id;
+
+    if (!questionId) {
+      console.error("questionId est undefined!");
+      return;
+    }
+
+    try {
+      const response = await api_backend.post(`/response/create`, {
+        label: null,
+        keyword: null,
+        projectId: Number(projectId),
+        questionId: Number(questionId),
+      });
+
+      setProjectResponses((prev) => [...prev, response.data]);
+      updateNodeStatus("skipped");
+    } catch (error: any) {
+      console.error("Erreur lors du skip de la réponse:", error);
+      console.error("Données envoyées:", {
+        projectId: Number(projectId),
+        questionId: Number(questionId),
+      });
+      console.error("Réponse du serveur:", error.response?.data);
+    }
+  };
 
   // Définition des types de noeuds
   const nodeTypes = useMemo(

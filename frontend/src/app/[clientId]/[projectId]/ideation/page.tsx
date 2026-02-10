@@ -57,6 +57,7 @@ export default function IdeationPage() {
   const [responseValue, setResponseValue] = useState<string | string[] | number[]>("");
   // Store keyword for response
   const [responseKeyword, setResponseKeyword] = useState<string>("");
+  const [projectResponses, setProjectResponses] = useState<any[]>([]);
 
   const progress = nodesState.filter(
     (n) => n.data?.status === "answered" || n.data?.status === "skipped"
@@ -110,6 +111,22 @@ export default function IdeationPage() {
   }, [selectedCategory]);
 
   useEffect(() => {
+    const fetchResponses = async () => {
+      try {
+        const res = await api_backend.get(`/response/get/project/${projectId}`);
+        setProjectResponses(res.data || []);
+      } catch (error) {
+        console.error("Erreur lors du chargement des reponses:", error);
+        setProjectResponses([]);
+      }
+    };
+
+    if (projectId) {
+      fetchResponses();
+    }
+  }, [projectId]);
+
+  useEffect(() => {
     if (modalWasOpen.current && !modalQuestions.isOpen) {
       setSelectedCategory(null);
     }
@@ -161,6 +178,14 @@ export default function IdeationPage() {
   const visibleCategories = categories.filter((category) =>
     questions.some((q) => getQuestionCategoryLabel(q) === category.label)
   );
+
+  const completedQuestionIds = useMemo(() => {
+    return new Set<number>(
+      (projectResponses || [])
+        .map((response: any) => Number(response.questionId))
+        .filter((questionId: number) => Number.isInteger(questionId))
+    );
+  }, [projectResponses]);
 
   const categoryColors = [
     "#96776E",
@@ -300,12 +325,11 @@ export default function IdeationPage() {
             const total = questions.filter(
               (q) => getQuestionCategoryLabel(q) === category.label
             ).length;
-            const completed = nodesState.filter((n) => {
-              const nodeQuestion = n.data as Question;
-              const nodeCategory = getQuestionCategoryLabel(nodeQuestion);
+            const completed = questions.filter((q) => {
+              const nodeCategory = getQuestionCategoryLabel(q);
               return (
                 nodeCategory === category.label &&
-                (n.data?.status === "answered" || n.data?.status === "skipped")
+                completedQuestionIds.has(Number(q.questionId))
               );
             }).length;
 

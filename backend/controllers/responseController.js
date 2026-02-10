@@ -21,9 +21,12 @@ module.exports.createResponse = async (req, res) => {
   let idParent;
   const { label, keyword, projectId, questionId, optionId, responseIdParent } = req.body;
 
-  // Check label to not be null or empty
-  if (!label) {
+  // Allow skipped responses when label is null; reject empty string or missing label
+  if (label === undefined) {
     return res.status(400).json({ error: "label is required" });
+  }
+  if (label === "") {
+    return res.status(400).json({ error: "label cannot be empty" });
   }
 
   // Check if a responseIdParent has been recieved
