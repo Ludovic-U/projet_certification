@@ -78,10 +78,11 @@ interface GanttToolbarProps {
   versions: Version[];
   currentVersion: Version | null;
   setCurrentVersion: (version: Version | null) => void;
-  onCreateVersion: (name: string, description?: string) => void;
+  onCreateVersion: (name: string, description?: string, sourceVersionId?: number | null) => void;
   onDeleteVersion: (versionId: number) => void;
   onActivateVersion: (versionId: number) => void;
   projectId: number;
+  versionsKey?: number;
 }
 
 export const GanttToolbar: React.FC<GanttToolbarProps> = ({
@@ -132,6 +133,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   onDeleteVersion,
   onActivateVersion,
   projectId,
+  versionsKey,
 }) => {
   const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
     { value: 'day', label: 'Jour', icon: <CalendarDays className="w-4 h-4" /> },
@@ -459,6 +461,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             onDeleteVersion={onDeleteVersion}
             onActivateVersion={onActivateVersion}
             projectId={projectId}
+            versionsKey={versionsKey}
           />
         </div>
 

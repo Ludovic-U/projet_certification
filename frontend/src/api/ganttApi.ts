@@ -268,11 +268,11 @@ export const fetchVersions = async (projectId: number): Promise<Version[]> => {
 };
 
 /**
- * Create a new version
+ * Create a new version with optional duplication from source version
  */
 export const createVersion = async (
   projectId: number,
-  versionData: { name: string; description?: string; isActive?: boolean }
+  versionData: { name: string; description?: string; isActive?: boolean; sourceVersionId?: number | null }
 ): Promise<Version> => {
   const response = await api.post(`/gantt/${projectId}/versions`, versionData);
   return response.data;

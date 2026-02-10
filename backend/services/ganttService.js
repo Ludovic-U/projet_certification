@@ -801,11 +801,12 @@ module.exports.getVersionsForProject = async (projectId) => {
 };
 
 /**
- * Create a new version
+ * Create a new version with optional duplication from source version
  * @param {Object} versionData - Version data
+ * @param {number} [sourceVersionId] - Optional source version ID to duplicate tasks from
  * @returns {Promise<Object>} Created version
  */
-module.exports.createVersion = async (versionData) => {
+module.exports.createVersion = async (versionData, sourceVersionId = null) => {
   try {
     const { projectId, name, description, isActive } = versionData;
 
@@ -817,6 +818,7 @@ module.exports.createVersion = async (versionData) => {
       });
     }
 
+    // Create the new version
     const version = await prisma.version.create({
       data: {
         projectId,
@@ -825,6 +827,11 @@ module.exports.createVersion = async (versionData) => {
         isActive: isActive || false
       }
     });
+
+    // If sourceVersionId is provided, duplicate all tasks from that version
+    if (sourceVersionId) {
+      await duplicateVersionTasks(sourceVersionId, version.versionId);
+    }
 
     return {
       versionId: version.versionId,
@@ -840,6 +847,153 @@ module.exports.createVersion = async (versionData) => {
     throw error;
   }
 };
+
+/**
+ * Duplicate all tasks and related data from a source version to a target version
+ * @param {number} sourceVersionId - Source version ID to duplicate from
+ * @param {number} targetVersionId - Target version ID to duplicate to
+ */
+async function duplicateVersionTasks(sourceVersionId, targetVersionId) {
+  try {
+    // Fetch all tasks from the source version with all related data
+    const sourceTasks = await prisma.task.findMany({
+      where: { versionId: sourceVersionId },
+      include: {
+        taskAssignments: true,
+        children: true,
+        linksSource: true,
+        linksTarget: true,
+        expenses: true,
+        assigneeDetails: true,
+        deliverables: true
+      }
+    });
+
+    if (sourceTasks.length === 0) {
+      console.log('No tasks to duplicate from source version');
+      return;
+    }
+
+    console.log(`Duplicating ${sourceTasks.length} tasks from version ${sourceVersionId} to ${targetVersionId}`);
+
+    // Map to store old task ID to new task ID
+    const taskIdMap = new Map();
+    const newTasks = [];
+
+    // First pass: create all tasks with the new versionId
+    for (const task of sourceTasks) {
+      const newTask = await prisma.task.create({
+        data: {
+          projectId: task.projectId,
+          subActionId: task.subActionId,
+          versionId: targetVersionId,
+          name: task.name,
+          description: task.description,
+          startDate: task.startDate,
+          endDate: task.endDate,
+          progress: task.progress,
+          parentId: null, // Will be updated in second pass
+          type: task.type,
+          details: task.details,
+          notes: task.notes,
+          files: task.files || [],
+          goal: task.goal
+        }
+      });
+
+      taskIdMap.set(task.taskId, newTask.taskId);
+      newTasks.push({ ...newTask, originalTask: task });
+    }
+
+    // Second pass: update parent references and create related data
+    for (const newTask of newTasks) {
+      const originalTask = newTask.originalTask;
+
+      // Update parent reference if exists
+      if (originalTask.parentId && taskIdMap.has(originalTask.parentId)) {
+        await prisma.task.update({
+          where: { taskId: newTask.taskId },
+          data: { parentId: taskIdMap.get(originalTask.parentId) }
+        });
+      }
+
+      // Create task assignments
+      if (originalTask.taskAssignments && originalTask.taskAssignments.length > 0) {
+        await prisma.taskAssignment.createMany({
+          data: originalTask.taskAssignments.map(ta => ({
+            taskId: newTask.taskId,
+            userId: ta.userId
+          }))
+        });
+      }
+
+      // Create task expenses
+      if (originalTask.expenses && originalTask.expenses.length > 0) {
+        await prisma.taskExpense.createMany({
+          data: originalTask.expenses.map(e => ({
+            taskId: newTask.taskId,
+            category: e.category,
+            amount: e.amount,
+            date: e.date,
+            description: e.description,
+            vendor: e.vendor
+          }))
+        });
+      }
+
+      // Create assignee details
+      if (originalTask.assigneeDetails && originalTask.assigneeDetails.length > 0) {
+        await prisma.taskAssigneeDetail.createMany({
+          data: originalTask.assigneeDetails.map(ad => ({
+            taskId: newTask.taskId,
+            userId: ad.userId,
+            role: ad.role,
+            allocation: ad.allocation
+          }))
+        });
+      }
+
+      // Create deliverables status
+      if (originalTask.deliverables && originalTask.deliverables.length > 0) {
+        await prisma.taskDeliverableStatus.createMany({
+          data: originalTask.deliverables.map(d => ({
+            taskId: newTask.taskId,
+            name: d.name,
+            status: d.status,
+            completedAt: d.completedAt,
+            notes: d.notes
+          }))
+        });
+      }
+    }
+
+    // Third pass: create task links
+    const sourceLinks = await prisma.taskLink.findMany({
+      where: { versionId: sourceVersionId }
+    });
+
+    for (const link of sourceLinks) {
+      const newSource = taskIdMap.get(link.source);
+      const newTarget = taskIdMap.get(link.target);
+
+      if (newSource && newTarget) {
+        await prisma.taskLink.create({
+          data: {
+            source: newSource,
+            target: newTarget,
+            type: link.type,
+            versionId: targetVersionId
+          }
+        });
+      }
+    }
+
+    console.log(`Successfully duplicated ${sourceTasks.length} tasks and ${sourceLinks.length} links`);
+  } catch (error) {
+    console.error('Error duplicating version tasks:', error);
+    throw error;
+  }
+}
 
 /**
  * Update a version
