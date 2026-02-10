@@ -76,6 +76,7 @@ app.use('/api/financeur', authenticateUser, financeurRoutes);
 app.use('/api/config', authenticateUser, configRoutes);
 app.use('/api/gantt', authenticateUser, ganttRoutes);
 app.use('/api/mistral', authenticateUser, mistralRoutes);
+app.use('/api/todo', todoRoutes);
 
 
 // File upload endpoint

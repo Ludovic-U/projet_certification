@@ -107,6 +107,7 @@ model Project {
   SWOT_opportunity String?
   SWOT_strength String?
   SWOT_weakness String?
+  SWOT_threat String?
   goNogo         String?
   actions        Action[]
   versions      Version[]
