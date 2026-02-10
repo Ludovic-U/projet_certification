@@ -123,7 +123,7 @@ export const MistralModal: React.FC<MistralModalProps> = ({
           setTasks(updatedTasks);
           setLinks(links);
           saveState(updatedTasks, links);
-          alert(`${savedTasks.length} tâches importées et sauvegardées dans la base de données avec succès`);
+          alert(`${savedTasks.length} actions importées et sauvegardées dans la base de données avec succès`);
         } else {
           // Fallback: transform locally if API doesn't return tasks
           const newTasks = transformMistralJSONToGanttTasks(mistralJSON, tasks);
@@ -131,7 +131,7 @@ export const MistralModal: React.FC<MistralModalProps> = ({
           setTasks(updatedTasks);
           setLinks(links);
           saveState(updatedTasks, links);
-          alert(`${newTasks.length} tâches importées (attention: non sauvegardées dans la base de données)`);
+          alert(`${newTasks.length} actions importées (attention: non sauvegardées dans la base de données)`);
         }
         handleClose();
       } else {
@@ -179,7 +179,7 @@ export const MistralModal: React.FC<MistralModalProps> = ({
                 <textarea 
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Décrivez votre projet et ses tâches..."
+                  placeholder="Décrivez votre projet et ses actions..."
                   className="w-full p-4 bg-slate-700 text-white border-2 border-slate-600 rounded-lg focus:border-blue-500 focus:outline-none resize-vertical min-h-32 placeholder-gray-400"
                 />
               </label>

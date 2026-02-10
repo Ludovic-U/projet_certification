@@ -39,7 +39,7 @@ export const GanttContextMenu: React.FC<GanttContextMenuProps> = ({
           className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Ajouter une sous-tâche
+          Ajouter une sous-action
         </button>
         <div className="border-t border-slate-700 my-1" />
         <button

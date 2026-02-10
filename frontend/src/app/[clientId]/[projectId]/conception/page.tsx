@@ -200,7 +200,7 @@ const GanttChart = () => {
       {/* Page header */}
       <PageHeader
         title="Conception"
-        description="Planification et gestion des tâches du projet"
+        description="Planification et gestion des actions du projet"
       />
       <div className={`flex-1 bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col overflow-hidden ${ganttState.selectedTask ? 'pr-96' : ''}`}>
         {/* Toolbar with controls */}

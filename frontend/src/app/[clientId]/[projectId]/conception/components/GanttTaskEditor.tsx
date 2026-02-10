@@ -114,8 +114,8 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 <span className={`text-xl ${typeStyles.text}`}>{typeStyles.icon}</span>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">Modifier la tâche</h2>
-                <p className="text-sm text-slate-400">Configurer les détails et le budget de la tâche</p>
+                <h2 className="text-2xl font-bold text-white">Modifier l'action</h2>
+                <p className="text-sm text-slate-400">Configurer les détails et le budget de l'action</p>
               </div>
             </div>
             <button
@@ -155,14 +155,14 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-slate-400" />
-                  Nom de la tâche
+                  Nom de l'action
                 </label>
                 <input
                   type="text"
                   value={editingTask.text}
                   onChange={(e) => setEditingTask({ ...editingTask, text: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Entrez le nom de la tâche..."
+                  placeholder="Entrez le nom de l'action..."
                 />
               </div>
 
@@ -185,7 +185,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     }}
                     className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
                   >
-                    <option value="task">Tâche</option>
+                    <option value="task">Action</option>
                     <option value="milestone">Jalon</option>
                     <option value="project">Projet</option>
                   </select>

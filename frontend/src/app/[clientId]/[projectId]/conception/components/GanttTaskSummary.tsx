@@ -174,7 +174,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
             <div className={`px-3 py-1 rounded-full text-xs font-medium capitalize border ${typeColors.bg} ${typeColors.text} ${typeColors.border}`}>
               {selectedTask.type}
             </div>
-            <h3 className="text-lg font-semibold text-white">Détails de la tâche</h3>
+            <h3 className="text-lg font-semibold text-white">Détails de l'action</h3>
           </div>
           <button
             onClick={() => setSelectedTask(null)}

@@ -62,7 +62,7 @@ export default function VueEnsemblePage() {
         },
         {
             key: "text",
-            label: "Tâche",
+            label: "Action",
             render: (todo) => (
                 <span className={`${todo.completed ? 'line-through text-grey' : 'text-greydarker'}`}>
                     {todo.text}
@@ -167,13 +167,13 @@ export default function VueEnsemblePage() {
                                 value={newTodoText}
                                 onChange={(e) => setNewTodoText(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && addTodo()}
-                                placeholder="Nouvelle tâche..."
+                                placeholder="Nouvelle action..."
                                 className="w-full px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
                             />
 
                             <div className="flex-1 overflow-y-auto max-h-100">
                                 {todos.length === 0 ? (
-                                    <p className="font-noto text-greydarker text-sm mt-2">Aucune tâche pour le moment.</p>
+                                    <p className="font-noto text-greydarker text-sm mt-2">Aucune action pour le moment.</p>
                                 ) : (
                                     <Table
                                         data={todos}

@@ -154,7 +154,7 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
               <Star className={`w-4 h-4 ${!currentVersion ? 'text-blue-400' : 'text-slate-600'}`} />
               <div className="flex-1">
                 <div className="font-medium">Version principale</div>
-                <div className="text-xs text-slate-500">Toutes les tâches sans version</div>
+                <div className="text-xs text-slate-500">Toutes les actions sans version</div>
               </div>
               {!currentVersion && <Check className="w-4 h-4" />}
             </button>
@@ -186,7 +186,7 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
                       <div className="text-xs text-slate-500 truncate">{version.description}</div>
                     )}
                     <div className="text-xs text-slate-600 mt-0.5">
-                      {version.taskCount || 0} tâches
+                      {version.taskCount || 0} actions
                     </div>
                   </div>
                   {currentVersion?.versionId === version.versionId && (

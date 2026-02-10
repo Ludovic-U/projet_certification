@@ -74,7 +74,7 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
         <div className="flex-1 px-4 py-3 font-semibold text-slate-300 text-sm border-r border-slate-700 flex items-center">
           <span className="flex items-center gap-2">
             <Folder className="w-4 h-4 text-slate-400" />
-            Nom de la tâche
+            Nom de l'action
           </span>
         </div>
         <div className="w-28 px-3 py-3 font-semibold text-slate-300 text-sm border-r border-slate-700 flex items-center justify-center">
