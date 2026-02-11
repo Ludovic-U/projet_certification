@@ -196,58 +196,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
           <h2 className="text-xl font-bold text-white leading-tight">{selectedTask.text}</h2>
         </div>
 
-        {/* Progress Bar */}
-        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-400" />
-              Progression
-            </span>
-            <span className="text-sm font-bold text-white">{selectedTask.progress}%</span>
-          </div>
-          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500"
-              style={{ width: `${selectedTask.progress}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Quick Info Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
-              <Calendar className="w-4 h-4" />
-              <span className="text-xs font-medium">Début</span>
-            </div>
-            <p className="text-white font-medium">{formatDate(selectedTask.start)}</p>
-          </div>
-          {selectedTask.end && selectedTask.type !== 'milestone' && (
-            <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
-              <div className="flex items-center gap-2 text-slate-400 mb-1">
-                <Calendar className="w-4 h-4" />
-                <span className="text-xs font-medium">Fin</span>
-              </div>
-              <p className="text-white font-medium">{formatDate(selectedTask.end)}</p>
-            </div>
-          )}
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
-              <User className="w-4 h-4" />
-              <span className="text-xs font-medium">Attribué à</span>
-            </div>
-            <p className="text-white font-medium truncate">{getAssignees(selectedTask, data.users) || 'Non attribué'}</p>
-          </div>
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
-              <CheckCircle2 className="w-4 h-4" />
-              <span className="text-xs font-medium">Statut</span>
-            </div>
-            <p className="text-white font-medium capitalize">{selectedTask.type}</p>
-          </div>
-        </div>
-
-        {/* Budget Total */}
+        {/* Budget Total - Under task name */}
         <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/5 border border-blue-500/20 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -259,23 +208,6 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
             </span>
           </div>
         </div>
-
-        {/* Description Section - Collapsible */}
-        <SectionBox 
-          icon={<FileText className="w-5 h-5" />}
-          title="Description"
-          isExpanded={expandedSections.details}
-          onToggle={() => toggleSection('details')}
-        >
-          <p className="text-slate-300 leading-relaxed">
-            {selectedTask.details || (
-              <span className="text-slate-500 italic flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                No description available
-              </span>
-            )}
-          </p>
-        </SectionBox>
 
         {/* Livrables Section - Always Visible */}
         <SectionBox 
@@ -443,6 +375,74 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
               </div>
             </div>
           </div>
+        </SectionBox>
+
+        {/* Progress Bar */}
+        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-slate-400" />
+              Progression
+            </span>
+            <span className="text-sm font-bold text-white">{selectedTask.progress}%</span>
+          </div>
+          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500"
+              style={{ width: `${selectedTask.progress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Quick Info Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
+            <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <Calendar className="w-4 h-4" />
+              <span className="text-xs font-medium">Début</span>
+            </div>
+            <p className="text-white font-medium">{formatDate(selectedTask.start)}</p>
+          </div>
+          {selectedTask.end && selectedTask.type !== 'milestone' && (
+            <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
+              <div className="flex items-center gap-2 text-slate-400 mb-1">
+                <Calendar className="w-4 h-4" />
+                <span className="text-xs font-medium">Fin</span>
+              </div>
+              <p className="text-white font-medium">{formatDate(selectedTask.end)}</p>
+            </div>
+          )}
+          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
+            <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <User className="w-4 h-4" />
+              <span className="text-xs font-medium">Attribué à</span>
+            </div>
+            <p className="text-white font-medium truncate">{getAssignees(selectedTask, data.users) || 'Non attribué'}</p>
+          </div>
+          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
+            <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <CheckCircle2 className="w-4 h-4" />
+              <span className="text-xs font-medium">Statut</span>
+            </div>
+            <p className="text-white font-medium capitalize">{selectedTask.type}</p>
+          </div>
+        </div>
+
+        {/* Description Section - Collapsible */}
+        <SectionBox 
+          icon={<FileText className="w-5 h-5" />}
+          title="Description"
+          isExpanded={expandedSections.details}
+          onToggle={() => toggleSection('details')}
+        >
+          <p className="text-slate-300 leading-relaxed">
+            {selectedTask.details || (
+              <span className="text-slate-500 italic flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                No description available
+              </span>
+            )}
+          </p>
         </SectionBox>
       </div>
     </div>
