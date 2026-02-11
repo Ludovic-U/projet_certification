@@ -65,6 +65,7 @@ export interface Livrable {
   id: number;
   label: string;
   description: string;
+  sent?: boolean; // Indicates if the livrable has been sent/completed
 }
 
 export interface GanttData {
