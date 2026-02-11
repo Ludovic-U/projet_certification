@@ -14,16 +14,7 @@ import {
   Layout,
   List,
   CalendarDays,
-  Home,
-  Undo,
-  Redo,
-  GitBranch,
-  ChevronDown,
-  PlusCircle,
-  Trash2,
-  Eye,
-  Star,
-  Check
+  Home
 } from 'lucide-react';
 import { ViewMode, MenuPosition } from '../types';
 import { PortalMenu } from './PortalMenu';
@@ -74,7 +65,6 @@ interface GanttToolbarProps {
   setTasks: (tasks: Task[]) => void;
   setLinks: (links: Link[]) => void;
   saveState: (nextTasks?: Task[], nextLinks?: Link[]) => void;
-  // Version-related props
   versions: Version[];
   currentVersion: Version | null;
   setCurrentVersion: (version: Version | null) => void;
@@ -157,9 +147,8 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
     if (exportMenuRef.current) {
       const rect = exportMenuRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
-      const submenuWidth = 180; // approximate submenu width
+      const submenuWidth = 180;
       
-      // Check if opening to the right would overflow
       const wouldOverflowRight = rect.right + 8 + submenuWidth > viewportWidth;
       
       setExportMenuPosition({
@@ -174,9 +163,8 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
     if (importMenuRef.current) {
       const rect = importMenuRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
-      const submenuWidth = 180; // approximate submenu width
+      const submenuWidth = 180;
       
-      // Check if opening to the right would overflow
       const wouldOverflowRight = rect.right + 8 + submenuWidth > viewportWidth;
       
       setImportMenuPosition({
@@ -197,73 +185,17 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   return (
     <div className="bg-slate-800 border-b border-slate-700 flex-shrink-0">
       <div className="flex items-center justify-between px-4 py-4 gap-4 flex-wrap">
+        {/* Left Section - Title with Menu Button */}
         <div className="flex items-center gap-3">
-          <Calendar className="w-7 h-7 text-blue-400" />
-          <h1 className="text-2xl font-bold text-white">Diagramme de Gantt</h1>
-        </div>
-        <div className="flex gap-2 flex-wrap items-center">
-          <button
-            onClick={undo}
-            disabled={historyIndex === 0}
-            className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Annuler"
-          >
-            <Undo className="w-4 h-4" />
-          </button>
-          <button
-            onClick={redo}
-            disabled={historyIndex === historyLength - 1}
-            className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Rétablir"
-          >
-            <Redo className="w-4 h-4" />
-          </button>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setViewMode('day')}
-              className={`px-3 py-2 text-white rounded-lg transition-colors ${viewMode === 'day' ? 'bg-blue-600' : 'bg-slate-700 hover:bg-slate-600'}`}
-            >
-              Jour
-            </button>
-            <button
-              onClick={() => setViewMode('week')}
-              className={`px-3 py-2 text-white rounded-lg transition-colors ${viewMode === 'week' ? 'bg-blue-600' : 'bg-slate-700 hover:bg-slate-600'}`}
-            >
-              Semaine
-            </button>
-            <button
-              onClick={() => setViewMode('month')}
-              className={`px-3 py-2 text-white rounded-lg transition-colors ${viewMode === 'month' ? 'bg-blue-600' : 'bg-slate-700 hover:bg-slate-600'}`}
-            >
-              Mois
-            </button>
-          </div>
-          <div className="flex gap-1 ml-2">
-            <button onClick={() => zoomBy(-2)} className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Zoom arrière">
-              <ZoomOut className="w-4 h-4" />
-            </button>
-            <button onClick={() => zoomBy(2)} className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Zoom avant">
-              <ZoomIn className="w-4 h-4" />
-            </button>
-          </div>
-          <button onClick={() => scrollToDate(today)} className="px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600" title="Aller à aujourd'hui">Aujourd'hui</button>
-          <button
-            onClick={addTask}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ml-2"
-          >
-            <Plus className="w-4 h-4" />
-            Ajouter une tâche
-          </button>
+          {/* More Options Button - Left of title */}
           <div className="relative">
-              <button
-                ref={menuButtonRef}
-                onClick={() => {
-                  setMenuOpen(!menuOpen);
-                }}
-                className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
-                title="Plus d'options"
-              >
-              <MoreHorizontal className="w-4 h-4" />
+            <button
+              ref={menuButtonRef}
+              onClick={handleMenuClick}
+              className="p-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+              title="Plus d'options"
+            >
+              <MoreHorizontal className="w-5 h-5" />
             </button>
             {menuOpen && (
               <PortalMenu
@@ -342,30 +274,34 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
                       onClose={() => { setImportMenuOpen(false); setMenuOpen(false); }}
                       position={importMenuPosition}
                     >
-                      <label className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
-                        <FileSpreadsheet className="w-4 h-4 text-green-400" />
-                        CSV
-                        <input type="file" accept=".csv" onChange={importFromCSV} className="hidden" />
-                      </label>
-                      <label className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
-                        <FileSpreadsheet className="w-4 h-4 text-blue-400" />
-                        Excel
-                        <input type="file" accept=".xlsx,.xls" onChange={importFromExcel} className="hidden" />
-                      </label>
-                      <label className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
-                        <Upload className="w-4 h-4" />
-                        JSON
-                        <input type="file" accept=".json" onChange={importData} className="hidden" />
-                      </label>
-                      <label className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
-                        <Upload className="w-4 h-4 text-purple-400" />
-                        Mistral
-                        <input type="file" accept=".json" onChange={importMistralGantt} className="hidden" />
-                      </label>
+                      <ImportLabel
+                        icon={<FileSpreadsheet className="w-4 h-4 text-green-400" />}
+                        label="CSV"
+                        accept=".csv"
+                        onChange={importFromCSV}
+                      />
+                      <ImportLabel
+                        icon={<FileSpreadsheet className="w-4 h-4 text-blue-400" />}
+                        label="Excel"
+                        accept=".xlsx,.xls"
+                        onChange={importFromExcel}
+                      />
+                      <ImportLabel
+                        icon={<Upload className="w-4 h-4" />}
+                        label="JSON"
+                        accept=".json"
+                        onChange={importData}
+                      />
+                      <ImportLabel
+                        icon={<Upload className="w-4 h-4 text-purple-400" />}
+                        label="Mistral"
+                        accept=".json"
+                        onChange={importMistralGantt}
+                      />
                     </PortalMenu>
                   )}
                 </div>
-                {/* Mistral Modal */}
+                {/* Mistral Modal Button */}
                 <button
                   className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 flex items-center gap-2"
                   onClick={() => {
@@ -382,18 +318,17 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             )}
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/10 rounded-xl">
-              <Calendar className="w-6 h-6 text-blue-400" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Diagramme de Gantt</h1>
-              <p className="text-xs text-slate-400">Chronologie du projet</p>
-            </div>
+          {/* Title */}
+          <div className="p-2 bg-blue-500/10 rounded-xl">
+            <Calendar className="w-6 h-6 text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white">Diagramme de Gantt</h1>
+            <p className="text-xs text-slate-400">Chronologie du projet</p>
           </div>
         </div>
 
-        {/* Center Section - Actions */}
+        {/* Center Section - Controls */}
         <div className="flex items-center gap-2">
           {/* History Controls */}
           <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1">
@@ -449,7 +384,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white transition-all text-sm font-medium"
           >
             <Home className="w-4 h-4" />
-            <span className="hidden sm:inline">Aujourd'hui</span>
+            <span className="hidden sm:inline">Aujourd&apos;hui</span>
           </button>
 
           {/* Version Selector */}
@@ -477,6 +412,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
           </button>
         </div>
       </div>
+      
       {/* Mistral Modal */}
       <MistralModal 
         isOpen={mistralModalOpen} 
