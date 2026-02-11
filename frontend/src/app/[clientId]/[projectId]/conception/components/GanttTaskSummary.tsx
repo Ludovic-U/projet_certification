@@ -13,12 +13,14 @@ import {
   ChevronDown,
   ChevronRight,
   Link2,
-  AlertCircle
+  AlertCircle,
+  DollarSign
 } from 'lucide-react';
 import { Task, Livrable } from '../types';
 import { formatDate } from '../utils/dateUtils';
 import { getAssignees } from '../utils/taskUtils';
 import { uploadFile } from '@/api/ganttApi';
+import { calculateBudgetTotals, createEmptyBudget } from '../utils/budgetUtils';
 
 interface GanttTaskSummaryProps {
   selectedTask: Task | null;
@@ -47,8 +49,6 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
   tasks,
   setTasks,
   data,
-  projectId,
-  updateTask,
   updateSelectedTask,
 }) => {
   const [newNote, setNewNote] = useState('');
@@ -164,6 +164,10 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
   };
 
   const typeColors = getTypeColor(selectedTask.type);
+  
+  // Calculate budget total
+  const budget = selectedTask.budget || createEmptyBudget();
+  const { total } = calculateBudgetTotals(budget);
 
   return (
     <div className="fixed right-0 top-0 h-full w-96 border-l border-slate-700 bg-slate-900/95 backdrop-blur-sm p-0 overflow-y-auto z-40 shadow-2xl">
@@ -243,6 +247,19 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
           </div>
         </div>
 
+        {/* Budget Total */}
+        <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/5 border border-blue-500/20 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-blue-400" />
+              <span className="text-sm font-medium text-slate-300">Budget total</span>
+            </div>
+            <span className="text-lg font-bold text-blue-400">
+              {total.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+            </span>
+          </div>
+        </div>
+
         {/* Description Section - Collapsible */}
         <SectionBox 
           icon={<FileText className="w-5 h-5" />}
@@ -260,14 +277,14 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
           </p>
         </SectionBox>
 
-        {/* Livrables Section - Collapsible */}
-        {selectedTask.livrableIds && selectedTask.livrableIds.length > 0 && (
-          <SectionBox 
-            icon={<FolderOpen className="w-5 h-5" />}
-            title={`Livrables (${selectedTask.livrableIds.length})`}
-            isExpanded={expandedSections.livrables}
-            onToggle={() => toggleSection('livrables')}
-          >
+        {/* Livrables Section - Always Visible */}
+        <SectionBox 
+          icon={<FolderOpen className="w-5 h-5" />}
+          title={`Livrables (${selectedTask.livrableIds?.length || 0})`}
+          isExpanded={expandedSections.livrables}
+          onToggle={() => toggleSection('livrables')}
+        >
+          {(selectedTask.livrableIds && selectedTask.livrableIds.length > 0) ? (
             <div className="space-y-3">
               {selectedTask.livrableIds.map(livrableId => {
                 const livrable = livrables.find(l => l.id === livrableId);
@@ -284,8 +301,10 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
                 ) : null;
               })}
             </div>
-          </SectionBox>
-        )}
+          ) : (
+            <p className="text-slate-500 italic text-sm">Aucun livrable associé</p>
+          )}
+        </SectionBox>
 
         {/* Notes Section - Collapsible */}
         <SectionBox 

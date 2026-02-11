@@ -476,6 +476,7 @@ const GanttChart = () => {
           handleAddLivrable={ganttState.handleAddLivrable}
           deleteTask={ganttState.deleteTask}
           updateTask={ganttState.updateTask}
+          projectId={projectId}
           data={ganttState.data}
         />
       </div>
