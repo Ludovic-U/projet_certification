@@ -94,13 +94,8 @@ export default function IdeationPage() {
         const fetchedCategories = res.data || [];
         setCategories(fetchedCategories);
         if (!selectedCategory) {
-          const defaultCategory = fetchedCategories.find(
-            (category: { label: string }) =>
-              category.label?.trim().toLowerCase() === "analyse opportunité"
-          );
-          if (defaultCategory) {
-            setSelectedCategory(defaultCategory.label);
-          }
+          // Set "Vue globale" as default (null shows all questions)
+          setSelectedCategory(null);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des categories:", error);
@@ -196,8 +191,7 @@ export default function IdeationPage() {
     "#588157",
   ];
 
-  const isOpportunitySelected =
-    selectedCategory?.trim().toLowerCase() === "analyse opportunité";
+
 
   const goNogoKey = useMemo(() => {
     if (!projectId) return null;
@@ -219,16 +213,7 @@ export default function IdeationPage() {
     }
   }, [data, goNogoKey, goDecision]);
 
-  useEffect(() => {
-    if (!isOpportunitySelected) {
-      setHeaderFill(null);
-      return;
-    }
-
-    if (goDecision) {
-      setHeaderFill({ color: goDecision, direction: "in", key: Date.now() });
-    }
-  }, [isOpportunitySelected, goDecision]);
+  
 
   const updateGoNogo = async (value: "go" | "nogo" | null) => {
     try {
@@ -297,7 +282,7 @@ export default function IdeationPage() {
             description={config?.subtitles.overview}
           />
         </div>
-        {isOpportunitySelected && (
+        {/* {isANAlyseOpportunitySelected && (
           <div className="relative z-10 flex items-center gap-4">
             <Button
               className={`h-14 px-10 text-lg font-semibold bg-green-600 hover:bg-green-700 text-white transition-opacity duration-200 ${
@@ -316,11 +301,32 @@ export default function IdeationPage() {
               NOGO
             </Button>
           </div>
-        )}
+        )} */}
       </div>
       <section className="flex flex-1 gap-4">
         {/* Colonne de gauche avec les Cards */}
         <div className="flex flex-col gap-4 w-[320px] min-w-[320px]">
+          {/* Vue globale card */}
+          <Card
+            color="#6366F1"
+            title="Vue globale"
+            max={questions.length}
+            progress={completedQuestionIds.size}
+            buttonLabel="voir toutes les questions"
+            className={
+              selectedCategory === null
+                ? "ring-2 ring-dark shadow-700base"
+                : ""
+            }
+            onButtonClick={() => {
+              if (selectedCategory === null) {
+                modalQuestions.openModal();
+                return;
+              }
+              setSelectedCategory(null);
+            }}
+          />
+          
           {visibleCategories.map((category, index) => {
             const total = questions.filter(
               (q) => getQuestionCategoryLabel(q) === category.label

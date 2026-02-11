@@ -6,7 +6,12 @@ import { cn } from "@/utils/utils";
 
 
 export function QuestionNode({ data }: NodeProps) {
-    const questionData = data as { status?: "pending" | "answered" | "skipped"; label?:string; keyword?: string };
+    const questionData = data as {
+        status?: "pending" | "answered" | "skipped";
+        label?: string;
+        keyword?: string;
+        isVirtualRoot?: boolean;
+    };
     
     const statusStyle = {
         pending: "bg-transparent border-3 border-dark",
@@ -18,7 +23,7 @@ export function QuestionNode({ data }: NodeProps) {
 
     return (
         <Tooltip className="bg-dark" content={data.label?.toString()} position="rightTop">
-            <div className={`relative cursor-pointer flex flex-col items-center gap-1`}>
+            <div className={`relative ${questionData.isVirtualRoot ? "cursor-default" : "cursor-pointer"} flex flex-col items-center gap-1`}>
                 {questionData.keyword && (
                     <span className="text-xs font-medium text-dark whitespace-nowrap">
                         {questionData.keyword}

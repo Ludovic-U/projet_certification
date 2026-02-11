@@ -138,6 +138,16 @@ module.exports.updateQuestion = async (req, res) => {
     removeProject,
   } = req.body;
 
+  let normalizedParentId;
+  if (questionIdParent === "" || questionIdParent === null) {
+    normalizedParentId = null;
+  } else if (questionIdParent !== undefined) {
+    normalizedParentId = Number(questionIdParent);
+    if (!Number.isInteger(normalizedParentId)) {
+      return res.status(400).json({ error: "questionIdParent must be an integer or null" });
+    }
+  }
+
   // Check label or category to be not empty
   if (label === "" || category === "") {
     return res.status(400).json({ error: "label and category are required" });
@@ -152,7 +162,7 @@ module.exports.updateQuestion = async (req, res) => {
       isRelevant,
       hasMultipleOpenResponse,
       shouldMultiply,
-      questionIdParent,
+      questionIdParent: normalizedParentId,
       addType,
       removeType,
       addProject,

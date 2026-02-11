@@ -25,7 +25,7 @@ export default function QuestionsPage() {
   const [types, setTypes] = useState<{ typeId: number; label: string }[]>([]);
   const [categories, setCategories] = useState<{ questionCategoryId: number; label: string }[]>([]);
   const [selectedTypeLabel, setSelectedTypeLabel] = useState<string | null>("Général");
-  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>("analyse opportunité");
+  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>("Toutes");
   const [pagination, setPagination] = useState({
     totalItems: 0,
     currentPage: 1,
@@ -246,6 +246,16 @@ export default function QuestionsPage() {
       <section className="w-full bg-gray-50 px-6 py-4 mb-6 rounded-lg border border-gray-200">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">Catégories de questions</h3>
         <div className="flex items-center gap-3 overflow-x-auto">
+          <button
+            onClick={() => setSelectedCategoryLabel("Toutes")}
+            className={`shrink-0 px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
+              selectedCategoryLabel === "Toutes"
+                ? "bg-primary text-white shadow-md"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            Toutes
+          </button>
           
           {/* Category Rectangles */}
           {categories.map((category: any) => (
@@ -390,6 +400,20 @@ export default function QuestionsPage() {
                   typesLabels: getQuestionTypeLabels(editingQuestion),
                 }}
                 submitLabel="Mettre a jour"
+                secondaryAction={
+                  <Button
+                    type="button"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={async () => {
+                      await handleDelete(editingQuestion.questionId);
+                      editModal.closeModal();
+                      setEditingQuestion(null);
+                      refetchProjectQuestions();
+                    }}
+                  >
+                    Supprimer
+                  </Button>
+                }
                 onSubmit={(formData) => {
                   const payload = mapFormToPayload(formData);
                   api_backend

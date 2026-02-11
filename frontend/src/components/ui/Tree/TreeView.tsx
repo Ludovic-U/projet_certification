@@ -80,12 +80,6 @@ export default function TreeView({
       return { nodes: [], edges: [] };
     }
 
-    const hasRoot = questions.some((q) => q.parentId === null);
-    if (!hasRoot) {
-      console.warn("Pas de racine trouvée - arbre vide");
-      return { nodes: [], edges: [] };
-    }
-
     const root = buildHierarchy(questions);
     const laidOutRoot = computeTreeLayout(root);
     const { nodes, edges } = d3ToReactFlow(laidOutRoot);
@@ -163,6 +157,9 @@ export default function TreeView({
   }, [nodes, onNodesChange]);
 
   const handleNodeClick = async (_: any, node: Node) => {
+    if ((node.data as any)?.isVirtualRoot) {
+      return;
+    }
     const question = node.data as Question;
     if (onQuestionClick) {
       onQuestionClick(question, node);

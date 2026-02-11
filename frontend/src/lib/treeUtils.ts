@@ -9,19 +9,25 @@ import { Question } from "@/types/question"
  * @returns root - La racine de l'arbre D3
 */
 export function buildHierarchy(questions: Question[]) {
-    // Récupère la racine : la question sans parent
-    const rootQuestion = questions.find(q => q.parentId === null);
-    
-    // Si aucune racine n'est trouvée, on renvoie une erreur
-    if (!rootQuestion) {
-        throw new Error("Pas de racine trouvée")
-    };
+    const virtualRoot = {
+        questionId: "virtual-root",
+        label: "Racine",
+        answered: false,
+        parentId: null,
+        status: "pending",
+        isVirtualRoot: true,
+    } as Question & { isVirtualRoot: boolean };
     
     // Création de la hiérarchie D3
     // 'hierarchy' prend un élément racine et une fonction pour récupérer ses enfants
-    const root = hierarchy(rootQuestion, (node: any) => {
-        // Cherche toutes les questions dont le parent est 'node.id'
-        return questions.filter(q => q.parentId === node.id);
+    const root = hierarchy(virtualRoot, (node: any) => {
+        if (node.isVirtualRoot) {
+            return questions.filter(q => q.parentId === null);
+        }
+        const nodeId = node.questionId ?? node.id;
+        return questions.filter(
+            q => q.parentId !== null && String(q.parentId) === String(nodeId)
+        );
     });
 
      return root;
@@ -62,6 +68,7 @@ export function d3ToReactFlow(root: HierarchyNode<Question>): { nodes: Node[]; e
     root.descendants().forEach(node => {
         const isRoot = node.depth === 0;
         const questionData = node.data as Question;
+        const isVirtualRoot = Boolean((node.data as any).isVirtualRoot);
 
         // Inverser x et y pour un layout horizontal (gauche à droite)
         // D3 tree : x = vertical, y = horizontal
@@ -77,9 +84,10 @@ export function d3ToReactFlow(root: HierarchyNode<Question>): { nodes: Node[]; e
                 ...node.data,
                 status: node.data.status || "pending",
                 isRoot,
+                isVirtualRoot,
             } as Question & { isRoot?: boolean },
-            // Cacher tous les nœuds sauf la racine au départ
-            hidden: !isRoot,
+            // Cacher tous les nœuds sauf la racine et le niveau racine
+            hidden: !isRoot && node.data.parentId !== null,
         });
 
         if (node.parent) {

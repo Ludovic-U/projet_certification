@@ -2,6 +2,7 @@
 
 // import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Input,
   Button,
@@ -40,6 +41,7 @@ interface CreateQuestionFormProps {
   apiError?: string;
   initialValues?: Partial<CreateQuestionInputs>;
   submitLabel?: string;
+  secondaryAction?: ReactNode;
 }
 
 export default function CreateQuestionForm({
@@ -48,6 +50,7 @@ export default function CreateQuestionForm({
   apiError,
   initialValues,
   submitLabel,
+  secondaryAction,
 }: CreateQuestionFormProps) {
   // const { register, handleSubmit, formState: { errors } } = useForm<CreateQuestionInputs>();
   const [label, setLabel] = useState("");
@@ -245,9 +248,12 @@ export default function CreateQuestionForm({
             />
           )}
         </div>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Création..." : submitLabel || "Créer"}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Création..." : submitLabel || "Créer"}
+          </Button>
+          {secondaryAction}
+        </div>
       </form>
     </>
   );
