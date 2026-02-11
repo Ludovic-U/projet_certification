@@ -369,26 +369,24 @@ const BudgetSectionWithLines: React.FC<BudgetSectionWithLinesProps> = ({
 
       <div className="space-y-3">
         <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-slate-800/50 rounded-t-xl text-sm font-medium text-slate-300">
-          <div className="col-span-4">Nature de dépense</div>
-          <div className="col-span-2 text-center">Unités</div>
-          <div className="col-span-2 text-center">Prix (€)</div>
-          <div className="col-span-3 text-right">Total (€)</div>
-          <div className="col-span-1"></div>
+          <div className="col-span-6">Nature / name</div>
+          <div className="col-span-3 text-center">Unité</div>
+          <div className="col-span-3 text-right">Prix (€)</div>
         </div>
 
         <div className="space-y-2">
           {expenseLines.map((line) => (
             <div key={line.id} className="grid grid-cols-12 gap-3 items-center px-4 py-3 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all">
-              <div className="col-span-4">
+              <div className="col-span-6">
                 <input
                   type="text"
                   value={line.nature.replace(category + ':', '')}
                   onChange={(e) => updateExpenseLine(line.id, { nature: `${category}:${e.target.value}` })}
-                  placeholder="Description..."
+                  placeholder="Nature / name..."
                   className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
-              <div className="col-span-2">
+              <div className="col-span-3">
                 <input
                   type="number"
                   min="0"
@@ -406,13 +404,8 @@ const BudgetSectionWithLines: React.FC<BudgetSectionWithLinesProps> = ({
                   value={line.prix || ''}
                   onChange={(e) => updateExpenseLine(line.id, { prix: parseFloat(e.target.value) || 0 })}
                   placeholder="0.00"
-                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-center"
+                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right"
                 />
-              </div>
-              <div className="col-span-3 text-right">
-                <span className="text-white font-medium">
-                  {calculateExpenseLineTotal(line).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                </span>
               </div>
               <div className="col-span-1 flex justify-end">
                 <button
@@ -513,8 +506,8 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
 
   const typeStyles = getTypeStyles(editingTask.type);
 
-  const addExpenseLine = () => {
-    const newLine = createEmptyExpenseLine();
+  const addExpenseLine = (category: string) => {
+    const newLine = { ...createEmptyExpenseLine(), nature: `${category}:` };
     setEditingTask({
       ...editingTask,
       budget: {
@@ -899,7 +892,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               title="Aménagements"
               icon={<Target className="w-5 h-5 text-purple-400" />}
               category="amenagements"
-              addExpenseLine={addExpenseLine}
+              addExpenseLine={() => addExpenseLine('amenagements')}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />
@@ -910,7 +903,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               title="Équipements pédagogiques"
               icon={<FileText className="w-5 h-5 text-pink-400" />}
               category="equipements"
-              addExpenseLine={addExpenseLine}
+              addExpenseLine={() => addExpenseLine('equipements')}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />
@@ -921,7 +914,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               title="Prestations"
               icon={<DollarSign className="w-5 h-5 text-cyan-400" />}
               category="prestations"
-              addExpenseLine={addExpenseLine}
+              addExpenseLine={() => addExpenseLine('prestations')}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />
@@ -932,7 +925,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               title="Communications"
               icon={<CheckCircle2 className="w-5 h-5 text-orange-400" />}
               category="communications"
-              addExpenseLine={addExpenseLine}
+              addExpenseLine={() => addExpenseLine('communications')}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />
