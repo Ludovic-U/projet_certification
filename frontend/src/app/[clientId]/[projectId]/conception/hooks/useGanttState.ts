@@ -334,6 +334,7 @@ export const useGanttState = () => {
       notes: '',
       files: [],
       assigneeIds: [],
+      color: '#3b82f6',
       budget: createEmptyBudget(),
       subActionId: null,
     };
@@ -360,6 +361,7 @@ export const useGanttState = () => {
       notes: '',
       files: [],
       assigneeIds: [],
+      color: '#3b82f6',
       budget: createEmptyBudget(),
       subActionId: null,
     };
@@ -439,6 +441,7 @@ export const useGanttState = () => {
               goal: editingTask.goal,
               assigneeIds: editingTask.assigneeIds || [],
               livrableIds: editingTask.livrableIds || [],
+              color: editingTask.color || '#3b82f6',
               versionId: versionId || null
             });
             

@@ -55,6 +55,7 @@ export interface ApiTaskResponse {
   assigneeIds: number[];
   livrableIds: number[];
   goal?: string;
+  color?: string;
   subActionId?: number | null;
   actionId?: number;
 }
@@ -76,6 +77,7 @@ export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
   assigneeIds: apiTask.assigneeIds,
   livrableIds: apiTask.livrableIds,
   goal: apiTask.goal,
+  color: apiTask.color || '#3b82f6',
 });
 
 /**
@@ -122,6 +124,7 @@ export const createTask = async (
     assigneeIds: task.assigneeIds || [],
     livrableIds: task.livrableIds || [],
     goal: task.goal,
+    color: task.color || '#3b82f6',
   };
 };
 
@@ -151,6 +154,7 @@ export const updateTask = async (
     assigneeIds: task.assigneeIds || [],
     livrableIds: task.livrableIds || [],
     goal: task.goal,
+    color: task.color || '#3b82f6',
   };
 };
 

@@ -163,6 +163,7 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
         assigneeIds: task.taskAssignments.map(ta => ta.userId),
         livrableIds: task.tasks.map(t => t.deliverableId),
         goal: task.goal,
+        color: task.color || '#3b82f6',
         // Budget aggregated from expenses
         budget: {
           personnelDays: Math.round(personnelDays * 10) / 10,
@@ -299,6 +300,7 @@ module.exports.createTask = async (taskData) => {
       notes = '',
       files = [],
       goal = null,
+      color = '#3b82f6',
       assigneeIds = [],
       livrableIds = []
     } = taskData;
@@ -319,6 +321,7 @@ module.exports.createTask = async (taskData) => {
         notes: notes || '',
         files: files || [],
         goal: goal || null,
+        color: color || '#3b82f6',
         taskAssignments: assigneeIds && assigneeIds.length > 0 ? {
           create: assigneeIds.map(userId => ({ userId: Number(userId) }))
         } : undefined,
@@ -364,6 +367,7 @@ module.exports.createTask = async (taskData) => {
       assigneeIds: task.taskAssignments.map(ta => ta.userId),
       livrableIds: livrableIds || [],
       goal: task.goal,
+      color: task.color,
     };
   } catch (error) {
     console.error('Error creating task:', error);
@@ -393,6 +397,7 @@ module.exports.updateTask = async (taskId, taskData) => {
       notes,
       files,
       goal,
+      color,
       assigneeIds,
       livrableIds
     } = taskData;
@@ -428,6 +433,7 @@ module.exports.updateTask = async (taskId, taskData) => {
       updateData.files = files;
     }
     if (goal !== undefined) updateData.goal = goal;
+    if (color !== undefined) updateData.color = color;
 
     const task = await prisma.task.update({
       where: { taskId },
@@ -488,6 +494,7 @@ module.exports.updateTask = async (taskId, taskData) => {
       assigneeIds: assigneeIds !== undefined ? assigneeIds : task.taskAssignments.map(ta => ta.userId),
       livrableIds: livrableIds !== undefined ? livrableIds : currentTask.tasks.map(t => t.deliverableId),
       goal: task.goal,
+      color: task.color,
     };
   } catch (error) {
     console.error('Error updating task:', error);

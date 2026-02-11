@@ -188,12 +188,12 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
 
       <div className="p-4 space-y-4">
         {/* Task Name - Prominent */}
-        <div className="bg-gradient-to-r from-slate-800 to-slate-750 rounded-xl p-4 border border-slate-700">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-750 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
           <h2 className="text-xl font-bold text-white leading-tight">{selectedTask.text}</h2>
         </div>
 
         {/* Progress Bar */}
-        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
               <Clock className="w-4 h-4 text-slate-400" />
@@ -211,7 +211,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
 
         {/* Quick Info Grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
             <div className="flex items-center gap-2 text-slate-400 mb-1">
               <Calendar className="w-4 h-4" />
               <span className="text-xs font-medium">Début</span>
@@ -219,7 +219,7 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
             <p className="text-white font-medium">{formatDate(selectedTask.start)}</p>
           </div>
           {selectedTask.end && selectedTask.type !== 'milestone' && (
-            <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+            <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
               <div className="flex items-center gap-2 text-slate-400 mb-1">
                 <Calendar className="w-4 h-4" />
                 <span className="text-xs font-medium">Fin</span>
@@ -227,14 +227,14 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
               <p className="text-white font-medium">{formatDate(selectedTask.end)}</p>
             </div>
           )}
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
             <div className="flex items-center gap-2 text-slate-400 mb-1">
               <User className="w-4 h-4" />
               <span className="text-xs font-medium">Attribué à</span>
             </div>
             <p className="text-white font-medium truncate">{getAssignees(selectedTask, data.users) || 'Non attribué'}</p>
           </div>
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
             <div className="flex items-center gap-2 text-slate-400 mb-1">
               <CheckCircle2 className="w-4 h-4" />
               <span className="text-xs font-medium">Statut</span>

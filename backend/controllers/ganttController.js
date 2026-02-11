@@ -66,6 +66,7 @@ module.exports.createTask = async (req, res) => {
       notes: req.body.notes || '',
       files: req.body.files || [],
       goal: req.body.goal,
+      color: req.body.color,
       assigneeIds: req.body.assigneeIds || [],
       livrableIds: req.body.livrableIds || []
     };
@@ -105,6 +106,7 @@ module.exports.updateTask = async (req, res) => {
       notes: req.body.notes,
       files: req.body.files,
       goal: req.body.goal,
+      color: req.body.color,
       assigneeIds: req.body.assigneeIds,
       livrableIds: req.body.livrableIds
     };

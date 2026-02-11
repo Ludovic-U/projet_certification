@@ -51,6 +51,7 @@ export const transformMistralTaskToGanttTask = (
     files: [],
     assigneeIds: [],
     livrableIds: [],
+    color: '#3b82f6',
     budget: createEmptyBudget(),
   };
 };

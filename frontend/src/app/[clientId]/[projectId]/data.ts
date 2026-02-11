@@ -10,6 +10,8 @@ export interface Task {
   notes: string;
   files: string[];
   assigneeIds: number[]; // Array of user IDs
+  // Color for Gantt chart display
+  color: string;
   // Livrable and goal
   livrableIds?: number[];
   goal?: string;

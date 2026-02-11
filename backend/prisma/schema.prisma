@@ -209,6 +209,7 @@ model Task {
   notes       String?
   files       String[] // JSON array
   goal        String?
+  color       String   @default("#3b82f6") // Task color for Gantt chart display
 
   subAction       SubAction?        @relation(fields: [subActionId], references: [subActionId], onDelete: SetNull)
   project         Project?          @relation(fields: [projectId], references: [projectId])
