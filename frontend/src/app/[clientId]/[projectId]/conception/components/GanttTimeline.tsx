@@ -236,6 +236,7 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
                 ) : (
                   <div
                     className="group absolute top-1/2 -translate-y-1/2 cursor-move z-10"
+                    data-tutorial-id="task-bar"
                     style={{
                       ...getTaskStyle(task),
                       minWidth: '40px',
@@ -278,6 +279,7 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
                       {/* Progress overlay */}
                       <div
                         className="absolute bottom-0 left-0 h-1 bg-white/30 rounded-b-lg"
+                        data-tutorial-id="task-progress"
                         style={{ width: `${task.progress}%` }}
                       />
 

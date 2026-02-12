@@ -14,7 +14,8 @@ import {
   Layout,
   List,
   CalendarDays,
-  Home
+  Home,
+  HelpCircle
 } from 'lucide-react';
 import { ViewMode, MenuPosition } from '../types';
 import { PortalMenu } from './PortalMenu';
@@ -73,6 +74,9 @@ interface GanttToolbarProps {
   onActivateVersion: (versionId: number) => void;
   projectId: number;
   versionsKey?: number;
+  // Tutorial props
+  tutorialOpen?: boolean;
+  setTutorialOpen?: (open: boolean) => void;
 }
 
 export const GanttToolbar: React.FC<GanttToolbarProps> = ({
@@ -124,6 +128,9 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   onActivateVersion,
   projectId,
   versionsKey,
+  // Tutorial props
+  tutorialOpen,
+  setTutorialOpen,
 }) => {
   const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
     { value: 'day', label: 'Jour', icon: <CalendarDays className="w-4 h-4" /> },
@@ -331,7 +338,10 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
         {/* Center Section - Controls */}
         <div className="flex items-center gap-2">
           {/* History Controls */}
-          <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1">
+          <div 
+            className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1"
+            data-tutorial-id="undo-redo"
+          >
             <ToolbarButton
               onClick={undo}
               disabled={historyIndex === 0}
@@ -347,7 +357,10 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
           </div>
 
           {/* View Mode - Segmented Control */}
-          <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1">
+          <div 
+            className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1"
+            data-tutorial-id="view-mode"
+          >
             {viewModes.map((mode) => (
               <button
                 key={mode.value}
@@ -365,7 +378,10 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
           </div>
 
           {/* Zoom Controls */}
-          <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1">
+          <div 
+            className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1"
+            data-tutorial-id="zoom-controls"
+          >
             <ToolbarButton
               onClick={() => zoomBy(-2)}
               icon={<ZoomOut className="w-4 h-4" />}
@@ -382,6 +398,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
           <button
             onClick={() => scrollToDate(today)}
             className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white transition-all text-sm font-medium"
+            data-tutorial-id="today-btn"
           >
             <Home className="w-4 h-4" />
             <span className="hidden sm:inline">Aujourd&apos;hui</span>
@@ -402,10 +419,22 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
 
         {/* Right Section - Add Task */}
         <div className="flex items-center gap-3">
+          {/* Tutorial Button */}
+          {setTutorialOpen && (
+            <button
+              onClick={() => setTutorialOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-xl hover:bg-purple-500/30 transition-all text-sm font-medium"
+              data-tutorial-id="tutorial-btn"
+            >
+              <HelpCircle className="w-5 h-5" />
+              <span className="hidden sm:inline">Tutoriel</span>
+            </button>
+          )}
           {/* Add Task Button */}
           <button
             onClick={addTask}
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/25 font-medium"
+            data-tutorial-id="add-task-btn"
           >
             <Plus className="w-5 h-5" />
             <span className="hidden sm:inline">Ajouter une tâche</span>

@@ -18,6 +18,7 @@ import { GanttTaskEditor } from './components/GanttTaskEditor';
 import { GanttTaskSummary } from './components/GanttTaskSummary';
 import { GanttTooltip } from './components/GanttTooltip';
 import { GanttContextMenu } from './components/GanttContextMenu';
+import { GanttTutorial } from './components/GanttTutorial';
 import { generateColumns, getBaseStart } from './utils/timelineUtils';
 import { startOfDay } from './utils/dateUtils';
 import { DAY_MS } from './constants';
@@ -35,6 +36,9 @@ const GanttChart = () => {
   // Version state
   const [versions, setVersions] = useState<Version[]>([]);
   const [currentVersion, setCurrentVersion] = useState<Version | null>(null);
+  
+  // Tutorial state
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   
   // Ref to track current version (for async operations)
   const currentVersionRef = useRef<Version | null>(null);
@@ -321,6 +325,9 @@ const GanttChart = () => {
           onDeleteVersion={handleDeleteVersion}
           onActivateVersion={handleActivateVersion}
           projectId={projectId || 0}
+          // Tutorial props
+          tutorialOpen={tutorialOpen}
+          setTutorialOpen={setTutorialOpen}
         />
 
         {/* Main Gantt Chart Area */}
@@ -478,6 +485,12 @@ const GanttChart = () => {
           updateTask={ganttState.updateTask}
           projectId={projectId}
           data={ganttState.data}
+        />
+        
+        {/* Tutorial Modal */}
+        <GanttTutorial 
+          isOpen={tutorialOpen} 
+          onClose={() => setTutorialOpen(false)} 
         />
       </div>
     </div>

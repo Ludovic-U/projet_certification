@@ -409,7 +409,11 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
             <p className="text-white font-medium">{formatDate(selectedTask.start)}</p>
           </div>
           {selectedTask.end && selectedTask.type !== 'milestone' && (
-            <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}>
+            <div 
+              className="bg-slate-800 rounded-xl p-4 border border-slate-700 border-l-4" 
+              data-tutorial-id="task-summary"
+              style={{ borderLeftColor: selectedTask.color || '#3b82f6' }}
+            >
               <div className="flex items-center gap-2 text-slate-400 mb-1">
                 <Calendar className="w-4 h-4" />
                 <span className="text-xs font-medium">Fin</span>
