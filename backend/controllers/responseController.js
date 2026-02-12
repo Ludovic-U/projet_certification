@@ -65,6 +65,7 @@ module.exports.createResponse = async (req, res) => {
  * @param {string} req.params.responseId - The ID of the response to update.
  * @param {Object} req.body - Request payload with updated fields.
  * @param {string} [req.body.label] - The updated response text.
+ * @param {string} [req.body.keyword] - The updated keyword.
  * @param {number} req.body.projectId - The ID of the associated project.
  * @param {number} req.body.questionId - The ID of the associated question.
  * @param {number} req.body.optionId -The ID of the associated option.
@@ -78,7 +79,7 @@ module.exports.createResponse = async (req, res) => {
 module.exports.updateResponse = async (req, res) => {
   const { responseId } = req.params;
 
-  const { label, projectId, questionId, optionId, responseIdParent } = req.body;
+  const { label, keyword, projectId, questionId, optionId, responseIdParent } = req.body;
 
   // Check label to not be empty
   if (label === "") {
@@ -88,6 +89,7 @@ module.exports.updateResponse = async (req, res) => {
   try {
     const response = await responseService.updateResponse(responseId, {
       label,
+      keyword,
       projectId,
       questionId,
       optionId,

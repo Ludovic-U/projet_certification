@@ -8,4 +8,5 @@ export interface CardProps {
     className?: string;
     max?: number;
     showPercent?: boolean;
+    size?: "md" | "sm";
 }

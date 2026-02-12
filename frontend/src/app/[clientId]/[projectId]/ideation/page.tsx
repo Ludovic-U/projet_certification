@@ -43,7 +43,7 @@ export default function IdeationPage() {
   const [categories, setCategories] = useState<{ questionCategoryId: number; label: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [swotProgress, setSwotProgress] = useState(0);
-  const [goDecision, setGoDecision] = useState<"go" | "nogo" | null>(null);
+  // const [goDecision, setGoDecision] = useState<"go" | "nogo" | null>(null);
   const [headerFill, setHeaderFill] = useState<
     | {
         color: "go" | "nogo";
@@ -198,20 +198,20 @@ export default function IdeationPage() {
     return `project_${projectId}_goNogo`;
   }, [projectId]);
 
-  useEffect(() => {
-    if (!goNogoKey) return;
-    const stored = data?.[goNogoKey];
-    const normalized = stored === "go" || stored === "nogo" ? stored : null;
+  // useEffect(() => {
+  //   if (!goNogoKey) return;
+  //   const stored = data?.[goNogoKey];
+  //   const normalized = stored === "go" || stored === "nogo" ? stored : null;
 
-    if (normalized === goDecision) return;
+  //   if (normalized === goDecision) return;
 
-    setGoDecision(normalized);
-    if (normalized) {
-      setHeaderFill({ color: normalized, direction: "in", key: Date.now() });
-    } else {
-      setHeaderFill(null);
-    }
-  }, [data, goNogoKey, goDecision]);
+  //   setGoDecision(normalized);
+  //   if (normalized) {
+  //     setHeaderFill({ color: normalized, direction: "in", key: Date.now() });
+  //   } else {
+  //     setHeaderFill(null);
+  //   }
+  // }, [data, goNogoKey, goDecision]);
 
   
 
@@ -233,28 +233,28 @@ export default function IdeationPage() {
       </div>
     );
 
-  const handleDecisionClick = (decision: "go" | "nogo") => {
-    if (goDecision === decision) {
-      setGoDecision(null);
-      setHeaderFill({ color: decision, direction: "out", key: Date.now() });
-      if (goNogoKey) {
-        removeItem(goNogoKey);
-      }
-      updateGoNogo(null);
-      return;
-    }
+  // const handleDecisionClick = (decision: "go" | "nogo") => {
+  //   if (goDecision === decision) {
+  //     setGoDecision(null);
+  //     setHeaderFill({ color: decision, direction: "out", key: Date.now() });
+  //     if (goNogoKey) {
+  //       removeItem(goNogoKey);
+  //     }
+  //     updateGoNogo(null);
+  //     return;
+  //   }
 
-    setGoDecision(decision);
-    setHeaderFill({ color: decision, direction: "in", key: Date.now() });
-    if (goNogoKey) {
-      setItem(goNogoKey, decision);
-    }
-    updateGoNogo(decision);
-  };
+  //   setGoDecision(decision);
+  //   setHeaderFill({ color: decision, direction: "in", key: Date.now() });
+  //   if (goNogoKey) {
+  //     setItem(goNogoKey, decision);
+  //   }
+  //   updateGoNogo(decision);
+  // };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="relative overflow-hidden flex items-center justify-between gap-4 px-4 py-3 rounded-xl mb-6">
+    <div className="h-screen flex flex-col overflow-hidden">
+      <div className="relative overflow-hidden flex items-center justify-between gap-4 rounded-xl mb-6">
         {headerFill && (
           <div
             key={headerFill.key}
@@ -303,77 +303,98 @@ export default function IdeationPage() {
           </div>
         )} */}
       </div>
-      <section className="flex flex-1 gap-4">
+      <section className="w-full mb-6">
+        <div className="grid w-full grid-cols-2 overflow-hidden rounded-xl border border-dark/10 bg-white">
+          <button
+            type="button"
+            className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-white border-r border-dark/10 bg-dark"
+          >
+            Analyse strategique
+          </button>
+          <button
+            type="button"
+            className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-dark hover:bg-dark/5"
+          >
+            Pre-projet
+          </button>
+        </div>
+      </section>
+      <section className="flex flex-1 gap-4 min-h-0">
         {/* Colonne de gauche avec les Cards */}
-        <div className="flex flex-col gap-4 w-[320px] min-w-[320px]">
-          {/* Vue globale card */}
-          <Card
-            color="#6366F1"
-            title="Vue globale"
-            max={questions.length}
-            progress={completedQuestionIds.size}
-            buttonLabel="voir toutes les questions"
-            className={
-              selectedCategory === null
-                ? "ring-2 ring-dark shadow-700base"
-                : ""
-            }
-            onButtonClick={() => {
-              if (selectedCategory === null) {
-                modalQuestions.openModal();
-                return;
+        <div className="flex flex-col gap-4 w-[320px] min-w-[320px] min-h-0">
+          <div className="flex flex-col gap-4 overflow-y-auto pr-1 pl-2 pt-2 flex-1">
+            {/* Vue globale card */}
+            <Card
+              color="#6366F1"
+              title="Vue globale"
+              max={questions.length}
+              progress={completedQuestionIds.size}
+              buttonLabel="voir toutes les questions"
+              size="sm"
+              className={
+                selectedCategory === null
+                  ? "ring-2 ring-dark shadow-700base"
+                  : ""
               }
-              setSelectedCategory(null);
-            }}
-          />
-          
-          {visibleCategories.map((category, index) => {
-            const total = questions.filter(
-              (q) => getQuestionCategoryLabel(q) === category.label
-            ).length;
-            const completed = questions.filter((q) => {
-              const nodeCategory = getQuestionCategoryLabel(q);
-              return (
-                nodeCategory === category.label &&
-                completedQuestionIds.has(Number(q.questionId))
-              );
-            }).length;
-
-            return (
-              <Card
-                key={category.questionCategoryId}
-                color={categoryColors[index % categoryColors.length]}
-                title={category.label}
-                max={total}
-                progress={completed}
-                buttonLabel="voir les questions"
-                className={
-                  selectedCategory === category.label
-                    ? "ring-2 ring-dark shadow-700base"
-                    : ""
+              onButtonClick={() => {
+                if (selectedCategory === null) {
+                  modalQuestions.openModal();
+                  return;
                 }
-                onButtonClick={() => {
-                  if (selectedCategory === category.label) {
-                    modalQuestions.openModal();
-                    return;
+                setSelectedCategory(null);
+              }}
+            />
+            
+            {visibleCategories.map((category, index) => {
+              const total = questions.filter(
+                (q) => getQuestionCategoryLabel(q) === category.label
+              ).length;
+              const completed = questions.filter((q) => {
+                const nodeCategory = getQuestionCategoryLabel(q);
+                return (
+                  nodeCategory === category.label &&
+                  completedQuestionIds.has(Number(q.questionId))
+                );
+              }).length;
+
+              return (
+                <Card
+                  key={category.questionCategoryId}
+                  color={categoryColors[index % categoryColors.length]}
+                  title={category.label}
+                  max={total}
+                  progress={completed}
+                  buttonLabel="voir les questions"
+                  size="sm"
+                  className={
+                    selectedCategory === category.label
+                      ? "ring-2 ring-dark shadow-700base"
+                      : ""
                   }
-                  setSelectedCategory(category.label);
-                }}
-              />
-            );
-          })}
-          <Card
-            color="#4CAF50"
-            title="Analyse SWOT"
-            max={4}
-            progress={swotProgress}
-            buttonLabel="Remplir l'analyse"
-            onButtonClick={() => router.push(`/${clientId}/${projectId}/swot`)}
-          />
+                  onButtonClick={() => {
+                    if (selectedCategory === category.label) {
+                      modalQuestions.openModal();
+                      return;
+                    }
+                    setSelectedCategory(category.label);
+                  }}
+                />
+              );
+            })}
+            <Card
+              color="#4CAF50"
+              title="Analyse SWOT"
+              max={4}
+              progress={swotProgress}
+              buttonLabel="Remplir l'analyse"
+              size="sm"
+              onButtonClick={() => router.push(`/${clientId}/${projectId}/swot`)}
+            />
+          </div>
         </div>
 
         {/* Zone principale avec le TreeView */}
-        <div className="flex rounded-xl flex-col bg-light flex-1 items-center justify-center">
+        <div className="flex rounded-xl flex-col bg-white border border-dark/10 flex-1 items-center justify-center">
           <TreeView questions={treeQuestions} onNodesChange={setNodesState} />
         </div>
       </section>

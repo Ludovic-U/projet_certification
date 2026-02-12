@@ -28,6 +28,7 @@ export default function VueEnsemblePage() {
     const [newTodoAssignedTo, setNewTodoAssignedTo] = useState<number | undefined>(undefined);
     const [newTodoDeadline, setNewTodoDeadline] = useState("");
     const [users, setUsers] = useState<{ userId: number; firstname: string; lastname: string }[]>([]);
+    const [showAddTodoForm, setShowAddTodoForm] = useState(false);
 
     const params = useParams();
 
@@ -117,6 +118,7 @@ export default function VueEnsemblePage() {
                     setNewTodoText("");
                     setNewTodoAssignedTo(undefined);
                     setNewTodoDeadline("");
+                    setShowAddTodoForm(false);
                 })
                 .catch(err => console.error("Error creating todo:", err));
         }
@@ -162,7 +164,7 @@ export default function VueEnsemblePage() {
         },
         {
             key: "text",
-            label: "Tâche",
+            label: "",
             render: (todo) => (
                 <div className="flex flex-col gap-0.5">
                     <span className={`${todo.completed ? 'line-through text-grey' : 'text-greydarker'}`}>
@@ -248,17 +250,9 @@ export default function VueEnsemblePage() {
         <div className="h-full flex flex-col">
             <PageHeader title={"Projet " + (data?.projectName ?? "")} description={config?.subtitles.overview}/>
             <section className="flex-1 flex flex-col items-center justify-evenly">
-                 {/* -------------------------Aperçu action-------------------------------- */}
+                 {/* ------------------------TODO list-------------------------------- */}
 
-                <div className="hidden md:flex gap-6 w-full max-w-6xl">
-                    <div className="flex-2 bg-white rounded-xl p-6">
-                        <div className="flex flex-col gap-2">
-                            <h2 className="font-oswald text-primary text-2xl">Aperçu des actions</h2>
-                            <p className="font-noto text-greydarker text-sm">Aucune action ou échéance actuellement planifiée.</p>
-                        </div>
-                    </div>
-                     {/* ------------------------TODO list-------------------------------- */}
-
+                <div className="hidden md:flex gap-6 w-full max-w-6xl mb-8">
                     <div className="flex-1 bg-white rounded-xl p-6">
                         <div className="flex flex-col gap-3 h-full">
                             <div className="flex items-center justify-between">
@@ -266,45 +260,55 @@ export default function VueEnsemblePage() {
                                 <Button 
                                     size="sm" 
                                     variant="primary"
-                                    onClick={addTodo}
+                                    onClick={() => setShowAddTodoForm(!showAddTodoForm)}
                                     className="text-sm py-1 px-3"
                                 >
-                                    + Ajouter   
+                                    {showAddTodoForm ? "Annuler" : "+ Ajouter"}
                                 </Button>
                             </div>
                             
-                            <div className="flex flex-col gap-2">
-                                <input
-                                    type="text"
-                                    value={newTodoText}
-                                    onChange={(e) => setNewTodoText(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && addTodo()}
-                                    placeholder="Nouvelle tâche..."
-                                    className="w-full px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
-                                />
-                                <div className="flex gap-2">
-                                    <select
-                                        value={newTodoAssignedTo || ""}
-                                        onChange={(e) => setNewTodoAssignedTo(e.target.value ? Number(e.target.value) : undefined)}
-                                        className="flex-1 px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
-                                    >
-                                        <option value="">Non assigné</option>
-                                        {users.map(user => (
-                                            <option key={user.userId} value={user.userId}>
-                                                {user.firstname} {user.lastname}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        type="date"
-                                        value={newTodoDeadline}
-                                        onChange={(e) => setNewTodoDeadline(e.target.value)}
-                                        className="flex-1 px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
-                                    />
-                                </div>
-                            </div>
+                            <div className="flex-1 overflow-y-auto max-h-100 flex flex-col gap-3">
+                                {showAddTodoForm && (
+                                    <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                        <input
+                                            type="text"
+                                            value={newTodoText}
+                                            onChange={(e) => setNewTodoText(e.target.value)}
+                                            onKeyDown={(e) => e.key === "Enter" && addTodo()}
+                                            placeholder="Nouvelle tâche..."
+                                            className="w-full px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
+                                            autoFocus
+                                        />
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={newTodoAssignedTo || ""}
+                                                onChange={(e) => setNewTodoAssignedTo(e.target.value ? Number(e.target.value) : undefined)}
+                                                className="flex-1 px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
+                                            >
+                                                <option value="">Non assigné</option>
+                                                {users.map(user => (
+                                                    <option key={user.userId} value={user.userId}>
+                                                        {user.firstname} {user.lastname}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <input
+                                                type="date"
+                                                value={newTodoDeadline}
+                                                onChange={(e) => setNewTodoDeadline(e.target.value)}
+                                                className="flex-1 px-3 py-1.5 text-sm border border-grey rounded-lg focus:outline-none focus:border-primary"
+                                            />
+                                        </div>
+                                        <Button 
+                                            size="sm" 
+                                            onClick={addTodo}
+                                            className="self-end"
+                                        >
+                                            Ajouter la tâche
+                                        </Button>
+                                    </div>
+                                )}
 
-                            <div className="flex-1 overflow-y-auto max-h-100">
                                 {todos.length === 0 ? (
                                     <p className="font-noto text-greydarker text-sm mt-2">Aucune tâche pour le moment.</p>
                                 ) : (
@@ -315,6 +319,14 @@ export default function VueEnsemblePage() {
                                     />
                                 )}
                             </div>
+                        </div>
+                    </div>
+                     {/* -------------------------Aperçu action-------------------------------- */}
+
+                    <div className="flex-2 bg-white rounded-xl p-6">
+                        <div className="flex flex-col gap-2">
+                            <h2 className="font-oswald text-primary text-2xl">Aperçu des actions</h2>
+                            <p className="font-noto text-greydarker text-sm">Aucune action ou échéance actuellement planifiée.</p>
                         </div>
                     </div>
                 </div>

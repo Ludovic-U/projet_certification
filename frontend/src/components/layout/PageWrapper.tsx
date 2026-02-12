@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 
 export default function PageWrapper({ children }: {children: ReactNode}) {
     return (
-        <div className="flex-grow flex flex-col p-10 space-y-2 bg-light">
+        <div className="grow flex flex-col p-5 pl-6 space-y-2 bg-light">
             {children}
         </div>
     );

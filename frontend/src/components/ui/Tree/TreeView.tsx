@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { ReactFlow, Node, Edge, Controls, ControlButton } from "@xyflow/react";
+import {
+  ReactFlow,
+  Node,
+  Edge,
+  Controls,
+  ControlButton,
+} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Question } from "@/types/question";
 import { QuestionNode } from "../Nodes/Question";
@@ -52,6 +58,7 @@ export default function TreeView({
   const [responseKeyword, setResponseKeyword] = useState<string>("");
   // Store responses from DB
   const [projectResponses, setProjectResponses] = useState<any[]>([]);
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   
   // Fetch all responses for this project
   useEffect(() => {
@@ -155,6 +162,16 @@ export default function TreeView({
   useEffect(() => {
     onNodesChange?.(nodes);
   }, [nodes, onNodesChange]);
+
+  // Re-center view when category change updates the question set
+  useEffect(() => {
+    if (initialNodes.length > 0) {
+      reactFlowInstance?.fitView({
+        padding: 0.2,
+        minZoom: 0.8,
+      });
+    }
+  }, [initialNodes, reactFlowInstance]);
 
   const handleNodeClick = async (_: any, node: Node) => {
     if ((node.data as any)?.isVirtualRoot) {
@@ -262,21 +279,57 @@ export default function TreeView({
       return;
     }
     
-    // store response to DB
+    // Check if response already exists
+    const existingResponse = projectResponses.find(
+      (r: any) => r.questionId === Number(questionId)
+    );
+    
+    // store or update response to DB
     try {
-      const response = await api_backend.post(`/response/create`, {
-        label: label,
-        keyword: responseKeyword || null,
-        projectId: Number(projectId),
-        questionId: Number(questionId),
-      });
-      
-      // Add response to local state to update tree immediately
-      setProjectResponses(prev => [...prev, response.data]);
+      let response;
+      if (existingResponse) {
+        // Update existing response
+        response = await api_backend.patch(`/response/update/${existingResponse.responseId}`, {
+          label: label,
+          keyword: responseKeyword || null,
+        });
+        
+        // Update response in local state
+        setProjectResponses(prev => prev.map(r => 
+          r.questionId === Number(questionId) 
+            ? { ...r, label: response.data.label, keyword: response.data.keyword }
+            : r
+        ));
+        
+        // Update node keyword immediately in the tree
+        setNodes((prev) => prev.map((n) => {
+          if (n.id === selectedNode.id) {
+            return {
+              ...n,
+              data: {
+                ...n.data,
+                keyword: response.data.keyword ?? n.data.keyword,
+              },
+            };
+          }
+          return n;
+        }));
+      } else {
+        // Create new response
+        response = await api_backend.post(`/response/create`, {
+          label: label,
+          keyword: responseKeyword || null,
+          projectId: Number(projectId),
+          questionId: Number(questionId),
+        });
+        
+        // Add response to local state
+        setProjectResponses(prev => [...prev, response.data]);
+      }
       
       updateNodeStatus("answered");
     } catch (error: any) {
-      console.error("Erreur lors de la création de la réponse:", error);
+      console.error("Erreur lors de la création/mise à jour de la réponse:", error);
       console.error("Données envoyées:", {
         label: label,
         projectId: Number(projectId),
@@ -333,6 +386,7 @@ export default function TreeView({
         defaultEdgeOptions={{ type: "smoothstep", style: { stroke: "#272727" } }}
         nodeTypes={nodeTypes}
         onNodeClick={handleNodeClick}
+        onInit={setReactFlowInstance}
         fitView
         fitViewOptions={{
           padding: 0.2,

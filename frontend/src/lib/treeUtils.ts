@@ -11,7 +11,7 @@ import { Question } from "@/types/question"
 export function buildHierarchy(questions: Question[]) {
     const virtualRoot = {
         questionId: "virtual-root",
-        label: "Racine",
+        label: "Idéation",
         answered: false,
         parentId: null,
         status: "pending",

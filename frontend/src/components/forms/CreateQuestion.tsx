@@ -16,7 +16,7 @@ import api_backend from "@/api/axiosInstance";
 export type CreateQuestionInputs = {
   label: string;
   keyword: string;
-  category: string;
+  category: string | null;
   hasMultipleOpenResponse: boolean;
   shouldMultiply: boolean;
   allowMultiple: boolean;
@@ -55,7 +55,7 @@ export default function CreateQuestionForm({
   // const { register, handleSubmit, formState: { errors } } = useForm<CreateQuestionInputs>();
   const [label, setLabel] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<string | null>(null);
   const [hasMultipleOpenResponse, setHasMultipleOpenResponse] = useState(false);
   const [shouldMultiply, setShouldMultiply] = useState(false);
   const [allowMultiple, setAllowMultiple] = useState(false);
@@ -112,8 +112,8 @@ export default function CreateQuestionForm({
     if (typeof initialValues.keyword === "string") {
       setKeyword(initialValues.keyword);
     }
-    if (typeof initialValues.category === "string") {
-      setCategory(initialValues.category);
+    if (typeof initialValues.category === "string" || initialValues.category === null) {
+      setCategory(initialValues.category ?? null);
     }
     if (typeof initialValues.questionIdParent === "string") {
       setQuestionIdParent(initialValues.questionIdParent);
@@ -146,8 +146,8 @@ export default function CreateQuestionForm({
       return;
     }
 
-    if (!category) {
-      setCategory(categories[0].label);
+    if (category === null) {
+      setCategory(categories[0]?.label ?? null);
     }
   }, [categories, initialValues?.category, category]);
 
@@ -203,9 +203,15 @@ export default function CreateQuestionForm({
             <Select
               className="flex-1"
               label="Catégorie"
-              options={categories.map((c) => ({ value: c.label, label: c.label }))}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              options={[
+                { value: "", label: "Aucune categorie" },
+                ...categories.map((c) => ({ value: c.label, label: c.label })),
+              ]}
+              value={category ?? ""}
+              onChange={(e) => {
+                const nextValue = e.target.value;
+                setCategory(nextValue ? nextValue : null);
+              }}
             />
 
             <MultiSelect

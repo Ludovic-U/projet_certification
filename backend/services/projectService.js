@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const todoService = require('./todoService');
 
 module.exports.createProject = async (data) => {
   try {
@@ -36,6 +37,18 @@ module.exports.createProject = async (data) => {
         questions: true,
       },
     });
+
+    // Créer la tâche todo initiale
+    try {
+      await todoService.createTodo({
+        text: 'Compléter la partie "Analyse stratégique" dans Idéation',
+        projectId: newProject.projectId,
+        assignedTo: managerId,
+      });
+    } catch (todoError) {
+      console.error("Erreur lors de la création de la todo initiale :", todoError);
+      // Ne pas bloquer la création du projet si la todo échoue
+    }
 
     return newProject;
   } catch (error) {

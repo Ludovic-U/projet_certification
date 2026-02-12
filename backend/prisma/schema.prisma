@@ -343,7 +343,7 @@ model Question {
   questionId               Int        @id @default(autoincrement())
   label                    String
   keyword String
-  category                 String
+  category                 String?
   numberOfSelectionableOpt Int?
   isRelevant               Boolean?
   hasMultipleOpenResponse  Boolean?
@@ -380,7 +380,7 @@ model Response {
   responseIdParent Int?
   option           Option?    @relation(fields: [optionId], references: [optionId])
   project          Project    @relation(fields: [projectId], references: [projectId])
-  question         Question   @relation(fields: [questionId], references: [questionId])
+  question         Question   @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
   parent           Response?  @relation("ResponseHierarchy", fields: [responseIdParent], references: [responseId])
   children         Response[] @relation("ResponseHierarchy")
 }
