@@ -4,7 +4,8 @@ const todoService = require('./todoService');
 
 module.exports.createProject = async (data) => {
   try {
-    const managerId = Number(data.projectManager ?? data.managerId ?? 1); // adapter si nécessaire
+    const projectManagerValue = data.projectManager ?? data.managerId;
+    const managerId = Number.isNaN(Number(projectManagerValue)) ? 1 : Number(projectManagerValue);
     const clientId = Number(data.clientId);
 
     if (!Number.isInteger(managerId) || managerId <= 0) {
@@ -14,6 +15,35 @@ module.exports.createProject = async (data) => {
       throw new Error(`createProject: invalid clientId (${data.clientId})`);
     }
 
+    // Handle types: connect existing ones by ID and create new ones by label
+    let typesConnect = [];
+    let typesCreate = [];
+    
+    if (Array.isArray(data.types) && data.types.length > 0) {
+      typesConnect = data.types
+        .filter(id => id && !isNaN(Number(id)))
+        .map(id => ({ typeId: Number(id) }));
+    }
+    
+    if (Array.isArray(data.newTypes) && data.newTypes.length > 0) {
+      // Create new types with unique labels
+      typesCreate = data.newTypes
+        .filter(label => label && typeof label === 'string' && label.trim())
+        .map(label => ({
+          label: label.trim(),
+        }));
+    }
+    
+    // Build the types relation object
+    const typesRelation = {};
+    if (typesConnect.length > 0) {
+      typesRelation.connect = typesConnect;
+    }
+    if (typesCreate.length > 0) {
+      typesRelation.create = typesCreate;
+    }
+    const typesData = Object.keys(typesRelation).length > 0 ? typesRelation : undefined;
+
     const newProject = await prisma.project.create({
       data: {
         projectName: data.projectName,
@@ -22,13 +52,9 @@ module.exports.createProject = async (data) => {
         projectStage: data.projectStage ?? "Idéation",
         projectStatus: data.projectStatus ?? "en cours",
         projectDesc: data.projectDesc ?? null,
-        // connect relations via nested connect (do not include the scalar fields projectManager/clientId here)
         manager: { connect: { userId: managerId } },
         client: { connect: { clientId: clientId } },
-        // Connecter les types si fournis
-        types: Array.isArray(data.types) && data.types.length > 0 
-          ? { connect: data.types.map(id => ({ typeId: Number(id) })) } 
-          : undefined,
+        types: typesData,
       },
       include: {
         manager: true,

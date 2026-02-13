@@ -50,11 +50,13 @@ export interface ApiTaskResponse {
   parent: number;
   type: 'task' | 'milestone' | 'project';
   details: string;
+  description?: string;
   notes: string;
   files: string[];
   assigneeIds: number[];
   livrableIds: number[];
   goal?: string;
+  color?: string;
   subActionId?: number | null;
   actionId?: number;
 }
@@ -71,11 +73,13 @@ export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
   parent: apiTask.parent,
   type: apiTask.type,
   details: apiTask.details,
+  description: apiTask.description,
   notes: apiTask.notes,
   files: apiTask.files,
   assigneeIds: apiTask.assigneeIds,
   livrableIds: apiTask.livrableIds,
   goal: apiTask.goal,
+  color: apiTask.color || '#3b82f6',
 });
 
 /**
@@ -122,6 +126,7 @@ export const createTask = async (
     assigneeIds: task.assigneeIds || [],
     livrableIds: task.livrableIds || [],
     goal: task.goal,
+    color: task.color || '#3b82f6',
   };
 };
 
@@ -151,6 +156,7 @@ export const updateTask = async (
     assigneeIds: task.assigneeIds || [],
     livrableIds: task.livrableIds || [],
     goal: task.goal,
+    color: task.color || '#3b82f6',
   };
 };
 
@@ -268,11 +274,11 @@ export const fetchVersions = async (projectId: number): Promise<Version[]> => {
 };
 
 /**
- * Create a new version
+ * Create a new version with optional duplication from source version
  */
 export const createVersion = async (
   projectId: number,
-  versionData: { name: string; description?: string; isActive?: boolean }
+  versionData: { name: string; description?: string; isActive?: boolean; sourceVersionId?: number | null }
 ): Promise<Version> => {
   const response = await api.post(`/gantt/${projectId}/versions`, versionData);
   return response.data;

@@ -119,6 +119,7 @@ model Project {
   tasks          Task[]
   FinanceurProjet     FinanceurProjet[]
   todos           Todo[]
+  mindmaps       Mindmap[]
 }
 
 model Todo {
@@ -214,6 +215,7 @@ model Task {
   notes       String?
   files       String[] // JSON array
   goal        String?
+  color       String   @default("#3b82f6") // Task color for Gantt chart display
 
   subAction       SubAction?        @relation(fields: [subActionId], references: [subActionId], onDelete: SetNull)
   project         Project?          @relation(fields: [projectId], references: [projectId])
@@ -391,4 +393,57 @@ enum BudgetCategory {
   EQUIPEMENTS_PEDAGOGIQUES
   PRESTATIONS
   COMMUNICATION_EVENEMENTIEL
+}
+
+// ==========================
+// Mindmap Models
+// ==========================
+
+model Mindmap {
+  mindmapId   Int           @id @default(autoincrement())
+  projectId   Int           @map("project_id")
+  name        String        @default("Untitled Mindmap")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  
+  project     Project       @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  nodes       MindmapNode[]
+  edges       MindmapEdge[]
+  
+  @@index([projectId])
+}
+
+model MindmapNode {
+  nodeId      Int        @id @default(autoincrement()) @map("node_id")
+  mindmapId   Int        @map("mindmap_id")
+  externalId  String     @map("external_id") // ID from ReactFlow
+  label       String
+  nodeType    String     @map("node_type") // action, sous_action, objectif, livrable
+  positionX   Float      @map("position_x")
+  positionY   Float      @map("position_y")
+  color       String?
+  fontSize    Int        @default(14) @map("font_size")
+  isRoot      Boolean    @default(false) @map("is_root")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  
+  mindmap     Mindmap    @relation(fields: [mindmapId], references: [mindmapId], onDelete: Cascade)
+  
+  @@unique([mindmapId, externalId])
+  @@index([mindmapId])
+}
+
+model MindmapEdge {
+  edgeId      Int        @id @default(autoincrement()) @map("edge_id")
+  mindmapId   Int        @map("mindmap_id")
+  externalId  String     @map("external_id") // ID from ReactFlow
+  source      String     // Source node externalId
+  target      String     // Target node externalId
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  
+  mindmap     Mindmap    @relation(fields: [mindmapId], references: [mindmapId], onDelete: Cascade)
+  
+  @@unique([mindmapId, externalId])
+  @@index([mindmapId])
 }

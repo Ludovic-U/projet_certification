@@ -1,16 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GitBranch, ChevronDown, PlusCircle, Trash2, Eye, Star, Check } from 'lucide-react';
+import { GitBranch, ChevronDown, PlusCircle, Trash2, Eye, Star, Check, Copy } from 'lucide-react';
 import { Version } from '@/api/ganttApi';
-import { createVersion, deleteVersion, activateVersion } from '@/api/ganttApi';
 
 interface VersionSelectorProps {
   versions: Version[];
   currentVersion: Version | null;
   setCurrentVersion: (version: Version | null) => void;
-  onCreateVersion: (name: string, description?: string) => void;
+  onCreateVersion: (name: string, description?: string, sourceVersionId?: number | null) => void;
   onDeleteVersion: (versionId: number) => void;
   onActivateVersion: (versionId: number) => void;
   projectId: number;
+  // Add a key prop to force re-render when versions change
+  versionsKey?: number;
 }
 
 export const VersionSelector: React.FC<VersionSelectorProps> = ({
@@ -21,10 +22,12 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
   onDeleteVersion,
   onActivateVersion,
   projectId,
+  versionsKey = 0,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newVersionName, setNewVersionName] = useState('');
+  const [duplicateFromCurrent, setDuplicateFromCurrent] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -43,8 +46,13 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
     if (!newVersionName.trim()) return;
     
     try {
-      await createVersion(projectId, { name: newVersionName.trim() });
+      // Use the callback prop to let parent handle version creation and switching
+      const sourceVersionId = duplicateFromCurrent 
+        ? (currentVersion ? currentVersion.versionId : null) 
+        : undefined;
+      await onCreateVersion(newVersionName.trim(), undefined, sourceVersionId);
       setNewVersionName('');
+      setDuplicateFromCurrent(false);
       setIsCreating(false);
     } catch (error) {
       console.error('Error creating version:', error);
@@ -55,10 +63,8 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette version ?')) return;
     
     try {
-      await deleteVersion(projectId, versionId);
-      if (currentVersion?.versionId === versionId) {
-        setCurrentVersion(null);
-      }
+      // Use the callback prop to let parent handle API call and state updates
+      await onDeleteVersion(versionId);
     } catch (error) {
       console.error('Error deleting version:', error);
     }
@@ -66,11 +72,8 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
 
   const handleActivateVersion = async (versionId: number) => {
     try {
-      await activateVersion(projectId, versionId);
-      const version = versions.find(v => v.versionId === versionId);
-      if (version) {
-        setCurrentVersion(version);
-      }
+      // Use the callback prop to let parent handle activation
+      await onActivateVersion(versionId);
     } catch (error) {
       console.error('Error activating version:', error);
     }
@@ -113,10 +116,27 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleCreateVersion();
-                  if (e.key === 'Escape') setIsCreating(false);
+                  if (e.key === 'Escape') { setIsCreating(false); setNewVersionName(''); setDuplicateFromCurrent(false); }
                 }}
               />
-              <div className="flex gap-2 mt-2">
+              {/* Duplicate option */}
+              {(
+                <label className="flex items-center gap-2 mt-3 px-2 py-1.5 bg-slate-900/50 rounded-lg cursor-pointer hover:bg-slate-700/50 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={duplicateFromCurrent}
+                    onChange={(e) => setDuplicateFromCurrent(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-slate-800"
+                  />
+                  <span className="text-xs text-slate-300 flex items-center gap-1.5">
+                    <Copy className="w-3 h-3" />
+                    {currentVersion 
+                      ? `Dupliquer les actions de "${currentVersion.name}"`
+                      : 'Dupliquer les actions de la version principale'}
+                  </span>
+                </label>
+              )}
+              <div className="flex gap-2 mt-3">
                 <button
                   onClick={handleCreateVersion}
                   disabled={!newVersionName.trim()}
@@ -125,7 +145,7 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
                   Créer
                 </button>
                 <button
-                  onClick={() => { setIsCreating(false); setNewVersionName(''); }}
+                  onClick={() => { setIsCreating(false); setNewVersionName(''); setDuplicateFromCurrent(false); }}
                   className="flex-1 px-3 py-1.5 bg-slate-700 text-white text-xs rounded-lg hover:bg-slate-600"
                 >
                   Annuler
@@ -143,7 +163,7 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
           )}
 
           {/* Version List */}
-          <div className="max-h-64 overflow-y-auto">
+          <div key={versionsKey} className="max-h-64 overflow-y-auto">
             {/* Current Version / Default */}
             <button
               onClick={() => setCurrentVersion(null)}

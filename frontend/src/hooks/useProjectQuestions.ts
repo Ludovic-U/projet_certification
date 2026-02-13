@@ -2,6 +2,26 @@ import { useCallback, useEffect, useState } from "react";
 import api_backend from "@/api/axiosInstance";
 import { Question } from "@/types/question";
 
+type QuestionStatus = "pending" | "answered" | "skipped";
+
+interface FormattedQuestion extends Record<string, unknown> {
+    id: number | string;
+    questionId: number | string;
+    label: string;
+    keyword?: string;
+    parentId: number | null;
+    answered: boolean;
+    status: QuestionStatus;
+    category?: string;
+    numberOfSelectionableOpt?: number;
+    options?: string[];
+    isRelevant?: boolean;
+    hasMultipleOpenResponse?: boolean;
+    shouldMultiply?: boolean;
+    types?: (number | { typeId: number; label: string })[];
+    projects?: number[];
+}
+
 type UseProjectQuestionOptions = {
     mode?: "project" | "all";
     pageSize?: number;

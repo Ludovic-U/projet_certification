@@ -66,6 +66,7 @@ module.exports.createTask = async (req, res) => {
       notes: req.body.notes || '',
       files: req.body.files || [],
       goal: req.body.goal,
+      color: req.body.color,
       assigneeIds: req.body.assigneeIds || [],
       livrableIds: req.body.livrableIds || []
     };
@@ -105,6 +106,7 @@ module.exports.updateTask = async (req, res) => {
       notes: req.body.notes,
       files: req.body.files,
       goal: req.body.goal,
+      color: req.body.color,
       assigneeIds: req.body.assigneeIds,
       livrableIds: req.body.livrableIds
     };
@@ -483,7 +485,7 @@ module.exports.getVersions = async (req, res) => {
 };
 
 /**
- * Create a new version
+ * Create a new version with optional duplication from source version
  * POST /api/gantt/:projectId/versions
  */
 module.exports.createVersion = async (req, res) => {
@@ -499,7 +501,12 @@ module.exports.createVersion = async (req, res) => {
       isActive: req.body.isActive || false
     };
 
-    const version = await createVersion(versionData);
+    // Get source version ID for duplication (optional, can be null for main version)
+    const sourceVersionId = req.body.sourceVersionId !== undefined 
+      ? (req.body.sourceVersionId === null ? null : Number(req.body.sourceVersionId)) 
+      : null;
+
+    const version = await createVersion(versionData, sourceVersionId);
     res.status(201).json(version);
   } catch (error) {
     console.error('Error creating version:', error);

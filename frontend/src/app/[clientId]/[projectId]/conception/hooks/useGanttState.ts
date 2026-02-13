@@ -334,6 +334,7 @@ export const useGanttState = () => {
       notes: '',
       files: [],
       assigneeIds: [],
+      color: '#3b82f6',
       budget: createEmptyBudget(),
       subActionId: null,
     };
@@ -360,6 +361,7 @@ export const useGanttState = () => {
       notes: '',
       files: [],
       assigneeIds: [],
+      color: '#3b82f6',
       budget: createEmptyBudget(),
       subActionId: null,
     };
@@ -371,10 +373,24 @@ export const useGanttState = () => {
     setContextMenu(null);
   };
 
-  // Delete task
+  // Delete task and all its children
   const deleteTask = async (id: number) => {
-    const nextTasks = tasks.filter(t => t.id !== id);
-    const nextLinks = links.filter(l => l.source !== id && l.target !== id);
+    // Collect all task IDs to delete (task + all descendants)
+    const tasksToDelete = new Set<number>([id]);
+    let foundNew = true;
+    while (foundNew) {
+      foundNew = false;
+      tasks.forEach(task => {
+        if (task.parent && tasksToDelete.has(task.parent) && !tasksToDelete.has(task.id)) {
+          tasksToDelete.add(task.id);
+          foundNew = true;
+        }
+      });
+    }
+    
+    // Filter out tasks and links to be deleted
+    const nextTasks = tasks.filter(t => !tasksToDelete.has(t.id));
+    const nextLinks = links.filter(l => !tasksToDelete.has(l.source) && !tasksToDelete.has(l.target));
     
     // Optimistically update local state
     setTasks(nextTasks);
@@ -387,6 +403,8 @@ export const useGanttState = () => {
     if (projectId && id > 0) {
       try {
         await apiDeleteTask(projectId, id);
+        // Refresh data from server to ensure consistency
+        await loadData(versionId || undefined);
       } catch (err) {
         console.error('Error deleting task from API:', err);
         // Task was already removed from local state, so we keep it that way
@@ -423,24 +441,12 @@ export const useGanttState = () => {
               goal: editingTask.goal,
               assigneeIds: editingTask.assigneeIds || [],
               livrableIds: editingTask.livrableIds || [],
+              color: editingTask.color || '#3b82f6',
               versionId: versionId || null
             });
             
-            // Update local state with the real task ID from the server
-            // Also update any child tasks that have the old temporary ID as their parent
-            const oldTempId = editingTask.id;
-            const nextTasks = tasks.map(t => {
-              if (t.id === oldTempId) {
-                return { ...editingTask, id: createdTask.id };
-              }
-              // Update child's parent ID if it references the old temp ID
-              if (t.parent === oldTempId) {
-                return { ...t, parent: createdTask.id };
-              }
-              return t;
-            });
-            setTasks(nextTasks);
-            saveState(nextTasks, links);
+            // Refresh data from server to ensure consistency
+            await loadData(versionId || undefined);
           } catch (err) {
             console.error('Error creating task in API:', err);
             // Still update local state
@@ -464,6 +470,8 @@ export const useGanttState = () => {
         if (projectId && editingTask.id > 0) {
           try {
             await apiUpdateTask(projectId, editingTask.id, editingTask);
+            // Refresh data from server to ensure consistency
+            await loadData(versionId || undefined);
           } catch (err) {
             console.error('Error updating task in API:', err);
           }

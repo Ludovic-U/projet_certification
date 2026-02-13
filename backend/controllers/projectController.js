@@ -50,6 +50,7 @@ module.exports.createProjectPost = async (req, res) => {
       clientId: parseInt(req.body.clientId, 10),
       startDate: req.body.startDate,
       types: req.body.types || [],
+      newTypes: req.body.newTypes || [],
     };
 
     const newProject = await createProject(data);

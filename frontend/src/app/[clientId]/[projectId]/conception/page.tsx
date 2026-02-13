@@ -6,7 +6,7 @@
  * including drag-and-drop, resizing, progress tracking, and timeline visualization.
  */
 
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { PageHeader } from '@/components/ui';
 import { useGanttState } from './hooks/useGanttState';
 import { useGanttHandlers } from './hooks/useGanttHandlers';
@@ -36,53 +36,135 @@ const GanttChart = () => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [currentVersion, setCurrentVersion] = useState<Version | null>(null);
   const [versionLoading, setVersionLoading] = useState(false);
-
-  // Fetch versions on mount
+  const [versionsKey, setVersionsKey] = useState(0); // Increment to force VersionSelector refresh
+  
+  // Ref to track current version selection (for use in async functions)
+  const currentVersionRef = useRef<Version | null>(null);
+  
+  // Increment versionsKey when versions change to force VersionSelector refresh
   useEffect(() => {
-    if (projectId) {
-      loadVersions();
+    setVersionsKey(prev => prev + 1);
+  }, [versions]);
+  
+  // Get persisted version from localStorage
+  
+  // Persist version selection to localStorage
+  useEffect(() => {
+    if (projectId && currentVersion) {
+      localStorage.setItem(`project_${projectId}_currentVersion`, JSON.stringify(currentVersion));
     }
+  }, [projectId, currentVersion]);
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    currentVersionRef.current = currentVersion;
+  }, [currentVersion]);
+  
+  // Get persisted version from localStorage
+  const getPersistedVersion = useCallback((): Version | null => {
+    if (!projectId) return null;
+    const persisted = localStorage.getItem(`project_${projectId}_currentVersion`);
+    if (persisted) {
+      try {
+        return JSON.parse(persisted) as Version;
+      } catch {
+        return null;
+      }
+    }
+    return null;
   }, [projectId]);
 
-  const loadVersions = async () => {
+  const loadVersions = useCallback(async (overrideVersion?: Version | null) => {
     if (!projectId) return;
     setVersionLoading(true);
     try {
       const data = await fetchVersions(projectId);
       setVersions(data);
-      // Set first version as current if available
-      if (data.length > 0 && !currentVersion) {
+      setVersionsKey(prev => prev + 1);
+      
+      // If override is provided (e.g., newly created version), use it
+      if (overrideVersion) {
+        const stillExists = data.find(v => v.versionId === overrideVersion.versionId);
+        if (stillExists) {
+          setCurrentVersion(overrideVersion);
+          return;
+        }
+      }
+      
+      // Check if current version still exists, or try to restore from localStorage
+      let savedVersion = currentVersionRef.current;
+      if (savedVersion) {
+        // Check if the saved version still exists in the updated list
+        const stillExists = data.find(v => v.versionId === savedVersion.versionId);
+        if (stillExists) {
+          // Keep the current version
+          setCurrentVersion(savedVersion);
+          return;
+        }
+      }
+      
+      // Try to restore from localStorage
+      const persistedVersion = getPersistedVersion();
+      if (persistedVersion) {
+        const stillExistsInData = data.find(v => v.versionId === persistedVersion.versionId);
+        if (stillExistsInData) {
+          setCurrentVersion(persistedVersion);
+          return;
+        }
+      }
+      
+      // Set default version only if no current version or current version was deleted
+      if (data.length > 0) {
         const activeVersion = data.find(v => v.isActive);
         setCurrentVersion(activeVersion || data[0]);
+      } else {
+        setCurrentVersion(null);
       }
     } catch (error) {
       console.error('Error loading versions:', error);
     } finally {
       setVersionLoading(false);
     }
-  };
+  }, [projectId, getPersistedVersion]);
 
-  const handleCreateVersion = async (name: string, description?: string) => {
+  // Fetch versions on mount
+  useEffect(() => {
+    if (projectId) {
+      loadVersions();
+    }
+  }, [projectId, loadVersions]);
+
+  const handleCreateVersion = useCallback(async (name: string, description?: string, sourceVersionId?: number | null) => {
     if (!projectId) return;
     try {
-      await createVersion(projectId, { name, description });
-      await loadVersions();
+      const newVersion = await createVersion(projectId, { name, description, sourceVersionId });
+      // Pass the new version to loadVersions so it selects it
+      await loadVersions(newVersion);
     } catch (error) {
       console.error('Error creating version:', error);
     }
-  };
+  }, [projectId, loadVersions]);
 
-  const handleDeleteVersion = async (versionId: number) => {
+  const handleDeleteVersion = useCallback(async (versionId: number) => {
     if (!projectId) return;
+    
+    // Check if we're deleting the current version (using ref for latest value)
+    const isDeletingCurrent = currentVersionRef.current?.versionId === versionId;
+    
     try {
       await deleteVersionApi(projectId, versionId);
       await loadVersions();
+      
+      // If we deleted the current version, switch to null (main version)
+      if (isDeletingCurrent) {
+        setCurrentVersion(null);
+      }
     } catch (error) {
       console.error('Error deleting version:', error);
     }
-  };
+  }, [projectId, loadVersions]);
 
-  const handleActivateVersion = async (versionId: number) => {
+  const handleActivateVersion = useCallback(async (versionId: number) => {
     if (!projectId) return;
     try {
       await activateVersionApi(projectId, versionId);
@@ -90,7 +172,7 @@ const GanttChart = () => {
     } catch (error) {
       console.error('Error activating version:', error);
     }
-  };
+  }, [projectId, loadVersions]);
   
   // Re-fetch Gantt data when currentVersion changes
   useEffect(() => {
@@ -254,6 +336,7 @@ const GanttChart = () => {
           onDeleteVersion={handleDeleteVersion}
           onActivateVersion={handleActivateVersion}
           projectId={projectId || 0}
+          versionsKey={versionsKey}
         />
 
         {/* Main Gantt Chart Area */}

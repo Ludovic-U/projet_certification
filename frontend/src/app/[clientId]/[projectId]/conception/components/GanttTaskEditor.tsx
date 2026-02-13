@@ -4,6 +4,17 @@ import { Task, EditorTab, Livrable, SelectOption } from '../types';
 import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateBudgetTotals } from '../utils/budgetUtils';
 import Select from 'react-select';
 
+// Task color options for Gantt chart display
+const TASK_COLORS = [
+  { name: 'Blue', value: '#3b82f6' },
+  { name: 'Green', value: '#22c55e' },
+  { name: 'Red', value: '#ef4444' },
+  { name: 'Orange', value: '#f97316' },
+  { name: 'Purple', value: '#a855f7' },
+  { name: 'Pink', value: '#ec4899' },
+  { name: 'Cyan', value: '#06b6d4' },
+];
+
 interface GanttTaskEditorProps {
   showEditor: boolean;
   editingTask: Task | null;
@@ -189,6 +200,30 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     <option value="milestone">Jalon</option>
                     <option value="project">Projet</option>
                   </select>
+                </div>
+
+                {/* Color Picker */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: editingTask.color || '#3b82f6' }} />
+                    Couleur
+                  </label>
+                  <div className="flex gap-2">
+                    {TASK_COLORS.map((color) => (
+                      <button
+                        key={color.value}
+                        type="button"
+                        onClick={() => setEditingTask({ ...editingTask, color: color.value })}
+                        className={`w-8 h-8 rounded-full transition-all transform hover:scale-110 ${
+                          editingTask.color === color.value 
+                            ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800 scale-110' 
+                            : ''
+                        }`}
+                        style={{ backgroundColor: color.value }}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 {/* Progress */}

@@ -128,7 +128,10 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
             >
               <div 
                 className="flex-1 px-4 border-r border-slate-700 h-full flex items-center gap-2 transition-colors"
-                style={{ paddingLeft: `${indent + 8}px` }}
+                style={{ 
+                  paddingLeft: `${indent + 8}px`,
+                  backgroundColor: `${task.color}20`
+                }}
               >
                 {hasChildren(task.id, tasks) ? (
                   <button
@@ -177,17 +180,17 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
                 )}
               </div>
               
-              <div className="w-28 px-3 border-r border-slate-700 h-full flex items-center justify-center">
+              <div className="w-28 px-3 border-r border-slate-700 h-full flex items-center justify-center" style={{ backgroundColor: `${task.color}15` }}>
                 <span className="text-xs text-slate-400 font-medium bg-slate-800/50 px-2 py-1 rounded-lg">
                   {formatDate(task.start)}
                 </span>
               </div>
               
-              <div className="w-36 px-3 border-r border-slate-700 h-full flex items-center">
+              <div className="w-36 px-3 border-r border-slate-700 h-full flex items-center" style={{ backgroundColor: `${task.color}15` }}>
                 <AssigneeAvatars assignees={getAssignees(task, data.users)} />
               </div>
               
-              <div className="w-28 px-3 h-full flex items-center justify-end gap-2">
+              <div className="w-28 px-3 h-full flex items-center justify-end gap-2" style={{ backgroundColor: `${task.color}15` }}>
                 {isCompleted ? (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/20 rounded-lg">
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -210,7 +213,7 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
                         className="h-full rounded-full transition-all"
                         style={{
                           width: `${task.progress}%`,
-                          backgroundColor: getTaskColor(task.progress)
+                          backgroundColor: task.color || '#3b82f6'
                         }}
                       />
                     </div>

@@ -12,6 +12,7 @@ const typeRoutes = require("./routes/typeRoutes");
 const optionRoutes = require("./routes/optionRoutes");
 const todoRoutes =  require("./routes/todoRoutes.js");
 const mistralRoutes = require('./routes/mistralRoutes');
+const mindmapRoutes = require('./routes/mindmapRoutes');
 const cookieParser = require("cookie-parser");
 const { authenticateUser } = require("./middlewares/auth");
 const multer = require('multer');
@@ -77,6 +78,7 @@ app.use('/api/config', authenticateUser, configRoutes);
 app.use('/api/gantt', authenticateUser, ganttRoutes);
 app.use('/api/mistral', authenticateUser, mistralRoutes);
 app.use('/api/todo', todoRoutes);
+app.use('/api/mindmap', authenticateUser, mindmapRoutes);
 
 
 // File upload endpoint

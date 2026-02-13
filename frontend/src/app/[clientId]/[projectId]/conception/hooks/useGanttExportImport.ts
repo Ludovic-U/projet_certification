@@ -266,6 +266,7 @@ export const useGanttExportImport = ({
                   notes: '',
                   files: [],
                   assigneeIds: [],
+                  color: '#3b82f6',
                   budget: createEmptyBudget()
                 });
               }
@@ -323,6 +324,7 @@ export const useGanttExportImport = ({
               notes: String(row['Notes'] || ''),
               files: [],
               assigneeIds: [],
+              color: '#3b82f6',
               budget: createEmptyBudget()
             };
           });
