@@ -50,6 +50,7 @@ export interface ApiTaskResponse {
   parent: number;
   type: 'task' | 'milestone' | 'project';
   details: string;
+  description?: string;
   notes: string;
   files: string[];
   assigneeIds: number[];
@@ -72,6 +73,7 @@ export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
   parent: apiTask.parent,
   type: apiTask.type,
   details: apiTask.details,
+  description: apiTask.description,
   notes: apiTask.notes,
   files: apiTask.files,
   assigneeIds: apiTask.assigneeIds,

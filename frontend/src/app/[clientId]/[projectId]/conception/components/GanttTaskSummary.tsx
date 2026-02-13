@@ -250,8 +250,8 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
           isExpanded={expandedSections.details}
           onToggle={() => toggleSection('details')}
         >
-          <p className="text-slate-300 leading-relaxed">
-            {selectedTask.details || (
+          <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+            {selectedTask.description || (
               <span className="text-slate-500 italic flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 No description available

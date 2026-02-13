@@ -158,6 +158,7 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
         parent: task.parentId || 0,
         type: task.type,
         details: task.details,
+        description: task.description,
         notes: task.notes,
         files: task.files || [],
         assigneeIds: task.taskAssignments.map(ta => ta.userId),

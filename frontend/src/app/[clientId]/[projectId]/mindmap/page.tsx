@@ -1,4 +1,4 @@
-ù"use client";
+"use client";
 
 /**
  * Mind Map Component for Project Conception
@@ -176,8 +176,8 @@ const MindmapInner = () => {
         setHistoryIndex(0);
       }
     } catch (err) {
-      console.error('Failed to load mindmap:', err);
-      setError('Failed to load mindmap. Using local storage.');
+      //console.error('Failed to load mindmap:', err);
+      //setError('Failed to load mindmap. Using local storage.');
       
       // Fallback to localStorage
       const savedData = localStorage.getItem(`mindmap_${projectId}`);
