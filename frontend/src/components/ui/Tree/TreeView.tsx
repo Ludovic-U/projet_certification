@@ -33,6 +33,7 @@ interface TreeViewProps {
   onNodesChange?: (nodes: Node[]) => void;
   revealByResponses?: boolean;
   onQuestionClick?: (question: Question, node: Node) => void;
+  fitViewTrigger?: number;
 }
 
 export default function TreeView({
@@ -40,6 +41,7 @@ export default function TreeView({
   onNodesChange,
   revealByResponses = true,
   onQuestionClick,
+  fitViewTrigger,
 }: TreeViewProps) {
   const params = useParams();
   // Access dynamic route params
@@ -173,6 +175,18 @@ export default function TreeView({
     }
   }, [initialNodes, reactFlowInstance]);
 
+  useEffect(() => {
+    if (!reactFlowInstance || nodes.length === 0 || fitViewTrigger === undefined) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      reactFlowInstance.fitView();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [fitViewTrigger, reactFlowInstance, nodes.length]);
+
   const handleNodeClick = async (_: any, node: Node) => {
     if ((node.data as any)?.isVirtualRoot) {
       return;
@@ -286,7 +300,7 @@ export default function TreeView({
     
     // store or update response to DB
     try {
-      let response;
+      let response: any;
       if (existingResponse) {
         // Update existing response
         response = await api_backend.patch(`/response/update/${existingResponse.responseId}`, {

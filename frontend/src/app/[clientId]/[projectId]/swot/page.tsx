@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { PageHeader, Button } from "@/components/ui";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import api_backend from "@/api/axiosInstance";
 
 export default function SwotPage() {
   const params = useParams();
+  const router = useRouter();
   const [strengths, setStrengths] = useState("");
   const [weaknesses, setWeaknesses] = useState("");
   const [opportunities, setOpportunities] = useState("");
@@ -59,10 +60,18 @@ export default function SwotPage() {
 
   return (
     <div className="h-full">
-      <PageHeader
-        title="Analyse SWOT"
-        description="Forces, Faiblesses, Opportunités et Menaces de votre projet"
-      />
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader
+          title="Analyse SWOT"
+          description="Forces, Faiblesses, Opportunités et Menaces de votre projet"
+        />
+        <Button
+          size="md"
+          onClick={() => router.push(`/${params.clientId}/${params.projectId}/ideation`)}
+        >
+          Retour à l'idéation
+        </Button>
+      </div>
       
       <section className="mt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

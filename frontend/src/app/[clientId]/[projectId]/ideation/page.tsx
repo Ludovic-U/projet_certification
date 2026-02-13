@@ -43,15 +43,16 @@ export default function IdeationPage() {
   const [categories, setCategories] = useState<{ questionCategoryId: number; label: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [swotProgress, setSwotProgress] = useState(0);
+  const [fitViewTrigger, setFitViewTrigger] = useState(0);
   // const [goDecision, setGoDecision] = useState<"go" | "nogo" | null>(null);
-  const [headerFill, setHeaderFill] = useState<
-    | {
-        color: "go" | "nogo";
-        direction: "in" | "out";
-        key: number;
-      }
-    | null
-  >(null);
+  // const [headerFill, setHeaderFill] = useState<
+  //   | {
+  //       color: "go" | "nogo";
+  //       direction: "in" | "out";
+  //       key: number;
+  //     }
+  //   | null
+  // >(null);
 
   // Store the response value
   const [responseValue, setResponseValue] = useState<string | string[] | number[]>("");
@@ -193,10 +194,10 @@ export default function IdeationPage() {
 
 
 
-  const goNogoKey = useMemo(() => {
-    if (!projectId) return null;
-    return `project_${projectId}_goNogo`;
-  }, [projectId]);
+  // const goNogoKey = useMemo(() => {
+  //   if (!projectId) return null;
+  //   return `project_${projectId}_goNogo`;
+  // }, [projectId]);
 
   // useEffect(() => {
   //   if (!goNogoKey) return;
@@ -215,15 +216,15 @@ export default function IdeationPage() {
 
   
 
-  const updateGoNogo = async (value: "go" | "nogo" | null) => {
-    try {
-      await api_backend.post(`/project/${projectId}/go-nogo`, {
-        goNogo: value,
-      });
-    } catch (error) {
-      console.error("Erreur lors de la mise a jour go/nogo:", error);
-    }
-  };
+  // const updateGoNogo = async (value: "go" | "nogo" | null) => {
+  //   try {
+  //     await api_backend.post(`/project/${projectId}/go-nogo`, {
+  //       goNogo: value,
+  //     });
+  //   } catch (error) {
+  //     console.error("Erreur lors de la mise a jour go/nogo:", error);
+  //   }
+  // };
 
   if (loading)
     return (
@@ -255,7 +256,7 @@ export default function IdeationPage() {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="relative overflow-hidden flex items-center justify-between gap-4 rounded-xl mb-6">
-        {headerFill && (
+        {/* {headerFill && (
           <div
             key={headerFill.key}
             className="absolute inset-0 pointer-events-none"
@@ -275,7 +276,7 @@ export default function IdeationPage() {
               }}
             />
           </div>
-        )}
+        )} */}
         <div className="relative z-10 flex-1">
           <PageHeader
             title={"Projet " + (data?.projectName ?? "") + " - IDEATION"}
@@ -342,6 +343,7 @@ export default function IdeationPage() {
                   return;
                 }
                 setSelectedCategory(null);
+                setFitViewTrigger((prev) => prev + 1);
               }}
             />
             
@@ -395,7 +397,11 @@ export default function IdeationPage() {
 
         {/* Zone principale avec le TreeView */}
         <div className="flex rounded-xl flex-col bg-white border border-dark/10 flex-1 items-center justify-center">
-          <TreeView questions={treeQuestions} onNodesChange={setNodesState} />
+          <TreeView
+            questions={treeQuestions}
+            onNodesChange={setNodesState}
+            fitViewTrigger={fitViewTrigger}
+          />
         </div>
       </section>
 
