@@ -8,21 +8,21 @@ datasource db {
 }
 
 model User {
-  userId              Int              @id @default(autoincrement())
-  username            String           @unique
+  userId              Int                  @id @default(autoincrement())
+  username            String               @unique
   firstname           String
   lastname            String
   password            String?
-  email               String           @unique
-  createdAt           DateTime         @default(now())
+  email               String               @unique
+  createdAt           DateTime             @default(now())
   clientUserRoles     ClientUserRole[]
-  projects            Project[]        @relation("ProjectManager")
-  subActionsPiloteGrt SubAction[]      @relation("PiloteGrt")
-  taskAssignments     TaskAssignment[]
+  projects            Project[]            @relation("ProjectManager")
+  subActionsPiloteGrt SubAction[]          @relation("PiloteGrt")
   assigneeDetails     TaskAssigneeDetail[]
+  taskAssignments     TaskAssignment[]
+  todos               Todo[]               @relation("TodoAssignments")
   roles               UserRole[]
   userSessions        UserSession[]
-  todos               Todo[]           @relation("TodoAssignments")
 }
 
 model UserSession {
@@ -39,14 +39,15 @@ model UserSession {
 }
 
 model Client {
-  clientId    Int              @id @default(autoincrement())
-  clientName  String           @unique
-  statusJuridique String @default("SARL")
-  secteur String @default("BTP")
-  description String?
-  createdAt   DateTime         @default(now())
-  userRoles   ClientUserRole[]
-  projects    Project[]
+  clientId        Int              @id @default(autoincrement())
+  clientName      String           @unique
+  clientType      String
+  statusJuridique String?
+  secteur         String?
+  description     String?
+  createdAt       DateTime         @default(now())
+  userRoles       ClientUserRole[]
+  projects        Project[]
 }
 
 model ClientUserRole {
@@ -94,62 +95,56 @@ model RolePermission {
 }
 
 model Project {
-  projectId      Int        @id @default(autoincrement())
-  projectName    String     @unique
-  startDate      DateTime?
-  endDate        DateTime?
-  projectManager Int
-  projectStage   String?
-  projectStatus  String?
-  projectDesc    String?
-  createdAt      DateTime   @default(now())
-  clientId       Int
-  SWOT_opportunity String?
-  SWOT_strength String?
-  SWOT_weakness String?
-  SWOT_threat String?
-  goNogo         String?
-  actions        Action[]
-  versions      Version[]
-  client         Client     @relation(fields: [clientId], references: [clientId])
-  manager        User       @relation("ProjectManager", fields: [projectManager], references: [userId])
-  responses      Response[]
-  questions      Question[] @relation("ProjectQuestion")
-  types          Type[]     @relation("ProjectType")
-  tasks          Task[]
-  FinanceurProjet     FinanceurProjet[]
+  projectId       Int               @id @default(autoincrement())
+  projectName     String            @unique
+  startDate       DateTime?
+  endDate         DateTime?
+  projectManager  Int
+  projectStage    String?
+  projectStatus   String?
+  projectDesc     String?
+  createdAt       DateTime          @default(now())
+  clientId        Int
+  goNogo          String?
+  actions         Action[]
+  FinanceurProjet FinanceurProjet[]
+  mindmaps        Mindmap[]
+  client          Client            @relation(fields: [clientId], references: [clientId])
+  manager         User              @relation("ProjectManager", fields: [projectManager], references: [userId])
+  responses       Response[]
+  tasks           Task[]
   todos           Todo[]
-  mindmaps       Mindmap[]
+  versions        Version[]
+  questions       Question[]        @relation("ProjectQuestion")
+  types           Type[]            @relation("ProjectType")
 }
 
 model Todo {
-  todoId     Int       @id @default(autoincrement())
-  text       String
-  completed  Boolean   @default(false)
-  projectId  Int
-  assignedTo Int?
-  deadline   DateTime?
-  createdAt  DateTime  @default(now())
-
-  project      Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  assignedUser User?   @relation("TodoAssignments", fields: [assignedTo], references: [userId], onDelete: SetNull)
+  todoId       Int       @id @default(autoincrement())
+  text         String
+  completed    Boolean   @default(false)
+  projectId    Int
+  assignedTo   Int?
+  deadline     DateTime?
+  createdAt    DateTime  @default(now())
+  assignedUser User?     @relation("TodoAssignments", fields: [assignedTo], references: [userId])
+  project      Project   @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 }
 
 model Financeur {
-  financeurId      Int              @id @default(autoincrement())
-  FinanceurName    String           @unique
-  FinanceurProjet  FinanceurProjet[]
+  financeurId     Int               @id @default(autoincrement())
+  FinanceurName   String            @unique
+  FinanceurProjet FinanceurProjet[]
 }
 
 model FinanceurProjet {
-  projectId    Int
-  financeurId  Int
-  pourcentage  Int
-  montant      Decimal?
-  
-  project      Project   @relation(fields: [projectId], references: [projectId])
-  financeur    Financeur @relation(fields: [financeurId], references: [financeurId])
-  
+  projectId   Int
+  financeurId Int
+  pourcentage Int
+  montant     Decimal?
+  financeur   Financeur @relation(fields: [financeurId], references: [financeurId])
+  project     Project   @relation(fields: [projectId], references: [projectId])
+
   @@id([projectId, financeurId])
 }
 
@@ -200,35 +195,34 @@ model Budget {
 }
 
 model Task {
-  taskId      Int     @id @default(autoincrement())
-  subActionId Int?    @map("sub_action_id")
-  projectId   Int?    @map("project_id")
-  versionId   Int?    @map("version_id")
-  name        String
-  description String?
-  startDate   DateTime?
-  endDate     DateTime?
-  progress    Int      @default(0)
-  parentId    Int?
-  type        String   @default("task") // 'task', 'milestone', 'project'
-  details     String?
-  notes       String?
-  files       String[] // JSON array
-  goal        String?
-  color       String   @default("#3b82f6") // Task color for Gantt chart display
-
-  subAction       SubAction?        @relation(fields: [subActionId], references: [subActionId], onDelete: SetNull)
-  project         Project?          @relation(fields: [projectId], references: [projectId])
-  version         Version?          @relation(fields: [versionId], references: [versionId], onDelete: SetNull)
-  taskAssignments TaskAssignment[]
-  parent          Task?             @relation("TaskHierarchy", fields: [parentId], references: [taskId])
-  children        Task[]            @relation("TaskHierarchy")
-  linksSource     TaskLink[]        @relation("TaskSource")
-  linksTarget     TaskLink[]        @relation("TaskTarget")
-  expenses        TaskExpense[]
+  taskId          Int                     @id @default(autoincrement())
+  subActionId     Int?                    @map("sub_action_id")
+  name            String
+  description     String?
+  projectId       Int?                    @map("project_id")
+  details         String?
+  endDate         DateTime?
+  files           String[]
+  goal            String?
+  notes           String?
+  parentId        Int?
+  progress        Int                     @default(0)
+  startDate       DateTime?
+  type            String                  @default("task")
+  versionId       Int?                    @map("version_id")
+  color           String                  @default("#3b82f6")
+  parent          Task?                   @relation("TaskHierarchy", fields: [parentId], references: [taskId])
+  children        Task[]                  @relation("TaskHierarchy")
+  project         Project?                @relation(fields: [projectId], references: [projectId])
+  subAction       SubAction?              @relation(fields: [subActionId], references: [subActionId])
+  version         Version?                @relation(fields: [versionId], references: [versionId])
   assigneeDetails TaskAssigneeDetail[]
+  taskAssignments TaskAssignment[]
   deliverables    TaskDeliverableStatus[]
-  tasks         Deliverable[] @relation("TaskDeliverables")
+  expenses        TaskExpense[]
+  linksSource     TaskLink[]              @relation("TaskSource")
+  linksTarget     TaskLink[]              @relation("TaskTarget")
+  tasks           Deliverable[]           @relation("TaskDeliverables")
 
   @@index([projectId])
   @@index([versionId])
@@ -238,88 +232,76 @@ model Task {
 model TaskAssignment {
   userId Int
   taskId Int
+  task   Task @relation(fields: [taskId], references: [taskId])
+  user   User @relation(fields: [userId], references: [userId])
 
-  user User @relation(fields: [userId], references: [userId])
-  task Task @relation(fields: [taskId], references: [taskId])
-
-  @@id([userId, taskId]) // Composite primary key
+  @@id([userId, taskId])
 }
 
-// Task Link model for Gantt chart dependencies
 model TaskLink {
-  linkId    Int     @id @default(autoincrement())
-  source    Int
-  target    Int
-  type      Int     @default(0)
-  versionId Int?
-
-  sourceTask Task    @relation("TaskSource", fields: [source], references: [taskId])
-  targetTask Task    @relation("TaskTarget", fields: [target], references: [taskId])
-  version    Version? @relation(fields: [versionId], references: [versionId], onDelete: SetNull)
+  linkId     Int      @id @default(autoincrement())
+  source     Int
+  target     Int
+  type       Int      @default(0)
+  versionId  Int?
+  sourceTask Task     @relation("TaskSource", fields: [source], references: [taskId])
+  targetTask Task     @relation("TaskTarget", fields: [target], references: [taskId])
+  version    Version? @relation(fields: [versionId], references: [versionId])
 
   @@index([source])
   @@index([target])
   @@index([versionId])
 }
 
-
-// Task Expense model for tracking task expenses
 model TaskExpense {
-  expenseId Int      @id @default(autoincrement())
-  taskId    Int
-  category  String
-  amount    Decimal
-  date      DateTime
+  expenseId   Int      @id @default(autoincrement())
+  taskId      Int
+  category    String
+  amount      Decimal
+  date        DateTime
   description String?
-  vendor    String?
-
-  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+  vendor      String?
+  task        Task     @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
 
   @@index([taskId])
 }
 
-// Task Assignee Detail model for tracking detailed assignee info
 model TaskAssigneeDetail {
-  id          Int    @id @default(autoincrement())
-  taskId      Int
-  userId      Int
-  role        String @default("member") // lead, member, reviewer, etc.
-  allocation  Int    @default(100) // percentage allocation
-
-  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [userId])
+  id         Int    @id @default(autoincrement())
+  taskId     Int
+  userId     Int
+  role       String @default("member")
+  allocation Int    @default(100)
+  task       Task   @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+  user       User   @relation(fields: [userId], references: [userId])
 
   @@index([taskId])
   @@index([userId])
 }
 
-// Task Deliverable Status model
 model TaskDeliverableStatus {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   taskId      Int
   name        String
-  status      String   @default("pending")
+  status      String    @default("pending")
   completedAt DateTime?
   notes       String?
-
-  task Task @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+  task        Task      @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
 
   @@index([taskId])
 }
 
-// Version model for Gantt diagram versions
 model Version {
   versionId   Int        @id @default(autoincrement())
   projectId   Int        @map("project_id")
   name        String
   description String?
   isActive    Boolean    @default(false) @map("is_active")
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
-
-  project     Project    @relation(fields: [projectId], references: [projectId])
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
   tasks       Task[]
   links       TaskLink[]
+  project     Project    @relation(fields: [projectId], references: [projectId])
 
   @@index([projectId])
 }
@@ -331,37 +313,30 @@ model Type {
   questions Question[] @relation("TypeQuestion")
 }
 
-// ==========================
-// Question & Response Models
-// ==========================
 model QuestionCategory {
-  questionCategoryId Int       @id @default(autoincrement())
-  label              String    @unique
-
-  questions Question[]
+  questionCategoryId Int        @id @default(autoincrement())
+  label              String     @unique
+  questions          Question[]
 }
 
 model Question {
-  questionId               Int        @id @default(autoincrement())
+  questionId               Int               @id @default(autoincrement())
   label                    String
-  keyword String
-  category                 String?
+  keyword                  String
+  category                 String
   numberOfSelectionableOpt Int?
   isRelevant               Boolean?
   hasMultipleOpenResponse  Boolean?
   shouldMultiply           Boolean?
   questionIdParent         Int?
   questionCategoryId       Int?
-
-  types     Type[]     @relation("TypeQuestion")
-  options   Option[]
-  responses Response[]
-  projects  Project[]  @relation("ProjectQuestion")
-  questionCategory QuestionCategory? @relation(fields: [questionCategoryId], references: [questionCategoryId])
-
-  // Self relations
-  parent   Question?  @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
-  children Question[] @relation("QuestionHierarchy")
+  options                  Option[]
+  questionCategory         QuestionCategory? @relation(fields: [questionCategoryId], references: [questionCategoryId])
+  parent                   Question?         @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
+  children                 Question[]        @relation("QuestionHierarchy")
+  responses                Response[]
+  projects                 Project[]         @relation("ProjectQuestion")
+  types                    Type[]            @relation("TypeQuestion")
 }
 
 model Option {
@@ -375,16 +350,62 @@ model Option {
 model Response {
   responseId       Int        @id @default(autoincrement())
   label            String?
-  keyword String?
+  keyword          String?
   projectId        Int
   questionId       Int
   optionId         Int?
   responseIdParent Int?
   option           Option?    @relation(fields: [optionId], references: [optionId])
   project          Project    @relation(fields: [projectId], references: [projectId])
-  question         Question   @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
+  question         Question   @relation(fields: [questionId], references: [questionId])
   parent           Response?  @relation("ResponseHierarchy", fields: [responseIdParent], references: [responseId])
   children         Response[] @relation("ResponseHierarchy")
+}
+
+model Mindmap {
+  mindmapId Int           @id @default(autoincrement())
+  projectId Int           @map("project_id")
+  name      String        @default("Untitled Mindmap")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  project   Project       @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  edges     MindmapEdge[]
+  nodes     MindmapNode[]
+
+  @@index([projectId])
+}
+
+model MindmapNode {
+  nodeId     Int      @id @default(autoincrement()) @map("node_id")
+  mindmapId  Int      @map("mindmap_id")
+  externalId String   @map("external_id")
+  label      String
+  nodeType   String   @map("node_type")
+  positionX  Float    @map("position_x")
+  positionY  Float    @map("position_y")
+  color      String?
+  fontSize   Int      @default(14) @map("font_size")
+  isRoot     Boolean  @default(false) @map("is_root")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  mindmap    Mindmap  @relation(fields: [mindmapId], references: [mindmapId], onDelete: Cascade)
+
+  @@unique([mindmapId, externalId])
+  @@index([mindmapId])
+}
+
+model MindmapEdge {
+  edgeId     Int      @id @default(autoincrement()) @map("edge_id")
+  mindmapId  Int      @map("mindmap_id")
+  externalId String   @map("external_id")
+  source     String
+  target     String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  mindmap    Mindmap  @relation(fields: [mindmapId], references: [mindmapId], onDelete: Cascade)
+
+  @@unique([mindmapId, externalId])
+  @@index([mindmapId])
 }
 
 enum BudgetCategory {
@@ -393,57 +414,4 @@ enum BudgetCategory {
   EQUIPEMENTS_PEDAGOGIQUES
   PRESTATIONS
   COMMUNICATION_EVENEMENTIEL
-}
-
-// ==========================
-// Mindmap Models
-// ==========================
-
-model Mindmap {
-  mindmapId   Int           @id @default(autoincrement())
-  projectId   Int           @map("project_id")
-  name        String        @default("Untitled Mindmap")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
-  
-  project     Project       @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  nodes       MindmapNode[]
-  edges       MindmapEdge[]
-  
-  @@index([projectId])
-}
-
-model MindmapNode {
-  nodeId      Int        @id @default(autoincrement()) @map("node_id")
-  mindmapId   Int        @map("mindmap_id")
-  externalId  String     @map("external_id") // ID from ReactFlow
-  label       String
-  nodeType    String     @map("node_type") // action, sous_action, objectif, livrable
-  positionX   Float      @map("position_x")
-  positionY   Float      @map("position_y")
-  color       String?
-  fontSize    Int        @default(14) @map("font_size")
-  isRoot      Boolean    @default(false) @map("is_root")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-  
-  mindmap     Mindmap    @relation(fields: [mindmapId], references: [mindmapId], onDelete: Cascade)
-  
-  @@unique([mindmapId, externalId])
-  @@index([mindmapId])
-}
-
-model MindmapEdge {
-  edgeId      Int        @id @default(autoincrement()) @map("edge_id")
-  mindmapId   Int        @map("mindmap_id")
-  externalId  String     @map("external_id") // ID from ReactFlow
-  source      String     // Source node externalId
-  target      String     // Target node externalId
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-  
-  mindmap     Mindmap    @relation(fields: [mindmapId], references: [mindmapId], onDelete: Cascade)
-  
-  @@unique([mindmapId, externalId])
-  @@index([mindmapId])
 }
