@@ -8,8 +8,9 @@ import { useLocalStorage } from "@/context/LocalStorageContext";
 import StrategicAnalysisTab from "./tabs/StrategicAnalysisTab";
 import PreProjectPanel from "./tabs/PreProjectPanel";
 import DecisionPanel from "./tabs/DecisionPanel";
+import IdeaProject from "./tabs/IdeaProject";
 
-type TabKey = "analyse" | "preprojet" | "decision";
+type TabKey = "analyse" | "idée projet" | "preprojet" | "decision";
 
 export default function IdeationPage() {
   const { data } = useLocalStorage();
@@ -38,7 +39,7 @@ export default function IdeationPage() {
         </div>
       </div>
       <section className="w-full mb-6">
-        <div className="grid w-full grid-cols-3 overflow-hidden rounded-xl border border-dark/10 bg-white">
+        <div className="grid w-full grid-cols-4 overflow-hidden rounded-xl border border-dark/10 bg-white">
           <button
             type="button"
             className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
@@ -49,6 +50,17 @@ export default function IdeationPage() {
             onClick={() => setActiveTab("analyse")}
           >
             Analyse strategique
+          </button>
+          <button
+            type="button"
+            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
+              activeTab === "idée projet"
+                ? "text-white bg-dark"
+                : "text-dark hover:bg-dark/5"
+            }`}
+            onClick={() => setActiveTab("idée projet")}
+          >
+            Idée Projet
           </button>
           <button
             type="button"
@@ -76,6 +88,9 @@ export default function IdeationPage() {
       </section>
       {activeTab === "analyse" && (
         <StrategicAnalysisTab clientId={clientId} projectId={projectId} />
+      )}
+      {activeTab === "idée projet" && (
+        <IdeaProject />
       )}
       {activeTab === "preprojet" && <PreProjectPanel />}
       {activeTab === "decision" && <DecisionPanel />}

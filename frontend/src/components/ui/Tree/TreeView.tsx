@@ -6,16 +6,14 @@ import {
   Node,
   Edge,
   Controls,
+  ConnectionLineType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Question } from "@/types/question";
 import { QuestionNode } from "../Nodes/Question";
-import {
-  buildHierarchy,
-  computeTreeLayout,
-  d3ToReactFlow,
-  generateNodesWithMultiply,
-} from "@/lib/treeUtils";
+import { ThemeNode } from "../Nodes/Theme";
+import { ResponseNode } from "../Nodes/Response";
+import { buildHierarchy, computeTreeLayout, d3ToReactFlow } from "@/lib/treeUtils";
 import ModalQuestion from "../ModalQuestion/ModalQuestion";
 import { Icons, FontAwesomeIcon } from "@/lib/icons";
 import { useModal } from "@/hooks";
@@ -37,6 +35,25 @@ interface TreeViewProps {
   onProjectResponsesChange?: (responses: any[]) => void;
 }
 
+type TreeNodeKind = "theme" | "question" | "response";
+
+type ProjectResponse = {
+  responseId?: number;
+  questionId: number;
+  label: string | null;
+  keyword?: string | null;
+};
+
+type FlowNodeData = Question & {
+  nodeKind?: TreeNodeKind;
+  parentNodeId?: string | null;
+  themeKey?: string;
+  depth?: number;
+  isVirtualRoot?: boolean;
+  responseId?: number;
+  isCollapsed?: boolean;
+};
+
 export default function TreeView({
   questions,
   onNodesChange,
@@ -46,27 +63,69 @@ export default function TreeView({
   onProjectResponsesChange,
 }: TreeViewProps) {
   const params = useParams();
-  // Access dynamic route params
   const { projectId } = params;
-  
-  // Etats ReactFlow et Modal
+
   const modal = useModal();
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  // Store the response value
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [editingResponse, setEditingResponse] = useState<ProjectResponse | null>(null);
+
   const [responseValue, setResponseValue] = useState<string>("");
-  // Store selected options for ReponseSelect
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
-  // Store multiple responses for ReponsesPlusieurs
   const [multipleResponses, setMultipleResponses] = useState<string[]>([]);
-  // Store keyword for response
   const [responseKeyword, setResponseKeyword] = useState<string>("");
-  // Store responses from DB
-  const [projectResponses, setProjectResponses] = useState<any[]>([]);
+
+  const [projectResponses, setProjectResponses] = useState<ProjectResponse[]>([]);
+  const [collapsedThemes, setCollapsedThemes] = useState<Set<string>>(new Set());
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullscreen = () => {
     setIsFullscreen((prev) => !prev);
+  };
+
+  const normalizeCsvValues = (value: string | null | undefined) => {
+    if (!value) return [] as string[];
+    return value
+      .split(",")
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
+  };
+
+  const hydrateResponseForm = (question: Question, response?: ProjectResponse | null) => {
+    setResponseKeyword(response?.keyword || "");
+
+    if (question.hasMultipleOpenResponse) {
+      const values = normalizeCsvValues(response?.label);
+      setMultipleResponses(values.length > 0 ? values : [""]);
+      setSelectedOptions([]);
+      setResponseValue("");
+      return;
+    }
+
+    if (question.options && question.options.length > 0) {
+      const selectedLabels = normalizeCsvValues(response?.label);
+      const optionIndexes = (question.options || [])
+        .map((option, index) => (selectedLabels.includes(option) ? index : -1))
+        .filter((index) => index >= 0);
+
+      setSelectedOptions(optionIndexes);
+      setMultipleResponses([""]);
+      setResponseValue("");
+      return;
+    }
+
+    setResponseValue(response?.label || "");
+    setSelectedOptions([]);
+    setMultipleResponses([""]);
+  };
+
+  const openQuestionModal = (question: Question, node: Node, response?: ProjectResponse | null) => {
+    setSelectedNode(node);
+    setSelectedQuestion(question);
+    setEditingResponse(response || null);
+    hydrateResponseForm(question, response);
+    modal.openModal();
   };
 
   useEffect(() => {
@@ -92,106 +151,186 @@ export default function TreeView({
 
     return () => window.cancelAnimationFrame(frame);
   }, [isFullscreen, reactFlowInstance]);
-  
-  // Fetch all responses for this project
+
   useEffect(() => {
     async function fetchResponses() {
       try {
         const res = await api_backend.get(`/response/get/project/${projectId}`);
-        console.log("Réponses du projet:", res.data);
         setProjectResponses(res.data || []);
-      } catch (error) {
-        console.log("Aucune réponse trouvée pour ce projet");
+      } catch {
         setProjectResponses([]);
       }
     }
+
     if (revealByResponses && projectId) {
       fetchResponses();
     }
+
     if (!revealByResponses) {
       setProjectResponses([]);
     }
   }, [projectId, revealByResponses]);
-  
-  // Génération automatique du layout avec D3
+
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     if (!questions || questions.length === 0) {
-      console.warn("Aucune question à afficher - arbre vide");
       return { nodes: [], edges: [] };
     }
 
     const root = buildHierarchy(questions);
     const laidOutRoot = computeTreeLayout(root);
-    const { nodes, edges } = d3ToReactFlow(laidOutRoot);
-
-    nodes.forEach((n) => {
-      console.log(`node ${n.id} options:`, n.data.options);
-    });
-
-    return { nodes, edges };
+    return d3ToReactFlow(laidOutRoot);
   }, [questions]);
-  
-  // Update nodes with response status and visibility
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
 
-  useEffect(() => {
-    setEdges(initialEdges);
-  }, [initialEdges]);
-  
-  useEffect(() => {
-    if (!revealByResponses) {
-      setNodes(initialNodes.map((node) => ({ ...node, hidden: false })));
-      return;
-    }
-    if (initialNodes.length === 0 || projectResponses.length === 0) {
-      setNodes(initialNodes);
-      return;
-    }
-    
-    // Create a map of questionId -> response data (status + keyword)
-    const responseMap = new Map<
-      number,
-      { exists: boolean; keyword?: string | null; skipped?: boolean }
-    >();
-    projectResponses.forEach((response: any) => {
-      responseMap.set(response.questionId, {
-        exists: true,
-        keyword: response.keyword ?? null,
-        skipped: response.label == null,
-      });
+  const { nodes, edges } = useMemo(() => {
+    const RESPONSE_OFFSET_X = 230;
+    const RESPONSE_OFFSET_Y = 30;
+    const RESPONSE_VERTICAL_GAP = 70;
+    const COLLISION_X_THRESHOLD = 160;
+    const COLLISION_Y_THRESHOLD = 55;
+
+    const responseMap = new Map<number, ProjectResponse>();
+    projectResponses.forEach((response) => {
+      responseMap.set(Number(response.questionId), response);
     });
-    
-    // Update nodes with status, keyword and visibility
-    const updatedNodes = initialNodes.map((node) => {
-      const questionId = node.data.questionId || node.data.id;
-      const responseData = responseMap.get(Number(questionId));
-      const hasResponse = responseData?.exists || false;
-      const isSkipped = responseData?.skipped || false;
-      const parentId = node.data.parentId;
-      
-      // Check if parent has a response (if this is not root)
-      const parentResponseData = parentId ? responseMap.get(Number(parentId)) : null;
-      const parentHasResponse = parentId ? (parentResponseData?.exists || false) : true;
-      
-      return {
-        ...node,
-        data: {
-          ...node.data,
-          status: hasResponse ? (isSkipped ? "skipped" : "answered") : "pending",
-          // Use keyword from response if exists, otherwise keep question's keyword
-          keyword: responseData?.keyword || node.data.keyword,
-        },
-        // Show node if: it's root OR parent has response
-        hidden: parentId !== null && !parentHasResponse,
+
+    const baseNodes = initialNodes.map((node) => ({ ...node, data: { ...(node.data as any) } }));
+    const baseEdges = [...initialEdges];
+
+    const visibilityMap = new Map<string, boolean>();
+    const questionNodesByQuestionId = new Map<number, Node>();
+
+    baseNodes.forEach((node) => {
+      const data = node.data as FlowNodeData;
+
+      if (data.isVirtualRoot) {
+        node.hidden = true;
+        visibilityMap.set(node.id, false);
+        return;
+      }
+
+      if (data.nodeKind === "theme") {
+        const isCollapsed = collapsedThemes.has(node.id);
+        node.hidden = false;
+        node.data = { ...data, isCollapsed };
+        visibilityMap.set(node.id, true);
+      }
+    });
+
+    const questionNodes = baseNodes
+      .filter((node) => (node.data as FlowNodeData).nodeKind === "question")
+      .sort(
+        (a, b) =>
+          Number((a.data as FlowNodeData).depth || 0) -
+          Number((b.data as FlowNodeData).depth || 0)
+      );
+
+    questionNodes.forEach((node) => {
+      const data = node.data as FlowNodeData;
+      const questionId = Number(data.questionId || data.id);
+      const parentNodeId = data.parentNodeId || null;
+      const parentVisible = parentNodeId ? visibilityMap.get(parentNodeId) ?? true : true;
+      const parentIsQuestion = Boolean(parentNodeId?.startsWith("q-"));
+      const parentQuestionId = parentIsQuestion
+        ? Number(parentNodeId?.replace("q-", ""))
+        : null;
+      const parentHasResponse =
+        parentQuestionId !== null ? responseMap.has(parentQuestionId) : true;
+      const themeNodeId = data.themeKey ? `theme-${data.themeKey}` : null;
+      const themeCollapsed = themeNodeId ? collapsedThemes.has(themeNodeId) : false;
+
+      const isVisible =
+        !themeCollapsed &&
+        parentVisible &&
+        (!revealByResponses || !parentIsQuestion || parentHasResponse);
+
+      const responseData = responseMap.get(questionId);
+      const hasResponse = Boolean(responseData);
+      const isSkipped = responseData?.label == null;
+
+      node.hidden = !isVisible;
+      node.data = {
+        ...data,
+        status: hasResponse ? (isSkipped ? "skipped" : "answered") : "pending",
+        keyword: responseData?.keyword ?? data.keyword,
       };
-    });
-    
-    console.log("Nodes mis à jour avec réponses:", updatedNodes);
-    setNodes(updatedNodes);
-  }, [initialNodes, projectResponses, revealByResponses]);
 
-  // Notifier le parent quand les nodes changent
+      visibilityMap.set(node.id, isVisible);
+      questionNodesByQuestionId.set(questionId, node);
+    });
+
+    if (revealByResponses) {
+      const occupiedPositions: Array<{ x: number; y: number }> = baseNodes
+        .filter((node) => !node.hidden)
+        .map((node) => ({ x: node.position.x, y: node.position.y }));
+
+      const resolveResponseY = (x: number, preferredY: number) => {
+        let nextY = preferredY;
+
+        while (
+          occupiedPositions.some(
+            (position) =>
+              Math.abs(position.x - x) < COLLISION_X_THRESHOLD &&
+              Math.abs(position.y - nextY) < COLLISION_Y_THRESHOLD
+          )
+        ) {
+          nextY += RESPONSE_VERTICAL_GAP;
+        }
+
+        occupiedPositions.push({ x, y: nextY });
+        return nextY;
+      };
+
+      projectResponses.forEach((response) => {
+        if (response.label == null || String(response.label).trim() === "") {
+          return;
+        }
+
+        const questionNode = questionNodesByQuestionId.get(Number(response.questionId));
+        if (!questionNode) {
+          return;
+        }
+
+        const responseNodeId = `r-${response.responseId ?? response.questionId}`;
+        const responseX = questionNode.position.x + RESPONSE_OFFSET_X;
+        const preferredY = questionNode.position.y + RESPONSE_OFFSET_Y;
+        const responseY = resolveResponseY(responseX, preferredY);
+
+        const responseNode: Node = {
+          id: responseNodeId,
+          type: "response",
+          position: {
+            x: responseX,
+            y: responseY,
+          },
+          data: {
+            nodeKind: "response",
+            label: response.label,
+            keyword: response.keyword,
+            responseId: response.responseId,
+            questionId: response.questionId,
+            parentNodeId: questionNode.id,
+          },
+          hidden: questionNode.hidden,
+        };
+
+        baseNodes.push(responseNode);
+        baseEdges.push({
+          id: `e-${questionNode.id}-${responseNodeId}`,
+          source: questionNode.id,
+          target: responseNodeId,
+        });
+      });
+    }
+
+    return { nodes: baseNodes, edges: baseEdges };
+  }, [
+    initialNodes,
+    initialEdges,
+    projectResponses,
+    revealByResponses,
+    collapsedThemes,
+  ]);
+
   useEffect(() => {
     onNodesChange?.(nodes);
   }, [nodes, onNodesChange]);
@@ -200,15 +339,14 @@ export default function TreeView({
     onProjectResponsesChange?.(projectResponses);
   }, [projectResponses, onProjectResponsesChange]);
 
-  // Re-center view when category change updates the question set
   useEffect(() => {
-    if (initialNodes.length > 0) {
+    if (nodes.length > 0) {
       reactFlowInstance?.fitView({
         padding: 0.2,
         minZoom: 0.8,
       });
     }
-  }, [initialNodes, reactFlowInstance]);
+  }, [nodes, reactFlowInstance]);
 
   useEffect(() => {
     if (!reactFlowInstance || nodes.length === 0 || fitViewTrigger === undefined) {
@@ -223,220 +361,195 @@ export default function TreeView({
   }, [fitViewTrigger, reactFlowInstance, nodes.length]);
 
   const handleNodeClick = async (_: any, node: Node) => {
-    if ((node.data as any)?.isVirtualRoot) {
-      return;
-    }
-    const question = node.data as Question;
-    if (onQuestionClick) {
-      onQuestionClick(question, node);
+    const data = node.data as FlowNodeData;
+
+    if (data.isVirtualRoot) {
       return;
     }
 
-    setSelectedNode(node);
-    console.log("question :", question);
-    console.log("questionId utilisé:", question.questionId || question.id);
-    console.log("options :", question.options);
-    
-    // Reset all response states
-    setResponseValue("");
-    setSelectedOptions([]);
-    setMultipleResponses([""]);
-    
-    // Utiliser questionId en priorité, sinon id
-    const questionId = question.questionId || question.id;
-    
-    // Find existing response in projectResponses
-    const existingResponse = projectResponses.find(
-      (r: any) => r.questionId === Number(questionId)
-    );
-    
-    if (existingResponse) {
-      setResponseValue(existingResponse.label || "");
-      setResponseKeyword(existingResponse.keyword || "");
-    } else {
-      setResponseValue("");
-      setResponseKeyword("");
+    if (data.nodeKind === "theme") {
+      setCollapsedThemes((prev) => {
+        const next = new Set(prev);
+        if (next.has(node.id)) {
+          next.delete(node.id);
+        } else {
+          next.add(node.id);
+        }
+        return next;
+      });
+      return;
     }
-    
-    modal.openModal();
+
+    if (data.nodeKind === "question") {
+      const question = data as Question;
+      if (onQuestionClick) {
+        onQuestionClick(question, node);
+        return;
+      }
+
+      const questionId = Number(question.questionId || question.id);
+      const existingResponse = projectResponses.find(
+        (response) => Number(response.questionId) === questionId
+      );
+
+      openQuestionModal(question, node, existingResponse || null);
+      return;
+    }
+
+    if (data.nodeKind === "response") {
+      const questionId = Number(data.questionId);
+      const question = questions.find(
+        (q) => Number(q.questionId || q.id) === questionId
+      );
+
+      if (!question) {
+        return;
+      }
+
+      const response = projectResponses.find(
+        (r) =>
+          (data.responseId && r.responseId === data.responseId) ||
+          Number(r.questionId) === questionId
+      );
+
+      if (!response) {
+        return;
+      }
+
+      const questionNode = nodes.find((n) => n.id === data.parentNodeId) || node;
+      openQuestionModal(question, questionNode, response);
+    }
   };
 
-  // Gestion du clique sur noeud
-  const updateNodeStatus = (status: "answered" | "skipped") => {
-    if (!selectedNode) return;
-
-    setNodes((prev) => {
-      return prev.map((n) => {
-        // Mise à jour du node sélectionné
-        if (n.id === selectedNode.id) {
-          return {
-            ...n,
-            data: { ...n.data, status },
-          };
-        }
-        // Débloque les enfants directs
-        if (n.data.parentId?.toString() === selectedNode.id.toString()) {
-          return { ...n, hidden: false };
-        }
-        return n;
-      });
-    });
-
-    window.requestAnimationFrame(() => {
-      reactFlowInstance?.fitView({
-        padding: 0.2,
-        minZoom: 0.8,
-      });
-    });
-
-    modal.closeModal();
-  };
-
-  // Validation d'une réponse
   const handleValidate = async () => {
-    if (!selectedNode) return;
-    
-    const question = selectedNode.data as Question;
-    const questionId = question.questionId || question.id;
-    
-    console.log("Validation - question:", question);
-    console.log("Validation - questionId:", questionId);
-    console.log("Validation - responseValue:", responseValue);
-    console.log("Validation - selectedOptions:", selectedOptions);
-    console.log("Validation - multipleResponses:", multipleResponses);
-    console.log("Validation - projectId:", projectId);
-    
+    if (!selectedNode || !selectedQuestion) return;
+
+    const question = selectedQuestion;
+    const questionId = Number(question.questionId || question.id);
+
     if (!questionId) {
-      console.error("questionId est undefined!");
       return;
     }
-    
-    // Determine the response label based on question type
+
     let label = "";
-    
+
     if (question.hasMultipleOpenResponse) {
-      // Multiple open responses - join array
-      label = multipleResponses.filter(r => r.trim() !== "").join(", ");
+      label = multipleResponses.filter((r) => r.trim() !== "").join(", ");
     } else if (question.options && question.options.length > 0) {
-      // Select options - get selected option labels
       const selectedLabels = selectedOptions
-        .map(optId => question.options?.find((_, idx) => idx === optId))
+        .map((optionIndex) => question.options?.find((_, idx) => idx === optionIndex))
         .filter(Boolean)
         .join(", ");
       label = selectedLabels;
     } else {
-      // Single open response
       label = responseValue;
     }
-    
-    // Validation: ensure label is not empty
+
     if (!label || label.trim() === "") {
-      console.error("La réponse ne peut pas être vide");
       return;
     }
-    
-    // Check if response already exists
-    const existingResponse = projectResponses.find(
-      (r: any) => r.questionId === Number(questionId)
-    );
-    
-    // store or update response to DB
+
+    const existingResponse =
+      editingResponse ||
+      projectResponses.find((response) => Number(response.questionId) === questionId);
+
     try {
-      let response: any;
-      if (existingResponse) {
-        // Update existing response
-        response = await api_backend.patch(`/response/update/${existingResponse.responseId}`, {
-          label: label,
-          keyword: responseKeyword || null,
-        });
-        
-        // Update response in local state
-        setProjectResponses(prev => prev.map(r => 
-          r.questionId === Number(questionId) 
-            ? { ...r, label: response.data.label, keyword: response.data.keyword }
-            : r
-        ));
-        
-        // Update node keyword immediately in the tree
-        setNodes((prev) => prev.map((n) => {
-          if (n.id === selectedNode.id) {
-            return {
-              ...n,
-              data: {
-                ...n.data,
-                keyword: response.data.keyword ?? n.data.keyword,
-              },
-            };
+      if (existingResponse?.responseId) {
+        const response = await api_backend.patch(
+          `/response/update/${existingResponse.responseId}`,
+          {
+            label,
+            keyword: responseKeyword || null,
           }
-          return n;
-        }));
+        );
+
+        setProjectResponses((prev) =>
+          prev.map((item) =>
+            item.responseId === existingResponse.responseId
+              ? { ...item, label: response.data.label, keyword: response.data.keyword }
+              : item
+          )
+        );
       } else {
-        // Create new response
-        response = await api_backend.post(`/response/create`, {
-          label: label,
+        const response = await api_backend.post(`/response/create`, {
+          label,
           keyword: responseKeyword || null,
           projectId: Number(projectId),
-          questionId: Number(questionId),
+          questionId,
         });
-        
-        // Add response to local state
-        setProjectResponses(prev => [...prev, response.data]);
+
+        setProjectResponses((prev) => {
+          const filtered = prev.filter((item) => Number(item.questionId) !== questionId);
+          return [...filtered, response.data];
+        });
       }
-      
-      updateNodeStatus("answered");
+
+      modal.closeModal();
     } catch (error: any) {
       console.error("Erreur lors de la création/mise à jour de la réponse:", error);
-      console.error("Données envoyées:", {
-        label: label,
-        projectId: Number(projectId),
-        questionId: Number(questionId),
-      });
-      console.error("Réponse du serveur:", error.response?.data);
     }
   };
-  // Passer la question
+
   const handleSkip = async () => {
-    if (!selectedNode) return;
+    if (!selectedQuestion) return;
 
-    const question = selectedNode.data as Question;
-    const questionId = question.questionId || question.id;
+    const questionId = Number(selectedQuestion.questionId || selectedQuestion.id);
+    if (!questionId) return;
 
-    if (!questionId) {
-      console.error("questionId est undefined!");
-      return;
-    }
+    const existingResponse =
+      editingResponse ||
+      projectResponses.find((response) => Number(response.questionId) === questionId);
 
     try {
-      const response = await api_backend.post(`/response/create`, {
-        label: null,
-        keyword: null,
-        projectId: Number(projectId),
-        questionId: Number(questionId),
-      });
+      if (existingResponse?.responseId) {
+        const response = await api_backend.patch(
+          `/response/update/${existingResponse.responseId}`,
+          {
+            label: null,
+            keyword: null,
+          }
+        );
 
-      setProjectResponses((prev) => [...prev, response.data]);
-      updateNodeStatus("skipped");
+        setProjectResponses((prev) =>
+          prev.map((item) =>
+            item.responseId === existingResponse.responseId
+              ? { ...item, label: response.data.label, keyword: response.data.keyword }
+              : item
+          )
+        );
+      } else {
+        const response = await api_backend.post(`/response/create`, {
+          label: null,
+          keyword: null,
+          projectId: Number(projectId),
+          questionId,
+        });
+
+        setProjectResponses((prev) => [...prev, response.data]);
+      }
+
+      modal.closeModal();
     } catch (error: any) {
       console.error("Erreur lors du skip de la réponse:", error);
-      console.error("Données envoyées:", {
-        projectId: Number(projectId),
-        questionId: Number(questionId),
-      });
-      console.error("Réponse du serveur:", error.response?.data);
     }
   };
 
-  // Définition des types de noeuds
   const nodeTypes = useMemo(
     () => ({
       question: QuestionNode,
+      theme: ThemeNode,
+      response: ResponseNode,
     }),
     []
   );
 
   return (
     <div
-      className={isFullscreen ? "fixed inset-0 z-40 h-screen w-screen bg-white" : "h-full w-full bg-white relative"}
+      className={
+        isFullscreen
+          ? "fixed inset-0 z-40 h-screen w-screen bg-white"
+          : "h-full w-full bg-white relative"
+      }
     >
       <Button
         onClick={toggleFullscreen}
@@ -452,7 +565,8 @@ export default function TreeView({
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        defaultEdgeOptions={{ type: "smoothstep", style: { stroke: "#272727" } }}
+        defaultEdgeOptions={{ type: "simplebezier", style: { stroke: "#272727" } }}
+        connectionLineType={ConnectionLineType.SimpleBezier}
         nodeTypes={nodeTypes}
         onNodeClick={handleNodeClick}
         onInit={setReactFlowInstance}
@@ -464,56 +578,43 @@ export default function TreeView({
       >
         <Controls showInteractive={false} />
       </ReactFlow>
-      {/* Renvoie du bon formulaire de réponse */}
-      {selectedNode &&
-        (() => {
-          const question = selectedNode.data as Question;
-          let ResponseForm;
-          let responseFormProps: any = {};
-          
-          if (question.shouldMultiply) {
-            ResponseForm = () => <div>Question répétée</div>;
-          } else if (question.hasMultipleOpenResponse) {
-            ResponseForm = ReponsesPlusieurs;
-            responseFormProps = {
-              value: multipleResponses,
-              onChange: setMultipleResponses,
-            };
-          } else if (question.options && question.options.length > 0) {
-            ResponseForm = ReponseSelect;
-            responseFormProps = {
-              options: (question.options || []).map((opt, index) => ({ 
-                label: opt, 
-                value: opt, 
-                optionId: index, 
-                questionId: (question.id ?? 0) as number 
-              })),
-              value: selectedOptions,
-              onChange: setSelectedOptions,
-            };
-          } else {
-            ResponseForm = ReponseUnique;
-            responseFormProps = {
-              value: responseValue,
-              onChange: setResponseValue,
-            };
-          }
 
-          return (
-            <ModalQuestion
-              modal={modal}
-              question={question.label || "question"}
-              questionId={question.id?.toString() || "id"}
-              keyword={responseKeyword}
-              onValidate={handleValidate}
-              onSkip={handleSkip}
-              onKeywordChange={setResponseKeyword}
-            >
-              <ResponseForm {...responseFormProps} />
-            </ModalQuestion>
-          );
-
-        })()}
+      {selectedQuestion && (
+        <ModalQuestion
+          modal={modal}
+          question={selectedQuestion.label || "Question"}
+          questionId={selectedQuestion.id?.toString() || "id"}
+          keyword={responseKeyword}
+          onValidate={handleValidate}
+          onSkip={handleSkip}
+          onKeywordChange={setResponseKeyword}
+        >
+          {selectedQuestion.shouldMultiply ? (
+            <div>Question répétée</div>
+          ) : selectedQuestion.hasMultipleOpenResponse ? (
+            <ReponsesPlusieurs
+              value={multipleResponses}
+              onChange={setMultipleResponses}
+            />
+          ) : (selectedQuestion.options?.length ?? 0) > 0 ? (
+            <ReponseSelect
+              options={(selectedQuestion.options || []).map((opt, index) => ({
+                label: opt,
+                value: opt,
+                optionId: index,
+                questionId: Number(selectedQuestion.questionId || selectedQuestion.id || 0),
+              }))}
+              value={selectedOptions}
+              onChange={setSelectedOptions}
+            />
+          ) : (
+            <ReponseUnique
+              value={responseValue}
+              onChange={setResponseValue}
+            />
+          )}
+        </ModalQuestion>
+      )}
     </div>
   );
 }
