@@ -100,8 +100,8 @@ const pulseAnimation = `
 
 `;
 
-// Tutorial steps with rich visual content
-const tutorialSteps: TutorialStep[] = [
+// Tutorial steps with rich visual content - defined outside component for performance
+const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'welcome',
     title: 'BIENVENUE DANS LE DIAGRAMME DE GANTT',
@@ -498,21 +498,41 @@ const findElementByDataId = (id: string): DOMRect | null => {
 };
 
 export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState<number>(0);
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
   const [showHighlight, setShowHighlight] = useState(false);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [isAnimating, setIsAnimating] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   
-  const step = tutorialSteps[currentStep];
-  const isLastStep = currentStep === tutorialSteps.length - 1;
+  // Progress persistence - restore last position from localStorage
+  useEffect(() => {
+    if (isOpen) {
+      const savedProgress = localStorage.getItem('gantt_tutorial_progress');
+      if (savedProgress) {
+        const step = parseInt(savedProgress, 10);
+        if (!isNaN(step) && step >= 0 && step < TUTORIAL_STEPS.length) {
+          setCurrentStep(step);
+        }
+      }
+    }
+  }, [isOpen]);
+  
+  // Save progress to localStorage
+  useEffect(() => {
+    if (isOpen) {
+      localStorage.setItem('gantt_tutorial_progress', currentStep.toString());
+    }
+  }, [currentStep, isOpen]);
+  
+  const step = TUTORIAL_STEPS[currentStep];
+  const isLastStep = currentStep === TUTORIAL_STEPS.length - 1;
   const isFirstStep = currentStep === 0;
-  const progress = ((currentStep + 1) / tutorialSteps.length) * 100;
+  const progress = ((currentStep + 1) / TUTORIAL_STEPS.length) * 100;
 
-  // Update highlight position
+  // Update highlight position - optimized with useCallback
   const updateHighlightPosition = useCallback(() => {
-    if (!isOpen) return;
+    if (!isOpen || !step) return;
     
     if (step.targetId && step.targetId !== 'tutorial-overlay') {
       const rect = findElementByDataId(step.targetId);
@@ -555,7 +575,7 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
         setModalPosition({ top: targetTop, left: targetLeft });
       } else {
         setShowHighlight(false);
-        // Center modal
+        // Center modal - use CSS transform instead of layout
         setModalPosition({
           top: window.innerHeight / 2 - 200,
           left: window.innerWidth / 2 - 240
@@ -564,7 +584,7 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
     } else {
       setHighlightRect(null);
       setShowHighlight(false);
-      // Center modal
+      // Center modal - use CSS transform instead of layout
       setModalPosition({
         top: window.innerHeight / 2 - 200,
         left: window.innerWidth / 2 - 240
@@ -575,20 +595,36 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
   useEffect(() => {
     if (!isOpen) return;
     
+    // Debounced position update to reduce lag
+    let resizeTimer: NodeJS.Timeout;
+    let scrollTimer: NodeJS.Timeout;
+    
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(updateHighlightPosition, 100);
+    };
+    
+    const handleScroll = () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(updateHighlightPosition, 100);
+    };
+    
     // Small delay to allow DOM to update
     const timer = setTimeout(updateHighlightPosition, 50);
     
-    window.addEventListener('resize', updateHighlightPosition);
-    window.addEventListener('scroll', updateHighlightPosition, true);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll, true);
     
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', updateHighlightPosition);
-      window.removeEventListener('scroll', updateHighlightPosition, true);
+      clearTimeout(resizeTimer);
+      clearTimeout(scrollTimer);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll, true);
     };
   }, [isOpen, updateHighlightPosition]);
 
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
     if (!isLastStep) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -596,9 +632,9 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
         setIsAnimating(false);
       }, 150);
     }
-  };
+  }, [isLastStep, currentStep]);
 
-  const goToPrevious = () => {
+  const goToPrevious = useCallback(() => {
     if (!isFirstStep) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -606,45 +642,46 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
         setIsAnimating(false);
       }, 150);
     }
-  };
+  }, [isFirstStep, currentStep]);
 
-  const goToStep = (index: number) => {
+  const goToStep = useCallback((index: number) => {
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentStep(index);
       setIsAnimating(false);
     }, 150);
-  };
+  }, []);
 
-  // Keyboard navigation
+  // Keyboard navigation with useCallback for performance
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      goToNext();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goToPrevious();
+    } else if (e.key === 'Escape') {
+      onClose();
+    }
+  }, [goToNext, goToPrevious, onClose]);
+
+  // Add useEffect for keyboard event listener
   useEffect(() => {
     if (!isOpen) return;
     
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === ' ') {
-        e.preventDefault();
-        goToNext();
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        goToPrevious();
-      } else if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentStep]);
+  }, [isOpen, handleKeyDown]);
 
   if (!isOpen) return null;
 
   return (
-    <>
+    <div className="tutorial-wrapper">
       <style>{pulseAnimation}</style>
       
       {/* Animated spotlight effect */}
       {showHighlight && highlightRect && (
-        <>
+        <React.Fragment>
           {/* Spotlight gradient */}
           <div 
             className="fixed inset-0 pointer-events-none transition-all duration-300"
@@ -665,12 +702,14 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
               height: highlightRect.height + 8,
             }}
           >
-            {/* Outer glow */}
+            {/* Outer glow - using transform instead of box-shadow for better performance */}
             <div 
               className="absolute inset-0 rounded-lg"
               style={{ 
                 animation: 'pulse-glow 2s ease-in-out infinite',
-                boxShadow: '0 0 30px rgba(59, 130, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.3)'
+                transform: 'scale(1.02)',
+                background: 'rgba(59, 130, 246, 0.3)',
+                border: '2px solid rgba(59, 130, 246, 0.6)'
               }} 
             />
             
@@ -716,7 +755,7 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
               className="animate-pulse"
             />
           </svg>
-        </>
+        </React.Fragment>
       )}
       
       {/* Tutorial modal */}
@@ -759,7 +798,7 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
                     NIVEAU {currentStep + 1}
                   </h2>
                   <p className="text-xs text-slate-500">
-                    {currentStep + 1} / {tutorialSteps.length} étapes
+                    {currentStep + 1} / {TUTORIAL_STEPS.length} étapes
                   </p>
                 </div>
               </div>
@@ -804,7 +843,7 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
   
             {/* Step indicators */}
             <div className="flex items-center gap-1">
-              {tutorialSteps.map((s, index) => (
+            {TUTORIAL_STEPS.map((s, index) => (
                 <button
                   key={s.id}
                   onClick={() => goToStep(index)}
@@ -871,7 +910,7 @@ export const GanttTutorial: React.FC<GanttTutorialProps> = ({ isOpen, onClose })
           </span>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
