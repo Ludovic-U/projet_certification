@@ -66,6 +66,25 @@ export interface Livrable {
   id: number;
   label: string;
   description: string;
+  // File and confirmation status
+  fileUrl?: string | null;
+  fileName?: string | null;
+  confirmed?: boolean;
+  confirmedAt?: string | null;
+}
+
+// Task Deliverable Status - represents a livrable attached to a task
+export interface TaskDeliverable {
+  id: number;
+  taskId: number;
+  name: string;
+  status: 'pending' | 'uploaded' | 'confirmed';
+  fileUrl?: string | null;
+  fileName?: string | null;
+  confirmed: boolean;
+  confirmedAt?: string | null;
+  notes?: string | null;
+  completedAt?: string | null;
 }
 
 export interface GanttData {

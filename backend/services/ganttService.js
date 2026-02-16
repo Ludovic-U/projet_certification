@@ -614,15 +614,38 @@ module.exports.deleteTaskLink = async (linkId) => {
  */
 module.exports.createDeliverable = async (deliverableData) => {
   try {
-    const { label, description, startDate, endDate } = deliverableData;
+    const { label, description, startDate, endDate, taskId } = deliverableData;
 
+    // If taskId is provided, create a TaskDeliverableStatus
+    if (taskId) {
+      const deliverableStatus = await prisma.taskDeliverableStatus.create({
+        data: {
+          taskId,
+          name: label || '',
+          status: 'pending',
+          confirmed: false
+        }
+      });
+
+      return {
+        id: deliverableStatus.id,
+        taskId: deliverableStatus.taskId,
+        label: deliverableStatus.name,
+        description: deliverableStatus.notes || '',
+        confirmed: deliverableStatus.confirmed
+      };
+    }
+
+    // Otherwise create a legacy Deliverable (requires subActionId - but we'll make it optional for flexibility)
     const deliverable = await prisma.deliverable.create({
       data: {
         file: label,
         label,
         description,
         startDate: startDate ? new Date(startDate) : new Date(),
-        endDate: endDate ? new Date(endDate) : new Date()
+        endDate: endDate ? new Date(endDate) : new Date(),
+        // For backward compatibility - if no subActionId, we need to handle this differently
+        // But since the model requires subActionId, we won't change this behavior
       }
     });
 
@@ -748,15 +771,14 @@ module.exports.createTaskAssigneeDetail = async (assigneeData) => {
  */
 module.exports.createTaskDeliverableStatus = async (deliverableData) => {
   try {
-    const { taskId, name, delivered, uploaded, filePath } = deliverableData;
+    const { taskId, name } = deliverableData;
 
     const deliverableStatus = await prisma.taskDeliverableStatus.create({
       data: {
         taskId,
         name: name || '',
-        delivered: delivered || false,
-        uploaded: uploaded || false,
-        filePath: filePath || null
+        status: 'pending',
+        confirmed: false
       }
     });
 
@@ -764,12 +786,160 @@ module.exports.createTaskDeliverableStatus = async (deliverableData) => {
       id: deliverableStatus.id,
       taskId: deliverableStatus.taskId,
       name: deliverableStatus.name,
-      delivered: deliverableStatus.delivered,
-      uploaded: deliverableStatus.uploaded,
-      filePath: deliverableStatus.filePath
+      status: deliverableStatus.status,
+      fileUrl: deliverableStatus.fileUrl,
+      fileName: deliverableStatus.fileName,
+      confirmed: deliverableStatus.confirmed,
+      confirmedAt: deliverableStatus.confirmedAt,
+      notes: deliverableStatus.notes,
+      completedAt: deliverableStatus.completedAt
     };
   } catch (error) {
     console.error('Error creating task deliverable status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a task deliverable with file upload
+ * @param {number} deliverableId - Deliverable status ID
+ * @param {Object} updateData - Update data with file info
+ * @returns {Promise<Object>} Updated deliverable status
+ */
+module.exports.updateTaskDeliverable = async (deliverableId, updateData) => {
+  try {
+    const { fileUrl, fileName, notes } = updateData;
+
+    const deliverableStatus = await prisma.taskDeliverableStatus.update({
+      where: { id: deliverableId },
+      data: {
+        fileUrl: fileUrl || null,
+        fileName: fileName || null,
+        notes: notes,
+        status: fileUrl ? 'uploaded' : 'pending',
+        confirmed: fileUrl ? true : false,
+        confirmedAt: fileUrl ? new Date() : null
+      }
+    });
+
+    return {
+      id: deliverableStatus.id,
+      taskId: deliverableStatus.taskId,
+      name: deliverableStatus.name,
+      status: deliverableStatus.status,
+      fileUrl: deliverableStatus.fileUrl,
+      fileName: deliverableStatus.fileName,
+      confirmed: deliverableStatus.confirmed,
+      confirmedAt: deliverableStatus.confirmedAt,
+      notes: deliverableStatus.notes,
+      completedAt: deliverableStatus.completedAt
+    };
+  } catch (error) {
+    console.error('Error updating task deliverable:', error);
+    throw error;
+  }
+};
+
+/**
+ * Confirm a task deliverable (mark as completed)
+ * @param {number} deliverableId - Deliverable status ID
+ * @returns {Promise<Object>} Updated deliverable status
+ */
+module.exports.confirmTaskDeliverable = async (deliverableId) => {
+  try {
+    const deliverableStatus = await prisma.taskDeliverableStatus.update({
+      where: { id: deliverableId },
+      data: {
+        status: 'confirmed',
+        confirmed: true,
+        confirmedAt: new Date(),
+        completedAt: new Date()
+      }
+    });
+
+    return {
+      id: deliverableStatus.id,
+      taskId: deliverableStatus.taskId,
+      name: deliverableStatus.name,
+      status: deliverableStatus.status,
+      fileUrl: deliverableStatus.fileUrl,
+      fileName: deliverableStatus.fileName,
+      confirmed: deliverableStatus.confirmed,
+      confirmedAt: deliverableStatus.confirmedAt,
+      notes: deliverableStatus.notes,
+      completedAt: deliverableStatus.completedAt
+    };
+  } catch (error) {
+    console.error('Error confirming task deliverable:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a task deliverable
+ * @param {number} deliverableId - Deliverable status ID
+ * @returns {Promise<void>}
+ */
+module.exports.deleteTaskDeliverable = async (deliverableId) => {
+  try {
+    await prisma.taskDeliverableStatus.delete({
+      where: { id: deliverableId }
+    });
+  } catch (error) {
+    console.error('Error deleting task deliverable:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get all deliverables for a task
+ * @param {number} taskId - Task ID
+ * @returns {Promise<Array>} List of deliverables for the task
+ */
+module.exports.getTaskDeliverables = async (taskId) => {
+  try {
+    const deliverables = await prisma.taskDeliverableStatus.findMany({
+      where: { taskId },
+      orderBy: { id: 'asc' }
+    });
+
+    return deliverables.map(d => ({
+      id: d.id,
+      taskId: d.taskId,
+      name: d.name,
+      status: d.status,
+      fileUrl: d.fileUrl,
+      fileName: d.fileName,
+      confirmed: d.confirmed,
+      confirmedAt: d.confirmedAt,
+      notes: d.notes,
+      completedAt: d.completedAt
+    }));
+  } catch (error) {
+    console.error('Error getting task deliverables:', error);
+    throw error;
+  }
+};
+
+/**
+ * Calculate task progress based on confirmed deliverables
+ * @param {number} taskId - Task ID
+ * @returns {Promise<number>} Calculated progress percentage
+ */
+module.exports.calculateDeliverableProgress = async (taskId) => {
+  try {
+    const deliverables = await prisma.taskDeliverableStatus.findMany({
+      where: { taskId }
+    });
+
+    if (deliverables.length === 0) {
+      return 0;
+    }
+
+    const confirmedCount = deliverables.filter(d => d.confirmed).length;
+    return Math.round((confirmedCount / deliverables.length) * 100);
+  } catch (error) {
+    console.error('Error calculating deliverable progress:', error);
     throw error;
   }
 };

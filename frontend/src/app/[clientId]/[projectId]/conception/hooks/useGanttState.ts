@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Task, Link, Livrable, ViewMode, EditorTab, HistoryState, MenuPosition } from '../types';
-import { fetchGanttData, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, createDeliverable as apiCreateLivrable, createTask as apiCreateTask, GanttData } from '@/api/ganttApi';
+import { fetchGanttData, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, createDeliverable as apiCreateLivrable, createTask as apiCreateTask, GanttData, uploadFile, updateTaskDeliverable as apiUpdateTaskDeliverable } from '@/api/ganttApi';
 import { createEmptyBudget } from '../utils/budgetUtils';
 import { getDateRange } from '../utils/timelineUtils';
 import { DEFAULT_DAY_WIDTH, MAX_HISTORY_STATES, MIN_START_DATE } from '../constants';
@@ -254,6 +254,7 @@ export const useGanttState = () => {
     if (newLivrableLabel.trim() && editingTask && projectId) {
       try {
         const newLivrable = await apiCreateLivrable(projectId, {
+          taskId: editingTask.id,
           label: newLivrableLabel.trim(),
           description: newLivrableDescription.trim()
         });
@@ -287,6 +288,63 @@ export const useGanttState = () => {
         setNewLivrableDescription('');
       }
     }
+  };
+
+  // Upload file to livrable handler
+  const handleUploadLivrableFile = async (livrableId: number, file: File) => {
+    if (!editingTask || !projectId) return;
+    
+    try {
+      // Upload file first
+      const uploadResult = await uploadFile(file);
+      
+      // Update the livrable with file URL
+      const updatedLivrable = await apiUpdateTaskDeliverable(
+        Number(projectId),
+        editingTask.id,
+        livrableId,
+        {
+          fileUrl: uploadResult.url,
+          fileName: uploadResult.originalName
+        }
+      );
+      
+      // Update local state
+      setLivrables(prev => prev.map(l => 
+        l.id === livrableId 
+          ? { 
+              ...l, 
+              fileUrl: updatedLivrable.fileUrl, 
+              fileName: updatedLivrable.fileName,
+              confirmed: updatedLivrable.confirmed 
+            } 
+          : l
+      ));
+      
+      // Update task progress if returned
+      if (updatedLivrable.progress !== undefined) {
+        setEditingTask(prev => prev ? { ...prev, progress: updatedLivrable.progress } : null);
+        setTasks(prev => prev.map(t => 
+          t.id === editingTask.id 
+            ? { ...t, progress: updatedLivrable.progress } 
+            : t
+        ));
+      }
+    } catch (err) {
+      console.error('Error uploading file to livrable:', err);
+    }
+  };
+
+  // Calculate progress based on confirmed livrables
+  const calculateLivrableProgress = (taskLivrableIds: number[] | undefined): number => {
+    if (!taskLivrableIds || taskLivrableIds.length === 0) return 0;
+    
+    const confirmedLivrables = taskLivrableIds.filter(id => {
+      const livrable = livrables.find(l => l.id === id);
+      return livrable?.confirmed;
+    });
+    
+    return Math.round((confirmedLivrables.length / taskLivrableIds.length) * 100);
   };
 
   // Save state to history
@@ -602,6 +660,8 @@ export const useGanttState = () => {
     
     // Actions
     handleAddLivrable,
+    handleUploadLivrableFile,
+    calculateLivrableProgress,
     saveState,
     undo,
     redo,

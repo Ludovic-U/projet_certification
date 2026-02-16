@@ -286,6 +286,11 @@ model TaskDeliverableStatus {
   status      String    @default("pending")
   completedAt DateTime?
   notes       String?
+  // New fields for file upload and confirmation
+  fileUrl     String?
+  fileName    String?
+  confirmed   Boolean   @default(false)
+  confirmedAt DateTime?
   task        Task      @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
 
   @@index([taskId])

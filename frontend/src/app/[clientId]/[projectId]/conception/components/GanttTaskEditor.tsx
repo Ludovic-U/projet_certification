@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText } from 'lucide-react';
+import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, Upload } from 'lucide-react';
 import { Task, EditorTab, Livrable, SelectOption } from '../types';
 import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateBudgetTotals } from '../utils/budgetUtils';
 import Select from 'react-select';
@@ -30,6 +30,7 @@ interface GanttTaskEditorProps {
   newLivrableDescription: string;
   setNewLivrableDescription: (description: string) => void;
   handleAddLivrable: () => void;
+  handleUploadLivrableFile?: (livrableId: number, file: File) => Promise<void>;
   deleteTask: (id: number) => void;
   updateTask: () => void;
   data: {
@@ -52,6 +53,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
   newLivrableDescription,
   setNewLivrableDescription,
   handleAddLivrable,
+  handleUploadLivrableFile,
   deleteTask,
   updateTask,
   data,
@@ -364,6 +366,11 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
                   <Target className="w-4 h-4 text-slate-400" />
                   Livrables
+                  {editingTask.livrableIds && editingTask.livrableIds.length > 0 && (
+                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/30">
+                      {editingTask.livrableIds.length} livrable{editingTask.livrableIds.length > 1 ? 's' : ''}
+                    </span>
+                  )}
                 </label>
                 <div className="flex items-center gap-2">
                   <button
@@ -421,6 +428,17 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   </div>
                 ) : editingTask.livrableIds && editingTask.livrableIds.length > 0 ? (
                   <div className="space-y-2">
+                    {/* Progression info */}
+                    <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-800/30 px-3 py-2 rounded-lg">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>
+                        Progression: {Math.round((editingTask.livrableIds.length > 0 ? (editingTask.progress / 100) * editingTask.livrableIds.length : 0))} / {editingTask.livrableIds.length} livrables confirmé{editingTask.livrableIds.length > 1 ? 's' : ''}
+                      </span>
+                      <span className="text-blue-400 font-medium ml-auto">
+                        {editingTask.progress}%
+                      </span>
+                    </div>
+                    
                     {editingTask.livrableIds.map(livrableId => {
                       const livrable = livrables.find(l => l.id === livrableId);
                       if (!livrable) return null;
@@ -431,6 +449,32 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                             {livrable.description && (
                               <p className="text-sm text-slate-400 mt-1">{livrable.description}</p>
                             )}
+                            {/* File upload section */}
+                            <div className="mt-3 pt-3 border-t border-slate-700">
+                              <label className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-lg cursor-pointer transition-colors text-sm">
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file && handleUploadLivrableFile) {
+                                      await handleUploadLivrableFile(livrableId, file);
+                                    }
+                                  }}
+                                />
+                                <Upload className="w-4 h-4" />
+                                {livrable.fileUrl ? 'Changer le fichier' : 'Ajouter un fichier'}
+                              </label>
+                              {livrable.fileName && (
+                                <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
+                                  <FileText className="w-4 h-4" />
+                                  <span className="truncate">{livrable.fileName}</span>
+                                  {livrable.confirmed && (
+                                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <button
                             onClick={() => {

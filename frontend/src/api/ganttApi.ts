@@ -27,6 +27,20 @@ interface FileUploadResponse {
   filename: string;
 }
 
+// Task Deliverable Status interface
+export interface TaskDeliverable {
+  id: number;
+  taskId: number;
+  name: string;
+  status: string;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  confirmed: boolean;
+  confirmedAt?: string | null;
+  notes?: string | null;
+  completedAt?: string | null;
+}
+
 // Version type
 export interface Version {
   versionId: number;
@@ -200,7 +214,7 @@ export const deleteTaskLink = async (projectId: number, linkId: number): Promise
  */
 export const createDeliverable = async (
   projectId: number,
-  deliverableData: { label: string; description?: string; startDate?: string; endDate?: string }
+  deliverableData: { taskId?: number; label: string; description?: string; startDate?: string; endDate?: string }
 ): Promise<Livrable> => {
   const response = await api.post(`/gantt/${projectId}/deliverables`, deliverableData);
   return response.data;
@@ -308,5 +322,64 @@ export const deleteVersion = async (projectId: number, versionId: number): Promi
  */
 export const activateVersion = async (projectId: number, versionId: number): Promise<Version> => {
   const response = await api.put(`/gantt/${projectId}/versions/${versionId}/activate`);
+  return response.data;
+};
+
+// ==================== TASK DELIVERABLE API ====================
+
+/**
+ * Get all deliverables for a task
+ */
+export const getTaskDeliverables = async (projectId: number, taskId: number): Promise<TaskDeliverable[]> => {
+  const response = await api.get(`/gantt/${projectId}/tasks/${taskId}/deliverables`);
+  return response.data;
+};
+
+/**
+ * Create a new task deliverable
+ */
+export const createTaskDeliverable = async (
+  projectId: number,
+  taskId: number,
+  data: { name: string }
+): Promise<TaskDeliverable> => {
+  const response = await api.post(`/gantt/${projectId}/tasks/${taskId}/deliverables`, data);
+  return response.data;
+};
+
+/**
+ * Update a task deliverable (upload file)
+ */
+export const updateTaskDeliverable = async (
+  projectId: number,
+  taskId: number,
+  deliverableId: number,
+  data: { fileUrl?: string; fileName?: string; notes?: string }
+): Promise<TaskDeliverable & { progress: number }> => {
+  const response = await api.put(`/gantt/${projectId}/tasks/${taskId}/deliverables/${deliverableId}`, data);
+  return response.data;
+};
+
+/**
+ * Confirm a task deliverable
+ */
+export const confirmTaskDeliverable = async (
+  projectId: number,
+  taskId: number,
+  deliverableId: number
+): Promise<TaskDeliverable & { progress: number }> => {
+  const response = await api.put(`/gantt/${projectId}/tasks/${taskId}/deliverables/${deliverableId}/confirm`);
+  return response.data;
+};
+
+/**
+ * Delete a task deliverable
+ */
+export const deleteTaskDeliverable = async (
+  projectId: number,
+  taskId: number,
+  deliverableId: number
+): Promise<{ message: string; progress: number }> => {
+  const response = await api.delete(`/gantt/${projectId}/tasks/${taskId}/deliverables/${deliverableId}`);
   return response.data;
 };

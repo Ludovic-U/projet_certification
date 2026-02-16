@@ -37,6 +37,7 @@ import {
   saveMindmapAsTasks,
   importToGantt,
   mindmapToReactFlow,
+  saveAsPreProjectVersion,
   Mindmap,
 } from '@/api/mindmapApi';
 
@@ -200,7 +201,7 @@ export const MindmapInner = () => {
     }
   }, [projectId, setNodes, setEdges]);
   
-  // Save mindmap as Tasks (new approach - bypasses Mindmap tables)
+  // Save mindmap as Pre-project version for Gantt chart
   const saveMindmapAsTasksFn = useCallback(async () => {
     if (!projectId) return;
     
@@ -209,26 +210,29 @@ export const MindmapInner = () => {
     
     setIsSaving(true);
     try {
-      await saveMindmapAsTasks(projectId, nodesToSave, edgesToSave);
+      const result = await saveAsPreProjectVersion(projectId, nodesToSave, edgesToSave);
       
       // Also save to localStorage as backup
       localStorage.setItem(`mindmap_${projectId}`, JSON.stringify({
         nodes: nodesToSave,
         edges: edgesToSave,
       }));
+      
+      alert(`Successfully saved as Pre-project version! Created ${result.tasksCreated} tasks and ${result.linksCreated} links.`);
     } catch (err) {
-      console.error('Failed to save mindmap as tasks:', err);
+      console.error('Failed to save mindmap as pre-project:', err);
       // Still save to localStorage as backup
       localStorage.setItem(`mindmap_${projectId}`, JSON.stringify({
         nodes: nodesToSave,
         edges: edgesToSave,
       }));
+      alert('Failed to save as pre-project version. Please try again.');
     } finally {
       setIsSaving(false);
     }
   }, [projectId, getNodes, getEdges]);
   
-  // Import mindmap nodes to Gantt chart
+  // Legacy import function - kept for reference but not used in UI
   const handleImportToGantt = useCallback(async () => {
     if (!projectId) return;
     
@@ -591,7 +595,7 @@ export const MindmapInner = () => {
         )}
         
         {/* Toolbar */}
-        <div style={{ position: 'absolute', top: 80, left: 20, zIndex: 10 }}>
+        <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
           <MindmapToolbar
             onZoomIn={handleZoomIn}
             onZoomOut={handleZoomOut}
@@ -601,7 +605,6 @@ export const MindmapInner = () => {
             onAddNode={handleAddNode}
             onDeleteSelected={handleDeleteSelected}
             onSave={saveMindmapAsTasksFn}
-            onImportToGantt={handleImportToGantt}
             canUndo={historyIndex > 0}
             canRedo={historyIndex < history.length - 1}
             hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}

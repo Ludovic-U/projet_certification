@@ -11,7 +11,6 @@ import {
   Trash2,
   Save,
   ChevronDown,
-  Import,
 } from 'lucide-react';
 
 interface MindmapToolbarProps {
@@ -23,7 +22,6 @@ interface MindmapToolbarProps {
   onAddNode: (type: string) => void;
   onDeleteSelected: () => void;
   onSave: () => void;
-  onImportToGantt: () => void;
   canUndo: boolean;
   canRedo: boolean;
   hasSelection: boolean;
@@ -41,7 +39,6 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
   onAddNode,
   onDeleteSelected,
   onSave,
-  onImportToGantt,
   canUndo,
   canRedo,
   hasSelection,
@@ -187,7 +184,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
 
       <div style={{ display: 'flex', gap: '4px', position: 'relative' }}>
         <button
-          onClick={() => onAddNode(selectedNodeType)}
+          onClick={() => setShowTypeDropdown(!showTypeDropdown)}
           style={{
             ...buttonStyle,
             width: 'auto',
@@ -203,7 +200,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
           <ChevronDown size={14} />
         </button>
 
-        {/* Type dropdown */}
+        {/* Type dropdown - integrated with Add button */}
         {showTypeDropdown && (
           <div style={dropdownStyle}>
             {nodeTypes.map((type) => (
@@ -229,6 +226,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
                 }}
                 onClick={() => {
                   onNodeTypeChange(type.id);
+                  onAddNode(type.id);
                   setShowTypeDropdown(false);
                 }}
               >
@@ -244,25 +242,6 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
           </div>
         )}
       </div>
-
-      <button
-        onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-        style={{
-          ...buttonStyle,
-          width: '36px',
-        }}
-        title="Select node type"
-      >
-        <span
-          style={{
-            width: '14px',
-            height: '14px',
-            borderRadius: '50%',
-            backgroundColor: currentType.color,
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-          }}
-        />
-      </button>
 
       <button
         onClick={onDeleteSelected}
@@ -299,26 +278,10 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
           backgroundColor: 'rgba(59, 130, 246, 0.3)',
           borderColor: 'rgba(59, 130, 246, 0.4)',
         }}
-        title="Save Mindmap"
+        title="Save as Pre-project"
       >
         <Save size={18} />
         <span style={{ fontSize: '13px', fontWeight: 500 }}>Save</span>
-      </button>
-
-      <button
-        onClick={onImportToGantt}
-        style={{
-          ...buttonStyle,
-          width: 'auto',
-          padding: '0 12px',
-          gap: '6px',
-          backgroundColor: 'rgba(168, 85, 247, 0.3)',
-          borderColor: 'rgba(168, 85, 247, 0.4)',
-        }}
-        title="Import to Gantt Chart"
-      >
-        <Import size={18} />
-        <span style={{ fontSize: '13px', fontWeight: 500 }}>Import</span>
       </button>
     </div>
   );

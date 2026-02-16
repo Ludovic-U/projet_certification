@@ -105,6 +105,22 @@ export const importToGantt = async (
 };
 
 /**
+ * Save mindmap as Pre-project version for Gantt chart
+ * Creates or updates a "Pre-project" version with all nodes as tasks
+ */
+export const saveAsPreProjectVersion = async (
+  projectId: number,
+  nodes: any[],
+  edges: any[]
+): Promise<{ message: string; versionId: number; versionName: string; tasksCreated: number; linksCreated: number }> => {
+  const response = await axiosInstance.post(`/mindmap/project/${projectId}/save-as-preproject`, {
+    nodes,
+    edges,
+  });
+  return response.data;
+};
+
+/**
  * Delete a mindmap
  */
 export const deleteMindmap = async (mindmapId: number): Promise<void> => {

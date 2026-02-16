@@ -11,6 +11,11 @@ const {
   createTaskExpense,
   createTaskAssigneeDetail,
   createTaskDeliverableStatus,
+  updateTaskDeliverable,
+  confirmTaskDeliverable,
+  deleteTaskDeliverable,
+  getTaskDeliverables,
+  calculateDeliverableProgress,
   getVersionsForProject,
   createVersion,
   updateVersion,
@@ -196,8 +201,10 @@ module.exports.createDeliverable = async (req, res) => {
   if (!validateId(projectId, 'projectId', res)) return;
   
   try {
+    // Support both taskId (for task deliverables) and subActionId (legacy)
     const deliverableData = {
-      subActionId: Number(req.body.subActionId),
+      taskId: req.body.taskId ? Number(req.body.taskId) : undefined,
+      subActionId: req.body.subActionId ? Number(req.body.subActionId) : undefined,
       label: req.body.label,
       description: req.body.description,
       startDate: req.body.startDate,
@@ -586,5 +593,140 @@ module.exports.activateVersion = async (req, res) => {
       return res.status(404).json({ error: 'Version not found' });
     }
     res.status(500).json({ error: 'Failed to activate version' });
+  }
+};
+
+/**
+ * Create a new task deliverable
+ * POST /api/gantt/:projectId/tasks/:taskId/deliverables
+ */
+module.exports.createTaskDeliverable = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const taskId = Number(req.params.taskId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  if (!validateId(taskId, 'taskId', res)) return;
+  
+  try {
+    const deliverable = await createTaskDeliverableStatus({
+      taskId,
+      name: req.body.name
+    });
+    
+    res.status(201).json(deliverable);
+  } catch (error) {
+    console.error('Error creating task deliverable:', error);
+    res.status(500).json({ error: error.message || 'Failed to create task deliverable' });
+  }
+};
+
+/**
+ * Update a task deliverable with file upload
+ * PUT /api/gantt/:projectId/tasks/:taskId/deliverables/:deliverableId
+ */
+module.exports.updateTaskDeliverable = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const taskId = Number(req.params.taskId);
+  const deliverableId = Number(req.params.deliverableId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  if (!validateId(taskId, 'taskId', res)) return;
+  if (!validateId(deliverableId, 'deliverableId', res)) return;
+  
+  try {
+    const deliverable = await updateTaskDeliverable(deliverableId, {
+      fileUrl: req.body.fileUrl,
+      fileName: req.body.fileName,
+      notes: req.body.notes
+    });
+    
+    // Calculate new progress based on confirmed deliverables
+    const newProgress = await calculateDeliverableProgress(taskId);
+    
+    // Update task progress if it changed
+    if (newProgress > 0) {
+      await updateTask(taskId, { progress: newProgress });
+    }
+    
+    res.status(200).json({ ...deliverable, progress: newProgress });
+  } catch (error) {
+    console.error('Error updating task deliverable:', error);
+    res.status(500).json({ error: error.message || 'Failed to update task deliverable' });
+  }
+};
+
+/**
+ * Confirm a task deliverable
+ * PUT /api/gantt/:projectId/tasks/:taskId/deliverables/:deliverableId/confirm
+ */
+module.exports.confirmTaskDeliverable = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const taskId = Number(req.params.taskId);
+  const deliverableId = Number(req.params.deliverableId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  if (!validateId(taskId, 'taskId', res)) return;
+  if (!validateId(deliverableId, 'deliverableId', res)) return;
+  
+  try {
+    const deliverable = await confirmTaskDeliverable(deliverableId);
+    
+    // Calculate new progress based on confirmed deliverables
+    const newProgress = await calculateDeliverableProgress(taskId);
+    
+    // Update task progress
+    await updateTask(taskId, { progress: newProgress });
+    
+    res.status(200).json({ ...deliverable, progress: newProgress });
+  } catch (error) {
+    console.error('Error confirming task deliverable:', error);
+    res.status(500).json({ error: error.message || 'Failed to confirm task deliverable' });
+  }
+};
+
+/**
+ * Delete a task deliverable
+ * DELETE /api/gantt/:projectId/tasks/:taskId/deliverables/:deliverableId
+ */
+module.exports.deleteTaskDeliverable = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const taskId = Number(req.params.taskId);
+  const deliverableId = Number(req.params.deliverableId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  if (!validateId(taskId, 'taskId', res)) return;
+  if (!validateId(deliverableId, 'deliverableId', res)) return;
+  
+  try {
+    await deleteTaskDeliverable(deliverableId);
+    
+    // Recalculate progress after deletion
+    const newProgress = await calculateDeliverableProgress(taskId);
+    await updateTask(taskId, { progress: newProgress });
+    
+    res.status(200).json({ message: 'Deliverable deleted successfully', progress: newProgress });
+  } catch (error) {
+    console.error('Error deleting task deliverable:', error);
+    res.status(500).json({ error: error.message || 'Failed to delete task deliverable' });
+  }
+};
+
+/**
+ * Get all deliverables for a task
+ * GET /api/gantt/:projectId/tasks/:taskId/deliverables
+ */
+module.exports.getTaskDeliverables = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const taskId = Number(req.params.taskId);
+  
+  if (!validateId(projectId, 'projectId', res)) return;
+  if (!validateId(taskId, 'taskId', res)) return;
+  
+  try {
+    const deliverables = await getTaskDeliverables(taskId);
+    res.status(200).json(deliverables);
+  } catch (error) {
+    console.error('Error getting task deliverables:', error);
+    res.status(500).json({ error: error.message || 'Failed to get task deliverables' });
   }
 };

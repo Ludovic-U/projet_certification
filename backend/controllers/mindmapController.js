@@ -1,5 +1,6 @@
 const mindmapService = require('../services/mindmapService');
 const { asyncErrorHandler } = require('./helpers/asyncErrorHandler');
+const { prisma } = require('../prisma/prismaClient');
 
 /**
  * Save mindmap nodes as Tasks (upsert approach)
@@ -49,7 +50,67 @@ const importToGantt = asyncErrorHandler(async (req, res) => {
   });
 });
 
+/**
+ * Save mindmap as a Pre-project version for Gantt chart
+ * Creates or updates a "Pre-project" version and saves all nodes as tasks within it
+ */
+const saveAsPreProjectVersion = asyncErrorHandler(async (req, res) => {
+  const { projectId } = req.params;
+  const { nodes, edges } = req.body;
+
+  if (!nodes || !Array.isArray(nodes)) {
+    return res.status(400).json({ error: 'Nodes array is required' });
+  }
+
+  const parsedProjectId = parseInt(projectId);
+
+  // Find or create the Pre-project version
+  let preProjectVersion = await prisma.version.findFirst({
+    where: {
+      projectId: parsedProjectId,
+      name: 'Pre-project',
+    },
+  });
+
+  if (!preProjectVersion) {
+    // Create new Pre-project version
+    preProjectVersion = await prisma.version.create({
+      data: {
+        projectId: parsedProjectId,
+        name: 'Pre-project',
+        description: 'Created from mindmap',
+        isActive: false,
+      },
+    });
+  } else {
+    // Clear existing tasks and links for this version
+    await prisma.taskLink.deleteMany({
+      where: { versionId: preProjectVersion.versionId },
+    });
+    await prisma.task.deleteMany({
+      where: { versionId: preProjectVersion.versionId },
+    });
+  }
+
+  // Save mindmap nodes as tasks within the version
+  const result = await mindmapService.saveMindmapAsTasks(
+    parsedProjectId,
+    nodes,
+    edges || [],
+    preProjectVersion.versionId
+  );
+
+  res.status(201).json({
+    message: 'Successfully saved mindmap as Pre-project version',
+    versionId: preProjectVersion.versionId,
+    versionName: preProjectVersion.name,
+    tasksCreated: result.tasks.length,
+    linksCreated: result.links ? result.links.length : 0,
+  });
+});
+
 module.exports = {
   saveAsTasks,
   importToGantt,
+  saveAsPreProjectVersion,
 };

@@ -77,23 +77,34 @@ const buildDescriptionMap = (nodes, edges) => {
 /**
  * Save mindmap nodes as Tasks - Upsert approach (update if exists, create if not)
  * objectif/livrable nodes are stored as descriptions on parent tasks
+ * @param {number} projectId - The project ID
+ * @param {Array} nodes - Array of mindmap nodes
+ * @param {Array} edges - Array of mindmap edges
+ * @param {number|null} versionId - Optional version ID to associate tasks with
  */
-const saveMindmapAsTasks = async (projectId, nodes, edges) => {
+const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => {
   const createdTasks = [];
   const nodeIdToTaskId = {};
 
   // Build map of parent node ID -> description texts
   const parentToDescriptions = buildDescriptionMap(nodes, edges);
 
-  // Get all existing mindmap tasks for this project
-  const existingTasks = await prisma.task.findMany({
+  // Get all existing mindmap tasks for this project (optionally filtered by version)
+  const existingTasksQuery = {
     where: {
       projectId,
       details: {
         contains: '"mindmapId":0',
       },
     },
-  });
+  };
+  
+  // If versionId is provided, only get tasks from that version
+  if (versionId) {
+    existingTasksQuery.where.versionId = versionId;
+  }
+  
+  const existingTasks = await prisma.task.findMany(existingTasksQuery);
 
   // Build map of nodeId -> existing taskId
   const existingNodeIdToTaskId = {};
@@ -136,6 +147,11 @@ const saveMindmapAsTasks = async (projectId, nodes, edges) => {
         isRoot: node.data?.isRoot || false,
       }),
     };
+
+    // Add versionId if provided
+    if (versionId) {
+      taskData.versionId = versionId;
+    }
 
     let task;
     if (existingTaskId) {
