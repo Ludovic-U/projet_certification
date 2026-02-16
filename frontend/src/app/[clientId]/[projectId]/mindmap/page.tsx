@@ -100,7 +100,10 @@ const MindmapInner = () => {
   
   // Selection state
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
-  
+
+  // Selected edges state
+  const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
+
   // Selected node type for new nodes
   const [selectedNodeType, setSelectedNodeType] = useState<string>('action');
   
@@ -329,22 +332,33 @@ const MindmapInner = () => {
     }, 100);
   }, [setNodes, setEdges, saveToHistory, autoSave]);
   
-  // Delete selected nodes
+  // Delete selected nodes and/or edges
   const handleDeleteSelected = useCallback(() => {
-    if (selectedNodes.length === 0) return;
+    if (selectedNodes.length === 0 && selectedEdges.length === 0) return;
     
     saveToHistory();
-    setNodes((nds) => nds.filter((n) => !selectedNodes.includes(n.id)));
-    setEdges((eds) =>
-      eds.filter((e) => !selectedNodes.includes(e.source) && !selectedNodes.includes(e.target))
-    );
+    
+    // Delete selected nodes
+    if (selectedNodes.length > 0) {
+      setNodes((nds) => nds.filter((n) => !selectedNodes.includes(n.id)));
+      setEdges((eds) =>
+        eds.filter((e) => !selectedNodes.includes(e.source) && !selectedNodes.includes(e.target))
+      );
+    }
+    
+    // Delete selected edges
+    if (selectedEdges.length > 0) {
+      setEdges((eds) => eds.filter((e) => !selectedEdges.includes(e.id)));
+    }
+    
     setSelectedNodes([]);
+    setSelectedEdges([]);
     
     // Auto-save after deletion
     setTimeout(() => {
       autoSave();
     }, 100);
-  }, [selectedNodes, setNodes, setEdges, saveToHistory, autoSave]);
+  }, [selectedNodes, selectedEdges, setNodes, setEdges, saveToHistory, autoSave]);
   
   // Add new node
   const handleAddNode = useCallback((type: string = selectedNodeType) => {
@@ -420,10 +434,31 @@ const MindmapInner = () => {
       return [...prev, node.id];
     });
   }, []);
-  
+
+  // Handle edge click for selection
+  const handleEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+    setSelectedEdges((prev) => {
+      if (prev.includes(edge.id)) {
+        return prev.filter((id) => id !== edge.id);
+      }
+      return [...prev, edge.id];
+    });
+  }, []);
+
+  // Get styled edges with blue color for selected edges
+  const styledEdges = useMemo(() => {
+    return edges.map((edge) => ({
+      ...edge,
+      style: selectedEdges.includes(edge.id)
+        ? { stroke: '#3b82f6', strokeWidth: 3 }
+        : { stroke: '#94a3b8', strokeWidth: 2 },
+    }));
+  }, [edges, selectedEdges]);
+
   // Handle canvas click to deselect
   const handlePaneClick = useCallback(() => {
     setSelectedNodes([]);
+    setSelectedEdges([]);
   }, []);
   
   // Fit view
@@ -572,7 +607,7 @@ const MindmapInner = () => {
             onImportToGantt={handleImportToGantt}
             canUndo={historyIndex > 0}
             canRedo={historyIndex < history.length - 1}
-            hasSelection={selectedNodes.length > 0}
+            hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}
             selectedNodeType={selectedNodeType}
             onNodeTypeChange={setSelectedNodeType}
           />
@@ -581,12 +616,13 @@ const MindmapInner = () => {
         {/* ReactFlow Canvas */}
         <ReactFlow
           nodes={nodes}
-          edges={edges}
+          edges={styledEdges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={handleConnect}
           onNodeClick={handleNodeClick}
           onNodeDoubleClick={handleNodeDoubleClick}
+          onEdgeClick={handleEdgeClick}
           onPaneClick={handlePaneClick}
           nodeTypes={nodeTypes}
           connectionLineType={ConnectionLineType.SmoothStep}
