@@ -6,7 +6,6 @@ import {
   Node,
   Edge,
   Controls,
-  ControlButton,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Question } from "@/types/question";
@@ -27,6 +26,7 @@ import {
 } from "@/components/forms";
 import api_backend from "@/api/axiosInstance";
 import { useParams } from "next/navigation";
+import { Button } from "@/components/ui";
 
 interface TreeViewProps {
   questions: Question[];
@@ -34,6 +34,7 @@ interface TreeViewProps {
   revealByResponses?: boolean;
   onQuestionClick?: (question: Question, node: Node) => void;
   fitViewTrigger?: number;
+  onProjectResponsesChange?: (responses: any[]) => void;
 }
 
 export default function TreeView({
@@ -42,6 +43,7 @@ export default function TreeView({
   revealByResponses = true,
   onQuestionClick,
   fitViewTrigger,
+  onProjectResponsesChange,
 }: TreeViewProps) {
   const params = useParams();
   // Access dynamic route params
@@ -61,6 +63,35 @@ export default function TreeView({
   // Store responses from DB
   const [projectResponses, setProjectResponses] = useState<any[]>([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    setIsFullscreen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    if (!isFullscreen) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    if (!reactFlowInstance) return;
+    const frame = window.requestAnimationFrame(() => {
+      reactFlowInstance.fitView({
+        padding: 0.2,
+        minZoom: 0.8,
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isFullscreen, reactFlowInstance]);
   
   // Fetch all responses for this project
   useEffect(() => {
@@ -165,6 +196,10 @@ export default function TreeView({
     onNodesChange?.(nodes);
   }, [nodes, onNodesChange]);
 
+  useEffect(() => {
+    onProjectResponsesChange?.(projectResponses);
+  }, [projectResponses, onProjectResponsesChange]);
+
   // Re-center view when category change updates the question set
   useEffect(() => {
     if (initialNodes.length > 0) {
@@ -244,6 +279,13 @@ export default function TreeView({
           return { ...n, hidden: false };
         }
         return n;
+      });
+    });
+
+    window.requestAnimationFrame(() => {
+      reactFlowInstance?.fitView({
+        padding: 0.2,
+        minZoom: 0.8,
       });
     });
 
@@ -393,7 +435,20 @@ export default function TreeView({
   );
 
   return (
-    <div className="h-full w-full">
+    <div
+      className={isFullscreen ? "fixed inset-0 z-40 h-screen w-screen bg-white" : "h-full w-full bg-white relative"}
+    >
+      <Button
+        onClick={toggleFullscreen}
+        size="iconS"
+        variant="secondary"
+        className="absolute top-3 right-3 z-70"
+        title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+        aria-label={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+      >
+        <FontAwesomeIcon icon={isFullscreen ? Icons.compress : Icons.expand} />
+      </Button>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -407,11 +462,7 @@ export default function TreeView({
           minZoom: 0.8,
         }}
       >
-        <Controls showInteractive={false}>
-          <ControlButton>
-            <FontAwesomeIcon icon={Icons.briefcase} />
-          </ControlButton>
-        </Controls>
+        <Controls showInteractive={false} />
       </ReactFlow>
       {/* Renvoie du bon formulaire de réponse */}
       {selectedNode &&

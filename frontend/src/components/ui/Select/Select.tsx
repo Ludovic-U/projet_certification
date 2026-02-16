@@ -81,6 +81,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                     >
                         {placeholder && (
                             <option
+                             value=""
                              className="bg-lighthover"
                              disabled>
                                 {placeholder}

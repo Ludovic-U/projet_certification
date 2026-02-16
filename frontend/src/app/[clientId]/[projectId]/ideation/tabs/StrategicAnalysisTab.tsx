@@ -39,6 +39,10 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
   const [responseValue, setResponseValue] = useState<string | string[] | number[]>("");
   const [projectResponses, setProjectResponses] = useState<any[]>([]);
 
+  const handleProjectResponsesChange = (responses: any[]) => {
+    setProjectResponses(responses);
+  };
+
   const getQuestionCategoryLabel = (question: Question) => {
     if (typeof question.category === "string") {
       return question.category;
@@ -244,6 +248,7 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
             questions={treeQuestions}
             onNodesChange={setNodesState}
             fitViewTrigger={fitViewTrigger}
+            onProjectResponsesChange={handleProjectResponsesChange}
           />
         </div>
       </section>
