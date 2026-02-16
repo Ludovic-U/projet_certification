@@ -47,7 +47,7 @@ app.use(cookieParser());
 //cors
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000"); // TODO: change to front url
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
@@ -77,6 +77,7 @@ app.use('/api/financeur', authenticateUser, financeurRoutes);
 app.use('/api/config', authenticateUser, configRoutes);
 app.use('/api/gantt', authenticateUser, ganttRoutes);
 app.use('/api/mistral', authenticateUser, mistralRoutes);
+app.use('/api/todo', todoRoutes);
 app.use('/api/mindmap', authenticateUser, mindmapRoutes);
 
 

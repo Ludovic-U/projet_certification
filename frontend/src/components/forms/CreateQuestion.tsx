@@ -2,6 +2,7 @@
 
 // import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Input,
   Button,
@@ -15,7 +16,7 @@ import api_backend from "@/api/axiosInstance";
 export type CreateQuestionInputs = {
   label: string;
   keyword: string;
-  category: string;
+  category: string | null;
   hasMultipleOpenResponse: boolean;
   shouldMultiply: boolean;
   allowMultiple: boolean;
@@ -40,6 +41,7 @@ interface CreateQuestionFormProps {
   apiError?: string;
   initialValues?: Partial<CreateQuestionInputs>;
   submitLabel?: string;
+  secondaryAction?: ReactNode;
 }
 
 export default function CreateQuestionForm({
@@ -48,11 +50,12 @@ export default function CreateQuestionForm({
   apiError,
   initialValues,
   submitLabel,
+  secondaryAction,
 }: CreateQuestionFormProps) {
   // const { register, handleSubmit, formState: { errors } } = useForm<CreateQuestionInputs>();
   const [label, setLabel] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<string | null>(null);
   const [hasMultipleOpenResponse, setHasMultipleOpenResponse] = useState(false);
   const [shouldMultiply, setShouldMultiply] = useState(false);
   const [allowMultiple, setAllowMultiple] = useState(false);
@@ -90,16 +93,13 @@ export default function CreateQuestionForm({
       try {
         const res = await api_backend.get(`/question/categories`);
         setCategories(res.data);
-        if (!category && res.data?.length > 0) {
-          setCategory(res.data[0].label);
-        }
       } catch (error) {
         console.log(error);
       }
     };
 
     fetchCategories();
-  }, [category]);
+  }, []);
 
   useEffect(() => {
     if (!initialValues) {
@@ -112,8 +112,8 @@ export default function CreateQuestionForm({
     if (typeof initialValues.keyword === "string") {
       setKeyword(initialValues.keyword);
     }
-    if (typeof initialValues.category === "string") {
-      setCategory(initialValues.category);
+    if (typeof initialValues.category === "string" || initialValues.category === null) {
+      setCategory(initialValues.category ?? null);
     }
     if (typeof initialValues.questionIdParent === "string") {
       setQuestionIdParent(initialValues.questionIdParent);
@@ -129,6 +129,27 @@ export default function CreateQuestionForm({
     setOptions(initialValues.options ?? []);
     setSelectedType(initialValues.typesLabels ?? []);
   }, [initialValues]);
+
+  useEffect(() => {
+    if (categories.length === 0) {
+      return;
+    }
+
+    if (initialValues?.category) {
+      const normalized = initialValues.category.trim().toLowerCase();
+      const matched = categories.find(
+        (cat) => cat.label.trim().toLowerCase() === normalized
+      )?.label;
+      if (matched && matched !== category) {
+        setCategory(matched);
+      }
+      return;
+    }
+
+    if (category === null) {
+      setCategory(categories[0]?.label ?? null);
+    }
+  }, [categories, initialValues?.category, category]);
 
   useEffect(() => {
     if (!allowMultiple && options.length > 0) {
@@ -182,9 +203,15 @@ export default function CreateQuestionForm({
             <Select
               className="flex-1"
               label="Catégorie"
-              options={categories.map((c) => ({ value: c.label, label: c.label }))}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              options={[
+                { value: "", label: "Aucune categorie" },
+                ...categories.map((c) => ({ value: c.label, label: c.label })),
+              ]}
+              value={category ?? ""}
+              onChange={(e) => {
+                const nextValue = e.target.value;
+                setCategory(nextValue ? nextValue : null);
+              }}
             />
 
             <MultiSelect
@@ -227,9 +254,12 @@ export default function CreateQuestionForm({
             />
           )}
         </div>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Création..." : submitLabel || "Créer"}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Création..." : submitLabel || "Créer"}
+          </Button>
+          {secondaryAction}
+        </div>
       </form>
     </>
   );

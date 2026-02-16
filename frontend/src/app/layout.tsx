@@ -20,7 +20,7 @@ export default function RootLayout({
 
   return (
       <html lang="fr" className={`${oswald.variable} ${notoSans.variable} ${didactGothic.variable} antialiased`}>
-        <body className="bg-light">
+        <body >
           <LocalStorageProvider>
             <ConfigProvider>   
           <UserProvider>

@@ -13,6 +13,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     className,
     color = "primary",
     showLabel = false,
+    showPercent = true,
 }) => {
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
     const height = size === "sm" ? "h-2" : size === "md" ? "h-3" : "h-4";
@@ -29,7 +30,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                 <span className="inline-flex justify-between text-sm text-greydarker font-noto">
                     <span>Avancement</span>
                     <div className="space-x-2">
-                        <span>{Math.round(percentage)}%</span>
+                        {showPercent && <span>{Math.round(percentage)}%</span>}
                         <span>({value}/{max})</span>
                     </div>
                     

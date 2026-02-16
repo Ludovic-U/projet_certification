@@ -33,9 +33,19 @@ const { validateId } = require("../middlewares/validateId");
 module.exports.createProjectPost = async (req, res) => {
   // TODO: check permissions selon req.user ou rôle
   try {
+    const parsedManagerId = Number(req.body.projectManager);
+    const projectManagerId = Number.isInteger(parsedManagerId)
+      ? parsedManagerId
+      : Number(req.user?.userId);
+    if (!Number.isInteger(projectManagerId) || projectManagerId <= 0) {
+      return res
+        .status(400)
+        .json({ error: "projectManager est requis ou invalide." });
+    }
+
     const data = {
       projectName: req.body.projectName,
-      projectManager: parseInt(req.body.projectManager, 10),
+      projectManager: projectManagerId,
       projectDesc: req.body.projectDesc,
       clientId: parseInt(req.body.clientId, 10),
       startDate: req.body.startDate,

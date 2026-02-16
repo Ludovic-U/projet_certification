@@ -5,10 +5,10 @@ import type { PageHeaderProps } from "./pageHeader.types";
 
 export default function PageHeader({ title, description, className } : PageHeaderProps) {
     return (
-        <div className={cn("flex flex-col gap-2 mb-8", className)}>
-            <h1 className="text-dark font-oswald text-4xl">{title}</h1>
+        <div className={cn("flex flex-col gap-0.5 mb-2", className)}>
+            <h1 className="text-dark font-oswald text-3xl">{title}</h1>
             { description && (
-                <p className="text-greydarker font-didact text-xl">{description}</p>
+                <p className="text-greydarker font-didact text-lg">{description}</p>
             )}
         </div>
     );

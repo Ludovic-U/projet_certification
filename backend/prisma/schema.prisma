@@ -41,7 +41,8 @@ model UserSession {
 model Client {
   clientId    Int              @id @default(autoincrement())
   clientName  String           @unique
-  clientType  String
+  statusJuridique String @default("SARL")
+  secteur String @default("BTP")
   description String?
   createdAt   DateTime         @default(now())
   userRoles   ClientUserRole[]
@@ -103,6 +104,10 @@ model Project {
   projectDesc    String?
   createdAt      DateTime   @default(now())
   clientId       Int
+  SWOT_opportunity String?
+  SWOT_strength String?
+  SWOT_weakness String?
+  SWOT_threat String?
   goNogo         String?
   actions        Action[]
   versions      Version[]
@@ -339,7 +344,8 @@ model QuestionCategory {
 model Question {
   questionId               Int        @id @default(autoincrement())
   label                    String
-  category                 String
+  keyword String
+  category                 String?
   numberOfSelectionableOpt Int?
   isRelevant               Boolean?
   hasMultipleOpenResponse  Boolean?
@@ -369,13 +375,14 @@ model Option {
 model Response {
   responseId       Int        @id @default(autoincrement())
   label            String?
+  keyword String?
   projectId        Int
   questionId       Int
   optionId         Int?
   responseIdParent Int?
   option           Option?    @relation(fields: [optionId], references: [optionId])
   project          Project    @relation(fields: [projectId], references: [projectId])
-  question         Question   @relation(fields: [questionId], references: [questionId])
+  question         Question   @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
   parent           Response?  @relation("ResponseHierarchy", fields: [responseIdParent], references: [responseId])
   children         Response[] @relation("ResponseHierarchy")
 }

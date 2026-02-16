@@ -41,9 +41,20 @@ module.exports.createResponse = async (data) => {
 
   return await prisma.response.create({
     data: {
-      ...data,
-      projectId,
-      questionId,
+      label: data.label ?? null,
+      keyword: data.keyword ?? null,
+      project: { connect: { projectId } },
+      question: { connect: { questionId } },
+      ...(data.optionId
+        ? { option: { connect: { optionId: Number(data.optionId) } } }
+        : {}),
+      ...(data.responseIdParent
+        ? {
+            parent: {
+              connect: { responseId: Number(data.responseIdParent) },
+            },
+          }
+        : {}),
     },
   });
 };
@@ -55,11 +66,12 @@ module.exports.createResponse = async (data) => {
  * @function updateResponse
  * @param {number} responseId - The ID of the response to update.
  * @param {Object} data - The fields to update.
- * @param {string} data.label - Updated repsonse text.
+ * @param {string} data.label - Updated response text.
+ * @param {string} data.keyword - Updated keyword.
  * @param {string} data.projectId - Updated the associated project ID.
  * @param {number} data.questionId - Updated the associated question ID.
  * @param {number} data.optionId - Updated the associated option ID.
- * @param {number} data.responseIdParent - Updated parent repsonse ID.
+ * @param {number} data.responseIdParent - Updated parent response ID.
  * @returns {Promise<Object>} The updated response.
  * @throws {Error} If the response does not exist.
  */

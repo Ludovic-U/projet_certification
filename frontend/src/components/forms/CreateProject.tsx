@@ -130,13 +130,16 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError, clien
                     />
                     <Select
                         {...register("projectManager", { 
-                            required: "Le chef de projet est requis",
-                            valueAsNumber: true 
+                        required: "Le chef de projet est requis",
+                        valueAsNumber: true,
+                        validate: (value) =>
+                          Number.isInteger(value) || "Le chef de projet est requis",
                         })}
                         label="Chef de projet"
                         error={errors.projectManager?.message}
                         leftIcon={<FontAwesomeIcon icon={Icons.userTie} />}
                         placeholder="Sélectionner un chef de projet"
+                      defaultValue={initialData?.projectManager ? String(initialData.projectManager) : ""}
                         options={users.map(user => ({
                             value: user.userId.toString(),
                             label: `${user.firstname} ${user.lastname} (${user.username})`

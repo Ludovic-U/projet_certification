@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { ReactFlow, Node, Edge, Controls, ControlButton } from "@xyflow/react";
+import {
+  ReactFlow,
+  Node,
+  Edge,
+  Controls,
+} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Question } from "@/types/question";
 import { QuestionNode } from "../Nodes/Question";
@@ -21,12 +26,15 @@ import {
 } from "@/components/forms";
 import api_backend from "@/api/axiosInstance";
 import { useParams } from "next/navigation";
+import { Button } from "@/components/ui";
 
 interface TreeViewProps {
   questions: Question[];
   onNodesChange?: (nodes: Node[]) => void;
   revealByResponses?: boolean;
   onQuestionClick?: (question: Question, node: Node) => void;
+  fitViewTrigger?: number;
+  onProjectResponsesChange?: (responses: any[]) => void;
 }
 
 export default function TreeView({
@@ -34,6 +42,8 @@ export default function TreeView({
   onNodesChange,
   revealByResponses = true,
   onQuestionClick,
+  fitViewTrigger,
+  onProjectResponsesChange,
 }: TreeViewProps) {
   const params = useParams();
   // Access dynamic route params
@@ -52,6 +62,36 @@ export default function TreeView({
   const [responseKeyword, setResponseKeyword] = useState<string>("");
   // Store responses from DB
   const [projectResponses, setProjectResponses] = useState<any[]>([]);
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    setIsFullscreen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    if (!isFullscreen) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    if (!reactFlowInstance) return;
+    const frame = window.requestAnimationFrame(() => {
+      reactFlowInstance.fitView({
+        padding: 0.2,
+        minZoom: 0.8,
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isFullscreen, reactFlowInstance]);
   
   // Fetch all responses for this project
   useEffect(() => {
@@ -77,12 +117,6 @@ export default function TreeView({
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     if (!questions || questions.length === 0) {
       console.warn("Aucune question à afficher - arbre vide");
-      return { nodes: [], edges: [] };
-    }
-
-    const hasRoot = questions.some((q) => q.parentId === null);
-    if (!hasRoot) {
-      console.warn("Pas de racine trouvée - arbre vide");
       return { nodes: [], edges: [] };
     }
 
@@ -116,11 +150,15 @@ export default function TreeView({
     }
     
     // Create a map of questionId -> response data (status + keyword)
-    const responseMap = new Map<number, { exists: boolean; keyword?: string }>();
+    const responseMap = new Map<
+      number,
+      { exists: boolean; keyword?: string | null; skipped?: boolean }
+    >();
     projectResponses.forEach((response: any) => {
       responseMap.set(response.questionId, {
         exists: true,
-        keyword: response.keyword || null,
+        keyword: response.keyword ?? null,
+        skipped: response.label == null,
       });
     });
     
@@ -129,6 +167,7 @@ export default function TreeView({
       const questionId = node.data.questionId || node.data.id;
       const responseData = responseMap.get(Number(questionId));
       const hasResponse = responseData?.exists || false;
+      const isSkipped = responseData?.skipped || false;
       const parentId = node.data.parentId;
       
       // Check if parent has a response (if this is not root)
@@ -139,7 +178,7 @@ export default function TreeView({
         ...node,
         data: {
           ...node.data,
-          status: hasResponse ? "answered" : "pending",
+          status: hasResponse ? (isSkipped ? "skipped" : "answered") : "pending",
           // Use keyword from response if exists, otherwise keep question's keyword
           keyword: responseData?.keyword || node.data.keyword,
         },
@@ -157,7 +196,36 @@ export default function TreeView({
     onNodesChange?.(nodes);
   }, [nodes, onNodesChange]);
 
+  useEffect(() => {
+    onProjectResponsesChange?.(projectResponses);
+  }, [projectResponses, onProjectResponsesChange]);
+
+  // Re-center view when category change updates the question set
+  useEffect(() => {
+    if (initialNodes.length > 0) {
+      reactFlowInstance?.fitView({
+        padding: 0.2,
+        minZoom: 0.8,
+      });
+    }
+  }, [initialNodes, reactFlowInstance]);
+
+  useEffect(() => {
+    if (!reactFlowInstance || nodes.length === 0 || fitViewTrigger === undefined) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      reactFlowInstance.fitView();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [fitViewTrigger, reactFlowInstance, nodes.length]);
+
   const handleNodeClick = async (_: any, node: Node) => {
+    if ((node.data as any)?.isVirtualRoot) {
+      return;
+    }
     const question = node.data as Question;
     if (onQuestionClick) {
       onQuestionClick(question, node);
@@ -214,6 +282,13 @@ export default function TreeView({
       });
     });
 
+    window.requestAnimationFrame(() => {
+      reactFlowInstance?.fitView({
+        padding: 0.2,
+        minZoom: 0.8,
+      });
+    });
+
     modal.closeModal();
   };
 
@@ -260,21 +335,57 @@ export default function TreeView({
       return;
     }
     
-    // store response to DB
+    // Check if response already exists
+    const existingResponse = projectResponses.find(
+      (r: any) => r.questionId === Number(questionId)
+    );
+    
+    // store or update response to DB
     try {
-      const response = await api_backend.post(`/response/create`, {
-        label: label,
-        keyword: responseKeyword || null,
-        projectId: Number(projectId),
-        questionId: Number(questionId),
-      });
-      
-      // Add response to local state to update tree immediately
-      setProjectResponses(prev => [...prev, response.data]);
+      let response: any;
+      if (existingResponse) {
+        // Update existing response
+        response = await api_backend.patch(`/response/update/${existingResponse.responseId}`, {
+          label: label,
+          keyword: responseKeyword || null,
+        });
+        
+        // Update response in local state
+        setProjectResponses(prev => prev.map(r => 
+          r.questionId === Number(questionId) 
+            ? { ...r, label: response.data.label, keyword: response.data.keyword }
+            : r
+        ));
+        
+        // Update node keyword immediately in the tree
+        setNodes((prev) => prev.map((n) => {
+          if (n.id === selectedNode.id) {
+            return {
+              ...n,
+              data: {
+                ...n.data,
+                keyword: response.data.keyword ?? n.data.keyword,
+              },
+            };
+          }
+          return n;
+        }));
+      } else {
+        // Create new response
+        response = await api_backend.post(`/response/create`, {
+          label: label,
+          keyword: responseKeyword || null,
+          projectId: Number(projectId),
+          questionId: Number(questionId),
+        });
+        
+        // Add response to local state
+        setProjectResponses(prev => [...prev, response.data]);
+      }
       
       updateNodeStatus("answered");
     } catch (error: any) {
-      console.error("Erreur lors de la création de la réponse:", error);
+      console.error("Erreur lors de la création/mise à jour de la réponse:", error);
       console.error("Données envoyées:", {
         label: label,
         projectId: Number(projectId),
@@ -284,7 +395,36 @@ export default function TreeView({
     }
   };
   // Passer la question
-  const handleSkip = () => updateNodeStatus("skipped");
+  const handleSkip = async () => {
+    if (!selectedNode) return;
+
+    const question = selectedNode.data as Question;
+    const questionId = question.questionId || question.id;
+
+    if (!questionId) {
+      console.error("questionId est undefined!");
+      return;
+    }
+
+    try {
+      const response = await api_backend.post(`/response/create`, {
+        label: null,
+        keyword: null,
+        projectId: Number(projectId),
+        questionId: Number(questionId),
+      });
+
+      setProjectResponses((prev) => [...prev, response.data]);
+      updateNodeStatus("skipped");
+    } catch (error: any) {
+      console.error("Erreur lors du skip de la réponse:", error);
+      console.error("Données envoyées:", {
+        projectId: Number(projectId),
+        questionId: Number(questionId),
+      });
+      console.error("Réponse du serveur:", error.response?.data);
+    }
+  };
 
   // Définition des types de noeuds
   const nodeTypes = useMemo(
@@ -295,24 +435,34 @@ export default function TreeView({
   );
 
   return (
-    <div className="h-full w-full">
+    <div
+      className={isFullscreen ? "fixed inset-0 z-40 h-screen w-screen bg-white" : "h-full w-full bg-white relative"}
+    >
+      <Button
+        onClick={toggleFullscreen}
+        size="iconS"
+        variant="secondary"
+        className="absolute top-3 right-3 z-70"
+        title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+        aria-label={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+      >
+        <FontAwesomeIcon icon={isFullscreen ? Icons.compress : Icons.expand} />
+      </Button>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
         defaultEdgeOptions={{ type: "smoothstep", style: { stroke: "#272727" } }}
         nodeTypes={nodeTypes}
         onNodeClick={handleNodeClick}
+        onInit={setReactFlowInstance}
         fitView
         fitViewOptions={{
           padding: 0.2,
           minZoom: 0.8,
         }}
       >
-        <Controls showInteractive={false}>
-          <ControlButton>
-            <FontAwesomeIcon icon={Icons.briefcase} />
-          </ControlButton>
-        </Controls>
+        <Controls showInteractive={false} />
       </ReactFlow>
       {/* Renvoie du bon formulaire de réponse */}
       {selectedNode &&

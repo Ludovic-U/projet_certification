@@ -7,4 +7,6 @@ export interface CardProps {
     color?: string,
     className?: string;
     max?: number;
+    showPercent?: boolean;
+    size?: "md" | "sm";
 }
