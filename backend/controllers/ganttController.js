@@ -212,6 +212,13 @@ module.exports.createDeliverable = async (req, res) => {
     };
 
     const deliverable = await createDeliverable(deliverableData);
+    
+    // Recalculate progress after creating new deliverable
+    if (deliverableData.taskId) {
+      const newProgress = await calculateDeliverableProgress(deliverableData.taskId);
+      await updateTask(deliverableData.taskId, { progress: newProgress });
+    }
+    
     res.status(201).json(deliverable);
   } catch (error) {
     console.error('Error creating deliverable:', error);
@@ -643,10 +650,8 @@ module.exports.updateTaskDeliverable = async (req, res) => {
     // Calculate new progress based on confirmed deliverables
     const newProgress = await calculateDeliverableProgress(taskId);
     
-    // Update task progress if it changed
-    if (newProgress > 0) {
-      await updateTask(taskId, { progress: newProgress });
-    }
+    // Update task progress if it changed (always update, even if 0)
+    await updateTask(taskId, { progress: newProgress });
     
     res.status(200).json({ ...deliverable, progress: newProgress });
   } catch (error) {

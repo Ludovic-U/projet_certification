@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Task, Link, Livrable, ViewMode, EditorTab, HistoryState, MenuPosition } from '../types';
-import { fetchGanttData, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, createDeliverable as apiCreateLivrable, createTask as apiCreateTask, GanttData, uploadFile, updateTaskDeliverable as apiUpdateTaskDeliverable } from '@/api/ganttApi';
+import { fetchGanttData, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, createDeliverable as apiCreateLivrable, createTask as apiCreateTask, GanttData, uploadFile, updateTaskDeliverable as apiUpdateTaskDeliverable, deleteTaskDeliverable as apiDeleteTaskDeliverable } from '@/api/ganttApi';
 import { createEmptyBudget } from '../utils/budgetUtils';
 import { getDateRange } from '../utils/timelineUtils';
 import { DEFAULT_DAY_WIDTH, MAX_HISTORY_STATES, MIN_START_DATE } from '../constants';
@@ -262,10 +262,21 @@ export const useGanttState = () => {
         // Add to local state
         setLivrables(prev => [...prev, newLivrable]);
         // Assign to editing task (array to support multiple livrables)
+        const newLivrableIds = [...(editingTask.livrableIds || []), newLivrable.id];
         setEditingTask({
           ...editingTask,
-          livrableIds: [...(editingTask.livrableIds || []), newLivrable.id]
+          livrableIds: newLivrableIds
         });
+        
+        // Recalculate and update progress locally
+        const newProgress = calculateLivrableProgress(newLivrableIds);
+        setEditingTask(prev => prev ? { ...prev, progress: newProgress } : null);
+        setTasks(prev => prev.map(t => 
+          t.id === editingTask.id 
+            ? { ...t, progress: newProgress, livrableIds: newLivrableIds } 
+            : t
+        ));
+        
         setShowAddLivrable(false);
         setNewLivrableLabel('');
         setNewLivrableDescription('');
@@ -279,10 +290,19 @@ export const useGanttState = () => {
           description: newLivrableDescription.trim()
         };
         setLivrables(prev => [...prev, localLivrable]);
+        const newLivrableIds = [...(editingTask.livrableIds || []), newId];
         setEditingTask({
           ...editingTask,
-          livrableIds: [...(editingTask.livrableIds || []), newId]
+          livrableIds: newLivrableIds
         });
+        // Recalculate progress
+        const newProgress = calculateLivrableProgress(newLivrableIds);
+        setEditingTask(prev => prev ? { ...prev, progress: newProgress } : null);
+        setTasks(prev => prev.map(t => 
+          t.id === editingTask.id 
+            ? { ...t, progress: newProgress, livrableIds: newLivrableIds } 
+            : t
+        ));
         setShowAddLivrable(false);
         setNewLivrableLabel('');
         setNewLivrableDescription('');
@@ -332,6 +352,39 @@ export const useGanttState = () => {
       }
     } catch (err) {
       console.error('Error uploading file to livrable:', err);
+    }
+  };
+
+  // Delete livrable handler
+  const handleDeleteLivrable = async (livrableId: number) => {
+    if (!editingTask || !projectId) return;
+    
+    try {
+      // Delete the deliverable from the database
+      await apiDeleteTaskDeliverable(
+        Number(projectId),
+        editingTask.id,
+        livrableId
+      );
+      
+      // Remove from local state
+      const newLivrableIds = editingTask.livrableIds?.filter(id => id !== livrableId) || [];
+      setLivrables(prev => prev.filter(l => l.id !== livrableId));
+      setEditingTask({
+        ...editingTask,
+        livrableIds: newLivrableIds
+      });
+      
+      // Recalculate and update progress locally
+      const newProgress = calculateLivrableProgress(newLivrableIds);
+      setEditingTask(prev => prev ? { ...prev, progress: newProgress } : null);
+      setTasks(prev => prev.map(t => 
+        t.id === editingTask.id 
+          ? { ...t, progress: newProgress, livrableIds: newLivrableIds } 
+          : t
+      ));
+    } catch (err) {
+      console.error('Error deleting livrable:', err);
     }
   };
 
@@ -661,6 +714,7 @@ export const useGanttState = () => {
     // Actions
     handleAddLivrable,
     handleUploadLivrableFile,
+    handleDeleteLivrable,
     calculateLivrableProgress,
     saveState,
     undo,

@@ -3,13 +3,13 @@ const prisma = new PrismaClient();
 
 /**
  * Node types that should be stored as descriptions on parent tasks
- * instead of being created as separate tasks
+ * Only "objectif" - "livrable" is handled as actual Deliverables
  */
-const DESCRIPTION_NODE_TYPES = ['objectif', 'livrable'];
+const DESCRIPTION_NODE_TYPES = ['objectif'];
 
 /**
  * Map nodeType from mindmap to task type
- * objectif and livrable are handled specially (as descriptions)
+ * objectif and livrable are handled specially
  */
 const mapNodeTypeToTaskType = (nodeType) => {
   const mapping = {
@@ -25,6 +25,13 @@ const mapNodeTypeToTaskType = (nodeType) => {
  */
 const isDescriptionNodeType = (nodeType) => {
   return DESCRIPTION_NODE_TYPES.includes(nodeType);
+};
+
+/**
+ * Check if a node type should be stored as livrable (deliverable)
+ */
+const isLivrableNodeType = (nodeType) => {
+  return nodeType === 'livrable';
 };
 
 /**
@@ -44,12 +51,12 @@ const getExistingTaskIdByNodeId = async (projectId, nodeId) => {
 
 /**
  * Process nodes and edges to create a map of description items for each parent
- * Returns a map: parentNodeId -> array of description texts
+ * Returns a map: parentNodeId -> array of description texts (only objectifs)
  */
 const buildDescriptionMap = (nodes, edges) => {
   const parentToDescriptions = {};
 
-  // First, find all objectif/livrable nodes and their parent
+  // Only process objectif nodes for descriptions
   for (const node of nodes) {
     if (!isDescriptionNodeType(node.data?.nodeType)) {
       continue;
@@ -75,8 +82,41 @@ const buildDescriptionMap = (nodes, edges) => {
 };
 
 /**
+ * Process nodes and edges to create livrables and map them to parent tasks
+ * Uses TaskDeliverableStatus model (not Deliverable) since it links directly to Tasks
+ * Returns a map: parentNodeId -> array of livrable names (strings)
+ */
+const buildLivrableMap = async (projectId, nodes, edges) => {
+  const parentToLivrables = {};
+
+  // Process livrable nodes
+  for (const node of nodes) {
+    if (!isLivrableNodeType(node.data?.nodeType)) {
+      continue;
+    }
+
+    // Find the parent node (the source of the edge pointing to this node)
+    const parentEdge = edges.find(e => e.target === node.id);
+    if (!parentEdge) {
+      continue;
+    }
+
+    const parentNodeId = parentEdge.source;
+    if (!parentToLivrables[parentNodeId]) {
+      parentToLivrables[parentNodeId] = [];
+    }
+
+    const label = node.data?.label || 'Untitled';
+
+    // Store the livrable name - we'll create TaskDeliverableStatus after tasks are created
+    parentToLivrables[parentNodeId].push(label);
+  }
+
+  return parentToLivrables;
+};
+
+/**
  * Save mindmap nodes as Tasks - Upsert approach (update if exists, create if not)
- * objectif/livrable nodes are stored as descriptions on parent tasks
  * @param {number} projectId - The project ID
  * @param {Array} nodes - Array of mindmap nodes
  * @param {Array} edges - Array of mindmap edges
@@ -86,8 +126,11 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
   const createdTasks = [];
   const nodeIdToTaskId = {};
 
-  // Build map of parent node ID -> description texts
+  // Build map of parent node ID -> description texts (only objectifs)
   const parentToDescriptions = buildDescriptionMap(nodes, edges);
+
+  // Build map of parent node ID -> livrable names
+  const parentToLivrables = await buildLivrableMap(projectId, nodes, edges);
 
   // Get all existing mindmap tasks for this project (optionally filtered by version)
   const existingTasksQuery = {
@@ -121,16 +164,19 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
 
   // First pass: Process regular nodes (action, sous_action, root)
   for (const node of nodes) {
-    if (isDescriptionNodeType(node.data?.nodeType)) {
-      // Skip description nodes - they'll be attached to parent
+    if (isDescriptionNodeType(node.data?.nodeType) || isLivrableNodeType(node.data?.nodeType)) {
+      // Skip these nodes - they'll be handled separately
       continue;
     }
 
     const existingTaskId = existingNodeIdToTaskId[node.id];
     
-    // Build description from objectifs/livrables attached to this node
+    // Build description from objectifs attached to this node
     const descriptionTexts = parentToDescriptions[node.id] || [];
     const newDescription = descriptionTexts.join('\n');
+
+    // Get livrable names for this task (stored as strings)
+    const livrableNames = parentToLivrables[node.id] || [];
 
     const taskData = {
       projectId,
@@ -160,15 +206,39 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
       if (!newDescription && oldTask?.description) {
         taskData.description = oldTask.description;
       }
+      
+      // Update task
       task = await prisma.task.update({
         where: { taskId: existingTaskId },
         data: taskData,
       });
+      
+      // Create TaskDeliverableStatus for this task (instead of taskDeliverable junction table)
+      for (const livrableName of livrableNames) {
+        await prisma.taskDeliverableStatus.create({
+          data: {
+            taskId: task.taskId,
+            name: livrableName,
+            status: 'pending',
+          },
+        });
+      }
     } else {
       // Create new task
       task = await prisma.task.create({
         data: taskData,
       });
+      
+      // Create TaskDeliverableStatus for this task
+      for (const livrableName of livrableNames) {
+        await prisma.taskDeliverableStatus.create({
+          data: {
+            taskId: task.taskId,
+            name: livrableName,
+            status: 'pending',
+          },
+        });
+      }
     }
 
     createdTasks.push(task);
@@ -178,7 +248,8 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
   // Reset parent relationships - will be set below
   for (const nodeId of Object.keys(existingNodeIdToTaskId)) {
     const taskId = existingNodeIdToTaskId[nodeId];
-    if (!isDescriptionNodeType(nodes.find(n => n.id === nodeId)?.data?.nodeType)) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (node && !isDescriptionNodeType(node?.data?.nodeType) && !isLivrableNodeType(node?.data?.nodeType)) {
       await prisma.task.update({
         where: { taskId },
         data: { parentId: null },
@@ -192,9 +263,11 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
     const sourceNode = nodes.find(n => n.id === edge.source);
     const targetNode = nodes.find(n => n.id === edge.target);
 
-    // Skip if either node is a description type
+    // Skip if either node is a description or livrable type
     if (isDescriptionNodeType(sourceNode?.data?.nodeType) || 
-        isDescriptionNodeType(targetNode?.data?.nodeType)) {
+        isLivrableNodeType(sourceNode?.data?.nodeType) ||
+        isDescriptionNodeType(targetNode?.data?.nodeType) ||
+        isLivrableNodeType(targetNode?.data?.nodeType)) {
       continue;
     }
 
@@ -209,12 +282,12 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
     }
   }
 
-  // Delete any orphaned description nodes (objectifs/livrables that were previously created)
+  // Delete any orphaned description/livrable nodes that were previously created
   for (const task of existingTasks) {
     try {
       const details = JSON.parse(task.details || '{}');
-      if (isDescriptionNodeType(details.nodeType)) {
-        // Delete this description node
+      if (isDescriptionNodeType(details.nodeType) || isLivrableNodeType(details.nodeType)) {
+        // Delete this task
         await prisma.task.delete({ where: { taskId: task.taskId } });
       }
     } catch (e) {
@@ -231,7 +304,7 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
 /**
  * Import mindmap nodes as Tasks - Fresh import approach
  * Deletes all existing mindmap tasks first, then creates new ones
- * objectif/livrable nodes are stored as descriptions on parent tasks
+ * objectif nodes are stored as descriptions, livrable nodes as TaskDeliverableStatus
  */
 const importMindmapAsTasks = async (projectId, nodes, edges) => {
   // First, delete all existing mindmap tasks for this project
@@ -247,18 +320,24 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
   const createdTasks = [];
   const nodeIdToTaskId = {};
 
-  // Build map of parent node ID -> description texts
+  // Build map of parent node ID -> description texts (only objectifs)
   const parentToDescriptions = buildDescriptionMap(nodes, edges);
+
+  // Build map of parent node ID -> livrable names
+  const parentToLivrables = await buildLivrableMap(projectId, nodes, edges);
 
   // Create regular tasks (action, sous_action, root)
   for (const node of nodes) {
-    if (isDescriptionNodeType(node.data?.nodeType)) {
+    if (isDescriptionNodeType(node.data?.nodeType) || isLivrableNodeType(node.data?.nodeType)) {
       continue;
     }
 
-    // Build description from objectifs/livrables attached to this node
+    // Build description from objectifs attached to this node
     const descriptionTexts = parentToDescriptions[node.id] || [];
     const newDescription = descriptionTexts.join('\n');
+
+    // Get livrable names for this task (stored as strings)
+    const livrableNames = parentToLivrables[node.id] || [];
 
     const task = await prisma.task.create({
       data: {
@@ -278,6 +357,17 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
       },
     });
 
+    // Link livrables to task via TaskDeliverableStatus
+    for (const livrableName of livrableNames) {
+      await prisma.taskDeliverableStatus.create({
+        data: {
+          taskId: task.taskId,
+          name: livrableName,
+          status: 'pending',
+        },
+      });
+    }
+
     createdTasks.push(task);
     nodeIdToTaskId[node.id] = task.taskId;
   }
@@ -287,9 +377,11 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
     const sourceNode = nodes.find(n => n.id === edge.source);
     const targetNode = nodes.find(n => n.id === edge.target);
 
-    // Skip if either node is a description type
+    // Skip if either node is a description or livrable type
     if (isDescriptionNodeType(sourceNode?.data?.nodeType) || 
-        isDescriptionNodeType(targetNode?.data?.nodeType)) {
+        isLivrableNodeType(sourceNode?.data?.nodeType) ||
+        isDescriptionNodeType(targetNode?.data?.nodeType) ||
+        isLivrableNodeType(targetNode?.data?.nodeType)) {
       continue;
     }
 
@@ -315,4 +407,5 @@ module.exports = {
   importMindmapAsTasks,
   mapNodeTypeToTaskType,
   isDescriptionNodeType,
+  isLivrableNodeType,
 };

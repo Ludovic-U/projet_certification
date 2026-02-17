@@ -162,7 +162,7 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
         notes: task.notes,
         files: task.files || [],
         assigneeIds: task.taskAssignments.map(ta => ta.userId),
-        livrableIds: task.tasks.map(t => t.deliverableId),
+        livrableIds: task.deliverables.map(d => d.id),
         goal: task.goal,
         color: task.color || '#3b82f6',
         // Budget aggregated from expenses
@@ -196,13 +196,17 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
           hoursAssigned: a.hoursAssigned,
           dailyCost: a.dailyCost
         })),
-        deliverables: (task.deliverables || []).map(d => ({
+        livrables: (task.deliverables || []).map(d => ({
           id: d.id,
           taskId: d.taskId,
-          name: d.name,
-          delivered: d.delivered,
-          uploaded: d.uploaded,
-          filePath: d.filePath
+          label: d.name,
+          description: d.notes || '',
+          status: d.status,
+          fileUrl: d.fileUrl,
+          fileName: d.fileName,
+          confirmed: d.confirmed,
+          confirmedAt: d.confirmedAt,
+          completedAt: d.completedAt
         }))
       });
     });
@@ -251,21 +255,20 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
       label: `${user.firstname} ${user.lastname}`
     }));
 
-    // Get all deliverables for tasks in this project
-    const deliverables = await prisma.deliverable.findMany({
+    // Get all task deliverable statuses for tasks in this project
+    const taskDeliverableStatuses = await prisma.taskDeliverableStatus.findMany({
       where: {
-        tasks: {
-          some: {
-            taskId: { in: allTaskIds }
-          }
-        }
+        taskId: { in: allTaskIds }
       }
     });
 
-    const formattedLivrables = deliverables.map(d => ({
-      id: d.deliverableId,
-      label: d.label || d.file,
-      description: d.description || ''
+    const formattedLivrables = taskDeliverableStatuses.map(d => ({
+      id: d.id,
+      label: d.name,
+      description: d.notes || '',
+      fileUrl: d.fileUrl,
+      fileName: d.fileName,
+      confirmed: d.confirmed
     }));
 
     return {
@@ -344,11 +347,12 @@ module.exports.createTask = async (taskData) => {
 
     // Create task-livrable relations if provided
     if (livrableIds && livrableIds.length > 0) {
+      // Link to existing TaskDeliverableStatus records using the junction table
       await prisma.task.update({
         where: { taskId: task.taskId },
         data: {
-          tasks: {
-            connect: livrableIds.map(livrableId => ({ deliverableId: Number(livrableId) }))
+          deliverables: {
+            connect: livrableIds.map(id => ({ id: Number(id) }))
           }
         }
       });
@@ -469,16 +473,12 @@ module.exports.updateTask = async (taskId, taskData) => {
     }
 
     // Update task-livrable relations if provided
+    // Note: Deliverables are already linked to the task via their taskId field
+    // When createDeliverable is called with taskId, it creates the link automatically
+    // So we don't need to do anything here - the relation is managed at creation time
     if (livrableIds !== undefined) {
-      // Remove old relations and add new ones
-      await prisma.task.update({
-        where: { taskId },
-        data: {
-          tasks: {
-            set: livrableIds.map(livrableId => ({ deliverableId: Number(livrableId) }))
-          }
-        }
-      });
+      // The livrableIds are already connected to the task via taskId on TaskDeliverableStatus
+      // No action needed - just fetch the updated deliverables in the response
     }
 
     return {
@@ -493,7 +493,7 @@ module.exports.updateTask = async (taskId, taskData) => {
       notes: task.notes,
       files: task.files || [],
       assigneeIds: assigneeIds !== undefined ? assigneeIds : task.taskAssignments.map(ta => ta.userId),
-      livrableIds: livrableIds !== undefined ? livrableIds : currentTask.tasks.map(t => t.deliverableId),
+      livrableIds: livrableIds !== undefined ? livrableIds : (currentTask.deliverables?.map(d => d.id) || []),
       goal: task.goal,
       color: task.color,
     };

@@ -31,6 +31,7 @@ interface GanttTaskEditorProps {
   setNewLivrableDescription: (description: string) => void;
   handleAddLivrable: () => void;
   handleUploadLivrableFile?: (livrableId: number, file: File) => Promise<void>;
+  handleDeleteLivrable?: (livrableId: number) => Promise<void>;
   deleteTask: (id: number) => void;
   updateTask: () => void;
   data: {
@@ -54,6 +55,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
   setNewLivrableDescription,
   handleAddLivrable,
   handleUploadLivrableFile,
+  handleDeleteLivrable,
   deleteTask,
   updateTask,
   data,
@@ -432,7 +434,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-800/30 px-3 py-2 rounded-lg">
                       <CheckCircle2 className="w-4 h-4" />
                       <span>
-                        Progression: {Math.round((editingTask.livrableIds.length > 0 ? (editingTask.progress / 100) * editingTask.livrableIds.length : 0))} / {editingTask.livrableIds.length} livrables confirmé{editingTask.livrableIds.length > 1 ? 's' : ''}
+                        Progression: {Math.round((editingTask.livrableIds && editingTask.livrableIds.length > 0 ? (editingTask.progress / 100) * editingTask.livrableIds.length : 0))} / {editingTask.livrableIds ? editingTask.livrableIds.length : 0} livrables confirmé{((editingTask.livrableIds?.length || 0) > 1) ? 's' : ''}
                       </span>
                       <span className="text-blue-400 font-medium ml-auto">
                         {editingTask.progress}%
@@ -477,11 +479,16 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                             </div>
                           </div>
                           <button
-                            onClick={() => {
-                              setEditingTask({
-                                ...editingTask,
-                                livrableIds: editingTask.livrableIds!.filter(id => id !== livrableId)
-                              });
+                            onClick={async () => {
+                              if (handleDeleteLivrable) {
+                                await handleDeleteLivrable(livrableId);
+                              } else {
+                                // Fallback to local-only delete
+                                setEditingTask({
+                                  ...editingTask,
+                                  livrableIds: editingTask.livrableIds!.filter(id => id !== livrableId)
+                                });
+                              }
                             }}
                             className="p-2 bg-slate-800 border border-slate-600 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-all opacity-0 group-hover:opacity-100"
                             title="Supprimer le livrable"

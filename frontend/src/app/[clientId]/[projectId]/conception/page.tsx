@@ -491,6 +491,7 @@ const GanttChart = () => {
           setNewLivrableDescription={ganttState.setNewLivrableDescription}
           handleAddLivrable={ganttState.handleAddLivrable}
           handleUploadLivrableFile={ganttState.handleUploadLivrableFile}
+          handleDeleteLivrable={ganttState.handleDeleteLivrable}
           deleteTask={ganttState.deleteTask}
           updateTask={ganttState.updateTask}
           data={ganttState.data}
