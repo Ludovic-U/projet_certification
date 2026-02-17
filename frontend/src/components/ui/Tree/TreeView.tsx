@@ -197,14 +197,22 @@ export default function TreeView({
     const baseEdges = [...initialEdges];
 
     const visibilityMap = new Map<string, boolean>();
+    const nodeKindById = new Map<string, TreeNodeKind>();
     const questionNodesByQuestionId = new Map<number, Node>();
+
+    baseNodes.forEach((node) => {
+      const data = node.data as FlowNodeData;
+      if (data.nodeKind) {
+        nodeKindById.set(node.id, data.nodeKind);
+      }
+    });
 
     baseNodes.forEach((node) => {
       const data = node.data as FlowNodeData;
 
       if (data.isVirtualRoot) {
-        node.hidden = true;
-        visibilityMap.set(node.id, false);
+        node.hidden = false;
+        visibilityMap.set(node.id, true);
         return;
       }
 
@@ -217,7 +225,10 @@ export default function TreeView({
     });
 
     const questionNodes = baseNodes
-      .filter((node) => (node.data as FlowNodeData).nodeKind === "question")
+      .filter((node) => {
+        const data = node.data as FlowNodeData;
+        return data.nodeKind === "question" && !data.isVirtualRoot;
+      })
       .sort(
         (a, b) =>
           Number((a.data as FlowNodeData).depth || 0) -
@@ -229,7 +240,8 @@ export default function TreeView({
       const questionId = Number(data.questionId || data.id);
       const parentNodeId = data.parentNodeId || null;
       const parentVisible = parentNodeId ? visibilityMap.get(parentNodeId) ?? true : true;
-      const parentIsQuestion = Boolean(parentNodeId?.startsWith("q-"));
+      const parentIsQuestion =
+        parentNodeId ? nodeKindById.get(parentNodeId) === "question" : false;
       const parentQuestionId = parentIsQuestion
         ? Number(parentNodeId?.replace("q-", ""))
         : null;
@@ -251,7 +263,7 @@ export default function TreeView({
       node.data = {
         ...data,
         status: hasResponse ? (isSkipped ? "skipped" : "answered") : "pending",
-        keyword: responseData?.keyword ?? data.keyword,
+        keyword: data.keyword,
       };
 
       visibilityMap.set(node.id, isVisible);
@@ -291,7 +303,9 @@ export default function TreeView({
         }
 
         const responseNodeId = `r-${response.responseId ?? response.questionId}`;
-        const responseX = questionNode.position.x + RESPONSE_OFFSET_X;
+        const responseDirection = questionNode.position.x < 0 ? -1 : 1;
+        const responseX =
+          questionNode.position.x + RESPONSE_OFFSET_X * responseDirection;
         const preferredY = questionNode.position.y + RESPONSE_OFFSET_Y;
         const responseY = resolveResponseY(responseX, preferredY);
 
@@ -368,6 +382,15 @@ export default function TreeView({
     }
 
     if (data.nodeKind === "theme") {
+      const hasQuestionId = data.questionId !== undefined && data.questionId !== null;
+      if (hasQuestionId) {
+        const question = data as Question;
+        if (onQuestionClick) {
+          onQuestionClick(question, node);
+          return;
+        }
+      }
+
       setCollapsedThemes((prev) => {
         const next = new Set(prev);
         if (next.has(node.id)) {
@@ -387,12 +410,7 @@ export default function TreeView({
         return;
       }
 
-      const questionId = Number(question.questionId || question.id);
-      const existingResponse = projectResponses.find(
-        (response) => Number(response.questionId) === questionId
-      );
-
-      openQuestionModal(question, node, existingResponse || null);
+      openQuestionModal(question, node, null);
       return;
     }
 
@@ -406,11 +424,9 @@ export default function TreeView({
         return;
       }
 
-      const response = projectResponses.find(
-        (r) =>
-          (data.responseId && r.responseId === data.responseId) ||
-          Number(r.questionId) === questionId
-      );
+      const response = data.responseId
+        ? projectResponses.find((r) => r.responseId === data.responseId)
+        : projectResponses.find((r) => Number(r.questionId) === questionId);
 
       if (!response) {
         return;
@@ -449,9 +465,7 @@ export default function TreeView({
       return;
     }
 
-    const existingResponse =
-      editingResponse ||
-      projectResponses.find((response) => Number(response.questionId) === questionId);
+    const existingResponse = editingResponse;
 
     try {
       if (existingResponse?.responseId) {
@@ -478,10 +492,7 @@ export default function TreeView({
           questionId,
         });
 
-        setProjectResponses((prev) => {
-          const filtered = prev.filter((item) => Number(item.questionId) !== questionId);
-          return [...filtered, response.data];
-        });
+        setProjectResponses((prev) => [...prev, response.data]);
       }
 
       modal.closeModal();
@@ -496,9 +507,7 @@ export default function TreeView({
     const questionId = Number(selectedQuestion.questionId || selectedQuestion.id);
     if (!questionId) return;
 
-    const existingResponse =
-      editingResponse ||
-      projectResponses.find((response) => Number(response.questionId) === questionId);
+    const existingResponse = editingResponse;
 
     try {
       if (existingResponse?.responseId) {
@@ -542,6 +551,12 @@ export default function TreeView({
     }),
     []
   );
+
+  const selectedQuestionHasResponses = selectedQuestion
+    ? projectResponses.some(
+        (response) => Number(response.questionId) === Number(selectedQuestion.questionId || selectedQuestion.id)
+      )
+    : false;
 
   return (
     <div
@@ -587,6 +602,8 @@ export default function TreeView({
           keyword={responseKeyword}
           onValidate={handleValidate}
           onSkip={handleSkip}
+          skipLabel={editingResponse ? "supprimer la réponse" : "passer la question"}
+          showSkipButton={editingResponse ? true : !selectedQuestionHasResponses}
           onKeywordChange={setResponseKeyword}
         >
           {selectedQuestion.shouldMultiply ? (

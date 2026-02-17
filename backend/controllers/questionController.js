@@ -39,9 +39,9 @@ module.exports.createQuestion = async (req, res) => {
     options,
   } = req.body;
 
-  // Check label or category to be not null or empty
-  if (!label || !category) {
-    res.status(400).json({ error: "label and category are required" });
+  // Check required fields
+  if (!label) {
+    return res.status(400).json({ error: "label is required" });
   }
 
   // Check if a responseIdParent has been recieved

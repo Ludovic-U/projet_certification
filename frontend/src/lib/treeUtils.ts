@@ -19,27 +19,23 @@ type QuestionTreeNode = Question & {
 
 type TreeHierarchyNode = ThemeTreeNode | QuestionTreeNode;
 
-const DEFAULT_THEME_LABEL = "Sans thème";
+function isThemeQuestionType(question: Question): boolean {
+    const normalizedCategory = typeof question.category === "string"
+        ? question.category.trim().toLowerCase()
+        : "";
 
-function normalizeThemeLabel(question: Question): string {
-    if (typeof question.category === "string" && question.category.trim() !== "") {
-        return question.category.trim();
+    if (normalizedCategory === "theme" || normalizedCategory === "thème") {
+        return true;
     }
 
-    const questionCategory = (question as any)?.questionCategory;
-    if (questionCategory?.label && typeof questionCategory.label === "string") {
-        return questionCategory.label.trim();
-    }
-
-    return DEFAULT_THEME_LABEL;
-}
-
-function themeKeyFromLabel(label: string): string {
-    return label
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9\-_]/g, "");
+    const questionTypes = Array.isArray(question.types) ? question.types : [];
+    return questionTypes.some((typeItem) => {
+        if (typeof typeItem === "object" && typeItem?.label) {
+            const normalizedLabel = String(typeItem.label).trim().toLowerCase();
+            return normalizedLabel === "theme" || normalizedLabel === "thème";
+        }
+        return false;
+    });
 }
 
 /**
@@ -50,54 +46,34 @@ function themeKeyFromLabel(label: string): string {
 */
 export function buildHierarchy(questions: Question[]) {
     const questionsByParent = new Map<string, Question[]>();
-    const themeByQuestionId = new Map<string, string>();
-    const themes = new Map<string, ThemeTreeNode>();
 
     questions.forEach((question) => {
-        const qId = String(question.questionId ?? question.id);
         const parentKey = question.parentId == null ? "root" : String(question.parentId);
         const current = questionsByParent.get(parentKey) ?? [];
         current.push(question);
         questionsByParent.set(parentKey, current);
-
-        const label = normalizeThemeLabel(question);
-        const key = themeKeyFromLabel(label) || "sans-theme";
-        if (!themes.has(key)) {
-            themes.set(key, {
-                nodeKind: "theme",
-                id: `theme-${key}`,
-                label,
-                themeKey: key,
-            });
-        }
-        themeByQuestionId.set(qId, key);
     });
 
     const virtualRoot: ThemeTreeNode = {
         nodeKind: "theme",
         id: "virtual-root",
-        label: "Idéation",
+        label: "Ideation",
         themeKey: "virtual-root",
         isVirtualRoot: true,
     };
 
     const root = hierarchy<TreeHierarchyNode>(virtualRoot, (nodeData) => {
         if (nodeData.isVirtualRoot) {
-            return Array.from(themes.values());
+            const rootQuestions = questionsByParent.get("root") ?? [];
+            return rootQuestions.map((question) => ({
+                ...question,
+                nodeKind: "question" as const,
+                themeKey: nodeData.themeKey,
+            }));
         }
 
-        if (nodeData.nodeKind === "theme") {
-            const themeQuestions = questionsByParent.get("root") ?? [];
-            return themeQuestions
-                .filter((question) => {
-                    const qId = String(question.questionId ?? question.id);
-                    return themeByQuestionId.get(qId) === nodeData.themeKey;
-                })
-                .map((question) => ({
-                    ...question,
-                    nodeKind: "question" as const,
-                    themeKey: nodeData.themeKey,
-                }));
+        if (nodeData.nodeKind !== "question") {
+            return [];
         }
 
         const nodeQuestionId = String(nodeData.questionId ?? nodeData.id);
@@ -121,15 +97,58 @@ export function buildHierarchy(questions: Question[]) {
  * @returns  root - La racine enrichie avec les coordonnées de chaque noeud
  */
 export function computeTreeLayout(root: HierarchyNode<TreeHierarchyNode>) {
+    const MIN_VERTICAL_GAP = 95;
+
     // Création d'un layout en arbre horizontal
     // nodeSize([hauteur verticale, espacement horizontal]) définit l'espacement entre les noeuds.
     const treeLayout = tree<TreeHierarchyNode>()
-        .nodeSize([100, 200]) // [hauteur entre niveaux verticaux, largeur entre niveaux horizontaux]
-        .separation((a,b) => a.parent === b.parent ? 1 : 1.5);
+        .nodeSize([110, 220]) // [hauteur entre niveaux verticaux, largeur entre niveaux horizontaux]
+        .separation((a, b) => {
+            const siblingFactor = a.parent === b.parent ? 1.2 : 1.8;
+            const densityFactor =
+                1 + ((a.children?.length ?? 0) + (b.children?.length ?? 0)) * 0.08;
+            return siblingFactor * densityFactor;
+        });
 
     // Applique le layout à la hiérarchie
     // Chaque noeud a "x" et "y"
     treeLayout(root);
+
+    const nodesByDepth = new Map<number, HierarchyNode<TreeHierarchyNode>[]>();
+    root.descendants().forEach((node) => {
+        const current = nodesByDepth.get(node.depth) ?? [];
+        current.push(node);
+        nodesByDepth.set(node.depth, current);
+    });
+
+    nodesByDepth.forEach((nodesAtDepth) => {
+        if (nodesAtDepth.length <= 1) {
+            return;
+        }
+
+        const ordered = [...nodesAtDepth].sort((a, b) => (a.x ?? 0) - (b.x ?? 0));
+        const originalMean =
+            ordered.reduce((sum, node) => sum + (node.x ?? 0), 0) / ordered.length;
+
+        for (let index = 1; index < ordered.length; index += 1) {
+            const previous = ordered[index - 1];
+            const current = ordered[index];
+            const previousX = previous.x ?? 0;
+            const currentX = current.x ?? 0;
+            const delta = currentX - previousX;
+
+            if (delta < MIN_VERTICAL_GAP) {
+                current.x = previousX + MIN_VERTICAL_GAP;
+            }
+        }
+
+        const adjustedMean =
+            ordered.reduce((sum, node) => sum + (node.x ?? 0), 0) / ordered.length;
+        const recenterOffset = originalMean - adjustedMean;
+        ordered.forEach((node) => {
+            node.x = (node.x ?? 0) + recenterOffset;
+        });
+    });
 
     return root;
 }
@@ -144,10 +163,37 @@ export function d3ToReactFlow(root: HierarchyNode<TreeHierarchyNode>): { nodes: 
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
+    const topLevelNodes = root.children ?? [];
+    const orderedTopLevelNodes = [...topLevelNodes].sort((a, b) => (a.x ?? 0) - (b.x ?? 0));
+    const leftCount = Math.ceil(orderedTopLevelNodes.length / 2);
+    const branchDirectionByTopLevelId = new Map<string, -1 | 1>();
+
+    orderedTopLevelNodes.forEach((node, index) => {
+        const topLevelId = String((node.data as QuestionTreeNode).questionId ?? (node.data as QuestionTreeNode).id);
+        branchDirectionByTopLevelId.set(topLevelId, index < leftCount ? -1 : 1);
+    });
+
+    const getBranchDirection = (node: HierarchyNode<TreeHierarchyNode>): -1 | 1 => {
+        if (!node.parent) {
+            return 1;
+        }
+
+        let current: HierarchyNode<TreeHierarchyNode> = node;
+        while (current.parent && !Boolean((current.parent.data as ThemeTreeNode).isVirtualRoot)) {
+            current = current.parent;
+        }
+
+        const topLevelId = String((current.data as QuestionTreeNode).questionId ?? (current.data as QuestionTreeNode).id);
+        return branchDirectionByTopLevelId.get(topLevelId) ?? 1;
+    };
+
     root.descendants().forEach(node => {
         const isVirtualRoot = Boolean((node.data as ThemeTreeNode).isVirtualRoot);
         const isTheme = node.data.nodeKind === "theme" && !isVirtualRoot;
         const isQuestion = node.data.nodeKind === "question";
+        const isThemeQuestion = isQuestion && isThemeQuestionType(node.data as QuestionTreeNode);
+        const nodeVisualKind: TreeNodeKind = isVirtualRoot || isTheme || isThemeQuestion ? "theme" : "question";
+        const branchDirection = getBranchDirection(node);
 
         const rawId = isQuestion
             ? String((node.data as QuestionTreeNode).questionId ?? (node.data as QuestionTreeNode).id)
@@ -166,14 +212,14 @@ export function d3ToReactFlow(root: HierarchyNode<TreeHierarchyNode>): { nodes: 
         // ReactFlow : x = horizontal, y = vertical
         nodes.push({
             id: nodeId,
-            type: isTheme ? "theme" : "question",
+            type: nodeVisualKind,
             position: { 
-                x: (node.y ?? 0),  // Profondeur → axe horizontal
+                x: (node.y ?? 0) * branchDirection,  // Profondeur → axe horizontal (gauche/droite)
                 y: (node.x ?? 0)   // Position dans le niveau → axe vertical
             },
             data: {
                 ...node.data,
-                nodeKind: isTheme ? "theme" : "question",
+                nodeKind: nodeVisualKind,
                 status: (node.data as QuestionTreeNode).status || "pending",
                 depth: node.depth,
                 parentNodeId: parentId,
@@ -182,7 +228,7 @@ export function d3ToReactFlow(root: HierarchyNode<TreeHierarchyNode>): { nodes: 
             hidden: isVirtualRoot,
         });
 
-        if (node.parent && !isVirtualRoot && !(node.parent.data as ThemeTreeNode).isVirtualRoot) {
+        if (node.parent && !isVirtualRoot) {
             const sourceId = node.parent.data.nodeKind === "question"
                 ? `q-${String((node.parent.data as QuestionTreeNode).questionId ?? (node.parent.data as QuestionTreeNode).id)}`
                 : String((node.parent.data as ThemeTreeNode).id);

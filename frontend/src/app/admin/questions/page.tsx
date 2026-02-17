@@ -5,7 +5,6 @@ import {
   Tooltip,
   Button,
   Modal,
-  Input,
   Pagination,
   Table,
 } from "@/components/ui";
@@ -82,21 +81,51 @@ export default function QuestionsPage() {
       .filter(Boolean) as string[];
   };
 
+  const getNodeTypeFromQuestion = (question: Question): "Theme" | "Question" => {
+    const category = (getQuestionCategoryLabel(question) || "").trim().toLowerCase();
+    return category === "theme" ? "Theme" : "Question";
+  };
+
+  const getSwotCategoryFromQuestion = (
+    question: Question
+  ): "force" | "faiblesse" | "opportunité" | "menace" | null => {
+    const category = (getQuestionCategoryLabel(question) || "").trim().toLowerCase();
+    const categoryMap: Record<string, "force" | "faiblesse" | "opportunité" | "menace"> = {
+      force: "force",
+      forces: "force",
+      faiblesse: "faiblesse",
+      faiblesses: "faiblesse",
+      opportunité: "opportunité",
+      opportunités: "opportunité",
+      menace: "menace",
+      menaces: "menace",
+    };
+    if (categoryMap[category]) {
+      return categoryMap[category];
+    }
+    return null;
+  };
+
   const mapFormToPayload = (formData: CreateQuestionInputs) => {
     const selectedIds = types
-      .filter((t) => formData.typesLabels.includes(t.label))
-      .map((t) => t.typeId);
+      .filter((typeItem) => formData.typesLabels.includes(typeItem.label))
+      .map((typeItem) => typeItem.typeId);
+
+    const normalizedKeyword = formData.keyword.trim();
+    const isQuestionNode = formData.nodeType === "Question";
+    const label = isQuestionNode
+      ? formData.detail?.trim() || normalizedKeyword || "Question"
+      : normalizedKeyword || "Theme";
+    const category = isQuestionNode
+      ? formData.swotCategory ?? null
+      : "Theme";
 
     return {
-      label: formData.label,
-      keyword: formData.keyword,
-      category: formData.category ?? null,
-      numberOfSelectionableOpt: formData.options.length,
-      hasMultipleOpenResponse: formData.hasMultipleOpenResponse,
-      shouldMultiply: formData.shouldMultiply,
+      label,
+      keyword: normalizedKeyword,
+      category,
       ...(formData.questionIdParent && { questionIdParent: formData.questionIdParent }),
-      ...(formData.options && formData.options.length > 0 && { options: formData.options }),
-      ...(selectedIds && { types: selectedIds }),
+      ...(selectedIds.length > 0 ? { types: selectedIds } : {}),
     };
   };
 
@@ -317,8 +346,8 @@ export default function QuestionsPage() {
             </Tooltip>
             <Modal
               modal={modal}
-              title="ajouter une question"
-              description="Entrez les informations de la nouvelle question"
+              title="créer un noeuds"
+              description="Entrez les informations du nouveau noeud"
             >
               <CreateQuestionForm
                 isLoading={false}
@@ -359,13 +388,10 @@ export default function QuestionsPage() {
                 size="sm"
                 onClick={() => {
                   setCreateInitialValues({
-                    label: "",
                     keyword: "",
-                    category: getQuestionCategoryLabel(editingQuestion),
-                    hasMultipleOpenResponse: false,
-                    shouldMultiply: false,
-                    allowMultiple: false,
-                    options: [],
+                    nodeType: "Question",
+                    detail: "",
+                    swotCategory: null,
                     questionIdParent: String(editingQuestion.questionId),
                     typesLabels: getQuestionTypeLabels(editingQuestion),
                   });
@@ -378,20 +404,10 @@ export default function QuestionsPage() {
               <CreateQuestionForm
                 isLoading={false}
                 initialValues={{
-                  label: editingQuestion.label || "",
                   keyword: editingQuestion.keyword || "",
-                  category: normalizeCategoryLabel(
-                    getQuestionCategoryLabel(editingQuestion)
-                  ),
-                  hasMultipleOpenResponse: Boolean(
-                    editingQuestion.hasMultipleOpenResponse
-                  ),
-                  shouldMultiply: Boolean(editingQuestion.shouldMultiply),
-                  allowMultiple: (editingQuestion.options?.length ?? 0) > 0,
-                  options:
-                    editingQuestion.options?.map((opt: any) =>
-                      typeof opt === "string" ? opt : opt.label
-                    ) || [],
+                  nodeType: getNodeTypeFromQuestion(editingQuestion),
+                  detail: editingQuestion.label || "",
+                  swotCategory: getSwotCategoryFromQuestion(editingQuestion),
                   questionIdParent:
                     editingQuestion.parentId !== null &&
                     editingQuestion.parentId !== undefined

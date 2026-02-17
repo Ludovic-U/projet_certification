@@ -15,6 +15,8 @@ const ModalQuestion : React.FC<ModalQuestionProps> = ({
     className,
     onValidate,
     onSkip,
+    skipLabel,
+    showSkipButton = true,
     onKeywordChange,
 }) => {
     const modalRef = useModalBehavior(modal.isOpen, modal.closeModal);
@@ -97,13 +99,17 @@ const ModalQuestion : React.FC<ModalQuestionProps> = ({
 
                         {/* Actions */}
                         <div className="flex justify-between items-end ">
-                            <button
-                            type="button"
-                            className="underline cursor-pointer font-medium"
-                            onClick={onSkip}
-                            >
-                                passer la question
-                            </button>
+                            {showSkipButton ? (
+                                <button
+                                type="button"
+                                className="underline cursor-pointer font-medium"
+                                onClick={onSkip}
+                                >
+                                    {skipLabel || "passer la question"}
+                                </button>
+                            ) : (
+                                <span />
+                            )}
                             
                             <Button
                             type="submit"
