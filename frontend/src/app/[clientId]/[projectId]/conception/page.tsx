@@ -18,6 +18,7 @@ import { GanttTaskEditor } from './components/GanttTaskEditor';
 import { GanttTaskSummary } from './components/GanttTaskSummary';
 import { GanttTooltip } from './components/GanttTooltip';
 import { GanttContextMenu } from './components/GanttContextMenu';
+import { GanttTutorial } from './components/GanttTutorial';
 import { generateColumns, getBaseStart } from './utils/timelineUtils';
 import { startOfDay } from './utils/dateUtils';
 import { DAY_MS } from './constants';
@@ -26,7 +27,7 @@ import { MIN_PX_PER_DAY, MAX_PX_PER_DAY } from './constants';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 import { useParams } from 'next/navigation';
-import { fetchVersions, fetchGanttData, createVersion, deleteVersion as deleteVersionApi, activateVersion as activateVersionApi, Version } from '@/api/ganttApi';
+import { fetchVersions, createVersion, deleteVersion as deleteVersionApi, activateVersion as activateVersionApi, Version } from '@/api/ganttApi';
 
 const GanttChart = () => {
   const params = useParams();
@@ -35,18 +36,17 @@ const GanttChart = () => {
   // Version state
   const [versions, setVersions] = useState<Version[]>([]);
   const [currentVersion, setCurrentVersion] = useState<Version | null>(null);
-  const [versionLoading, setVersionLoading] = useState(false);
-  const [versionsKey, setVersionsKey] = useState(0); // Increment to force VersionSelector refresh
   
-  // Ref to track current version selection (for use in async functions)
+  // Tutorial state
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  
+  // Ref to track current version (for async operations)
   const currentVersionRef = useRef<Version | null>(null);
   
-  // Increment versionsKey when versions change to force VersionSelector refresh
+  // Keep ref in sync with state
   useEffect(() => {
-    setVersionsKey(prev => prev + 1);
-  }, [versions]);
-  
-  // Get persisted version from localStorage
+    currentVersionRef.current = currentVersion;
+  }, [currentVersion]);
   
   // Persist version selection to localStorage
   useEffect(() => {
@@ -54,11 +54,6 @@ const GanttChart = () => {
       localStorage.setItem(`project_${projectId}_currentVersion`, JSON.stringify(currentVersion));
     }
   }, [projectId, currentVersion]);
-  
-  // Keep ref in sync with state
-  useEffect(() => {
-    currentVersionRef.current = currentVersion;
-  }, [currentVersion]);
   
   // Get persisted version from localStorage
   const getPersistedVersion = useCallback((): Version | null => {
@@ -76,11 +71,9 @@ const GanttChart = () => {
 
   const loadVersions = useCallback(async (overrideVersion?: Version | null) => {
     if (!projectId) return;
-    setVersionLoading(true);
     try {
       const data = await fetchVersions(projectId);
       setVersions(data);
-      setVersionsKey(prev => prev + 1);
       
       // If override is provided (e.g., newly created version), use it
       if (overrideVersion) {
@@ -91,13 +84,11 @@ const GanttChart = () => {
         }
       }
       
-      // Check if current version still exists, or try to restore from localStorage
-      let savedVersion = currentVersionRef.current;
+      // Check if current version still exists
+      const savedVersion = currentVersionRef.current;
       if (savedVersion) {
-        // Check if the saved version still exists in the updated list
         const stillExists = data.find(v => v.versionId === savedVersion.versionId);
         if (stillExists) {
-          // Keep the current version
           setCurrentVersion(savedVersion);
           return;
         }
@@ -113,7 +104,7 @@ const GanttChart = () => {
         }
       }
       
-      // Set default version only if no current version or current version was deleted
+      // Set default version
       if (data.length > 0) {
         const activeVersion = data.find(v => v.isActive);
         setCurrentVersion(activeVersion || data[0]);
@@ -122,8 +113,6 @@ const GanttChart = () => {
       }
     } catch (error) {
       console.error('Error loading versions:', error);
-    } finally {
-      setVersionLoading(false);
     }
   }, [projectId, getPersistedVersion]);
 
@@ -174,16 +163,16 @@ const GanttChart = () => {
     }
   }, [projectId, loadVersions]);
   
+  // Use custom hooks for state management
+  const ganttState = useGanttState();
+  
   // Re-fetch Gantt data when currentVersion changes
   useEffect(() => {
     if (projectId && currentVersion !== undefined) {
       ganttState.loadData(currentVersion?.versionId);
       ganttState.setVersionId(currentVersion?.versionId || null);
     }
-  }, [projectId, currentVersion]);
-  
-  // Use custom hooks for state management
-  const ganttState = useGanttState();
+  }, [projectId, currentVersion, ganttState]);
   
   // Use custom hook for event handlers
   const handlers = useGanttHandlers({
@@ -336,7 +325,9 @@ const GanttChart = () => {
           onDeleteVersion={handleDeleteVersion}
           onActivateVersion={handleActivateVersion}
           projectId={projectId || 0}
-          versionsKey={versionsKey}
+          // Tutorial props
+          tutorialOpen={tutorialOpen}
+          setTutorialOpen={setTutorialOpen}
         />
 
         {/* Main Gantt Chart Area */}
@@ -494,7 +485,14 @@ const GanttChart = () => {
           handleDeleteLivrable={ganttState.handleDeleteLivrable}
           deleteTask={ganttState.deleteTask}
           updateTask={ganttState.updateTask}
+          projectId={projectId}
           data={ganttState.data}
+        />
+        
+        {/* Tutorial Modal */}
+        <GanttTutorial 
+          isOpen={tutorialOpen} 
+          onClose={() => setTutorialOpen(false)} 
         />
       </div>
     </div>
