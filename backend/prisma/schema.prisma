@@ -154,6 +154,7 @@ model Action {
   actionObj  String?
   projectId  Int
   startDate  DateTime
+  progress   Int         @default(0) // Calculated from subActions
   project    Project     @relation(fields: [projectId], references: [projectId])
   subActions SubAction[]
 }
@@ -165,6 +166,7 @@ model SubAction {
   piloteGrtId  Int?
   startDate    DateTime
   endDate      DateTime
+  progress     Int          @default(0) // Calculated from tasks
   budgets      Budget[]
   deliverables Deliverable[]
   action       Action        @relation(fields: [actionId], references: [actionId])

@@ -481,6 +481,12 @@ module.exports.updateTask = async (taskId, taskData) => {
       // No action needed - just fetch the updated deliverables in the response
     }
 
+    // Calculate and update SubAction progress if task has subActionId
+    await module.exports.calculateAndUpdateSubActionProgress(taskId);
+    
+    // Calculate and update parent task progress based on children's progress
+    await module.exports.calculateParentTaskProgress(taskId);
+
     return {
       id: task.taskId,
       text: task.name,
@@ -940,6 +946,113 @@ module.exports.calculateDeliverableProgress = async (taskId) => {
     return Math.round((confirmedCount / deliverables.length) * 100);
   } catch (error) {
     console.error('Error calculating deliverable progress:', error);
+    throw error;
+  }
+};
+
+/**
+ * Calculate and update parent task progress based on children's progress
+ * Called when a child's progress changes to update the parent
+ * @param {number} taskId - Child task ID that was updated
+ * @returns {Promise<number>} New parent task progress percentage
+ */
+module.exports.calculateParentTaskProgress = async (taskId) => {
+  try {
+    // Get the child task to find its parent
+    const childTask = await prisma.task.findUnique({
+      where: { taskId },
+      select: { parentId: true }
+    });
+    
+    if (!childTask || !childTask.parentId) {
+      return 0; // Task has no parent, nothing to update
+    }
+    
+    // Get all children of the parent task
+    const siblings = await prisma.task.findMany({
+      where: { parentId: childTask.parentId }
+    });
+    
+    if (siblings.length === 0) {
+      return 0;
+    }
+    
+    // Calculate average progress from all children
+    const totalProgress = siblings.reduce((sum, t) => sum + (t.progress || 0), 0);
+    const newProgress = Math.round(totalProgress / siblings.length);
+    
+    // Update the parent's progress
+    await prisma.task.update({
+      where: { taskId: childTask.parentId },
+      data: { progress: newProgress }
+    });
+    
+    // Recursively update grandparents if they exist
+    await module.exports.calculateParentTaskProgress(childTask.parentId);
+    
+    return newProgress;
+  } catch (error) {
+    console.error('Error calculating parent task progress:', error);
+    throw error;
+  }
+};
+module.exports.calculateAndUpdateSubActionProgress = async (taskId) => {
+  try {
+    // Get the task to find its parent SubAction
+    const task = await prisma.task.findUnique({
+      where: { taskId },
+      include: {
+        subAction: {
+          select: { actionId: true }
+        }
+      }
+    });
+    
+    if (!task || !task.subActionId) {
+      return 0; // Task has no SubAction, nothing to update
+    }
+    
+    const actionId = task.subAction.actionId;
+    
+    // Get all tasks for this SubAction
+    const subActionTasks = await prisma.task.findMany({
+      where: { subActionId: task.subActionId }
+    });
+    
+    if (subActionTasks.length === 0) {
+      return 0;
+    }
+    
+    // Calculate average progress
+    const totalProgress = subActionTasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+    const newProgress = Math.round(totalProgress / subActionTasks.length);
+    
+    // Update the SubAction's progress field
+    await prisma.subAction.update({
+      where: { subActionId: task.subActionId },
+      data: { progress: newProgress }
+    });
+    
+    // Also update the parent Action's progress (average of all SubActions)
+    if (actionId) {
+      const subActions = await prisma.subAction.findMany({
+        where: { actionId }
+      });
+      
+      if (subActions.length > 0) {
+        const totalSubProgress = subActions.reduce((sum, sa) => sum + (sa.progress || 0), 0);
+        const actionProgress = Math.round(totalSubProgress / subActions.length);
+        
+        await prisma.action.update({
+          where: { actionId },
+          data: { progress: actionProgress }
+        });
+      }
+    }
+    
+    return newProgress;
+  } catch (error) {
+    console.error('Error calculating SubAction progress:', error);
     throw error;
   }
 };

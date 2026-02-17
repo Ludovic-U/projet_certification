@@ -16,6 +16,7 @@ const {
   deleteTaskDeliverable,
   getTaskDeliverables,
   calculateDeliverableProgress,
+  calculateAndUpdateSubActionProgress,
   getVersionsForProject,
   createVersion,
   updateVersion,
@@ -217,6 +218,8 @@ module.exports.createDeliverable = async (req, res) => {
     if (deliverableData.taskId) {
       const newProgress = await calculateDeliverableProgress(deliverableData.taskId);
       await updateTask(deliverableData.taskId, { progress: newProgress });
+      // Update parent SubAction progress
+      await calculateAndUpdateSubActionProgress(deliverableData.taskId);
     }
     
     res.status(201).json(deliverable);
@@ -653,6 +656,9 @@ module.exports.updateTaskDeliverable = async (req, res) => {
     // Update task progress if it changed (always update, even if 0)
     await updateTask(taskId, { progress: newProgress });
     
+    // Update parent SubAction progress
+    await calculateAndUpdateSubActionProgress(taskId);
+    
     res.status(200).json({ ...deliverable, progress: newProgress });
   } catch (error) {
     console.error('Error updating task deliverable:', error);
@@ -682,6 +688,9 @@ module.exports.confirmTaskDeliverable = async (req, res) => {
     // Update task progress
     await updateTask(taskId, { progress: newProgress });
     
+    // Update parent SubAction progress
+    await calculateAndUpdateSubActionProgress(taskId);
+    
     res.status(200).json({ ...deliverable, progress: newProgress });
   } catch (error) {
     console.error('Error confirming task deliverable:', error);
@@ -708,6 +717,9 @@ module.exports.deleteTaskDeliverable = async (req, res) => {
     // Recalculate progress after deletion
     const newProgress = await calculateDeliverableProgress(taskId);
     await updateTask(taskId, { progress: newProgress });
+    
+    // Update parent SubAction progress
+    await calculateAndUpdateSubActionProgress(taskId);
     
     res.status(200).json({ message: 'Deliverable deleted successfully', progress: newProgress });
   } catch (error) {
