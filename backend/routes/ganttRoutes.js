@@ -51,14 +51,15 @@ router.put('/:projectId/versions/:versionId/activate', activateVersion);
 // POST /api/gantt/:projectId/tasks - Create a new task
 router.post('/:projectId/tasks', createTask);
 
+// PUT /api/gantt/:projectId/tasks/bulk - Bulk update tasks (for drag/drop)
+// IMPORTANT: This must be defined BEFORE /:taskId route to avoid being matched as a taskId
+router.put('/:projectId/tasks/bulk', bulkUpdateTasks);
+
 // PUT /api/gantt/:projectId/tasks/:taskId - Update a task
 router.put('/:projectId/tasks/:taskId', updateTask);
 
 // DELETE /api/gantt/:projectId/tasks/:taskId - Delete a task
 router.delete('/:projectId/tasks/:taskId', deleteTask);
-
-// PUT /api/gantt/:projectId/tasks/bulk - Bulk update tasks (for drag/drop)
-router.put('/:projectId/tasks/bulk', bulkUpdateTasks);
 
 // POST /api/gantt/:projectId/links - Create a new task link
 router.post('/:projectId/links', createTaskLink);

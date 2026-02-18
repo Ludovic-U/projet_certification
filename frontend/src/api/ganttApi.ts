@@ -186,7 +186,7 @@ export const deleteTask = async (projectId: number, taskId: number): Promise<voi
  */
 export const bulkUpdateTasks = async (
   projectId: number,
-  tasks: Array<{ id: number; start?: Date; end?: Date; progress?: number; parent?: number }>
+  tasks: Array<{ id: number; start?: Date | string; end?: Date | string; progress?: number; parent?: number }>
 ): Promise<void> => {
   await api.put(`/gantt/${projectId}/tasks/bulk`, { tasks });
 };

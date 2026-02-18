@@ -388,6 +388,13 @@ module.exports.createTask = async (taskData) => {
  */
 module.exports.updateTask = async (taskId, taskData) => {
   try {
+    // Ensure taskId is a number
+    const numericTaskId = Number(taskId);
+    
+    if (!numericTaskId || isNaN(numericTaskId)) {
+      throw new Error('Invalid taskId: must be a valid number');
+    }
+    
     const {
       projectId,
       versionId,
@@ -409,7 +416,7 @@ module.exports.updateTask = async (taskId, taskData) => {
 
     // First, get current assignments and livrables
     const currentTask = await prisma.task.findUnique({
-      where: { taskId },
+      where: { taskId: numericTaskId },
       include: {
         taskAssignments: true,
         tasks: true
@@ -441,7 +448,7 @@ module.exports.updateTask = async (taskId, taskData) => {
     if (color !== undefined) updateData.color = color;
 
     const task = await prisma.task.update({
-      where: { taskId },
+      where: { taskId: numericTaskId },
       data: updateData,
       include: {
         taskAssignments: {
@@ -462,12 +469,12 @@ module.exports.updateTask = async (taskId, taskData) => {
     if (assigneeIds !== undefined) {
       // Remove old assignments
       await prisma.taskAssignment.deleteMany({
-        where: { taskId }
+        where: { taskId: numericTaskId }
       });
       // Add new assignments
       if (assigneeIds.length > 0) {
         await prisma.taskAssignment.createMany({
-          data: assigneeIds.map(userId => ({ taskId, userId }))
+          data: assigneeIds.map(userId => ({ taskId: numericTaskId, userId }))
         });
       }
     }
