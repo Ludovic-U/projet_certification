@@ -3,10 +3,12 @@ import { Task, Link } from '../types';
 import { DAY_MS, RESIZE_HANDLE_WIDTH, PROGRESS_BAR_WIDTH } from '../constants';
 import { startOfDay } from '../utils/dateUtils';
 import { getAllDescendants } from '../utils/taskUtils';
+import { bulkUpdateTasks } from '@/api/ganttApi';
 
 interface UseGanttHandlersProps {
   tasks: Task[];
   links: Link[];
+  projectId: number | null;
   setTasks: (tasks: Task[]) => void;
   setDraggingTask: (task: Task | null) => void;
   setResizingTask: (task: { task: Task; side: 'left' | 'right' } | null) => void;
@@ -42,6 +44,7 @@ interface UseGanttHandlersProps {
 export const useGanttHandlers = ({
   tasks,
   links,
+  projectId,
   setTasks,
   setDraggingTask,
   setResizingTask,
@@ -173,7 +176,7 @@ export const useGanttHandlers = ({
     }
   }, [draggingTask, resizingTask, draggingProgress, setWasDragged, setTasks, dragOffset, pxPerDay, rafId, pendingDeltaPx, tick]);
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback(async () => {
     // stop rAF-based dragging
     if (rafId.current) {
       cancelAnimationFrame(rafId.current);
@@ -194,6 +197,28 @@ export const useGanttHandlers = ({
       });
       setTasks(nextTasks);
       saveState(nextTasks, links);
+      
+      // Save to backend API
+      if (projectId) {
+        const tasksToUpdate = nextTasks
+          .filter(t => affectedIds.has(t.id) && t.id > 0)
+          .map(t => ({
+            id: t.id,
+            start: t.start instanceof Date ? t.start.toISOString() : t.start,
+            end: t.end instanceof Date ? t.end.toISOString() : t.end,
+            progress: t.progress,
+            parent: t.parent
+          }));
+        if (tasksToUpdate.length > 0) {
+          try {
+            await bulkUpdateTasks(projectId, tasksToUpdate);
+            console.log('Tasks saved to backend:', tasksToUpdate);
+          } catch (err) {
+            console.error('Error saving tasks to backend:', err);
+          }
+        }
+      }
+      
       didSnap = true;
     } else if (resizingTask) {
       const nextTasks = tasks.map(t => {
@@ -204,6 +229,26 @@ export const useGanttHandlers = ({
       });
       setTasks(nextTasks);
       saveState(nextTasks, links);
+      
+      // Save to backend API
+      if (projectId && resizingTask.task.id > 0) {
+        const task = nextTasks.find(t => t.id === resizingTask.task.id);
+        if (task) {
+          try {
+            await bulkUpdateTasks(projectId, [{
+              id: task.id,
+              start: task.start instanceof Date ? task.start.toISOString() : task.start,
+              end: task.end instanceof Date ? task.end.toISOString() : task.end,
+              progress: task.progress,
+              parent: task.parent
+            }]);
+            console.log('Task saved to backend');
+          } catch (err) {
+            console.error('Error saving task to backend:', err);
+          }
+        }
+      }
+      
       didSnap = true;
     } else if (draggingProgress) {
       saveState();
@@ -216,7 +261,7 @@ export const useGanttHandlers = ({
     setDraggingProgress(null);
     setDragStartPositions(new Map());
     setIsDraggingAny(false);
-  }, [rafId, draggingActiveRef, pendingDeltaPx, dragStartMapRef, draggingIdsRef, draggingTask, resizingTask, draggingProgress, dragStartPositions, tasks, links, setTasks, saveState, setDraggingTask, setResizingTask, setDraggingProgress, setDragStartPositions, setIsDraggingAny]);
+  }, [rafId, draggingActiveRef, pendingDeltaPx, dragStartMapRef, draggingIdsRef, draggingTask, resizingTask, draggingProgress, dragStartPositions, tasks, links, setTasks, saveState, setDraggingTask, setResizingTask, setDraggingProgress, setDragStartPositions, setIsDraggingAny, projectId]);
 
   const handleTaskMouseEnter = useCallback((task: Task, e: React.MouseEvent<HTMLElement>) => {
     setHoveredTask(task);

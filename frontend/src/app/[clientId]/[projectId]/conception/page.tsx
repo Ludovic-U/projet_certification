@@ -179,6 +179,7 @@ const GanttChart = () => {
   const handlers = useGanttHandlers({
     tasks: ganttState.tasks,
     links: ganttState.links,
+    projectId: projectId,
     setTasks: ganttState.setTasks,
     setDraggingTask: ganttState.setDraggingTask,
     setResizingTask: ganttState.setResizingTask,
