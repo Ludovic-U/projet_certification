@@ -11,6 +11,7 @@ import {
   Trash2,
   Save,
   ChevronDown,
+  Brain,
 } from 'lucide-react';
 
 interface MindmapToolbarProps {
@@ -22,6 +23,7 @@ interface MindmapToolbarProps {
   onAddNode: (type: string) => void;
   onDeleteSelected: () => void;
   onSave: () => void;
+  onGenerateAI: () => void;
   canUndo: boolean;
   canRedo: boolean;
   hasSelection: boolean;
@@ -39,6 +41,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
   onAddNode,
   onDeleteSelected,
   onSave,
+  onGenerateAI,
   canUndo,
   canRedo,
   hasSelection,
@@ -48,8 +51,8 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
 }) => {
   // Node types configuration
   const nodeTypes = [
-    { id: 'action', label: 'Action', color: '#ef4444' },
-    { id: 'sous_action', label: 'Sous Action', color: '#8b5cf6' },
+    { id: 'action', label: 'Action', color: '#96776e' },
+    { id: 'sous_action', label: 'Sous Action', color: '#698063' },
     { id: 'objectif', label: 'Objectif', color: '#ffffff' },
     { id: 'livrable', label: 'Livrable', color: '#22c55e' },
   ];
@@ -61,10 +64,10 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     display: 'flex',
     gap: '8px',
     padding: '12px 16px',
-    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    backgroundColor: 'rgba(105, 128, 99, 0.95)', // Dark green #698063
     borderRadius: '12px',
     backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(148, 163, 184, 0.2)',
+    border: '1px solid rgba(105, 128, 99, 0.4)',
     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
   };
 
@@ -75,9 +78,9 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     width: '36px',
     height: '36px',
     borderRadius: '8px',
-    backgroundColor: 'rgba(71, 85, 105, 0.6)',
-    border: '1px solid rgba(148, 163, 184, 0.15)',
-    color: '#e2e8f0',
+    backgroundColor: 'rgba(159, 179, 154, 0.4)', // Light green #9fb39a
+    border: '1px solid rgba(159, 179, 154, 0.4)',
+    color: '#ffffff',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
   };
@@ -87,9 +90,9 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     top: '100%',
     left: 0,
     marginTop: '8px',
-    backgroundColor: 'rgba(30, 41, 59, 0.98)',
+    backgroundColor: 'rgba(105, 128, 99, 0.98)', // Dark green #698063
     borderRadius: '8px',
-    border: '1px solid rgba(148, 163, 184, 0.2)',
+    border: '1px solid rgba(105, 128, 99, 0.4)',
     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
     minWidth: '160px',
     zIndex: 100,
@@ -103,7 +106,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     alignItems: 'center',
     gap: '10px',
     transition: 'background-color 0.15s ease',
-    color: '#e2e8f0',
+    color: '#ffffff',
   };
 
   const colorDotStyle: React.CSSProperties = {
@@ -124,7 +127,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
             opacity: canUndo ? 1 : 0.4,
             cursor: canUndo ? 'pointer' : 'not-allowed',
           }}
-          title="Undo"
+          title="Annuler"
         >
           <Undo size={18} />
         </button>
@@ -136,7 +139,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
             opacity: canRedo ? 1 : 0.4,
             cursor: canRedo ? 'pointer' : 'not-allowed',
           }}
-          title="Redo"
+          title="Rétablir"
         >
           <Redo size={18} />
         </button>
@@ -154,21 +157,21 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
         <button
           onClick={onZoomIn}
           style={{ ...buttonStyle }}
-          title="Zoom In"
+          title="Zoom avant"
         >
           <ZoomIn size={18} />
         </button>
         <button
           onClick={onZoomOut}
           style={{ ...buttonStyle }}
-          title="Zoom Out"
+          title="Zoom arrière"
         >
           <ZoomOut size={18} />
         </button>
         <button
           onClick={onFitView}
           style={{ ...buttonStyle }}
-          title="Fit View"
+          title="Ajuster la vue"
         >
           <Maximize size={18} />
         </button>
@@ -193,10 +196,10 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
             backgroundColor: 'rgba(34, 197, 94, 0.2)',
             borderColor: 'rgba(34, 197, 94, 0.3)',
           }}
-          title="Add Node"
+          title="Ajouter un nœud"
         >
           <Plus size={18} />
-          <span style={{ fontSize: '13px', fontWeight: 500 }}>Add</span>
+          <span style={{ fontSize: '13px', fontWeight: 500 }}>Ajouter</span>
           <ChevronDown size={14} />
         </button>
 
@@ -255,7 +258,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
           opacity: hasSelection ? 1 : 0.4,
           cursor: hasSelection ? 'pointer' : 'not-allowed',
         }}
-        title="Delete Selected"
+        title="Supprimer la sélection"
       >
         <Trash2 size={18} />
       </button>
@@ -278,10 +281,26 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
           backgroundColor: 'rgba(59, 130, 246, 0.3)',
           borderColor: 'rgba(59, 130, 246, 0.4)',
         }}
-        title="Save as Pre-project"
+        title="Enregistrer en pré-projet"
       >
         <Save size={18} />
-        <span style={{ fontSize: '13px', fontWeight: 500 }}>Save</span>
+        <span style={{ fontSize: '13px', fontWeight: 500 }}>Enregistrer</span>
+      </button>
+
+      <button
+        onClick={onGenerateAI}
+        style={{
+          ...buttonStyle,
+          width: 'auto',
+          padding: '0 12px',
+          gap: '6px',
+          backgroundColor: 'rgba(147, 51, 234, 0.3)',
+          borderColor: 'rgba(147, 51, 234, 0.4)',
+        }}
+        title="Générer une carte mentale avec IA"
+      >
+        <Brain size={18} />
+        <span style={{ fontSize: '13px', fontWeight: 500 }}>IA</span>
       </button>
     </div>
   );

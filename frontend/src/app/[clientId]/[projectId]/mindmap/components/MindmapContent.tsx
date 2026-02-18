@@ -30,6 +30,7 @@ import '@xyflow/react/dist/style.css';
 import { PageHeader } from '@/components/ui';
 import { MindmapToolbar } from './MindmapToolbar';
 import MindmapNode from './MindmapNode';
+import { MindmapAIModal } from './MindmapAIModal';
 import {
   fetchMindmaps,
   createMindmap,
@@ -46,8 +47,8 @@ const NODE_COLORS = [
   '#3b82f6', // blue
   '#22c55e', // green
   '#f59e0b', // amber
-  '#ef4444', // red
-  '#8b5cf6', // violet
+  '#96776e', // dark green
+  '#698063', // brown/taupe
   '#ec4899', // pink
   '#06b6d4', // cyan
   '#f97316', // orange
@@ -69,7 +70,7 @@ const initialNodes: Node<MindmapNodeData>[] = [
     type: 'mindmapNode',
     position: { x: 0, y: 0 },
     data: {
-      label: 'Central Topic',
+      label: 'Sujet Central',
       color: NODE_COLORS[0],
       isRoot: true,
       fontSize: 16,
@@ -107,6 +108,9 @@ export const MindmapInner = () => {
 
   // Selected node type for new nodes
   const [selectedNodeType, setSelectedNodeType] = useState<string>('action');
+  
+  // AI Mindmap modal state
+  const [aiModalOpen, setAiModalOpen] = useState(false);
   
   // ReactFlow instance
   const { fitView, zoomIn, zoomOut, getNodes, getEdges } = useReactFlow();
@@ -376,8 +380,8 @@ export const MindmapInner = () => {
     
     // Get color based on type
     const typeColors: Record<string, string> = {
-      action: '#ef4444',
-      sous_action: '#8b5cf6',
+      action: '#96776e',
+      sous_action: '#698063',
       objectif: '#ffffff',
       livrable: '#22c55e',
     };
@@ -472,6 +476,22 @@ export const MindmapInner = () => {
     alert('Mindmap saved successfully!');
   }, [saveMindmap]);
   
+  // Handle AI mindmap generation
+  const handleAIGenerate = useCallback(() => {
+    setAiModalOpen(true);
+  }, []);
+  
+  // Handle importing AI-generated mindmap nodes
+  const handleAIImport = useCallback((newNodes: Node[], newEdges: Edge[]) => {
+    saveToHistory();
+    setNodes((nds) => [...nds, ...(newNodes as any)]);
+    setEdges((eds) => [...eds, ...newEdges]);
+    // Auto-save after import
+    setTimeout(() => {
+      autoSave();
+    }, 100);
+  }, [saveToHistory, setNodes, setEdges, autoSave]);
+  
   // Update node label on double-click
   const handleNodeDoubleClick = useCallback((_: React.MouseEvent, node: Node) => {
     const nodeData = node.data as MindmapNodeData;
@@ -535,11 +555,11 @@ export const MindmapInner = () => {
     return (
       <div className="flex flex-col h-full overflow-hidden">
         <PageHeader
-          title="Mind Map"
-          description="Brainstorm and organize project ideas with an interactive mind map"
+          title="Carte Mentale"
+          description="Brainstorming et organisation des idées du projet avec une carte mentale interactive"
         />
-        <div className="flex-1 bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
-          <div className="text-white text-xl">Loading mindmap...</div>
+        <div className="flex-1 bg-[#edeae5] flex items-center justify-center">
+          <div className="text-[#698063] text-xl">Chargement de la carte mentale...</div>
         </div>
       </div>
     );
@@ -549,11 +569,11 @@ export const MindmapInner = () => {
     <div className="flex flex-col h-full overflow-hidden">
       {/* Page header */}
       <PageHeader
-        title="Mind Map"
-        description="Brainstorm and organize project ideas with an interactive mind map"
+        title="Carte Mentale"
+        description="Brainstorming et organisation des idées du projet avec une carte mentale interactive"
       />
       
-      <div className="flex-1 bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col overflow-hidden relative">
+      <div className="flex-1 bg-[#edeae5] flex flex-col overflow-hidden relative">
         {/* Saving indicator */}
         {isSaving && (
           <div
@@ -605,6 +625,7 @@ export const MindmapInner = () => {
             onAddNode={handleAddNode}
             onDeleteSelected={handleDeleteSelected}
             onSave={saveMindmapAsTasksFn}
+            onGenerateAI={handleAIGenerate}
             canUndo={historyIndex > 0}
             canRedo={historyIndex < history.length - 1}
             hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}
@@ -638,19 +659,19 @@ export const MindmapInner = () => {
           multiSelectionKeyCode={['Control', 'Meta']}
           snapToGrid
           snapGrid={[15, 15]}
-          style={{ backgroundColor: '#0f172a' }}
+          style={{ backgroundColor: '#edeae5' }}
         >
           <Background
             variant={BackgroundVariant.Dots}
             gap={20}
             size={1}
-            color="#334155"
+            color="#9fb39a"
           />
           <Controls
             style={{
-              backgroundColor: 'rgba(30, 41, 59, 0.95)',
+              backgroundColor: 'rgba(105, 128, 99, 0.95)', // Dark green #698063
               borderRadius: '8px',
-              border: '1px solid rgba(148, 163, 184, 0.2)',
+              border: '1px solid rgba(105, 128, 99, 0.4)',
             }}
           />
           <MiniMap
@@ -660,11 +681,11 @@ export const MindmapInner = () => {
               }
               return '#64748b';
             }}
-            maskColor="rgba(15, 23, 42, 0.7)"
+            maskColor="rgba(237, 234, 229, 0.7)"
             style={{
-              backgroundColor: 'rgba(30, 41, 59, 0.9)',
+              backgroundColor: 'rgba(105, 128, 99, 0.9)', // Dark green #698063
               borderRadius: '8px',
-              border: '1px solid rgba(148, 163, 184, 0.2)',
+              border: '1px solid rgba(105, 128, 99, 0.4)',
             }}
           />
         </ReactFlow>
@@ -674,24 +695,34 @@ export const MindmapInner = () => {
           <div
             style={{
               padding: '12px 16px',
-              backgroundColor: 'rgba(30, 41, 59, 0.9)',
+              backgroundColor: 'rgba(105, 128, 99, 0.9)', // Dark green #698063
               borderRadius: '8px',
-              border: '1px solid rgba(148, 163, 184, 0.2)',
-              color: '#94a3b8',
+              border: '1px solid rgba(105, 128, 99, 0.4)',
+              color: '#ffffff',
               fontSize: '12px',
             }}
           >
-            <strong style={{ color: '#e2e8f0' }}>Tips:</strong>
+            <strong style={{ color: '#e2e8f0' }}>Conseils :</strong>
             <ul style={{ margin: '8px 0 0', paddingLeft: '16px' }}>
-              <li>Double-click a node to edit its label</li>
-              <li>Click the X button to delete a node</li>
-              <li>Click nodes to select (Shift+Click for multi-select)</li>
-              <li>Drag from handles to connect nodes</li>
-              <li>Select node type from toolbar before adding</li>
-              <li>Changes auto-save after 2 seconds of inactivity</li>
+              <li>Double-cliquez sur un nœud pour modifier son label</li>
+              <li>Cliquez sur le bouton X pour supprimer un nœud</li>
+              <li>Cliquez sur les nœuds pour les sélectionner (Shift+Clic pour multi-sélection)</li>
+              <li>Glissez depuis les poignées pour connecter les nœuds</li>
+              <li>Sélectionnez le type de nœud dans la barre d'outils avant d'ajouter</li>
+              <li>Les modifications sont sauvegardées automatiquement après 2 secondes d'inactivité</li>
             </ul>
           </div>
         </Panel>
+        
+        {/* AI Mindmap Modal */}
+        {projectId && (
+          <MindmapAIModal
+            isOpen={aiModalOpen}
+            onClose={() => setAiModalOpen(false)}
+            projectId={projectId}
+            onImport={handleAIImport}
+          />
+        )}
       </div>
     </div>
   );

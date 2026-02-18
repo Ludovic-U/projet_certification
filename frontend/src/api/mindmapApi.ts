@@ -30,7 +30,31 @@ export interface Mindmap {
   updatedAt?: string;
 }
 
+// Interface for AI generated mindmap nodes
+export interface AIMindmapNode {
+  id: string;
+  parentId?: string | null;
+  label: string;
+  nodeType: string;
+  color: string;
+}
+
+export interface AIMindmapResponse {
+  nodes?: AIMindmapNode[];
+  error?: string;
+}
+
 // API Functions
+
+/**
+ * Generate a mindmap from project responses using Mistral AI
+ */
+export const generateMindmapFromResponses = async (
+  projectId: number
+): Promise<AIMindmapResponse> => {
+  const response = await axiosInstance.get(`/mistral/generateMindmapFromResponses/${projectId}`);
+  return response.data;
+};
 
 /**
  * Get all mindmaps for a project

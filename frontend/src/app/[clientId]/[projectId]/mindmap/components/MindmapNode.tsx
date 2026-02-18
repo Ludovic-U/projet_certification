@@ -109,7 +109,7 @@ const MindmapNode = ({ data, selected, id, onDelete }: MindmapNodeProps) => {
             width: '24px',
             height: '24px',
             borderRadius: '50%',
-            backgroundColor: '#ef4444',
+            backgroundColor: '#698063',
             border: '2px solid #ffffff',
             color: '#ffffff',
             display: 'flex',

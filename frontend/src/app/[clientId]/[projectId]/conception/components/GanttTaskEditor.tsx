@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, UserMinus, CreditCard } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, UserMinus, CreditCard, Upload } from 'lucide-react';
 import { Task, EditorTab, Livrable, SelectOption } from '../types';
 import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateExpenseLinesTotal, calculateBudgetTotals, getExpenseLinesByCategory, Budget } from '../utils/budgetUtils';
 import Select from 'react-select';
@@ -27,6 +27,8 @@ interface LivrablesSectionProps {
   newLivrableDescription: string;
   setNewLivrableDescription: (description: string) => void;
   handleAddLivrable: () => void;
+  handleUploadLivrableFile?: (livrableId: number, file: File) => Promise<void>;
+  handleDeleteLivrable?: (livrableId: number) => Promise<void>;
 }
 
 const LivrablesSection: React.FC<LivrablesSectionProps> = ({
@@ -40,7 +42,23 @@ const LivrablesSection: React.FC<LivrablesSectionProps> = ({
   newLivrableDescription,
   setNewLivrableDescription,
   handleAddLivrable,
+  handleUploadLivrableFile,
+  handleDeleteLivrable,
 }) => {
+  const [uploadingLivrableId, setUploadingLivrableId] = useState<number | null>(null);
+
+  const handleFileChange = async (livrableId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && handleUploadLivrableFile) {
+      setUploadingLivrableId(livrableId);
+      try {
+        await handleUploadLivrableFile(livrableId, file);
+      } finally {
+        setUploadingLivrableId(null);
+      }
+    }
+  };
+
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
@@ -109,17 +127,51 @@ const LivrablesSection: React.FC<LivrablesSectionProps> = ({
             return (
               <div key={livrableId} className="flex items-center gap-3 group">
                 <div className="flex-1 px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl">
-                  <p className="font-medium text-white">{livrable.label}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-white">{livrable.label}</p>
+                    {livrable.confirmed ? (
+                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
+                        Complété
+                      </span>
+                    ) : livrable.fileUrl ? (
+                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">
+                        Fichier上传é
+                      </span>
+                    ) : null}
+                  </div>
                   {livrable.description && (
                     <p className="text-sm text-slate-400 mt-1">{livrable.description}</p>
                   )}
+                  {livrable.fileName && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      📎 {livrable.fileName}
+                    </p>
+                  )}
+                  {/* Upload button for livrable */}
+                  <div className="mt-3">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 border border-dashed border-slate-500 rounded-lg cursor-pointer transition-all text-sm text-slate-300 hover:text-white">
+                      <Upload className="w-4 h-4" />
+                      {uploadingLivrableId === livrableId ? 'Téléchargement...' : (livrable.fileUrl ? 'Remplacer le fichier' : 'Ajouter un fichier')}
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
+                        onChange={(e) => handleFileChange(livrableId, e)}
+                        disabled={uploadingLivrableId !== null}
+                      />
+                    </label>
+                  </div>
                 </div>
                 <button
-                  onClick={() => {
-                    setEditingTask({
-                      ...editingTask,
-                      livrableIds: editingTask.livrableIds!.filter(id => id !== livrableId)
-                    });
+                  onClick={async () => {
+                    if (handleDeleteLivrable) {
+                      await handleDeleteLivrable(livrableId);
+                    } else {
+                      setEditingTask({
+                        ...editingTask,
+                        livrableIds: editingTask.livrableIds!.filter(id => id !== livrableId)
+                      });
+                    }
                   }}
                   className="p-2 bg-slate-800 border border-slate-600 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-all opacity-0 group-hover:opacity-100"
                   title="Supprimer le livrable"
@@ -591,23 +643,6 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           {editorTab === 'general' ? (
             <div className="space-y-6">
-              {/* Livrables Section */}
-              <LivrablesSection
-                editingTask={editingTask}
-                setEditingTask={setEditingTask}
-                livrables={livrables}
-                showAddLivrable={showAddLivrable}
-                setShowAddLivrable={setShowAddLivrable}
-                newLivrableLabel={newLivrableLabel}
-                setNewLivrableLabel={setNewLivrableLabel}
-                newLivrableDescription={newLivrableDescription}
-                setNewLivrableDescription={setNewLivrableDescription}
-                handleAddLivrable={handleAddLivrable}
-              />
-              
-              {/* Budget Total Preview */}
-              <BudgetTotalPreview budget={editingTask.budget || createEmptyBudget()} />
-
               {/* Task Name */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
@@ -745,6 +780,25 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   placeholder="Enter task details..."
                 />
               </div>
+
+              {/* Livrables Section - NOW LOWER IN THE FORM */}
+              <LivrablesSection
+                editingTask={editingTask}
+                setEditingTask={setEditingTask}
+                livrables={livrables}
+                showAddLivrable={showAddLivrable}
+                setShowAddLivrable={setShowAddLivrable}
+                newLivrableLabel={newLivrableLabel}
+                setNewLivrableLabel={setNewLivrableLabel}
+                newLivrableDescription={newLivrableDescription}
+                setNewLivrableDescription={setNewLivrableDescription}
+                handleAddLivrable={handleAddLivrable}
+                handleUploadLivrableFile={handleUploadLivrableFile}
+                handleDeleteLivrable={handleDeleteLivrable}
+              />
+              
+              {/* Budget Total Preview */}
+              <BudgetTotalPreview budget={editingTask.budget || createEmptyBudget()} />
 
               {/* Assignees */}
               <div className="space-y-2">

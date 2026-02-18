@@ -251,23 +251,38 @@ export const GanttTaskSummary: React.FC<GanttTaskSummaryProps> = ({
           onToggle={() => toggleSection('details')}
         >
           <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
-            {selectedTask.description || (
-              <span className="text-slate-500 italic flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                No description available
-              </span>
-            )}
+            {(() => {
+              const desc = selectedTask.description || '';
+              // Clean description by removing any JSON-like objects with position/coordinate data
+              const cleaned = desc
+                .replace(/\{[^{}]*"x"[^{}]*\}/g, '')
+                .replace(/\{[^{}]*"y"[^{}]*\}/g, '')
+                .replace(/\{[^{}]*"position"[^{}]*\}/g, '')
+                .replace(/\{[^{}]*"nodeId"[^{}]*\}/g, '')
+                .replace(/\{[^{}]*"mindmapId"[^{}]*\}/g, '')
+                .trim();
+              
+              if (!cleaned) {
+                return (
+                  <span className="text-slate-500 italic flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    No description available
+                  </span>
+                );
+              }
+              return cleaned;
+            })()}
           </p>
         </SectionBox>
 
         {/* Livrables Section - Collapsible */}
-        {selectedTask.livrableIds && selectedTask.livrableIds.length > 0 && (
-          <SectionBox 
-            icon={<FolderOpen className="w-5 h-5" />}
-            title={`Livrables (${selectedTask.livrableIds.length})`}
-            isExpanded={expandedSections.livrables}
-            onToggle={() => toggleSection('livrables')}
-          >
+        <SectionBox 
+          icon={<FolderOpen className="w-5 h-5" />}
+          title={`Livrables (${selectedTask.livrableIds?.length || 0})`}
+          isExpanded={expandedSections.livrables}
+          onToggle={() => toggleSection('livrables')}
+        >
+          {selectedTask.livrableIds && selectedTask.livrableIds.length > 0 ? (
             <div className="space-y-3">
               {selectedTask.livrableIds.map(livrableId => {
                 const livrable = livrables.find(l => l.id === livrableId);

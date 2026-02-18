@@ -144,6 +144,90 @@ exports.GenerateIdeationMistralAPI = async (textContent) => {
 
 }
 
+// Format attendu pour le Mindmap
+const mindmapExpectedFormat = `{
+    "nodes": [
+        {
+            "id": "root",
+            "label": "Nom du projet",
+            "nodeType": "action",
+            "color": "#3b82f6"
+        },
+        {
+            "id": "node-1",
+            "parentId": "root",
+            "label": "Titre de la catégorie ou question",
+            "nodeType": "action",
+            "color": "#96776e"
+        },
+        {
+            "id": "node-1-1",
+            "parentId": "node-1",
+            "label": "Réponse ou sous-catégorie",
+            "nodeType": "sous_action",
+            "color": "#698063"
+        }
+    ]
+}`;
+
+// Génère un mindmap à partir des réponses du projet
+exports.GenerateMindmapFromResponses = async (projectId) => {
+    try {
+        // Fetch responses for this project
+        const { prisma } = require('./prisma/prismaClient');
+        
+        const responses = await prisma.response.findMany({
+            where: { projectId: projectId },
+            include: {
+                question: true,
+                option: true,
+            },
+        });
+
+        if (!responses || responses.length === 0) {
+            return { error: 'No responses found for this project' };
+        }
+
+        // Build context from responses
+        let contextText = 'Voici les réponses aux questions du projet:\n\n';
+        
+        // Group by question
+        const responsesByQuestion = {};
+        for (const response of responses) {
+            const questionLabel = response.question?.label || 'Question sans titre';
+            if (!responsesByQuestion[questionLabel]) {
+                responsesByQuestion[questionLabel] = [];
+            }
+            const responseText = response.label || (response.option?.label || 'Sans réponse');
+            responsesByQuestion[questionLabel].push(responseText);
+        }
+
+        // Format context
+        for (const [question, answers] of Object.entries(responsesByQuestion)) {
+            contextText += `Question: ${question}\n`;
+            contextText += `Réponses: ${answers.join(', ')}\n\n`;
+        }
+
+        const prompt = `${contextText}
+
+À partir de ces réponses aux questions, génère une structure de carte mentale (mindmap) organisée de manière hiérarchique.
+Le format attendu est le suivant:
+${mindmapExpectedFormat}
+
+Règles:
+- Le premier nœud (root) doit être le nom du projet ou thème principal
+- Organise les réponses en catégories logiques
+- Utilise les types de nœuds: "action" pour les catégories principales, "sous_action" pour les sous-catégories, "livrable" pour les livrables, "objectif" pour les objectifs
+- Les couleurs recommandées: #3b82f6 (bleu) pour root, #96776e (marron) pour action, #698063 (vert) pour sous_action, #22c55e (vert clair) pour livrable, #ffffff (blanc) pour objectif
+- Génère un JSON valide sans texte supplémentaire`;
+
+        return exports.CallMistralAPI(prompt);
+    } catch (err) {
+        console.error('Error generating mindmap from responses:', err);
+        return { error: 'Error generating mindmap', details: err.message };
+    }
+}
+
 // Simple wrapper used by controller tests
 exports.testMistralAPI = async (testContent) => {
     return exports.GenerateGanttMistralAPI(testContent);
