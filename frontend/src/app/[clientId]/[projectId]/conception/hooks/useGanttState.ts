@@ -107,6 +107,8 @@ export const useGanttState = () => {
   const dragStartMapRef = useRef<Map<number, { start: number; end: number }>>(new Map());
   const draggingActiveRef = useRef(false);
   const lastClientXRef = useRef<number | null>(null);
+  // Ref for current tasks to avoid closure staleness in animation frame
+  const tasksRef = useRef<Task[]>([]);
 
   // Cursor position for timeline interaction
   const [cursorX, setCursorX] = useState<number | null>(null);
@@ -248,6 +250,11 @@ export const useGanttState = () => {
   useEffect(() => {
     setCurrentDateRange(getDateRange(tasks, MIN_START_DATE));
   }, [tasks, isDraggingAny]);
+
+  // Keep tasksRef in sync with tasks state for use in animation frames
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
 
   // Add new livrable handler
   const handleAddLivrable = async () => {
@@ -445,6 +452,9 @@ export const useGanttState = () => {
               versionId: versionId || null
             });
             
+            // Replace the temporary task with the real one from server (with real ID)
+            const nextTasks = tasks.map(t => t.id === editingTask.id ? { ...createdTask, id: createdTask.id } : t);
+            setTasks(nextTasks);
             // Refresh data from server to ensure consistency
             await loadData(versionId || undefined);
           } catch (err) {
@@ -557,6 +567,7 @@ export const useGanttState = () => {
     dragStartMapRef,
     draggingActiveRef,
     lastClientXRef,
+    tasksRef,
     cursorX,
     timelineRef,
     taskListRef,

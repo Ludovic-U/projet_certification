@@ -35,6 +35,8 @@ interface UseGanttHandlersProps {
   draggingProgress: { task: Task; startX: number; startProgress: number } | null;
   dragOffset: { x: number; y: number };
   dragStartPositions: Map<number, { start: Date; end: Date }>;
+  // Add ref for current tasks to avoid closure issues
+  tasksRef: React.MutableRefObject<Task[]>;
 }
 
 export const useGanttHandlers = ({
@@ -68,9 +70,10 @@ export const useGanttHandlers = ({
   draggingProgress,
   dragOffset,
   dragStartPositions,
+  tasksRef,
 }: UseGanttHandlersProps) => {
   
-  // Smooth drag animation frame tick
+  // Smooth drag animation frame tick - use ref to avoid closure staleness
   const tick = useCallback(() => {
     rafId.current = null;
     const dx = pendingDeltaPx.current;
@@ -80,7 +83,9 @@ export const useGanttHandlers = ({
     const baseMap = dragStartMapRef.current;
     if (ids.size === 0 || baseMap.size === 0) return;
 
-    const nextTasks = tasks.map(t => {
+    // Use ref to get current tasks instead of closure to avoid stale state
+    const currentTasks = tasksRef.current;
+    const nextTasks = currentTasks.map(t => {
       if (!ids.has(t.id)) return t;
       const base = baseMap.get(t.id);
       if (!base) return t;
@@ -93,7 +98,7 @@ export const useGanttHandlers = ({
     if (draggingActiveRef.current) {
       rafId.current = requestAnimationFrame(tick);
     }
-  }, [tasks, pxPerDay, draggingIdsRef, dragStartMapRef, draggingActiveRef, rafId, pendingDeltaPx, setTasks]);
+  }, [pxPerDay, draggingIdsRef, dragStartMapRef, draggingActiveRef, rafId, pendingDeltaPx, setTasks, tasksRef]);
 
   // Handles mouse down on task bars for dragging or resizing
   const handleMouseDown = useCallback((task: Task, e: React.MouseEvent<HTMLDivElement>) => {

@@ -167,12 +167,13 @@ const GanttChart = () => {
   const ganttState = useGanttState();
   
   // Re-fetch Gantt data when currentVersion changes
+  // Only load on version change, NOT on every ganttState change (which would break dragging)
   useEffect(() => {
     if (projectId && currentVersion !== undefined) {
       ganttState.loadData(currentVersion?.versionId);
       ganttState.setVersionId(currentVersion?.versionId || null);
     }
-  }, [projectId, currentVersion, ganttState]);
+  }, [projectId, currentVersion]);
   
   // Use custom hook for event handlers
   const handlers = useGanttHandlers({
@@ -209,6 +210,7 @@ const GanttChart = () => {
     draggingProgress: ganttState.draggingProgress,
     dragOffset: ganttState.dragOffset,
     dragStartPositions: ganttState.dragStartPositions,
+    tasksRef: ganttState.tasksRef,
   });
 
   // Use custom hook for export/import functions
