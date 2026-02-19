@@ -72,6 +72,13 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
       className="w-[36rem] border-r border-slate-700 bg-slate-900/50 backdrop-blur-sm flex flex-col overflow-hidden"
       data-tutorial-id="task-list"
     >
+      {/* Spacer row */}
+      <div className="flex border-b border-slate-700 bg-slate-800/80 backdrop-blur flex-shrink-0 h-10">
+        <div className="flex-1 px-4 py-3 border-r border-slate-700" />
+        <div className="w-28 px-3 py-3 border-r border-slate-700" />
+        <div className="w-36 px-3 py-3 border-r border-slate-700" />
+        <div className="w-28 px-3 py-3" />
+      </div>
       {/* Header row */}
       <div className="flex border-b border-slate-700 bg-slate-800/80 backdrop-blur flex-shrink-0">
         <div className="flex-1 px-4 py-3 font-semibold text-slate-300 text-sm border-r border-slate-700 flex items-center">
@@ -99,6 +106,8 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Task list rows */}
       
       {/* Task list rows */}
       <div ref={taskListRef} className="flex-1 overflow-y-auto pl-[10px] custom-scrollbar" onScroll={handleTaskListScroll}>
