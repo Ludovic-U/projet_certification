@@ -21,7 +21,7 @@ import { Task } from '../../data';
 import { 
   splitBudgetByYears, 
   getTotalBudget, 
-  getBudgetByCategory, 
+  getBudgetByCategoryFromTasks,
   YearlyBudgetBreakdown 
 } from '../utils/budgetUtils';
 
@@ -263,7 +263,7 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
   
   const yearlyData = useMemo(() => splitBudgetByYears(tasks), [tasks]);
   const totalBudget = useMemo(() => getTotalBudget(tasks), [tasks]);
-  const categoryData = useMemo(() => getBudgetByCategory(yearlyData), [yearlyData]);
+  const categoryData = useMemo(() => getBudgetByCategoryFromTasks(tasks), [tasks]);
   
   // Prepare pie chart data for years
   const yearPieData = useMemo(() => {

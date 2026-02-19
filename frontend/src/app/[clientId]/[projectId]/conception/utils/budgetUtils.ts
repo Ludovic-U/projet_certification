@@ -277,18 +277,18 @@ export const getTotalBudget = (tasks: Task[]): number => {
   }, 0);
 };
 
-// Get budget breakdown by category for chart
+// Get budget breakdown by category for chart (from yearly data)
 export const getBudgetByCategory = (yearlyData: YearlyBudgetBreakdown[]): CategoryBudget[] => {
   const categoryColors: Record<string, string> = {
     'Moyen humain': '#10b981', // emerald
     'Stagiaires': '#6b7280',   // gray
-    'Aménagements': '#a855f7', // purple
-    'Équipements pédagogiques': '#ec4899', // pink
+    'Amenagements': '#a855f7', // purple
+    'Equipements pedagogiques': '#ec4899', // pink
     'Prestations': '#06b6d4',  // cyan
     'Communications': '#f97316', // orange
-    'Frais de déplacement': '#84cc16', // lime
+    'Frais de deplacement': '#84cc16', // lime
     'Autres prestations': '#14b8a6', // teal
-    'Lignes de dépenses': '#6366f1', // indigo
+    'Lignes de depenses': '#6366f1', // indigo
   };
   
   const totals = yearlyData.reduce((acc, year) => ({
@@ -316,12 +316,67 @@ export const getBudgetByCategory = (yearlyData: YearlyBudgetBreakdown[]): Catego
   return [
     { category: 'Moyen humain', budget: totals.personnel, color: categoryColors['Moyen humain'] },
     { category: 'Stagiaires', budget: totals.interns, color: categoryColors['Stagiaires'] },
-    { category: 'Aménagements', budget: totals.fittings, color: categoryColors['Aménagements'] },
-    { category: 'Équipements pédagogiques', budget: totals.educational, color: categoryColors['Équipements pédagogiques'] },
+    { category: 'Amenagements', budget: totals.fittings, color: categoryColors['Amenagements'] },
+    { category: 'Equipements pedagogiques', budget: totals.educational, color: categoryColors['Equipements pedagogiques'] },
     { category: 'Prestations', budget: totals.subcontractor, color: categoryColors['Prestations'] },
-    { category: 'Frais de déplacement', budget: totals.travel, color: categoryColors['Frais de déplacement'] },
+    { category: 'Frais de deplacement', budget: totals.travel, color: categoryColors['Frais de deplacement'] },
     { category: 'Autres prestations', budget: totals.otherPrestations, color: categoryColors['Autres prestations'] },
     { category: 'Communications', budget: totals.communication, color: categoryColors['Communications'] },
-    { category: 'Lignes de dépenses', budget: totals.expenseLines, color: categoryColors['Lignes de dépenses'] },
+    { category: 'Lignes de depenses', budget: totals.expenseLines, color: categoryColors['Lignes de depenses'] },
+  ].filter(c => c.budget > 0);
+};
+
+// Get budget breakdown by category DIRECTLY from tasks (not prorated by year)
+export const getBudgetByCategoryFromTasks = (tasks: Task[]): CategoryBudget[] => {
+  const categoryColors: Record<string, string> = {
+    'Moyen humain': '#10b981',
+    'Stagiaires': '#6b7280',
+    'Amenagements': '#a855f7',
+    'Equipements pedagogiques': '#ec4899',
+    'Prestations': '#06b6d4',
+    'Communications': '#f97316',
+    'Frais de deplacement': '#84cc16',
+    'Autres prestations': '#14b8a6',
+    'Lignes de depenses': '#6366f1',
+  };
+  
+  const totals = tasks.reduce((acc, task) => {
+    if (!task.budget) return acc;
+    
+    const expenseLinesTotal = calculateExpenseLinesTotal(task.budget.expenseLines || []);
+    
+    return {
+      personnel: acc.personnel + (task.budget.personnelCost || 0),
+      interns: acc.interns + (task.budget.internsCost || 0),
+      fittings: acc.fittings + (task.budget.fittingsCost || 0),
+      educational: acc.educational + (task.budget.educationalEquipmentCost || 0),
+      subcontractor: acc.subcontractor + (task.budget.subcontractorCost || 0),
+      travel: acc.travel + (task.budget.travelCost || 0),
+      otherPrestations: acc.otherPrestations + (task.budget.otherPrestationsCost || 0),
+      communication: acc.communication + (task.budget.communicationCost || 0),
+      expenseLines: acc.expenseLines + expenseLinesTotal,
+    };
+  }, {
+    personnel: 0,
+    interns: 0,
+    fittings: 0,
+    educational: 0,
+    subcontractor: 0,
+    travel: 0,
+    otherPrestations: 0,
+    communication: 0,
+    expenseLines: 0,
+  });
+  
+  return [
+    { category: 'Moyen humain', budget: totals.personnel, color: categoryColors['Moyen humain'] },
+    { category: 'Stagiaires', budget: totals.interns, color: categoryColors['Stagiaires'] },
+    { category: 'Amenagements', budget: totals.fittings, color: categoryColors['Amenagements'] },
+    { category: 'Equipements pedagogiques', budget: totals.educational, color: categoryColors['Equipements pedagogiques'] },
+    { category: 'Prestations', budget: totals.subcontractor, color: categoryColors['Prestations'] },
+    { category: 'Frais de deplacement', budget: totals.travel, color: categoryColors['Frais de deplacement'] },
+    { category: 'Autres prestations', budget: totals.otherPrestations, color: categoryColors['Autres prestations'] },
+    { category: 'Communications', budget: totals.communication, color: categoryColors['Communications'] },
+    { category: 'Lignes de depenses', budget: totals.expenseLines, color: categoryColors['Lignes de depenses'] },
   ].filter(c => c.budget > 0);
 };
