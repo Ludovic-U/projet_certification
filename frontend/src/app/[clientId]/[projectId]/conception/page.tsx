@@ -19,6 +19,7 @@ import { GanttTaskSummary } from './components/GanttTaskSummary';
 import { GanttTooltip } from './components/GanttTooltip';
 import { GanttContextMenu } from './components/GanttContextMenu';
 import { GanttTutorial } from './components/GanttTutorial';
+import { BudgetOverview } from './components/BudgetOverview';
 import { generateColumns, getBaseStart } from './utils/timelineUtils';
 import { startOfDay } from './utils/dateUtils';
 import { DAY_MS } from './constants';
@@ -39,6 +40,9 @@ const GanttChart = () => {
   
   // Tutorial state
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  
+  // Budget view state
+  const [budgetViewOpen, setBudgetViewOpen] = useState(false);
   
   // Ref to track current version (for async operations)
   const currentVersionRef = useRef<Version | null>(null);
@@ -331,6 +335,8 @@ const GanttChart = () => {
           // Tutorial props
           tutorialOpen={tutorialOpen}
           setTutorialOpen={setTutorialOpen}
+          // Budget view props
+          onOpenBudgetView={() => setBudgetViewOpen(true)}
         />
 
         {/* Main Gantt Chart Area */}
@@ -495,6 +501,14 @@ const GanttChart = () => {
           isOpen={tutorialOpen} 
           onClose={() => setTutorialOpen(false)} 
         />
+        
+        {/* Budget Overview Modal */}
+        {budgetViewOpen && (
+          <BudgetOverview
+            tasks={ganttState.tasks}
+            onClose={() => setBudgetViewOpen(false)}
+          />
+        )}
       </div>
     </div>
   );

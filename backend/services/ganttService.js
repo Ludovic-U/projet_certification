@@ -164,8 +164,8 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
         livrableIds: task.tasks.map(t => t.deliverableId),
         goal: task.goal,
         color: task.color || '#3b82f6',
-        // Budget aggregated from expenses
-        budget: {
+        // Use stored budget if available, otherwise aggregate from expenses
+        budget: task.budget || {
           personnelDays: Math.round(personnelDays * 10) / 10,
           personnelCost: Math.round(moyenHumainCost * 100) / 100,
           internsDays: 0,
@@ -302,7 +302,8 @@ module.exports.createTask = async (taskData) => {
       goal = null,
       color = '#3b82f6',
       assigneeIds = [],
-      livrableIds = []
+      livrableIds = [],
+      budget = null
     } = taskData;
 
     // Create the task with projectId and optional versionId
@@ -322,6 +323,7 @@ module.exports.createTask = async (taskData) => {
         files: files || [],
         goal: goal || null,
         color: color || '#3b82f6',
+        budget: budget || null,
         taskAssignments: assigneeIds && assigneeIds.length > 0 ? {
           create: assigneeIds.map(userId => ({ userId: Number(userId) }))
         } : undefined,
@@ -368,6 +370,7 @@ module.exports.createTask = async (taskData) => {
       livrableIds: livrableIds || [],
       goal: task.goal,
       color: task.color,
+      budget: task.budget,
     };
   } catch (error) {
     console.error('Error creating task:', error);
@@ -406,7 +409,8 @@ module.exports.updateTask = async (taskId, taskData) => {
       goal,
       color,
       assigneeIds,
-      livrableIds
+      livrableIds,
+      budget
     } = taskData;
 
     // First, get current assignments and livrables
@@ -441,6 +445,7 @@ module.exports.updateTask = async (taskId, taskData) => {
     }
     if (goal !== undefined) updateData.goal = goal;
     if (color !== undefined) updateData.color = color;
+    if (budget !== undefined) updateData.budget = budget;
 
     const task = await prisma.task.update({
       where: { taskId: numericTaskId },
@@ -502,6 +507,7 @@ module.exports.updateTask = async (taskId, taskData) => {
       livrableIds: livrableIds !== undefined ? livrableIds : currentTask.tasks.map(t => t.deliverableId),
       goal: task.goal,
       color: task.color,
+      budget: task.budget,
     };
   } catch (error) {
     console.error('Error updating task:', error);
