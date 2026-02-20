@@ -4,6 +4,15 @@ const {
   getPaginationMeta,
 } = require("./helper/pagination");
 
+const questionBaseSelect = {
+  questionId: true,
+  label: true,
+  keyword: true,
+  category: true,
+  numberOfSelectionableOpt: true,
+  questionIdParent: true,
+};
+
 /**
  * Create a new question.
  *
@@ -14,9 +23,6 @@ const {
  * @param {string} [data.keyword] - The keyword for the question.
  * @param {string} data.category - The category of the question.
  * @param {number|null} [data.numberOfSelectionableOpt=null] - Max number of selectable options.
- * @param {boolean} [data.isRelevant=false] - Whether the question is relevant.
- * @param {boolean} [data.hasMultipleOpenResponse=false] - Whether multiple open responses are allowed.
- * @param {boolean} [data.shouldMultiply=false] - Whether the question should be multiplied.
  * @param {number|null} [data.questionIdParent=null] - Parent question ID if this is a sub-question.
  * @param {Array<number>} [data.types] - Type IDs to associate.
  * @param {Array<number>} [data.projects] - Project IDs to associate.
@@ -25,6 +31,10 @@ const {
  */
 module.exports.createQuestion = async (data) => {
   const { types, projects, options, ...questionData } = data;
+  delete questionData.isRelevant;
+  delete questionData.hasMultipleOpenResponse;
+  delete questionData.shouldMultiply;
+  delete questionData.questionCategoryId;
 
   return await prisma.question.create({
     data: {
@@ -47,7 +57,8 @@ module.exports.createQuestion = async (data) => {
         ? { create: options.map((label) => ({ label })) }
         : undefined,
     },
-    include: {
+    select: {
+      ...questionBaseSelect,
       types: true,
       projects: true,
       options: true,
@@ -74,7 +85,7 @@ module.exports.getAllQuestions = async (page, limit) => {
     prisma.question.findMany({
       skip,
       take,
-      include: { types: true },
+      select: { ...questionBaseSelect, types: true },
     }),
     prisma.question.count(),
   ]);
@@ -97,9 +108,6 @@ module.exports.getAllQuestions = async (page, limit) => {
  * @param {string} data.label - Updated question text.
  * @param {string} data.category - Updated question category.
  * @param {number} data.numberOfSelectionableOpt - Updated max selectable options.
- * @param {boolean} data.isRelevant - Updated relevance flag.
- * @param {boolean} data.hasMultipleOpenResponse - Updated open response flag.
- * @param {boolean} data.shouldMultiply - Updated multiplication flag.
  * @param {number} data.questionIdParent - Updated parent question ID.
  * @param {Array<number>} data.addType - Type IDs to connect.
  * @param {Array<number>} data.removeType - Type IDs to disconnect.
@@ -111,6 +119,10 @@ module.exports.getAllQuestions = async (page, limit) => {
 module.exports.updateQuestion = async (questionId, data) => {
   const { addType, removeType, addProject, removeProject, ...questionData } =
     data;
+  delete questionData.isRelevant;
+  delete questionData.hasMultipleOpenResponse;
+  delete questionData.shouldMultiply;
+  delete questionData.questionCategoryId;
 
   try {
     return await prisma.question.update({
@@ -148,7 +160,8 @@ module.exports.updateQuestion = async (questionId, data) => {
               }
             : undefined,
       },
-      include: {
+      select: {
+        ...questionBaseSelect,
         types: true,
         projects: true,
       },
@@ -174,6 +187,7 @@ module.exports.deleteQuestion = async (questionId) => {
   try {
     return await prisma.question.delete({
       where: { questionId: questionId },
+      select: questionBaseSelect,
     });
   } catch (error) {
     if (error.code === "P2025") {
@@ -195,12 +209,18 @@ module.exports.deleteQuestion = async (questionId) => {
 module.exports.getQuestionById = async (questionId) => {
   const question = await prisma.question.findUnique({
     where: { questionId: questionId },
-    include: {
+    select: {
+      ...questionBaseSelect,
       responses: true,
       projects: true,
       types: true,
       options: true,
-      children: { include: { responses: true } },
+      children: {
+        select: {
+          ...questionBaseSelect,
+          responses: true,
+        },
+      },
     },
   });
 
@@ -225,10 +245,24 @@ module.exports.getQuestionsByProject = async (projectId) => {
   const projectWithQuestions = await prisma.project.findUnique({
     where: { projectId },
     include: {
-      questions: { include: { responses: true, options: true, types: true } }, // Direct relation between Project and Question
+      questions: {
+        select: {
+          ...questionBaseSelect,
+          responses: true,
+          options: true,
+          types: true,
+        },
+      }, // Direct relation between Project and Question
       types: {
         include: {
-          questions: { include: { responses: true, options: true, types: true } }, // Direct relation between Type and Question
+          questions: {
+            select: {
+              ...questionBaseSelect,
+              responses: true,
+              options: true,
+              types: true,
+            },
+          }, // Direct relation between Type and Question
         },
       },
     },
@@ -252,7 +286,8 @@ module.exports.getQuestionsByProject = async (projectId) => {
         },
       },
     },
-    include: {
+    select: {
+      ...questionBaseSelect,
       responses: true,
       options: true,
       types: true,
@@ -273,7 +308,7 @@ module.exports.getQuestionsByProject = async (projectId) => {
 module.exports.getQuestionsByCategory = async (category) => {
   return await prisma.question.findMany({
     where: { category: category },
-    include: { types: true, projects: true },
+    select: { ...questionBaseSelect, types: true, projects: true },
   });
 };
 
@@ -291,7 +326,8 @@ module.exports.getQuestionsByType = async (typeId) => {
     where: { typeId: typeId },
     include: {
       questions: {
-        include: {
+        select: {
+          ...questionBaseSelect,
           types: true,
           projects: true,
         },
@@ -318,7 +354,10 @@ module.exports.getQuestionsByType = async (typeId) => {
 module.exports.getSubQuestions = async (questionIdParent) => {
   const parentQuestion = await prisma.question.findUnique({
     where: { questionId: questionIdParent },
-    include: { children: true },
+    select: {
+      questionId: true,
+      children: { select: questionBaseSelect },
+    },
   });
 
   if (!parentQuestion) {
@@ -336,15 +375,7 @@ module.exports.getSubQuestions = async (questionIdParent) => {
  * @returns {Promise<Array<Object>>} List of all question categories.
  */
 module.exports.getAllCategories = async () => {
-  return await prisma.questionCategory.findMany({
-    include: {
-      questions: {
-        select: {
-          questionId: true,
-        },
-      },
-    },
-  });
+  return await prisma.questionCategory.findMany();
 };
 
 /**

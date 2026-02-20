@@ -10,9 +10,6 @@ const questionService = require("../services/questionService");
  * @param {string} [req.body.keyword] - The keyword for the question.
  * @param {string} req.body.category - The category this question belongs to (required).
  * @param {number} [req.body.numberOfSelectionableOpt=null] - Maximum number of selectable options.
- * @param {boolean} [req.body.isRelevant=false] - Whether the question is considered relevant.
- * @param {boolean} [req.body.hasMultipleOpenResponse=false] - Whether the question allows multiple open responses.
- * @param {boolean} [req.body.shouldMultiply=false] - Indicates if the question should be multiplied.
  * @param {number|null} [req.body.questionIdParent=null] - The ID of the parent question if this is a sub-question.
  * @param {Array} [req.body.types=[]] - A list of type identifiers associated with the question.
  * @param {Array} [req.body.projects=[]] - A list of project identifiers associated with the question.
@@ -30,9 +27,6 @@ module.exports.createQuestion = async (req, res) => {
     keyword,
     category,
     numberOfSelectionableOpt,
-    isRelevant,
-    hasMultipleOpenResponse,
-    shouldMultiply,
     questionIdParent,
     types,
     projects,
@@ -55,9 +49,6 @@ module.exports.createQuestion = async (req, res) => {
       keyword,
       category,
       numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
-      isRelevant: isRelevant ?? false,
-      hasMultipleOpenResponse: hasMultipleOpenResponse ?? false,
-      shouldMultiply: shouldMultiply ?? false,
       questionIdParent: idParent ?? null,
       types: types ?? [],
       projects: projects ?? [],
@@ -107,9 +98,6 @@ module.exports.getAllQuestions = async (req, res) => {
  * @param {string} req.body.label - The updated question text.
  * @param {string} req.body.category - The updated question category.
  * @param {number} [req.body.numberOfSelectionableOpt] - Maximum number of selectable options.
- * @param {boolean} [req.body.isRelevant] - Whether the question is relevant.
- * @param {boolean} [req.body.hasMultipleOpenResponse] - Whether multiple open responses are allowed.
- * @param {boolean} [req.body.shouldMultiply] - Whether the question should be multiplied.
  * @param {number|null} [req.body.questionIdParent] - Parent question ID if it's a sub-question.
  * @param {Array} [req.body.addType] - Types to add.
  * @param {Array} [req.body.removeType] - Types to remove.
@@ -128,9 +116,6 @@ module.exports.updateQuestion = async (req, res) => {
     keyword,
     category,
     numberOfSelectionableOpt,
-    isRelevant,
-    hasMultipleOpenResponse,
-    shouldMultiply,
     questionIdParent,
     addType,
     removeType,
@@ -159,9 +144,6 @@ module.exports.updateQuestion = async (req, res) => {
       keyword,
       category,
       numberOfSelectionableOpt,
-      isRelevant,
-      hasMultipleOpenResponse,
-      shouldMultiply,
       questionIdParent: normalizedParentId,
       addType,
       removeType,

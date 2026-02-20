@@ -250,30 +250,13 @@ export function generateNodesWithMultiply(questions: Question[], parentAnswers: 
     questions.forEach((q: Question) => {
         const parentId = q.parentId?.toString() ?? null;
 
-        if (q.shouldMultiply && parentId && parentAnswers[parentId]?.length > 0) {
-            parentAnswers[parentId].forEach(answer => {
-                nodes.push({
-                    id: `${q.id}_${answer}`,
-                    type: "question",
-                    data: {
-                        ...q,
-                        label: q.label?.replace("{{context}}", answer) ?? q.label,
-                        context: answer,
-                        parentId
-                    },
-                    position: { x: 0, y: 0},
-                    hidden: true,
-                });
-            });
-        } else {
-            nodes.push({
-                id: q.questionId.toString(),
-                type: "question",
-                data: { ...q, parentId },
-                position: { x: 0, y: 0 },
-                hidden: true,
-            });
-        }
+        nodes.push({
+            id: q.questionId.toString(),
+            type: "question",
+            data: { ...q, parentId },
+            position: { x: 0, y: 0 },
+            hidden: true,
+        });
     });
 
     return nodes;

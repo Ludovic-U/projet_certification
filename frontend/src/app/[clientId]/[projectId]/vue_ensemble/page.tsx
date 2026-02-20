@@ -51,13 +51,33 @@ export default function VueEnsemblePage() {
                     ? responsesRes.data
                     : [];
 
-                const answeredQuestionIds = new Set<number>(
-                    responses
-                        .map((response: any) => Number(response.questionId))
+                const getQuestionCategoryLabel = (question: any) => {
+                    if (typeof question?.category === "string") {
+                        return question.category;
+                    }
+                    return "";
+                };
+
+                const nonThemeQuestions = questions.filter((question: any) =>
+                    getQuestionCategoryLabel(question).trim().toLowerCase() !== "theme"
+                );
+
+                const nonThemeQuestionIds = new Set<number>(
+                    nonThemeQuestions
+                        .map((question: any) => Number(question.questionId ?? question.id))
                         .filter((questionId: number) => Number.isInteger(questionId))
                 );
 
-                const totalQuestions = questions.length;
+                const answeredQuestionIds = new Set<number>(
+                    responses
+                        .map((response: any) => Number(response.questionId))
+                        .filter(
+                            (questionId: number) =>
+                                Number.isInteger(questionId) && nonThemeQuestionIds.has(questionId)
+                        )
+                );
+
+                const totalQuestions = nonThemeQuestions.length;
                 const answeredQuestions = answeredQuestionIds.size;
 
                 const swot = swotRes.data || {};

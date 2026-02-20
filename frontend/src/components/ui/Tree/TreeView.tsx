@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   ReactFlow,
   Node,
@@ -14,12 +14,12 @@ import { QuestionNode } from "../Nodes/Question";
 import { ThemeNode } from "../Nodes/Theme";
 import { ResponseNode } from "../Nodes/Response";
 import { buildHierarchy, computeTreeLayout, d3ToReactFlow } from "@/lib/treeUtils";
+import { buildTreeSpatialLayout } from "@/lib/treeSpatialLayout";
 import ModalQuestion from "../ModalQuestion/ModalQuestion";
 import { Icons, FontAwesomeIcon } from "@/lib/icons";
 import { useModal } from "@/hooks";
 import {
   ReponseUnique,
-  ReponsesPlusieurs,
   ReponseSelect,
 } from "@/components/forms";
 import api_backend from "@/api/axiosInstance";
@@ -37,6 +37,7 @@ interface TreeViewProps {
 
 type TreeNodeKind = "theme" | "question" | "response";
 
+// Représente une réponse liée à une question dans le contexte du projet courant.
 type ProjectResponse = {
   responseId?: number;
   questionId: number;
@@ -44,6 +45,8 @@ type ProjectResponse = {
   keyword?: string | null;
 };
 
+// Données enrichies injectées dans les nodes ReactFlow.
+// On conserve les champs de Question et on ajoute les métadonnées UI/graph.
 type FlowNodeData = Question & {
   nodeKind?: TreeNodeKind;
   parentNodeId?: string | null;
@@ -52,6 +55,9 @@ type FlowNodeData = Question & {
   isVirtualRoot?: boolean;
   responseId?: number;
   isCollapsed?: boolean;
+  isCollapsible?: boolean;
+  nodeId?: string;
+  onToggleCollapse?: (nodeId: string) => void;
 };
 
 export default function TreeView({
@@ -62,23 +68,40 @@ export default function TreeView({
   fitViewTrigger,
   onProjectResponsesChange,
 }: TreeViewProps) {
+  // Identifiant du projet récupéré depuis la route Next.js.
   const params = useParams();
   const { projectId } = params;
 
+  // Gestion du modal de saisie/édition de réponse.
   const modal = useModal();
+
+  // Sélection courante dans l'UI.
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [editingResponse, setEditingResponse] = useState<ProjectResponse | null>(null);
 
+  // États du formulaire de réponse (selon le type de question).
   const [responseValue, setResponseValue] = useState<string>("");
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
-  const [multipleResponses, setMultipleResponses] = useState<string[]>([]);
   const [responseKeyword, setResponseKeyword] = useState<string>("");
 
+  // Données métier + état d'affichage du graphe.
   const [projectResponses, setProjectResponses] = useState<ProjectResponse[]>([]);
-  const [collapsedThemes, setCollapsedThemes] = useState<Set<string>>(new Set());
+  const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(new Set());
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleNodeCollapse = useCallback((nodeId: string) => {
+    setCollapsedNodeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) {
+        next.delete(nodeId);
+      } else {
+        next.add(nodeId);
+      }
+      return next;
+    });
+  }, []);
 
   const toggleFullscreen = () => {
     setIsFullscreen((prev) => !prev);
@@ -92,16 +115,10 @@ export default function TreeView({
       .filter((v) => v.length > 0);
   };
 
+  // Pré-remplit le formulaire modal à partir d'une réponse existante (édition)
+  // ou initialise des valeurs vides (création).
   const hydrateResponseForm = (question: Question, response?: ProjectResponse | null) => {
     setResponseKeyword(response?.keyword || "");
-
-    if (question.hasMultipleOpenResponse) {
-      const values = normalizeCsvValues(response?.label);
-      setMultipleResponses(values.length > 0 ? values : [""]);
-      setSelectedOptions([]);
-      setResponseValue("");
-      return;
-    }
 
     if (question.options && question.options.length > 0) {
       const selectedLabels = normalizeCsvValues(response?.label);
@@ -110,16 +127,15 @@ export default function TreeView({
         .filter((index) => index >= 0);
 
       setSelectedOptions(optionIndexes);
-      setMultipleResponses([""]);
       setResponseValue("");
       return;
     }
 
     setResponseValue(response?.label || "");
     setSelectedOptions([]);
-    setMultipleResponses([""]);
   };
 
+  // Ouvre le modal et synchronise les états de sélection/édition.
   const openQuestionModal = (question: Question, node: Node, response?: ProjectResponse | null) => {
     setSelectedNode(node);
     setSelectedQuestion(question);
@@ -128,6 +144,7 @@ export default function TreeView({
     modal.openModal();
   };
 
+  // En plein écran, on bloque le scroll global pour éviter les interactions parasites.
   useEffect(() => {
     if (!isFullscreen) {
       document.body.style.overflow = "";
@@ -140,6 +157,7 @@ export default function TreeView({
     };
   }, [isFullscreen]);
 
+  // Recale la vue ReactFlow lors du basculement plein écran.
   useEffect(() => {
     if (!reactFlowInstance) return;
     const frame = window.requestAnimationFrame(() => {
@@ -152,6 +170,7 @@ export default function TreeView({
     return () => window.cancelAnimationFrame(frame);
   }, [isFullscreen, reactFlowInstance]);
 
+  // Charge les réponses du projet quand l'affichage est conditionné par les réponses.
   useEffect(() => {
     async function fetchResponses() {
       try {
@@ -171,6 +190,7 @@ export default function TreeView({
     }
   }, [projectId, revealByResponses]);
 
+  // Construit le graphe brut (arbre hiérarchique + layout) depuis les questions.
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     if (!questions || questions.length === 0) {
       return { nodes: [], edges: [] };
@@ -181,189 +201,59 @@ export default function TreeView({
     return d3ToReactFlow(laidOutRoot);
   }, [questions]);
 
+  // Applique la logique d'affichage:
+  // - visibilité des questions selon parent/thème/réponse
+  // - statut answered/skipped/pending
+  // - ajout dynamique des nodes de réponse
   const { nodes, edges } = useMemo(() => {
-    const RESPONSE_OFFSET_X = 230;
-    const RESPONSE_OFFSET_Y = 30;
-    const RESPONSE_VERTICAL_GAP = 70;
-    const COLLISION_X_THRESHOLD = 160;
-    const COLLISION_Y_THRESHOLD = 55;
-
-    const responseMap = new Map<number, ProjectResponse>();
-    projectResponses.forEach((response) => {
-      responseMap.set(Number(response.questionId), response);
+    return buildTreeSpatialLayout({
+      initialNodes,
+      initialEdges,
+      projectResponses,
+      revealByResponses,
+      collapsedNodeIds,
     });
-
-    const baseNodes = initialNodes.map((node) => ({ ...node, data: { ...(node.data as any) } }));
-    const baseEdges = [...initialEdges];
-
-    const visibilityMap = new Map<string, boolean>();
-    const nodeKindById = new Map<string, TreeNodeKind>();
-    const questionNodesByQuestionId = new Map<number, Node>();
-
-    baseNodes.forEach((node) => {
-      const data = node.data as FlowNodeData;
-      if (data.nodeKind) {
-        nodeKindById.set(node.id, data.nodeKind);
-      }
-    });
-
-    baseNodes.forEach((node) => {
-      const data = node.data as FlowNodeData;
-
-      if (data.isVirtualRoot) {
-        node.hidden = false;
-        visibilityMap.set(node.id, true);
-        return;
-      }
-
-      if (data.nodeKind === "theme") {
-        const isCollapsed = collapsedThemes.has(node.id);
-        node.hidden = false;
-        node.data = { ...data, isCollapsed };
-        visibilityMap.set(node.id, true);
-      }
-    });
-
-    const questionNodes = baseNodes
-      .filter((node) => {
-        const data = node.data as FlowNodeData;
-        return data.nodeKind === "question" && !data.isVirtualRoot;
-      })
-      .sort(
-        (a, b) =>
-          Number((a.data as FlowNodeData).depth || 0) -
-          Number((b.data as FlowNodeData).depth || 0)
-      );
-
-    questionNodes.forEach((node) => {
-      const data = node.data as FlowNodeData;
-      const questionId = Number(data.questionId || data.id);
-      const parentNodeId = data.parentNodeId || null;
-      const parentVisible = parentNodeId ? visibilityMap.get(parentNodeId) ?? true : true;
-      const parentIsQuestion =
-        parentNodeId ? nodeKindById.get(parentNodeId) === "question" : false;
-      const parentQuestionId = parentIsQuestion
-        ? Number(parentNodeId?.replace("q-", ""))
-        : null;
-      const parentHasResponse =
-        parentQuestionId !== null ? responseMap.has(parentQuestionId) : true;
-      const themeNodeId = data.themeKey ? `theme-${data.themeKey}` : null;
-      const themeCollapsed = themeNodeId ? collapsedThemes.has(themeNodeId) : false;
-
-      const isVisible =
-        !themeCollapsed &&
-        parentVisible &&
-        (!revealByResponses || !parentIsQuestion || parentHasResponse);
-
-      const responseData = responseMap.get(questionId);
-      const hasResponse = Boolean(responseData);
-      const isSkipped = responseData?.label == null;
-
-      node.hidden = !isVisible;
-      node.data = {
-        ...data,
-        status: hasResponse ? (isSkipped ? "skipped" : "answered") : "pending",
-        keyword: data.keyword,
-      };
-
-      visibilityMap.set(node.id, isVisible);
-      questionNodesByQuestionId.set(questionId, node);
-    });
-
-    if (revealByResponses) {
-      const occupiedPositions: Array<{ x: number; y: number }> = baseNodes
-        .filter((node) => !node.hidden)
-        .map((node) => ({ x: node.position.x, y: node.position.y }));
-
-      const resolveResponseY = (x: number, preferredY: number) => {
-        let nextY = preferredY;
-
-        while (
-          occupiedPositions.some(
-            (position) =>
-              Math.abs(position.x - x) < COLLISION_X_THRESHOLD &&
-              Math.abs(position.y - nextY) < COLLISION_Y_THRESHOLD
-          )
-        ) {
-          nextY += RESPONSE_VERTICAL_GAP;
-        }
-
-        occupiedPositions.push({ x, y: nextY });
-        return nextY;
-      };
-
-      projectResponses.forEach((response) => {
-        if (response.label == null || String(response.label).trim() === "") {
-          return;
-        }
-
-        const questionNode = questionNodesByQuestionId.get(Number(response.questionId));
-        if (!questionNode) {
-          return;
-        }
-
-        const responseNodeId = `r-${response.responseId ?? response.questionId}`;
-        const responseDirection = questionNode.position.x < 0 ? -1 : 1;
-        const responseX =
-          questionNode.position.x + RESPONSE_OFFSET_X * responseDirection;
-        const preferredY = questionNode.position.y + RESPONSE_OFFSET_Y;
-        const responseY = resolveResponseY(responseX, preferredY);
-
-        const responseNode: Node = {
-          id: responseNodeId,
-          type: "response",
-          position: {
-            x: responseX,
-            y: responseY,
-          },
-          data: {
-            nodeKind: "response",
-            label: response.label,
-            keyword: response.keyword,
-            responseId: response.responseId,
-            questionId: response.questionId,
-            parentNodeId: questionNode.id,
-          },
-          hidden: questionNode.hidden,
-        };
-
-        baseNodes.push(responseNode);
-        baseEdges.push({
-          id: `e-${questionNode.id}-${responseNodeId}`,
-          source: questionNode.id,
-          target: responseNodeId,
-        });
-      });
-    }
-
-    return { nodes: baseNodes, edges: baseEdges };
   }, [
     initialNodes,
     initialEdges,
     projectResponses,
     revealByResponses,
-    collapsedThemes,
+    collapsedNodeIds,
   ]);
 
-  useEffect(() => {
-    onNodesChange?.(nodes);
-  }, [nodes, onNodesChange]);
+  const renderedNodes = useMemo(() => {
+    return nodes.map((node) => {
+      const data = node.data as FlowNodeData;
+      if (data.nodeKind !== "question") {
+        return node;
+      }
 
+      return {
+        ...node,
+        data: {
+          ...data,
+          isCollapsible: true,
+          isCollapsed: collapsedNodeIds.has(node.id),
+          nodeId: node.id,
+          onToggleCollapse: toggleNodeCollapse,
+        },
+      };
+    });
+  }, [nodes, collapsedNodeIds, toggleNodeCollapse]);
+
+  // Expose les nodes calculés au parent si nécessaire.
+  useEffect(() => {
+    onNodesChange?.(renderedNodes);
+  }, [renderedNodes, onNodesChange]);
+
+  // Expose la liste des réponses projet au parent si nécessaire.
   useEffect(() => {
     onProjectResponsesChange?.(projectResponses);
   }, [projectResponses, onProjectResponsesChange]);
 
+  // Fit déclenché explicitement depuis l'extérieur (prop fitViewTrigger).
   useEffect(() => {
-    if (nodes.length > 0) {
-      reactFlowInstance?.fitView({
-        padding: 0.2,
-        minZoom: 0.8,
-      });
-    }
-  }, [nodes, reactFlowInstance]);
-
-  useEffect(() => {
-    if (!reactFlowInstance || nodes.length === 0 || fitViewTrigger === undefined) {
+    if (!reactFlowInstance || renderedNodes.length === 0 || fitViewTrigger === undefined) {
       return;
     }
 
@@ -372,8 +262,9 @@ export default function TreeView({
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [fitViewTrigger, reactFlowInstance, nodes.length]);
+  }, [fitViewTrigger, reactFlowInstance, renderedNodes.length]);
 
+  // Gestion centrale des clics sur nodes (thème / question / réponse).
   const handleNodeClick = async (_: any, node: Node) => {
     const data = node.data as FlowNodeData;
 
@@ -382,6 +273,7 @@ export default function TreeView({
     }
 
     if (data.nodeKind === "theme") {
+      // Certains thèmes sont cliquables comme une question (compat héritage données).
       const hasQuestionId = data.questionId !== undefined && data.questionId !== null;
       if (hasQuestionId) {
         const question = data as Question;
@@ -391,7 +283,8 @@ export default function TreeView({
         }
       }
 
-      setCollapsedThemes((prev) => {
+      // Sinon, clic thème = collapse/expand du sous-arbre.
+      setCollapsedNodeIds((prev) => {
         const next = new Set(prev);
         if (next.has(node.id)) {
           next.delete(node.id);
@@ -415,6 +308,7 @@ export default function TreeView({
     }
 
     if (data.nodeKind === "response") {
+      // Clic sur réponse => on rouvre le modal sur la question parente en mode édition.
       const questionId = Number(data.questionId);
       const question = questions.find(
         (q) => Number(q.questionId || q.id) === questionId
@@ -432,11 +326,12 @@ export default function TreeView({
         return;
       }
 
-      const questionNode = nodes.find((n) => n.id === data.parentNodeId) || node;
+      const questionNode = renderedNodes.find((n) => n.id === data.parentNodeId) || node;
       openQuestionModal(question, questionNode, response);
     }
   };
 
+  // Crée ou met à jour la réponse courante selon l'état du formulaire et le type de question.
   const handleValidate = async () => {
     if (!selectedNode || !selectedQuestion) return;
 
@@ -449,9 +344,7 @@ export default function TreeView({
 
     let label = "";
 
-    if (question.hasMultipleOpenResponse) {
-      label = multipleResponses.filter((r) => r.trim() !== "").join(", ");
-    } else if (question.options && question.options.length > 0) {
+    if (question.options && question.options.length > 0) {
       const selectedLabels = selectedOptions
         .map((optionIndex) => question.options?.find((_, idx) => idx === optionIndex))
         .filter(Boolean)
@@ -461,6 +354,7 @@ export default function TreeView({
       label = responseValue;
     }
 
+    // On refuse l'envoi d'une réponse vide.
     if (!label || label.trim() === "") {
       return;
     }
@@ -501,6 +395,7 @@ export default function TreeView({
     }
   };
 
+  // Marque une question comme "passée" (label null), en création ou en édition.
   const handleSkip = async () => {
     if (!selectedQuestion) return;
 
@@ -543,6 +438,7 @@ export default function TreeView({
     }
   };
 
+  // Mapping des types de nodes ReactFlow vers leurs composants UI.
   const nodeTypes = useMemo(
     () => ({
       question: QuestionNode,
@@ -552,6 +448,7 @@ export default function TreeView({
     []
   );
 
+  // Indique si la question sélectionnée possède déjà une réponse enregistrée.
   const selectedQuestionHasResponses = selectedQuestion
     ? projectResponses.some(
         (response) => Number(response.questionId) === Number(selectedQuestion.questionId || selectedQuestion.id)
@@ -578,7 +475,7 @@ export default function TreeView({
       </Button>
 
       <ReactFlow
-        nodes={nodes}
+        nodes={renderedNodes}
         edges={edges}
         defaultEdgeOptions={{ type: "simplebezier", style: { stroke: "#272727" } }}
         connectionLineType={ConnectionLineType.SimpleBezier}
@@ -606,14 +503,8 @@ export default function TreeView({
           showSkipButton={editingResponse ? true : !selectedQuestionHasResponses}
           onKeywordChange={setResponseKeyword}
         >
-          {selectedQuestion.shouldMultiply ? (
-            <div>Question répétée</div>
-          ) : selectedQuestion.hasMultipleOpenResponse ? (
-            <ReponsesPlusieurs
-              value={multipleResponses}
-              onChange={setMultipleResponses}
-            />
-          ) : (selectedQuestion.options?.length ?? 0) > 0 ? (
+          {/* Le composant de saisie est choisi dynamiquement selon la configuration question. */}
+          {(selectedQuestion.options?.length ?? 0) > 0 ? (
             <ReponseSelect
               options={(selectedQuestion.options || []).map((opt, index) => ({
                 label: opt,

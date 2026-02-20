@@ -47,14 +47,7 @@ export default function QuestionsPage() {
     if (typeof question.category === "string") {
       return question.category;
     }
-    const categoryLabel = (question as any).questionCategory?.label;
-    if (categoryLabel) {
-      return categoryLabel;
-    }
-    const categoryId =
-      (question as any).questionCategoryId ||
-      (question as any).questionCategory?.questionCategoryId;
-    return categories.find((c) => c.questionCategoryId === categoryId)?.label || "";
+    return "";
   };
 
   const normalizeCategoryLabel = (label: string) => {
@@ -148,15 +141,8 @@ export default function QuestionsPage() {
 
     // Filter by category label
     if (selectedCategoryLabel !== null) {
-      const categoryIdToLabel = new Map(
-        categories.map((c: any) => [c.questionCategoryId, c.label])
-      );
       filteredQuestions = filteredQuestions.filter((q: Question) => {
-        const categoryLabel =
-          typeof q.category === "string"
-            ? q.category
-            : (q as any).questionCategory?.label || categoryIdToLabel.get(q.category);
-        return categoryLabel === selectedCategoryLabel;
+        return (typeof q.category === "string" ? q.category : "") === selectedCategoryLabel;
       });
     }
 
