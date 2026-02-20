@@ -2,7 +2,7 @@
 
 import { NodeProps, Handle, Position } from "@xyflow/react"
 import { Tooltip } from "@/components/ui"
-import { cn } from "@/utils/utils";
+import type { MouseEvent } from "react"
 
 
 export function QuestionNode({ data }: NodeProps) {
@@ -11,31 +11,57 @@ export function QuestionNode({ data }: NodeProps) {
         label?: string;
         keyword?: string;
         isVirtualRoot?: boolean;
+        isCollapsed?: boolean;
+        isCollapsible?: boolean;
+        nodeId?: string;
+        onToggleCollapse?: (nodeId: string) => void;
     };
+    const isCollapsible = questionData.isCollapsible ?? true;
     
     const statusStyle = {
-        pending: "bg-transparent border-3 border-dark",
-        answered:"bg-green-500 border-3 border-green-500",
-        skipped: "bg-gray-500 border-3 border-gray-500",
+        pending: "bg-white border-2 border-dark text-dark",
+        answered:"bg-green-500 border-2 border-green-500 text-white",
+        skipped: "bg-gray-500 border-2 border-gray-500 text-white",
     }
 
     const bg = questionData.isVirtualRoot 
-        ? "bg-dark border-3 border-dark" 
+        ? "bg-dark border-2 border-dark text-white" 
         : statusStyle[questionData.status || "pending"];
+
+    const collapseButtonStyle = (() => {
+        if (questionData.isCollapsed) {
+            if (questionData.status === "answered") {
+                return "border-2 border-green-500 bg-green-500 text-white";
+            }
+            if (questionData.status === "skipped") {
+                return "border-2 border-gray-500 bg-gray-500 text-white";
+            }
+            return "border-2 border-dark bg-dark text-white";
+        }
+
+        if (questionData.status === "answered") {
+            return "border-2 border-green-500 bg-white text-green-600 hover:bg-green-50";
+        }
+        if (questionData.status === "skipped") {
+            return "border-2 border-gray-500 bg-white text-gray-600 hover:bg-gray-50";
+        }
+        return "border-2 border-dark bg-white text-dark hover:bg-gray-100";
+    })();
+
+    const handleCollapseClick = (event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        if (!questionData.nodeId || !questionData.onToggleCollapse) return;
+        questionData.onToggleCollapse(questionData.nodeId);
+    };
 
     return (
         <Tooltip className="bg-dark" content={data.label?.toString()} position="rightTop">
-            <div className={`relative ${questionData.isVirtualRoot ? "cursor-default" : "cursor-pointer"} flex flex-col items-center gap-1`}>
-                {questionData.keyword && (
-                    <span className="text-xs font-medium text-dark text-center max-w-32 break-words">
-                        {questionData.keyword}
-                    </span>
-                )}
-                <div className="relative">
+            <div className={`relative flex items-center gap-2 ${questionData.isVirtualRoot ? "cursor-default" : "cursor-pointer"}`}>
+                <div className={`relative rounded-full px-3 py-1 text-xs font-semibold leading-none whitespace-nowrap transition-all duration-300 ease-in-out ${bg}`}>
+                    {questionData.keyword?.toString() || "Question"}
                     {questionData.status === "pending" && !questionData.isVirtualRoot && (
-                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-dark animate-ping"></span>
+                        <span className="absolute inset-0 rounded-full border-2 border-dark animate-ping"></span>
                     )}
-                    <div className={`relative h-4 w-4 rounded-full transition-all duration-300 ease-in-out ${bg}`}>
                     <Handle
                     type="target"
                     position={Position.Left}
@@ -60,8 +86,19 @@ export function QuestionNode({ data }: NodeProps) {
                         transform: "translateY(-50%)"
                     }}
                     />
-                    </div>
                 </div>
+                {isCollapsible && !questionData.isVirtualRoot && (
+                    <button
+                        type="button"
+                        onClick={handleCollapseClick}
+                        onPointerDown={(event) => event.stopPropagation()}
+                        className={`nodrag nopan min-w-6 h-6 rounded-full px-2 text-xs font-semibold leading-none transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-dark ${collapseButtonStyle}`}
+                        aria-label={questionData.isCollapsed ? "Déplier la question" : "Replier la question"}
+                        title={questionData.isCollapsed ? "Déplier" : "Replier"}
+                    >
+                        {questionData.isCollapsed ? "+" : "-"}
+                    </button>
+                )}
             </div>
         </Tooltip>
     )

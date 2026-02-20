@@ -6,10 +6,7 @@ export interface Question extends Record<string, unknown> {
   status?: "pending" | "answered" | "skipped";
   category?: string;
   numberOfSelectionableOpt?: number;
-  isRelevant?: boolean;
-  hasMultipleOpenResponse?: boolean;
   options?: string[];
-  shouldMultiply?: boolean;
   parentId?: number | null;
   types?: (number | { typeId: number; label: string })[];
   removeType?: number[];

@@ -1,37 +1,21 @@
 "use client";
 
-// import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  Input,
-  Button,
-  Toggle,
-  DynamicOptions,
-  MultiSelect,
-  Select,
-} from "@/components/ui";
+import { Input, Button, Radio, RadioGroup, MultiSelect } from "@/components/ui";
 import api_backend from "@/api/axiosInstance";
 
 export type CreateQuestionInputs = {
-  label: string;
   keyword: string;
-  category: string | null;
-  hasMultipleOpenResponse: boolean;
-  shouldMultiply: boolean;
-  allowMultiple: boolean;
-  options: string[];
+  nodeType: "Theme" | "Question";
+  detail?: string;
+  swotCategory?: "force" | "opportunité" | "faiblesse" | "menace" | null;
   questionIdParent?: string;
-  typesLabels: string[]; // selected type labels from MultiSelect
+  typesLabels: string[];
 };
 
 interface Type {
   typeId: number | string;
-  label: string;
-}
-
-interface QuestionCategory {
-  questionCategoryId: number;
   label: string;
 }
 
@@ -52,19 +36,13 @@ export default function CreateQuestionForm({
   submitLabel,
   secondaryAction,
 }: CreateQuestionFormProps) {
-  // const { register, handleSubmit, formState: { errors } } = useForm<CreateQuestionInputs>();
-  const [label, setLabel] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [category, setCategory] = useState<string | null>(null);
-  const [hasMultipleOpenResponse, setHasMultipleOpenResponse] = useState(false);
-  const [shouldMultiply, setShouldMultiply] = useState(false);
-  const [allowMultiple, setAllowMultiple] = useState(false);
-  const [options, setOptions] = useState<string[]>([]);
+  const [nodeType, setNodeType] = useState<"Theme" | "Question">("Theme");
+  const [detail, setDetail] = useState("");
+  const [swotCategory, setSwotCategory] = useState<
+    "force" | "opportunité" | "faiblesse" | "menace" | null
+  >(null);
   const [questionIdParent, setQuestionIdParent] = useState("");
-
-  const [categories, setCategories] = useState<QuestionCategory[]>([]);
-
-  const [types, setTypes] = useState<Type[]>([]);
   const [typesLabels, setTypesLabels] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string[]>([]);
 
@@ -73,12 +51,10 @@ export default function CreateQuestionForm({
   };
 
   useEffect(() => {
-    // fetch Type List
     const fetchTypeList = async () => {
       try {
         const res = await api_backend.get(`/type/get`);
-        setTypes(res.data); // Stores types with IDs and labels.
-        setTypesLabels(res.data.map((t: Type) => t.label)); // Stores labels of types.
+        setTypesLabels(res.data.map((t: Type) => t.label));
       } catch (error) {
         console.log(error);
       }
@@ -88,74 +64,49 @@ export default function CreateQuestionForm({
   }, []);
 
   useEffect(() => {
-    // fetch Question Categories
-    const fetchCategories = async () => {
-      try {
-        const res = await api_backend.get(`/question/categories`);
-        setCategories(res.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
     if (!initialValues) {
       return;
     }
 
-    if (typeof initialValues.label === "string") {
-      setLabel(initialValues.label);
-    }
     if (typeof initialValues.keyword === "string") {
       setKeyword(initialValues.keyword);
     }
-    if (typeof initialValues.category === "string" || initialValues.category === null) {
-      setCategory(initialValues.category ?? null);
+    if (initialValues.nodeType === "Theme" || initialValues.nodeType === "Question") {
+      setNodeType(initialValues.nodeType);
+    }
+    if (typeof initialValues.detail === "string") {
+      setDetail(initialValues.detail);
+    }
+    if (initialValues.swotCategory === null) {
+      setSwotCategory(null);
+    } else if (
+      initialValues.swotCategory === "force" ||
+      initialValues.swotCategory === "faiblesse" ||
+      initialValues.swotCategory === "opportunité" ||
+      initialValues.swotCategory === "menace"
+    ) {
+      setSwotCategory(initialValues.swotCategory);
+    } else if (
+      initialValues.swotCategory === "forces" ||
+      initialValues.swotCategory === "faiblesses" ||
+      initialValues.swotCategory === "opportunités" ||
+      initialValues.swotCategory === "menaces"
+    ) {
+      const legacyToSingular = {
+        forces: "force",
+        faiblesses: "faiblesse",
+        opportunités: "opportunité",
+        menaces: "menace",
+      } as const;
+      setSwotCategory(legacyToSingular[initialValues.swotCategory]);
     }
     if (typeof initialValues.questionIdParent === "string") {
       setQuestionIdParent(initialValues.questionIdParent);
     }
-
-    setHasMultipleOpenResponse(Boolean(initialValues.hasMultipleOpenResponse));
-    setShouldMultiply(Boolean(initialValues.shouldMultiply));
-    setAllowMultiple(
-      typeof initialValues.allowMultiple === "boolean"
-        ? initialValues.allowMultiple
-        : (initialValues.options?.length ?? 0) > 0
-    );
-    setOptions(initialValues.options ?? []);
-    setSelectedType(initialValues.typesLabels ?? []);
+    if (Array.isArray(initialValues.typesLabels)) {
+      setSelectedType(initialValues.typesLabels);
+    }
   }, [initialValues]);
-
-  useEffect(() => {
-    if (categories.length === 0) {
-      return;
-    }
-
-    if (initialValues?.category) {
-      const normalized = initialValues.category.trim().toLowerCase();
-      const matched = categories.find(
-        (cat) => cat.label.trim().toLowerCase() === normalized
-      )?.label;
-      if (matched && matched !== category) {
-        setCategory(matched);
-      }
-      return;
-    }
-
-    if (category === null) {
-      setCategory(categories[0]?.label ?? null);
-    }
-  }, [categories, initialValues?.category, category]);
-
-  useEffect(() => {
-    if (!allowMultiple && options.length > 0) {
-      setOptions([]);
-    }
-  }, [allowMultiple, options.length]);
 
   return (
     <>
@@ -164,30 +115,42 @@ export default function CreateQuestionForm({
         onSubmit={(e) => {
           e.preventDefault();
           handleSubmit({
-            label,
             keyword,
-            category,
-            hasMultipleOpenResponse,
-            shouldMultiply,
-            allowMultiple,
-            options,
+            nodeType,
+            detail,
+            swotCategory,
             questionIdParent,
             typesLabels: selectedType,
           });
         }}
       >
-        <div className="space-y-5">
+        <div className="space-y-5 w-full">
+          <div>
+            <p className="mb-2 text-sm font-medium">Type de noeud</p>
+            <RadioGroup
+              name="nodeType"
+              value={nodeType}
+              onValueChange={(value) => setNodeType(value as "Theme" | "Question")}
+              className="flex items-center gap-4"
+            >
+              <Radio value="Theme" label="Theme" />
+              <Radio value="Question" label="Question" />
+            </RadioGroup>
+          </div>
+
           <div className="flex gap-3">
             <div className="flex-1">
-              <Input
-                label="Question"
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
-              />
               <Input
                 label="Mot Clé"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
+              />
+              <MultiSelect
+                className="mt-3"
+                value={selectedType}
+                onChange={setSelectedType}
+                label="Type de projet"
+                options={typesLabels}
               />
             </div>
             <Input
@@ -199,61 +162,40 @@ export default function CreateQuestionForm({
               }}
             />
           </div>
-          <div className="flex gap-3">
-            <Select
-              className="flex-1"
-              label="Catégorie"
-              options={[
-                { value: "", label: "Aucune categorie" },
-                ...categories.map((c) => ({ value: c.label, label: c.label })),
-              ]}
-              value={category ?? ""}
-              onChange={(e) => {
-                const nextValue = e.target.value;
-                setCategory(nextValue ? nextValue : null);
-              }}
-            />
 
-            <MultiSelect
-              className="flex-1 max-w-70"
-              value={selectedType}
-              onChange={setSelectedType}
-              label="Type"
-              options={typesLabels}
-            />
-          </div>
-        </div>
+          {nodeType === "Question" && (
+            <div className="space-y-4">
+              <Input
+                label="Détails"
+                value={detail}
+                onChange={(e) => setDetail(e.target.value)}
+              />
 
-        <div className="w-100 space-y-3 my-4">
-          <Toggle
-            label="Autoriser plusieurs réponses libres."
-            helperText="Le client pourra saisir plus d'une réponse écrite."
-            checked={hasMultipleOpenResponse}
-            onCheckedChange={setHasMultipleOpenResponse}
-          />
-
-          <Toggle
-            label="Répéter la question."
-            helperText="La question sera posée une fois pour chaque élément défini dans la question précédente."
-            checked={shouldMultiply}
-            onCheckedChange={setShouldMultiply}
-          />
-
-          <Toggle
-            checked={allowMultiple}
-            onCheckedChange={setAllowMultiple}
-            label="Proposer une liste d'options"
-            helperText="Activez pour définir des choix que le client pourra sélectionner."
-          />
-
-          {allowMultiple && (
-            <DynamicOptions
-              labelPrefix="Option"
-              values={options}
-              onChange={setOptions}
-            />
+              <div>
+                <p className="mb-2 text-sm font-medium">Catégorie SWOT</p>
+                <RadioGroup
+                  name="swotCategory"
+                  value={swotCategory ?? "none"}
+                  onValueChange={(value) =>
+                    setSwotCategory(
+                      value === "none"
+                        ? null
+                        : (value as "force" | "faiblesse" | "opportunité" | "menace")
+                    )
+                  }
+                  className="grid grid-cols-2 gap-2"
+                >
+                  <Radio value="none" label="Aucune" />
+                  <Radio value="force" label="force" />
+                  <Radio value="opportunité" label="opportunité" />
+                  <Radio value="faiblesse" label="faiblesse" />
+                  <Radio value="menace" label="menace" />
+                </RadioGroup>
+              </div>
+            </div>
           )}
         </div>
+
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={isLoading}>
             {isLoading ? "Création..." : submitLabel || "Créer"}

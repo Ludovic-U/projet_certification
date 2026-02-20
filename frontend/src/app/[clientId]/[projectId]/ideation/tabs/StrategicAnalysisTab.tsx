@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { Icons, FontAwesomeIcon } from "@/lib/icons";
 import {
   ReponseUnique,
-  ReponsesPlusieurs,
   ReponseSelect,
 } from "@/components/forms";
 import ModalQuestion from "@/components/ui/ModalQuestion/ModalQuestion";
@@ -44,11 +43,11 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
   };
 
   const getQuestionCategoryLabel = (question: Question) => {
-    if (typeof question.category === "string") {
-      return question.category;
-    }
-    const anyQuestion = question as any;
-    return anyQuestion.questionCategory?.label ?? anyQuestion.category?.label ?? "";
+    return typeof question.category === "string" ? question.category : "";
+  };
+
+  const isThemeQuestion = (question: Question) => {
+    return getQuestionCategoryLabel(question).trim().toLowerCase() === "theme";
   };
 
   useEffect(() => {
@@ -127,8 +126,12 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
     }));
   }, [filteredQuestions]);
 
+  const nonThemeQuestions = useMemo(() => {
+    return questions.filter((q) => !isThemeQuestion(q));
+  }, [questions]);
+
   const visibleCategories = categories.filter((category) =>
-    questions.some((q) => getQuestionCategoryLabel(q) === category.label)
+    nonThemeQuestions.some((q) => getQuestionCategoryLabel(q) === category.label)
   );
 
   const completedQuestionIds = useMemo(() => {
@@ -150,9 +153,7 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
 
   const handleOpenQuestion = (question: Question) => {
     setSelectedQuestion(question);
-    if (question.hasMultipleOpenResponse) {
-      setResponseValue([""]);
-    } else if ((question.options?.length ?? 0) > 0) {
+    if ((question.options?.length ?? 0) > 0) {
       setResponseValue([]);
     } else {
       setResponseValue("");
@@ -176,8 +177,8 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
             <Card
               color="#6366F1"
               title="Vue globale"
-              max={questions.length}
-              progress={completedQuestionIds.size}
+              max={nonThemeQuestions.length}
+              progress={nonThemeQuestions.filter((q) => completedQuestionIds.has(Number(q.questionId))).length}
               buttonLabel="voir toutes les questions"
               size="sm"
               className={
@@ -196,10 +197,10 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
             />
 
             {visibleCategories.map((category, index) => {
-              const total = questions.filter(
+              const total = nonThemeQuestions.filter(
                 (q) => getQuestionCategoryLabel(q) === category.label
               ).length;
-              const completed = questions.filter((q) => {
+              const completed = nonThemeQuestions.filter((q) => {
                 const nodeCategory = getQuestionCategoryLabel(q);
                 return (
                   nodeCategory === category.label &&
@@ -286,12 +287,7 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
           }}
           onSkip={() => modalResponse.closeModal()}
         >
-          {selectedQuestion.hasMultipleOpenResponse ? (
-            <ReponsesPlusieurs
-              value={responseValue as string[]}
-              onChange={setResponseValue as (v: string[]) => void}
-            />
-          ) : (selectedQuestion.options?.length ?? 0) > 0 ? (
+          {(selectedQuestion.options?.length ?? 0) > 0 ? (
             <ReponseSelect
               options={(selectedQuestion.options ?? []).map((opt, idx) => ({
                 id: idx,

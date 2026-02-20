@@ -333,9 +333,6 @@ model Question {
   keyword                  String
   category                 String
   numberOfSelectionableOpt Int?
-  isRelevant               Boolean?
-  hasMultipleOpenResponse  Boolean?
-  shouldMultiply           Boolean?
   questionIdParent         Int?
   questionCategoryId       Int?
   options                  Option[]

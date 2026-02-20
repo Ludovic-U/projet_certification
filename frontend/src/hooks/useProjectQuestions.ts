@@ -15,9 +15,6 @@ interface FormattedQuestion extends Record<string, unknown> {
     category?: string;
     numberOfSelectionableOpt?: number;
     options?: string[];
-    isRelevant?: boolean;
-    hasMultipleOpenResponse?: boolean;
-    shouldMultiply?: boolean;
     types?: (number | { typeId: number; label: string })[];
     projects?: number[];
 }
@@ -65,15 +62,9 @@ export function useProjectQuestion(
                 parentId: q.questionIdParent ?? null,
                 answered: false,
                 status: "pending" as const,
-                category: q.category ?? q.questionCategory?.label ?? "",
-                questionCategoryId:
-                    q.questionCategoryId ?? q.questionCategory?.questionCategoryId ?? null,
-                questionCategory: q.questionCategory ?? null,
+                category: q.category ?? "",
                 numberOfSelectionableOpt: q.numberOfSelectionableOpt,
                 options: (q.options || []).map((opt: any) => opt.label),
-                isRelevant: q.isRelevant,
-                hasMultipleOpenResponse: q.hasMultipleOpenResponse,
-                shouldMultiply: q.shouldMultiply,
                 types: q.types || [],
                 projects: q.projects || []
             }));
