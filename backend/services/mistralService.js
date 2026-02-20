@@ -176,6 +176,8 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
         // Fetch responses for this project
         const { prisma } = require('../prisma/prismaClient');
         
+        console.log('Fetching responses for projectId:', projectId);
+        
         const responses = await prisma.response.findMany({
             where: { projectId: projectId },
             include: {
@@ -183,9 +185,11 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
                 option: true,
             },
         });
+        
+        console.log('Found responses:', responses.length);
 
         if (!responses || responses.length === 0) {
-            return { error: 'No responses found for this project' };
+            return { error: 'Aucune réponse trouvée pour ce projet. Veuillez d\'abord répondre à des questions dans l\'onglet Questions/Réponses.' };
         }
 
         // Build context from responses

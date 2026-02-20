@@ -50,6 +50,12 @@ exports.generateMindmapFromResponses = async (req, res) => {
     }
 
     const response = await mistralService.GenerateMindmapFromResponses(numericProjectId);
+    
+    // If there's an error property in the response, return 404
+    if (response && response.error) {
+      return res.status(404).json(response);
+    }
+    
     res.status(200).json(response);
   } catch (error) {
     console.error("Error generating mindmap from responses:", error);

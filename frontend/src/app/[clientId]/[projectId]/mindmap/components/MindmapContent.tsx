@@ -722,6 +722,13 @@ export const MindmapInner = () => {
         // Generate mindmap from responses
         const aiResponse = await generateMindmapFromResponses(pid);
         
+        // Check if there's an error in the response
+        if (aiResponse && aiResponse.error) {
+          alert(aiResponse.error);
+          setIsSaving(false);
+          return;
+        }
+        
         if (!aiResponse || !aiResponse.nodes || aiResponse.nodes.length === 0) {
           alert('No mindmap could be generated from the responses. Please check if there are responses to the questions.');
           setIsSaving(false);

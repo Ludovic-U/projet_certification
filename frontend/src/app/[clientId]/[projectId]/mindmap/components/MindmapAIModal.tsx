@@ -30,7 +30,14 @@ export const MindmapAIModal: React.FC<MindmapAIModalProps> = ({
     try {
       const response = await generateMindmapFromResponses(projectId);
       console.log('Mindmap generated:', response);
-      setResult(response);
+      
+      // Check if the response contains an error
+      if (response && response.error) {
+        setError(response.error);
+        setResult(null);
+      } else {
+        setResult(response);
+      }
     } catch (err: any) {
       console.error('Error generating mindmap:', err);
       setError(err.message || 'Error generating mindmap');
@@ -40,17 +47,21 @@ export const MindmapAIModal: React.FC<MindmapAIModalProps> = ({
   };
 
   const handleImport = () => {
-    if (!result || !result.nodes) {
+    // Parse the result if it's a string first
+    let nodesData = result;
+    if (typeof result === 'string') {
+      try {
+        nodesData = JSON.parse(result);
+      } catch (e) {
+        alert('Failed to parse mindmap data');
+        return;
+      }
+    }
+
+    if (!nodesData || !nodesData.nodes) {
       alert('No mindmap data to import');
       return;
     }
-
-    try {
-      // Parse the result if it's a string
-      let nodesData = result;
-      if (typeof result === 'string') {
-        nodesData = JSON.parse(result);
-      }
 
       const aiNodes: AIMindmapNode[] = nodesData.nodes || [];
       
@@ -131,10 +142,6 @@ export const MindmapAIModal: React.FC<MindmapAIModalProps> = ({
       onImport(nodes, edges);
       handleClose();
       alert(`${nodes.length} nodes imported successfully!`);
-    } catch (err: any) {
-      console.error('Error importing mindmap:', err);
-      alert('Error importing mindmap: ' + err.message);
-    }
   };
 
   const handleClose = () => {
