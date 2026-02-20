@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, UserMinus, CreditCard, Upload } from 'lucide-react';
+import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, UserMinus, CreditCard, Upload, Package } from 'lucide-react';
 import { Task, EditorTab, Livrable, SelectOption } from '../types';
 import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateExpenseLinesTotal, calculateBudgetTotals, getExpenseLinesByCategory, Budget } from '../utils/budgetUtils';
 import Select from 'react-select';
@@ -537,6 +537,11 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
   projectId, // eslint-disable-line @typescript-eslint/no-unused-vars
   data,
 }) => {
+  // State for custom budget types - must be called before any early returns
+  const [customBudgetTypes, setCustomBudgetTypes] = useState<{ id: string; name: string }[]>([]);
+  const [showAddBudgetType, setShowAddBudgetType] = useState(false);
+  const [newBudgetTypeName, setNewBudgetTypeName] = useState('');
+
   if (!showEditor || !editingTask) return null;
 
   const tabs: { id: EditorTab; label: string; icon: React.ReactNode; color: string; category: string }[] = [
@@ -547,6 +552,13 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
     { id: 'equipementsPedagogiques', label: 'Équipements pédagogiques', icon: <FileText className="w-4 h-4" />, color: 'text-pink-400', category: 'equipements' },
     { id: 'prestations', label: 'Prestations', icon: <DollarSign className="w-4 h-4" />, color: 'text-cyan-400', category: 'prestations' },
     { id: 'communications', label: 'Communications', icon: <CheckCircle2 className="w-4 h-4" />, color: 'text-orange-400', category: 'communications' },
+    ...customBudgetTypes.map(bt => ({ 
+      id: bt.id as EditorTab, 
+      label: bt.name, 
+      icon: <Package className="w-4 h-4" />, 
+      color: 'text-yellow-400', 
+      category: bt.id 
+    }))
   ];
 
   const getTypeStyles = (type: string) => {
@@ -593,6 +605,21 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
         expenseLines: editingTask.budget!.expenseLines.filter(line => line.id !== id)
       }
     });
+  };
+
+  // Add a new custom budget type
+  const addCustomBudgetType = () => {
+    if (newBudgetTypeName.trim()) {
+      const newType = {
+        id: `custom_${Date.now()}`,
+        name: newBudgetTypeName.trim()
+      };
+      setCustomBudgetTypes([...customBudgetTypes, newType]);
+      setNewBudgetTypeName('');
+      setShowAddBudgetType(false);
+      // Switch to the new budget type tab
+      setEditorTab(newType.id as EditorTab);
+    }
   };
 
   return (
@@ -936,6 +963,74 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   </span>
                 </div>
               </div>
+
+              {/* Custom Budget Types Summaries */}
+              {customBudgetTypes.map(customType => {
+                const customLines = editingTask.budget?.expenseLines.filter(line => 
+                  line.nature?.startsWith(customType.id + ':')
+                ) || [];
+                const customTotal = calculateExpenseLinesTotal(customLines);
+                return (
+                  <div key={customType.id} className="p-4 bg-gradient-to-r from-yellow-500/10 to-cyan-500/5 border border-yellow-500/20 rounded-xl cursor-pointer hover:border-yellow-400/50 transition-all" onClick={() => setEditorTab(customType.id as EditorTab)}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-yellow-400">budgets {customType.name}</span>
+                      <span className="text-lg font-bold text-yellow-400">
+                        {customTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Add Custom Budget Type Button */}
+              <div className="pt-4 border-t border-slate-700">
+                {showAddBudgetType ? (
+                  <div className="p-4 bg-slate-800/50 border border-slate-600 rounded-xl space-y-3 animate-in slide-in-from-top-2">
+                    <input
+                      type="text"
+                      value={newBudgetTypeName}
+                      onChange={(e) => setNewBudgetTypeName(e.target.value)}
+                      placeholder="Nom du type de budget..."
+                      className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') addCustomBudgetType();
+                        if (e.key === 'Escape') {
+                          setShowAddBudgetType(false);
+                          setNewBudgetTypeName('');
+                        }
+                      }}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={addCustomBudgetType}
+                        disabled={!newBudgetTypeName.trim()}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-xl hover:bg-yellow-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Ajouter
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAddBudgetType(false);
+                          setNewBudgetTypeName('');
+                        }}
+                        className="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAddBudgetType(true)}
+                    className="flex items-center gap-2 px-4 py-3 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-xl hover:bg-yellow-500/30 transition-all w-full justify-center"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Ajouter un type de budget personnalisé
+                  </button>
+                )}
+              </div>
             </div>
           ) : editorTab === 'moyenHumain' ? (
             <MoyensHumainsSection
@@ -984,6 +1079,17 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               icon={<CheckCircle2 className="w-5 h-5 text-orange-400" />}
               category="communications"
               addExpenseLine={() => addExpenseLine('communications')}
+              updateExpenseLine={updateExpenseLine}
+              removeExpenseLine={removeExpenseLine}
+            />
+          ) : customBudgetTypes.find(bt => bt.id === editorTab) ? (
+            <BudgetSectionWithLines
+              editingTask={editingTask}
+              setEditingTask={setEditingTask}
+              title={customBudgetTypes.find(bt => bt.id === editorTab)?.name || 'Budget'}
+              icon={<Package className="w-5 h-5 text-yellow-400" />}
+              category={editorTab}
+              addExpenseLine={() => addExpenseLine(editorTab)}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />

@@ -174,7 +174,7 @@ const mindmapExpectedFormat = `{
 exports.GenerateMindmapFromResponses = async (projectId) => {
     try {
         // Fetch responses for this project
-        const { prisma } = require('./prisma/prismaClient');
+        const { prisma } = require('../prisma/prismaClient');
         
         const responses = await prisma.response.findMany({
             where: { projectId: projectId },

@@ -3,6 +3,109 @@ const { asyncErrorHandler } = require('./helpers/asyncErrorHandler');
 const { prisma } = require('../prisma/prismaClient');
 
 /**
+ * Get all mindmaps for a project
+ */
+const getMindmaps = asyncErrorHandler(async (req, res) => {
+  const { projectId } = req.params;
+  const mindmaps = await mindmapService.getMindmapsForProject(parseInt(projectId));
+  res.status(200).json(mindmaps);
+});
+
+/**
+ * Get a single mindmap by ID
+ */
+const getMindmap = asyncErrorHandler(async (req, res) => {
+  const { mindmapId } = req.params;
+  const mindmap = await mindmapService.getMindmapById(parseInt(mindmapId));
+  
+  if (!mindmap) {
+    return res.status(404).json({ error: 'Mindmap not found' });
+  }
+  
+  res.status(200).json(mindmap);
+});
+
+/**
+ * Get a mindmap by version ID
+ */
+const getMindmapByVersion = asyncErrorHandler(async (req, res) => {
+  const { versionId } = req.params;
+  const mindmap = await mindmapService.getMindmapByVersion(parseInt(versionId));
+  
+  if (!mindmap) {
+    return res.status(404).json({ error: 'Mindmap not found for this version' });
+  }
+  
+  res.status(200).json(mindmap);
+});
+
+/**
+ * Create a new mindmap
+ */
+const createMindmap = asyncErrorHandler(async (req, res) => {
+  const { projectId } = req.params;
+  const { name, versionId } = req.body;
+  
+  const mindmap = await mindmapService.createMindmap(parseInt(projectId), { name, versionId });
+  res.status(201).json(mindmap);
+});
+
+/**
+ * Update a mindmap with nodes and edges
+ */
+const updateMindmap = asyncErrorHandler(async (req, res) => {
+  const { mindmapId } = req.params;
+  const { name, nodes, edges } = req.body;
+  
+  const mindmap = await mindmapService.updateMindmap(parseInt(mindmapId), { name, nodes, edges });
+  res.status(200).json(mindmap);
+});
+
+/**
+ * Delete a mindmap
+ */
+const deleteMindmap = asyncErrorHandler(async (req, res) => {
+  const { mindmapId } = req.params;
+  
+  await mindmapService.deleteMindmap(parseInt(mindmapId));
+  res.status(200).json({ message: 'Mindmap deleted successfully' });
+});
+
+/**
+ * Save mindmap with a specific version
+ */
+const saveMindmapWithVersion = asyncErrorHandler(async (req, res) => {
+  const { projectId, versionId } = req.params;
+  const { nodes, edges } = req.body;
+  
+  const mindmap = await mindmapService.saveMindmapWithVersion(
+    parseInt(projectId),
+    parseInt(versionId),
+    nodes,
+    edges
+  );
+  res.status(200).json(mindmap);
+});
+
+/**
+ * Duplicate mindmap for a new version
+ */
+const duplicateMindmapForVersion = asyncErrorHandler(async (req, res) => {
+  const { sourceVersionId, targetVersionId } = req.params;
+  
+  const mindmap = await mindmapService.duplicateMindmapForVersion(
+    parseInt(sourceVersionId),
+    parseInt(targetVersionId)
+  );
+  
+  if (!mindmap) {
+    return res.status(404).json({ error: 'No mindmap found to duplicate' });
+  }
+  
+  res.status(201).json(mindmap);
+});
+
+/**
  * Save mindmap nodes as Tasks (upsert approach)
  * Updates existing tasks or creates new ones - preserves changes
  */
@@ -100,6 +203,14 @@ const saveAsPreProjectVersion = asyncErrorHandler(async (req, res) => {
     preProjectVersion.versionId
   );
 
+  // Also save the mindmap itself with the version
+  await mindmapService.saveMindmapWithVersion(
+    parsedProjectId,
+    preProjectVersion.versionId,
+    nodes,
+    edges
+  );
+
   res.status(201).json({
     message: 'Successfully saved mindmap as Pre-project version',
     versionId: preProjectVersion.versionId,
@@ -110,6 +221,14 @@ const saveAsPreProjectVersion = asyncErrorHandler(async (req, res) => {
 });
 
 module.exports = {
+  getMindmaps,
+  getMindmap,
+  getMindmapByVersion,
+  createMindmap,
+  updateMindmap,
+  deleteMindmap,
+  saveMindmapWithVersion,
+  duplicateMindmapForVersion,
   saveAsTasks,
   importToGantt,
   saveAsPreProjectVersion,

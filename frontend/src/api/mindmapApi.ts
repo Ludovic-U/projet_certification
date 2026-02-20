@@ -23,11 +23,17 @@ export interface MindmapEdge {
 export interface Mindmap {
   mindmapId?: number;
   projectId: number;
+  versionId?: number | null;
   name: string;
   nodes?: MindmapNode[];
   edges?: MindmapEdge[];
   createdAt?: string;
   updatedAt?: string;
+  version?: {
+    versionId: number;
+    name: string;
+    isActive: boolean;
+  };
 }
 
 // Interface for AI generated mindmap nodes
@@ -73,11 +79,19 @@ export const fetchMindmap = async (mindmapId: number): Promise<Mindmap> => {
 };
 
 /**
+ * Get a mindmap by version ID
+ */
+export const fetchMindmapByVersion = async (versionId: number): Promise<Mindmap> => {
+  const response = await axiosInstance.get(`/mindmap/version/${versionId}/mindmap`);
+  return response.data;
+};
+
+/**
  * Create a new mindmap
  */
 export const createMindmap = async (
   projectId: number,
-  data: { name?: string }
+  data: { name?: string; versionId?: number }
 ): Promise<Mindmap> => {
   const response = await axiosInstance.post(`/mindmap/project/${projectId}/mindmaps`, data);
   return response.data;
@@ -95,6 +109,62 @@ export const updateMindmap = async (
   }
 ): Promise<Mindmap> => {
   const response = await axiosInstance.put(`/mindmap/mindmaps/${mindmapId}`, data);
+  return response.data;
+};
+
+/**
+ * Delete a mindmap
+ */
+export const deleteMindmap = async (mindmapId: number): Promise<void> => {
+  await axiosInstance.delete(`/mindmap/mindmaps/${mindmapId}`);
+};
+
+/**
+ * Save mindmap with a specific version
+ */
+export const saveMindmapWithVersion = async (
+  projectId: number,
+  versionId: number | null | undefined,
+  nodes: any[],
+  edges: any[]
+): Promise<Mindmap> => {
+  if (!versionId) {
+    throw new Error('versionId is required');
+  }
+  
+  const url = `/mindmap/project/${projectId}/version/${versionId}/save`;
+  console.log('API call:', url, { nodesCount: nodes?.length, edgesCount: edges?.length });
+  
+  try {
+    const response = await axiosInstance.post(url, {
+      nodes,
+      edges,
+    });
+    console.log('API response:', response.status, response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('API Error:', error.message);
+    console.error('Status:', error.response?.status);
+    console.error('Data:', error.response?.data);
+    
+    // Re-throw with more context
+    if (error.response?.status === 404) {
+      throw new Error('Version not found');
+    } else if (error.response?.status >= 500) {
+      throw new Error('Server error: ' + (error.response?.data?.message || 'Unknown error'));
+    }
+    throw error;
+  }
+};
+
+/**
+ * Duplicate mindmap for a new version (preserves node positions)
+ */
+export const duplicateMindmapForVersion = async (
+  sourceVersionId: number,
+  targetVersionId: number
+): Promise<Mindmap> => {
+  const response = await axiosInstance.post(`/mindmap/version/${sourceVersionId}/duplicate-to/${targetVersionId}`);
   return response.data;
 };
 
@@ -142,13 +212,6 @@ export const saveAsPreProjectVersion = async (
     edges,
   });
   return response.data;
-};
-
-/**
- * Delete a mindmap
- */
-export const deleteMindmap = async (mindmapId: number): Promise<void> => {
-  await axiosInstance.delete(`/mindmap/mindmaps/${mindmapId}`);
 };
 
 /**

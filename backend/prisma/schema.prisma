@@ -308,6 +308,7 @@ model Version {
   updatedAt   DateTime   @updatedAt @map("updated_at")
   tasks       Task[]
   links       TaskLink[]
+  mindmaps    Mindmap[]
   project     Project    @relation(fields: [projectId], references: [projectId])
 
   @@index([projectId])
@@ -372,14 +373,17 @@ model Response {
 model Mindmap {
   mindmapId Int           @id @default(autoincrement())
   projectId Int           @map("project_id")
+  versionId Int?          @map("version_id")
   name      String        @default("Untitled Mindmap")
   createdAt DateTime      @default(now()) @map("created_at")
   updatedAt DateTime      @updatedAt @map("updated_at")
   project   Project       @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  version   Version?      @relation(fields: [versionId], references: [versionId])
   edges     MindmapEdge[]
   nodes     MindmapNode[]
 
   @@index([projectId])
+  @@index([versionId])
 }
 
 model MindmapNode {

@@ -402,10 +402,459 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
   };
 };
 
+/**
+ * Get all mindmaps for a project
+ * @param {number} projectId - The project ID
+ * @returns {Promise<Array>} List of mindmaps
+ */
+const getMindmapsForProject = async (projectId) => {
+  try {
+    const mindmaps = await prisma.mindmap.findMany({
+      where: { projectId },
+      include: {
+        nodes: true,
+        edges: true,
+        version: {
+          select: {
+            versionId: true,
+            name: true,
+            isActive: true
+          }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    return mindmaps.map(m => ({
+      mindmapId: m.mindmapId,
+      projectId: m.projectId,
+      versionId: m.versionId,
+      name: m.name,
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt,
+      nodes: m.nodes.map(n => ({
+        nodeId: n.nodeId,
+        externalId: n.externalId,
+        label: n.label,
+        nodeType: n.nodeType,
+        positionX: n.positionX,
+        positionY: n.positionY,
+        color: n.color,
+        fontSize: n.fontSize,
+        isRoot: n.isRoot
+      })),
+      edges: m.edges.map(e => ({
+        edgeId: e.edgeId,
+        externalId: e.externalId,
+        source: e.source,
+        target: e.target
+      })),
+      version: m.version
+    }));
+  } catch (error) {
+    console.error('Error fetching mindmaps:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a single mindmap by ID
+ * @param {number} mindmapId - The mindmap ID
+ * @returns {Promise<Object>} Mindmap object with nodes and edges
+ */
+const getMindmapById = async (mindmapId) => {
+  try {
+    const mindmap = await prisma.mindmap.findUnique({
+      where: { mindmapId },
+      include: {
+        nodes: true,
+        edges: true,
+        version: {
+          select: {
+            versionId: true,
+            name: true,
+            isActive: true
+          }
+        }
+      }
+    });
+
+    if (!mindmap) {
+      return null;
+    }
+
+    return {
+      mindmapId: mindmap.mindmapId,
+      projectId: mindmap.projectId,
+      versionId: mindmap.versionId,
+      name: mindmap.name,
+      createdAt: mindmap.createdAt,
+      updatedAt: mindmap.updatedAt,
+      nodes: mindmap.nodes.map(n => ({
+        nodeId: n.nodeId,
+        externalId: n.externalId,
+        label: n.label,
+        nodeType: n.nodeType,
+        positionX: n.positionX,
+        positionY: n.positionY,
+        color: n.color,
+        fontSize: n.fontSize,
+        isRoot: n.isRoot
+      })),
+      edges: mindmap.edges.map(e => ({
+        edgeId: e.edgeId,
+        externalId: e.externalId,
+        source: e.source,
+        target: e.target
+      })),
+      version: mindmap.version
+    };
+  } catch (error) {
+    console.error('Error fetching mindmap:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a mindmap by version ID
+ * @param {number} versionId - The version ID
+ * @returns {Promise<Object|null>} Mindmap object or null
+ */
+const getMindmapByVersion = async (versionId) => {
+  try {
+    const mindmap = await prisma.mindmap.findFirst({
+      where: { versionId },
+      include: {
+        nodes: true,
+        edges: true,
+        version: {
+          select: {
+            versionId: true,
+            name: true,
+            isActive: true
+          }
+        }
+      }
+    });
+
+    if (!mindmap) {
+      return null;
+    }
+
+    return {
+      mindmapId: mindmap.mindmapId,
+      projectId: mindmap.projectId,
+      versionId: mindmap.versionId,
+      name: mindmap.name,
+      createdAt: mindmap.createdAt,
+      updatedAt: mindmap.updatedAt,
+      nodes: mindmap.nodes.map(n => ({
+        nodeId: n.nodeId,
+        externalId: n.externalId,
+        label: n.label,
+        nodeType: n.nodeType,
+        positionX: n.positionX,
+        positionY: n.positionY,
+        color: n.color,
+        fontSize: n.fontSize,
+        isRoot: n.isRoot
+      })),
+      edges: mindmap.edges.map(e => ({
+        edgeId: e.edgeId,
+        externalId: e.externalId,
+        source: e.source,
+        target: e.target
+      })),
+      version: mindmap.version
+    };
+  } catch (error) {
+    console.error('Error fetching mindmap by version:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new mindmap
+ * @param {number} projectId - The project ID
+ * @param {Object} data - Mindmap data
+ * @returns {Promise<Object>} Created mindmap
+ */
+const createMindmap = async (projectId, data) => {
+  try {
+    const { name, versionId } = data;
+
+    const mindmap = await prisma.mindmap.create({
+      data: {
+        projectId,
+        versionId: versionId || null,
+        name: name || 'Untitled Mindmap'
+      },
+      include: {
+        nodes: true,
+        edges: true
+      }
+    });
+
+    return {
+      mindmapId: mindmap.mindmapId,
+      projectId: mindmap.projectId,
+      versionId: mindmap.versionId,
+      name: mindmap.name,
+      createdAt: mindmap.createdAt,
+      updatedAt: mindmap.updatedAt
+    };
+  } catch (error) {
+    console.error('Error creating mindmap:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a mindmap with nodes and edges
+ * @param {number} mindmapId - The mindmap ID
+ * @param {Object} data - Update data with nodes and edges
+ * @returns {Promise<Object>} Updated mindmap
+ */
+const updateMindmap = async (mindmapId, data) => {
+  try {
+    const { name, nodes, edges } = data;
+
+    // First update the mindmap basic info
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+
+    // If nodes are provided, delete old nodes and create new ones
+    if (nodes) {
+      await prisma.mindmapNode.deleteMany({ where: { mindmapId } });
+      
+      if (nodes.length > 0) {
+        await prisma.mindmapNode.createMany({
+          data: nodes.map(node => ({
+            mindmapId,
+            externalId: node.id || node.externalId,
+            label: node.data?.label || node.label || 'Untitled',
+            nodeType: node.data?.nodeType || node.nodeType || 'action',
+            positionX: node.position?.x || node.positionX || 0,
+            positionY: node.position?.y || node.positionY || 0,
+            color: node.data?.color || node.color || '#3b82f6',
+            fontSize: node.data?.fontSize || node.fontSize || 14,
+            isRoot: node.data?.isRoot || node.isRoot || false
+          }))
+        });
+      }
+    }
+
+    // If edges are provided, delete old edges and create new ones
+    if (edges) {
+      await prisma.mindmapEdge.deleteMany({ where: { mindmapId } });
+      
+      if (edges.length > 0) {
+        await prisma.mindmapEdge.createMany({
+          data: edges.map(edge => ({
+            mindmapId,
+            externalId: edge.id || edge.externalId,
+            source: edge.source,
+            target: edge.target
+          }))
+        });
+      }
+    }
+
+    // Update mindmap with new name if provided
+    if (name) {
+      await prisma.mindmap.update({
+        where: { mindmapId },
+        data: { name }
+      });
+    }
+
+    // Fetch and return the updated mindmap
+    const mindmap = await getMindmapById(mindmapId);
+    return mindmap;
+  } catch (error) {
+    console.error('Error updating mindmap:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a mindmap
+ * @param {number} mindmapId - The mindmap ID
+ * @returns {Promise<void>}
+ */
+const deleteMindmap = async (mindmapId) => {
+  try {
+    // Nodes and edges will be cascade deleted
+    await prisma.mindmap.delete({
+      where: { mindmapId }
+    });
+  } catch (error) {
+    console.error('Error deleting mindmap:', error);
+    throw error;
+  }
+};
+
+/**
+ * Save mindmap with a specific version
+ * @param {number} projectId - The project ID
+ * @param {number} versionId - The version ID
+ * @param {Array} nodes - Array of mindmap nodes with positions
+ * @param {Array} edges - Array of mindmap edges
+ * @returns {Promise<Object>} Saved mindmap
+ */
+const saveMindmapWithVersion = async (projectId, versionId, nodes, edges) => {
+  try {
+    console.log('saveMindmapWithVersion called:', { projectId, versionId, nodesCount: nodes?.length, edgesCount: edges?.length });
+    
+    // First check if a mindmap already exists for this version
+    let mindmap = await prisma.mindmap.findFirst({
+      where: { versionId }
+    });
+
+    if (mindmap) {
+      // Update existing mindmap
+      mindmap = await updateMindmap(mindmap.mindmapId, { nodes, edges });
+    } else {
+      // Create new mindmap for this version
+      mindmap = await prisma.mindmap.create({
+        data: {
+          projectId,
+          versionId,
+          name: `Mindmap - Version ${versionId}`
+        }
+      });
+
+      // Add nodes and edges
+      if (nodes && nodes.length > 0) {
+        await prisma.mindmapNode.createMany({
+          data: nodes.map(node => ({
+            mindmapId: mindmap.mindmapId,
+            externalId: node.id || node.externalId,
+            label: node.data?.label || node.label || 'Untitled',
+            nodeType: node.data?.nodeType || node.nodeType || 'action',
+            positionX: node.position?.x || node.positionX || 0,
+            positionY: node.position?.y || node.positionY || 0,
+            color: node.data?.color || node.color || '#3b82f6',
+            fontSize: node.data?.fontSize || node.fontSize || 14,
+            isRoot: node.data?.isRoot || node.isRoot || false
+          }))
+        });
+      }
+
+      if (edges && edges.length > 0) {
+        await prisma.mindmapEdge.createMany({
+          data: edges.map(edge => ({
+            mindmapId: mindmap.mindmapId,
+            externalId: edge.id || edge.externalId,
+            source: edge.source,
+            target: edge.target
+          }))
+        });
+      }
+
+      // Fetch the complete mindmap
+      mindmap = await getMindmapById(mindmap.mindmapId);
+    }
+
+    return mindmap;
+  } catch (error) {
+    console.error('Error saving mindmap with version:', error);
+    console.error('Error details:', error.message, error.stack);
+    throw error;
+  }
+};
+
+/**
+ * Duplicate a mindmap for a new version (copy all nodes and edges with positions)
+ * @param {number} sourceVersionId - Source version ID to duplicate from
+ * @param {number} targetVersionId - Target version ID to duplicate to
+ * @returns {Promise<Object>} New mindmap
+ */
+const duplicateMindmapForVersion = async (sourceVersionId, targetVersionId) => {
+  try {
+    // Find the source mindmap
+    const sourceMindmap = await prisma.mindmap.findFirst({
+      where: { versionId: sourceVersionId },
+      include: {
+        nodes: true,
+        edges: true
+      }
+    });
+
+    if (!sourceMindmap) {
+      // No mindmap to duplicate, just return null
+      return null;
+    }
+
+    // Create new mindmap for the target version
+    const newMindmap = await prisma.mindmap.create({
+      data: {
+        projectId: sourceMindmap.projectId,
+        versionId: targetVersionId,
+        name: `${sourceMindmap.name} (Copy)`
+      }
+    });
+
+    // Map to store old externalId to new externalId for edge duplication
+    const nodeIdMap = new Map();
+
+    // Duplicate nodes with their positions preserved
+    if (sourceMindmap.nodes && sourceMindmap.nodes.length > 0) {
+      const newNodes = await prisma.mindmapNode.createMany({
+        data: sourceMindmap.nodes.map(node => {
+          const newExternalId = `${node.externalId}_copy_${Date.now()}`;
+          nodeIdMap.set(node.externalId, newExternalId);
+          
+          return {
+            mindmapId: newMindmap.mindmapId,
+            externalId: newExternalId,
+            label: node.label,
+            nodeType: node.nodeType,
+            positionX: node.positionX,  // PRESERVE POSITIONS
+            positionY: node.positionY,  // PRESERVE POSITIONS
+            color: node.color,
+            fontSize: node.fontSize,
+            isRoot: node.isRoot
+          };
+        }),
+        returning: true
+      });
+    }
+
+    // Duplicate edges with the new node IDs
+    if (sourceMindmap.edges && sourceMindmap.edges.length > 0) {
+      await prisma.mindmapEdge.createMany({
+        data: sourceMindmap.edges.map(edge => ({
+          mindmapId: newMindmap.mindmapId,
+          externalId: `${edge.externalId}_copy_${Date.now()}`,
+          source: nodeIdMap.get(edge.source) || edge.source,
+          target: nodeIdMap.get(edge.target) || edge.target
+        }))
+      });
+    }
+
+    // Fetch and return the new mindmap
+    const result = await getMindmapById(newMindmap.mindmapId);
+    return result;
+  } catch (error) {
+    console.error('Error duplicating mindmap for version:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   saveMindmapAsTasks,
   importMindmapAsTasks,
   mapNodeTypeToTaskType,
   isDescriptionNodeType,
   isLivrableNodeType,
+  // Version-related functions
+  getMindmapsForProject,
+  getMindmapById,
+  getMindmapByVersion,
+  createMindmap,
+  updateMindmap,
+  deleteMindmap,
+  saveMindmapWithVersion,
+  duplicateMindmapForVersion,
 };

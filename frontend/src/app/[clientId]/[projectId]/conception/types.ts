@@ -21,7 +21,7 @@ export interface SelectOption {
 
 export type ViewMode = 'day' | 'week' | 'month';
 
-export type EditorTab = 'general' | 'budgets' | 'moyenHumain' | 'amenagements' | 'equipementsPedagogiques' | 'prestations' | 'communications';
+export type EditorTab = 'general' | 'budgets' | 'moyenHumain' | 'amenagements' | 'equipementsPedagogiques' | 'prestations' | 'communications' | string;
 
 export interface Column {
   key: string;

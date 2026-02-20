@@ -39,8 +39,19 @@ import {
   importToGantt,
   mindmapToReactFlow,
   saveAsPreProjectVersion,
+  fetchMindmapByVersion,
+  saveMindmapWithVersion,
+  generateMindmapFromResponses,
+  AIMindmapNode,
   Mindmap,
 } from '@/api/mindmapApi';
+import {
+  fetchVersions,
+  createVersion,
+  deleteVersion,
+  activateVersion,
+  Version,
+} from '@/api/ganttApi';
 
 // Color palette for mindmap nodes
 const NODE_COLORS = [
@@ -111,6 +122,11 @@ export const MindmapInner = () => {
   
   // AI Mindmap modal state
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  
+  // Version state
+  const [versions, setVersions] = useState<Version[]>([]);
+  const [currentVersion, setCurrentVersion] = useState<Version | null>(null);
+  const [versionsKey, setVersionsKey] = useState(0);
   
   // ReactFlow instance
   const { fitView, zoomIn, zoomOut, getNodes, getEdges } = useReactFlow();
@@ -205,6 +221,113 @@ export const MindmapInner = () => {
     }
   }, [projectId, setNodes, setEdges]);
   
+  // Load versions from API - returns the versions array
+  const loadVersions = useCallback(async (): Promise<Version[]> => {
+    if (!projectId) return [];
+    
+    try {
+      const versionsData = await fetchVersions(projectId);
+      setVersions(versionsData);
+      setVersionsKey(k => k + 1);
+      return versionsData;
+    } catch (err) {
+      console.error('Failed to load versions:', err);
+      return [];
+    }
+  }, [projectId]);
+  
+  // Handle version change - load mindmap for that version
+  const handleVersionChange = useCallback(async (version: Version | null) => {
+    setCurrentVersion(version);
+    
+    if (version) {
+      // Try to load mindmap for this version
+      try {
+        const versionMindmap = await fetchMindmapByVersion(version.versionId);
+        if (versionMindmap && versionMindmap.nodes && versionMindmap.nodes.length > 0) {
+          setCurrentMindmap(versionMindmap);
+          const { nodes: flowNodes, edges: flowEdges } = mindmapToReactFlow(versionMindmap);
+          setNodes(flowNodes as any);
+          setEdges(flowEdges as any);
+          setHistory([{ nodes: flowNodes as any, edges: flowEdges as any }]);
+          setHistoryIndex(0);
+        } else {
+          // No mindmap for this version, set empty (user needs to explicitly save to version)
+          setCurrentMindmap(null);
+          setNodes([]);
+          setEdges([]);
+          setHistory([{ nodes: [], edges: [] }]);
+          setHistoryIndex(0);
+        }
+      } catch (err: any) {
+        // If 404 (not found), that's expected - no mindmap for this version yet
+        if (err.response?.status === 404) {
+          setCurrentMindmap(null);
+          setNodes([]);
+          setEdges([]);
+          setHistory([{ nodes: [], edges: [] }]);
+          setHistoryIndex(0);
+        } else {
+          console.error('Failed to load mindmap for version:', err);
+        }
+      }
+    } else {
+      // Load default mindmap (no version)
+      loadMindmap();
+    }
+  }, [projectId, loadMindmap, setNodes, setEdges]);
+  
+  // Handle create version
+  const handleCreateVersion = useCallback(async (name: string, description?: string, sourceVersionId?: number | null) => {
+    if (!projectId) return;
+    
+    try {
+      const newVersion = await createVersion(projectId, { name, description });
+      
+      // loadVersions now returns the updated versions array
+      const updatedVersions = await loadVersions();
+      
+      // Find the newly created version in the updated list
+      const createdVersion = updatedVersions.find(v => v.versionId === newVersion.versionId) || newVersion;
+      
+      // Set as current version - this will trigger handleVersionChange
+      // which will create an empty mindmap for this new version
+      setCurrentVersion(createdVersion);
+    } catch (err) {
+      console.error('Failed to create version:', err);
+      alert('Failed to create version. Please try again.');
+    }
+  }, [projectId, loadVersions]);
+  
+  // Handle delete version
+  const handleDeleteVersion = useCallback(async (versionId: number) => {
+    if (!projectId) return;
+    try {
+      await deleteVersion(projectId, versionId);
+      await loadVersions();
+      setVersionsKey(k => k + 1); // Force version selector to re-render
+      if (currentVersion?.versionId === versionId) {
+        setCurrentVersion(null);
+      }
+    } catch (err) {
+      console.error('Failed to delete version:', err);
+      alert('Failed to delete version. Please try again.');
+    }
+  }, [projectId, currentVersion, loadVersions]);
+  
+  // Handle activate version
+  const handleActivateVersion = useCallback(async (versionId: number) => {
+    if (!projectId) return;
+    try {
+      await activateVersion(projectId, versionId);
+      await loadVersions();
+      setVersionsKey(k => k + 1); // Force version selector to re-render
+    } catch (err) {
+      console.error('Failed to activate version:', err);
+      alert('Failed to activate version. Please try again.');
+    }
+  }, [projectId, loadVersions]);
+  
   // Save mindmap as Pre-project version for Gantt chart
   const saveMindmapAsTasksFn = useCallback(async () => {
     if (!projectId) return;
@@ -263,11 +386,24 @@ export const MindmapInner = () => {
   const saveMindmap = useCallback(async (nodesToSave?: Node<MindmapNodeData>[], edgesToSave?: Edge[]) => {
     if (!currentMindmap) return;
     
-    const nodesToSaveData = (nodesToSave || getNodes()) as Node<MindmapNodeData>[];
-    const edgesToSaveData = edgesToSave || getEdges();
+    // Get nodes and edges - handle ReactFlow's getNodes() which returns { nodes: [...] }
+    let rawNodes = nodesToSave || getNodes();
+    let rawEdges = edgesToSave || getEdges();
+    
+    // Handle ReactFlow's getNodes() which returns { nodes: [...] } instead of array
+    if (rawNodes && typeof rawNodes === 'object' && 'nodes' in rawNodes) {
+      rawNodes = (rawNodes as any).nodes;
+    }
+    if (rawEdges && typeof rawEdges === 'object' && 'edges' in rawEdges) {
+      rawEdges = (rawEdges as any).edges;
+    }
+    
+    const nodesToSaveData = rawNodes as Node<MindmapNodeData>[];
+    const edgesToSaveData = rawEdges as Edge[];
     
     setIsSaving(true);
     try {
+      // Normal save - only save to default mindmap (not version-specific)
       await updateMindmap(currentMindmap.mindmapId!, {
         nodes: nodesToSaveData,
         edges: edgesToSaveData,
@@ -290,6 +426,102 @@ export const MindmapInner = () => {
     }
   }, [currentMindmap, getNodes, getEdges, projectId]);
   
+  // Save to version - explicit save button for version-specific mindmap
+  const saveToVersion = useCallback(async (nodesToSave?: Node<MindmapNodeData>[], edgesToSave?: Edge[]) => {
+    const vid = currentVersion?.versionId;
+    if (!vid) {
+      console.error('No version selected');
+      return;
+    }
+    
+    // Get nodes and edges from ReactFlow
+    // Note: getNodes() returns an object { nodes: [...] }, not an array!
+    let rawNodes = nodesToSave || getNodes();
+    let rawEdges = edgesToSave || getEdges();
+    
+    // Handle ReactFlow's getNodes() which returns { nodes: [...] } instead of array
+    // Also handle case where rawNodes might be passed as undefined
+    if (rawNodes && typeof rawNodes === 'object') {
+      if ('nodes' in rawNodes && Array.isArray((rawNodes as any).nodes)) {
+        rawNodes = (rawNodes as any).nodes;
+      } else if (!Array.isArray(rawNodes)) {
+        // Try to get nodes from getNodes() directly if not already an array
+        const freshNodes = getNodes();
+        if (freshNodes && typeof freshNodes === 'object' && 'nodes' in freshNodes) {
+          rawNodes = (freshNodes as any).nodes;
+        } else if (Array.isArray(freshNodes)) {
+          rawNodes = freshNodes;
+        }
+      }
+    }
+    
+    if (rawEdges && typeof rawEdges === 'object') {
+      if ('edges' in rawEdges && Array.isArray((rawEdges as any).edges)) {
+        rawEdges = (rawEdges as any).edges;
+      }
+    }
+    
+    // Ensure rawNodes and rawEdges are arrays
+    if (!Array.isArray(rawNodes) || !Array.isArray(rawEdges)) {
+      console.error('Invalid nodes or edges:', { rawNodes, rawEdges });
+      alert('Error: Invalid mindmap data. Please refresh and try again.');
+      return;
+    }
+    
+    // Ensure rawNodes and rawEdges are arrays
+    if (!Array.isArray(rawNodes) || !Array.isArray(rawEdges)) {
+      console.error('Invalid nodes or edges:', { rawNodes, rawEdges });
+      alert('Error: Invalid mindmap data. Please refresh and try again.');
+      return;
+    }
+    
+    console.log('Saving mindmap:', { nodesCount: rawNodes.length, edgesCount: rawEdges.length });
+    
+    // Extract clean node data
+    const nodesData = rawNodes.map(node => ({
+      id: node.id,
+      position: { x: node.position.x, y: node.position.y },
+      data: {
+        label: node.data?.label || '',
+        nodeType: node.data?.nodeType || 'action',
+        color: node.data?.color || '#3b82f6',
+        fontSize: node.data?.fontSize || 14,
+        isRoot: node.data?.isRoot || false,
+      },
+      type: node.type || 'default',
+    }));
+    
+    // Extract clean edge data
+    const edgesData = rawEdges.map(edge => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      type: edge.type || 'smoothstep',
+    }));
+    
+    setIsSaving(true);
+    try {
+      console.log('Saving to version:', { projectId, vid, nodesData: nodesData.length, edgesData: edgesData.length });
+      // @ts-ignore - TypeScript issue with type narrowing
+      const result = await saveMindmapWithVersion(projectId, vid, nodesData, edgesData);
+      console.log('Save result:', result);
+      
+      // Also save to localStorage as backup
+      localStorage.setItem(`mindmap_${projectId}_version_${vid}`, JSON.stringify({
+        nodes: nodesData,
+        edges: edgesData,
+      }));
+      
+      alert('Saved to version successfully!');
+    } catch (err: any) {
+      console.error('Failed to save mindmap to version:', err);
+      console.error('Error details:', err.response?.data || err.message);
+      alert('Failed to save to version. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [currentVersion, getNodes, getEdges, projectId]);
+  
   // Auto-save with debounce
   const autoSave = useCallback(() => {
     if (saveTimeoutRef.current) {
@@ -307,6 +539,7 @@ export const MindmapInner = () => {
   useEffect(() => {
     if (projectId) {
       loadMindmap();
+      loadVersions();
     }
     
     return () => {
@@ -314,7 +547,7 @@ export const MindmapInner = () => {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [projectId, loadMindmap]);
+  }, [projectId, loadMindmap, loadVersions]);
   
   // Delete a single node (called from node delete button)
   const handleDeleteNode = useCallback((nodeId: string) => {
@@ -477,9 +710,131 @@ export const MindmapInner = () => {
   }, [saveMindmap]);
   
   // Handle AI mindmap generation
-  const handleAIGenerate = useCallback(() => {
-    setAiModalOpen(true);
-  }, []);
+  const handleAIGenerate = useCallback(async () => {
+    // If a version is selected, generate and save directly to version
+    if (currentVersion?.versionId && projectId) {
+      const vid = currentVersion.versionId;
+      const pid = projectId;
+      
+      try {
+        setIsSaving(true);
+        
+        // Generate mindmap from responses
+        const aiResponse = await generateMindmapFromResponses(pid);
+        
+        if (!aiResponse || !aiResponse.nodes || aiResponse.nodes.length === 0) {
+          alert('No mindmap could be generated from the responses. Please check if there are responses to the questions.');
+          setIsSaving(false);
+          return;
+        }
+        
+        console.log('AI generated mindmap:', aiResponse);
+        
+        // Convert AI nodes to our format (similar to MindmapAIModal)
+        const typeColors: Record<string, string> = {
+          action: '#96776e',
+          sous_action: '#698063',
+          objectif: '#ffffff',
+          livrable: '#22c55e',
+        };
+        
+        const aiNodes: AIMindmapNode[] = aiResponse.nodes || [];
+        const nodeMap: Record<string, string> = {};
+        const nodesData: any[] = [];
+        const edgesData: any[] = [];
+        
+        // First pass: create nodes with positions
+        let nodeIndex = 0;
+        for (const aiNode of aiNodes) {
+          const newId = aiNode.id || `node-${Date.now()}-${nodeIndex}`;
+          nodeMap[aiNode.id] = newId;
+          
+          // Calculate position based on hierarchy
+          let position = { x: 0, y: 0 };
+          
+          if (aiNode.id === 'root') {
+            position = { x: 250, y: 300 };
+          } else if (aiNode.parentId && nodeMap[aiNode.parentId]) {
+            // Find parent node position
+            const parentNode = nodesData.find(n => n.id === nodeMap[aiNode.parentId!]);
+            if (parentNode) {
+              const siblingCount = aiNodes.filter(n => n.parentId === aiNode.parentId).length;
+              const siblingIndex = aiNodes.filter(n => n.parentId === aiNode.parentId && 
+                aiNodes.indexOf(n) < aiNodes.indexOf(aiNode)).length;
+              position = {
+                x: (parentNode.position?.x || 0) + 200,
+                y: (parentNode.position?.y || 0) + (siblingIndex * 120) - ((siblingCount - 1) * 60),
+              };
+            }
+          }
+          
+          nodesData.push({
+            id: newId,
+            position,
+            data: {
+              label: aiNode.label || 'Untitled',
+              color: aiNode.color || typeColors[aiNode.nodeType] || '#3b82f6',
+              fontSize: 14,
+              nodeType: aiNode.nodeType || 'action',
+              isRoot: aiNode.id === 'root',
+            },
+          });
+          
+          nodeIndex++;
+        }
+        
+        // Second pass: create edges
+        for (const aiNode of aiNodes) {
+          if (aiNode.parentId && nodeMap[aiNode.parentId]) {
+            edgesData.push({
+              id: `edge-${nodeMap[aiNode.parentId]}-${nodeMap[aiNode.id]}`,
+              source: nodeMap[aiNode.parentId],
+              target: nodeMap[aiNode.id],
+            });
+          }
+        }
+        
+        console.log('Saving to version:', { projectId: pid, vid, nodesCount: nodesData.length, edgesCount: edgesData.length });
+        
+        // Save to version
+        await saveMindmapWithVersion(pid, vid, nodesData, edgesData);
+        
+        // Also load into the current view
+        const reactFlowNodes: Node<MindmapNodeData>[] = nodesData.map((n: any) => ({
+          id: n.id,
+          type: 'mindmapNode',
+          position: n.position,
+          data: n.data,
+        }));
+        
+        const reactFlowEdges: Edge[] = edgesData.map((e: any) => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          type: 'smoothstep',
+          animated: true,
+          markerEnd: { type: 'arrowclosed' as const },
+          style: { stroke: '#94a3b8', strokeWidth: 2 },
+        }));
+        
+        // Replace nodes and edges
+        saveToHistory();
+        setNodes(reactFlowNodes);
+        setEdges(reactFlowEdges);
+        
+        alert(`Mindmap generated and saved to version "${currentVersion.name}" with ${nodesData.length} nodes!`);
+        
+      } catch (err: any) {
+        console.error('Error generating mindmap:', err);
+        alert('Error generating mindmap: ' + (err.message || 'Unknown error'));
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      // No version selected, show modal as before
+      setAiModalOpen(true);
+    }
+  }, [currentVersion, projectId, saveMindmapWithVersion, setNodes, setEdges, saveToHistory]);
   
   // Handle importing AI-generated mindmap nodes
   const handleAIImport = useCallback((newNodes: Node[], newEdges: Edge[]) => {
@@ -631,6 +986,15 @@ export const MindmapInner = () => {
             hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}
             selectedNodeType={selectedNodeType}
             onNodeTypeChange={setSelectedNodeType}
+            versions={versions}
+            currentVersion={currentVersion}
+            setCurrentVersion={handleVersionChange}
+            onCreateVersion={handleCreateVersion}
+            onDeleteVersion={handleDeleteVersion}
+            onActivateVersion={handleActivateVersion}
+            onSaveToVersion={saveToVersion}
+            projectId={projectId!}
+            versionsKey={versionsKey}
           />
         </div>
         

@@ -12,7 +12,10 @@ import {
   Save,
   ChevronDown,
   Brain,
+  GitBranch,
 } from 'lucide-react';
+import { Version } from '@/api/ganttApi';
+import { VersionSelector } from '../../conception/components/VersionSelector';
 
 interface MindmapToolbarProps {
   onZoomIn: () => void;
@@ -30,6 +33,16 @@ interface MindmapToolbarProps {
   selectedNodeType: string;
   onNodeTypeChange: (type: string) => void;
   className?: string;
+  // Version props
+  versions?: Version[];
+  currentVersion?: Version | null;
+  setCurrentVersion?: (version: Version | null) => void;
+  onCreateVersion?: (name: string, description?: string, sourceVersionId?: number | null) => void;
+  onDeleteVersion?: (versionId: number) => void;
+  onActivateVersion?: (versionId: number) => void;
+  onSaveToVersion?: () => void;
+  projectId?: number;
+  versionsKey?: number;
 }
 
 export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
@@ -48,6 +61,16 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
   selectedNodeType,
   onNodeTypeChange,
   className = '',
+  // Version props
+  versions = [],
+  currentVersion = null,
+  setCurrentVersion = () => {},
+  onCreateVersion = async () => {},
+  onDeleteVersion = async () => {},
+  onActivateVersion = async () => {},
+  onSaveToVersion = async () => {},
+  projectId = 0,
+  versionsKey = 0,
 }) => {
   // Node types configuration
   const nodeTypes = [
@@ -302,6 +325,37 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
         <Brain size={18} />
         <span style={{ fontSize: '13px', fontWeight: 500 }}>IA</span>
       </button>
+
+      {/* Version Selector */}
+      {projectId > 0 && setCurrentVersion && (
+        <div style={{ marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <VersionSelector
+            versions={versions}
+            currentVersion={currentVersion}
+            setCurrentVersion={setCurrentVersion}
+            onCreateVersion={onCreateVersion}
+            onDeleteVersion={onDeleteVersion}
+            onActivateVersion={onActivateVersion}
+            projectId={projectId}
+            versionsKey={versionsKey}
+          />
+          {/* Save to Version button - only shows when a version is selected */}
+          {currentVersion && onSaveToVersion && (
+            <button
+              onClick={onSaveToVersion}
+              style={{
+                ...buttonStyle,
+                backgroundColor: '#22c55e', // Green
+                color: 'white',
+              }}
+              title="Save to this version"
+            >
+              <Save size={18} />
+              <span style={{ fontSize: '13px', fontWeight: 500, marginLeft: '4px' }}>Save</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
