@@ -2,7 +2,7 @@
   "subtitles": {
     "projectList": "Consultez la liste des projets et accèdez aux détails du projet.",
     "overview": "Étapes de réalisation de votre projet.",
-    "ideation": "Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer à poser les bases de votre projet en répondant aux questions.",
+    "ideation": "Dans cette étape, vous pouvez rassembler vos idées, définir les besoins principaux et commencer àposer les bases de votre projet en répondant aux questions.",
     "conception": "Phase de conception",
     "pilotage": "Pilotage du projet",
     "evaluation": "Évaluation",
@@ -28,5 +28,17 @@
       "AUTO-ENTREPRENEUR",
       "ASSOCIATION"
     ]
+  },
+  "prompts": {
+    "mindmap": {
+      "name": "Génération de Mindmap",
+      "description": "Prompt utilisé pour générer un mindmap à partir des réponses aux questions",
+      "systemPrompt": "À partir de ces réponses aux questions, génère une structure de carte mentale (mindmap) organisée de manière hiérarchique.\nLe format attendu est le JSON suivant.\n{fmt}\n\nRègles:\n- Le premier nœud (root) doit être le nom du projet ou thème principal\n- Organise les réponses en catégories logiques\n- Utilise les types de nœuds: \"action\" pour les catégories principales, \"sous_action\" pour les sous-catégories, \"livrable\" pour les livrables, \"objectif\" pour les objectifs\n- Les couleurs recommandées: #3b82f6 (bleu) pour root, #96776e (marron) pour action, #698063 (vert) pour sous_action, #22c55e (vert clair) pour livrable, #ffffff (blanc) pour objectif\n- Génère un JSON valide sans texte supplémentaire"
+    },
+    "gantt": {
+      "name": "Génération de Gantt",
+      "description": "Prompt utilisé pour générer un diagramme de Gantt à partir de contenu texte",
+      "systemPrompt": "Analyse ce contenu et à partir des information pertinentes que tu y trouveras, retourne un objet JSON qui servira à créer un Gantt.\n{text}\n\nLe format attendu pour le Gantt est le JSON suivant.\n{fmt}\n\nAssure toi que le JSON retourné est valide et respecte bien le format demandé."
+    }
   }
 }

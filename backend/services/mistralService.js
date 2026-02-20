@@ -8,6 +8,25 @@ dotenv.config();
 const apiKey = process.env.MISTRAL_API_KEY;
 const client = new Mistral({ apiKey: apiKey });
 
+// Load app config for prompts
+const CONFIG_PATH = path.join(__dirname, '../config/app-config.json');
+
+function loadConfig() {
+    try {
+        const configData = fs.readFileSync(CONFIG_PATH, 'utf8');
+        return JSON.parse(configData);
+    } catch (error) {
+        console.error('Error loading config:', error);
+        return {};
+    }
+}
+
+// Get prompts from config, with fallbacks to hardcoded values
+function getPromptConfig(promptType) {
+    const config = loadConfig();
+    return config.prompts?.[promptType] || null;
+}
+
 exports.CallMistralAPI = async (prompt) => {
     const chatResponse = await client.chat.complete({
         model: "mistral-large-latest",
@@ -170,6 +189,18 @@ const mindmapExpectedFormat = `{
     ]
 }`;
 
+// Default system prompt for mindmap (fallback if not in config)
+const defaultMindmapSystemPrompt = `À partir de ces réponses aux questions, génère une structure de carte mentale (mindmap) organisée de manière hiérarchique.
+Le format attendu est le JSON suivant.
+{fmt}
+
+Règles:
+- Le premier nœud (root) doit être le nom du projet ou thème principal
+- Organise les réponses en catégories logiques
+- Utilise les types de nœuds: "action" pour les catégories principales, "sous_action" pour les sous-catégories, "livrable" pour les livrables, "objectif" pour les objectifs
+- Les couleurs recommandées: #3b82f6 (bleu) pour root, #96776e (marron) pour action, #698063 (vert) pour sous_action, #22c55e (vert clair) pour livrable, #ffffff (blanc) pour objectif
+- Génère un JSON valide sans texte supplémentaire`;
+
 // Génère un mindmap à partir des réponses du projet
 exports.GenerateMindmapFromResponses = async (projectId) => {
     try {
@@ -212,18 +243,14 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
             contextText += `Réponses: ${answers.join(', ')}\n\n`;
         }
 
+        // Get prompt from config or use default
+        const promptConfig = getPromptConfig('mindmap');
+        const systemPromptTemplate = promptConfig?.systemPrompt || defaultMindmapSystemPrompt;
+        const finalPrompt = systemPromptTemplate.replace('{fmt}', mindmapExpectedFormat).replace('{text}', contextText);
+
         const prompt = `${contextText}
 
-À partir de ces réponses aux questions, génère une structure de carte mentale (mindmap) organisée de manière hiérarchique.
-Le format attendu est le suivant:
-${mindmapExpectedFormat}
-
-Règles:
-- Le premier nœud (root) doit être le nom du projet ou thème principal
-- Organise les réponses en catégories logiques
-- Utilise les types de nœuds: "action" pour les catégories principales, "sous_action" pour les sous-catégories, "livrable" pour les livrables, "objectif" pour les objectifs
-- Les couleurs recommandées: #3b82f6 (bleu) pour root, #96776e (marron) pour action, #698063 (vert) pour sous_action, #22c55e (vert clair) pour livrable, #ffffff (blanc) pour objectif
-- Génère un JSON valide sans texte supplémentaire`;
+${finalPrompt}`;
 
         return exports.CallMistralAPI(prompt);
     } catch (err) {

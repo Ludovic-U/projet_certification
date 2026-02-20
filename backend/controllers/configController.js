@@ -37,6 +37,12 @@ exports.updateConfig = async (req, res) => {
       });
     }
 
+    // Allow prompts to be optional - if not provided, keep existing prompts
+    if (!newConfig.prompts) {
+      // Don't fail, just warn
+      console.warn('No prompts in update, keeping existing ones');
+    }
+
     // Écrire la nouvelle configuration
     await fs.writeFile(
       CONFIG_PATH,
@@ -52,6 +58,59 @@ exports.updateConfig = async (req, res) => {
     console.error("Erreur lors de la mise à jour de la configuration:", error);
     res.status(500).json({
       message: "Erreur lors de la mise à jour de la configuration",
+      error: error.message,
+    });
+  }
+};
+
+// Get only prompts
+exports.getPrompts = async (req, res) => {
+  try {
+    const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+    const config = JSON.parse(configData);
+    res.status(200).json(config.prompts || {});
+  } catch (error) {
+    console.error('Erreur lors de la lecture des prompts:', error);
+    res.status(500).json({
+      message: "Erreur lors de la lecture des prompts",
+      error: error.message,
+    });
+  }
+};
+
+// Update only prompts
+exports.updatePrompts = async (req, res) => {
+  try {
+    // Vérifier les permissions
+    checkPermission(
+      req.user,
+      "financeur:manage"
+    );
+
+    const newPrompts = req.body;
+
+    // Lire la config existante
+    const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+    const config = JSON.parse(configData);
+
+    // Mettre à jour les prompts
+    config.prompts = newPrompts;
+
+    // Écrire la nouvelle configuration
+    await fs.writeFile(
+      CONFIG_PATH,
+      JSON.stringify(config, null, 2),
+      'utf8'
+    );
+
+    res.status(200).json({
+      message: "Prompts mis à jour avec succès",
+      prompts: newPrompts,
+    });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des prompts:', error);
+    res.status(500).json({
+      message: "Erreur lors de la mise à jour des prompts",
       error: error.message,
     });
   }
