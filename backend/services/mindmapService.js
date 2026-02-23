@@ -625,38 +625,56 @@ const updateMindmap = async (mindmapId, data) => {
 
     // If nodes are provided, delete old nodes and create new ones
     if (nodes) {
-      await prisma.mindmapNode.deleteMany({ where: { mindmapId } });
+      const deleteResult = await prisma.mindmapNode.deleteMany({ where: { mindmapId } });
+      console.log(`Deleted ${deleteResult.count} nodes for mindmap ${mindmapId}`);
       
       if (nodes.length > 0) {
-        await prisma.mindmapNode.createMany({
-          data: nodes.map(node => ({
-            mindmapId,
-            externalId: node.id || node.externalId,
-            label: node.data?.label || node.label || 'Untitled',
-            nodeType: node.data?.nodeType || node.nodeType || 'action',
-            positionX: node.position?.x || node.positionX || 0,
-            positionY: node.position?.y || node.positionY || 0,
-            color: node.data?.color || node.color || '#3b82f6',
-            fontSize: node.data?.fontSize || node.fontSize || 14,
-            isRoot: node.data?.isRoot || node.isRoot || false
-          }))
-        });
+        // Use individual creates to avoid issues with delete/create timing
+        for (const node of nodes) {
+          try {
+            await prisma.mindmapNode.create({
+              data: {
+                mindmapId,
+                externalId: node.id || node.externalId,
+                label: node.data?.label || node.label || 'Untitled',
+                nodeType: node.data?.nodeType || node.nodeType || 'action',
+                positionX: node.position?.x || node.positionX || 0,
+                positionY: node.position?.y || node.positionY || 0,
+                color: node.data?.color || node.color || '#3b82f6',
+                fontSize: node.data?.fontSize || node.fontSize || 14,
+                isRoot: node.data?.isRoot || node.isRoot || false
+              }
+            });
+          } catch (e) {
+            console.warn('Error creating node:', e.message);
+          }
+        }
       }
     }
 
     // If edges are provided, delete old edges and create new ones
     if (edges) {
-      await prisma.mindmapEdge.deleteMany({ where: { mindmapId } });
+      // First delete all existing edges
+      const deleteResult = await prisma.mindmapEdge.deleteMany({ where: { mindmapId } });
+      console.log(`Deleted ${deleteResult.count} edges for mindmap ${mindmapId}`);
       
       if (edges.length > 0) {
-        await prisma.mindmapEdge.createMany({
-          data: edges.map(edge => ({
-            mindmapId,
-            externalId: edge.id || edge.externalId,
-            source: edge.source,
-            target: edge.target
-          }))
-        });
+        // Use individual creates to avoid issues with delete/create timing
+        for (const edge of edges) {
+          try {
+            await prisma.mindmapEdge.create({
+              data: {
+                mindmapId,
+                externalId: edge.id || edge.externalId,
+                source: edge.source,
+                target: edge.target
+              }
+            });
+          } catch (e) {
+            // Log but don't fail on duplicate - the delete should have removed it
+            console.warn('Error creating edge:', e.message);
+          }
+        }
       }
     }
 

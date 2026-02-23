@@ -6,11 +6,9 @@ import { useParams } from "next/navigation";
 import { useConfig } from "@/context/ConfigContext";
 import { useLocalStorage } from "@/context/LocalStorageContext";
 import StrategicAnalysisTab from "./tabs/StrategicAnalysisTab";
-import PreProjectPanel from "./tabs/PreProjectPanel";
-import DecisionPanel from "./tabs/DecisionPanel";
 import IdeaProject from "./tabs/IdeaProject";
 
-type TabKey = "analyse" | "idée projet" | "preprojet" | "decision";
+type TabKey = "analyse" | "idée projet";
 
 export default function IdeationPage() {
   const { data } = useLocalStorage();
@@ -39,7 +37,7 @@ export default function IdeationPage() {
         </div>
       </div>
       <section className="w-full mb-6">
-        <div className="grid w-full grid-cols-4 overflow-hidden rounded-xl border border-dark/10 bg-white">
+        <div className="grid w-full grid-cols-2 overflow-hidden rounded-xl border border-dark/10 bg-white">
           <button
             type="button"
             className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
@@ -53,7 +51,7 @@ export default function IdeationPage() {
           </button>
           <button
             type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
+            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide ${
               activeTab === "idée projet"
                 ? "text-white bg-dark"
                 : "text-dark hover:bg-dark/5"
@@ -62,38 +60,16 @@ export default function IdeationPage() {
           >
             Idée Projet
           </button>
-          <button
-            type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
-              activeTab === "preprojet"
-                ? "text-white bg-dark"
-                : "text-dark hover:bg-dark/5"
-            }`}
-            onClick={() => setActiveTab("preprojet")}
-          >
-            Pre-projet
-          </button>
-          <button
-            type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide ${
-              activeTab === "decision"
-                ? "text-white bg-dark"
-                : "text-dark hover:bg-dark/5"
-            }`}
-            onClick={() => setActiveTab("decision")}
-          >
-            Decision
-          </button>
         </div>
       </section>
-      {activeTab === "analyse" && (
-        <StrategicAnalysisTab clientId={clientId} projectId={projectId} />
-      )}
-      {activeTab === "idée projet" && (
-        <IdeaProject />
-      )}
-      {activeTab === "preprojet" && <PreProjectPanel />}
-      {activeTab === "decision" && <DecisionPanel />}
+      <div className="flex-1 overflow-hidden">
+        {activeTab === "analyse" && (
+          <StrategicAnalysisTab clientId={clientId} projectId={projectId} />
+        )}
+        {activeTab === "idée projet" && (
+          <IdeaProject />
+        )}
+      </div>
     </div>
   );
 }

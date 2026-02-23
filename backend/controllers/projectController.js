@@ -12,6 +12,11 @@ const {
   updateProjectSwot,
   getProjectSwot,
   updateProjectGoNogo,
+  getProjectDecisions,
+  updateProjectDecision,
+  getProjectImpacts,
+  updateProjectImpact,
+  deleteProjectImpact,
 } = require("../services/projectService");
 const { validateId } = require("../middlewares/validateId");
 
@@ -290,6 +295,162 @@ module.exports.updateProjectGoNogoPost = async (req, res) => {
     console.error("Error updating project go/nogo:", error);
     if (error.message === "Project not found") {
       return res.status(404).json({ error: "Project not found" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Get all decisions for a project
+ * Expects projectId in req.params
+ * Returns all feasibility decisions for the project
+ */
+module.exports.getProjectDecisionsGet = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+
+  try {
+    const decisions = await getProjectDecisions(projectId);
+    res.status(200).json(decisions);
+  } catch (error) {
+    console.error("Error fetching project decisions:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Update or create a feasibility decision for a project
+ * Expects projectId in req.params and decision data in req.body
+ * {
+ *   boardType: "faisabilite" | "strategique",
+ *   decisionType: string,
+ *   isApproved: boolean | null,
+ *   pourquoi: string | null,
+ *   decisionFinale: "go" | "nogo" | "pending" | null
+ * }
+ */
+module.exports.updateProjectDecisionPost = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+
+  const { boardType, decisionType, isApproved, pourquoi, decisionFinale } = req.body;
+
+  // Validate boardType
+  const validBoards = ["faisabilite", "strategique"];
+  if (boardType && !validBoards.includes(boardType)) {
+    return res.status(400).json({
+      error: `boardType must be one of: ${validBoards.join(", ")}`,
+    });
+  }
+
+  // Validate decisionType if provided
+  if (decisionType && typeof decisionType !== "string") {
+    return res.status(400).json({ error: "decisionType must be a string" });
+  }
+
+  // Validate isApproved
+  if (isApproved !== undefined && isApproved !== null && typeof isApproved !== "boolean") {
+    return res.status(400).json({ error: "isApproved must be a boolean or null" });
+  }
+
+  // Validate decisionFinale
+  if (decisionFinale !== undefined) {
+    const validFinales = ["go", "nogo", "pending", null, ""];
+    if (!validFinales.includes(decisionFinale) && typeof decisionFinale !== "string") {
+      return res.status(400).json({ error: "decisionFinale must be 'go', 'nogo', 'pending', or null" });
+    }
+  }
+
+  try {
+    const decision = await updateProjectDecision(projectId, {
+      boardType,
+      decisionType,
+      isApproved,
+      pourquoi,
+      decisionFinale: decisionFinale === "" ? null : decisionFinale,
+    });
+    res.status(200).json(decision);
+  } catch (error) {
+    console.error("Error updating project decision:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Get all impacts for a project
+ * Expects projectId in req.params
+ * Returns all impacts for the project
+ */
+module.exports.getProjectImpactsGet = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+
+  try {
+    const impacts = await getProjectImpacts(projectId);
+    res.status(200).json(impacts);
+  } catch (error) {
+    console.error("Error fetching project impacts:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Update or create an impact row for a project
+ * Expects projectId in req.params and impact data in req.body
+ */
+module.exports.updateProjectImpactPost = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+
+  const { id, rowOrder, resultatsAttendus, criteres, indicateurs, situationDepart, objectif } = req.body;
+
+  try {
+    const impact = await updateProjectImpact(projectId, {
+      id,
+      rowOrder,
+      resultatsAttendus,
+      criteres,
+      indicateurs,
+      situationDepart,
+      objectif,
+    });
+    res.status(200).json(impact);
+  } catch (error) {
+    console.error("Error updating project impact:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Delete an impact row for a project
+ * Expects projectId in req.params and impactId in req.params
+ */
+module.exports.deleteProjectImpactDelete = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const impactId = Number(req.params.impactId);
+  
+  if (!validateId(projectId, "projectId", res)) return;
+  if (!validateId(impactId, "impactId", res)) return;
+
+  try {
+    await deleteProjectImpact(projectId, impactId);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error deleting project impact:", error);
+    if (error.message === "Impact not found") {
+      return res.status(404).json({ error: "Impact not found" });
     }
     res.status(500).json({ error: "Internal server error" });
   }

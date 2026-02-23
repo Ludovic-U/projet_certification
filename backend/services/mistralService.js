@@ -191,8 +191,6 @@ const mindmapExpectedFormat = `{
 
 // Default system prompt for mindmap (fallback if not in config)
 const defaultMindmapSystemPrompt = `À partir de ces réponses aux questions, génère une structure de carte mentale (mindmap) organisée de manière hiérarchique.
-Le format attendu est le JSON suivant.
-{fmt}
 
 Règles:
 - Le premier nœud (root) doit être le nom du projet ou thème principal
@@ -246,8 +244,8 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
         // Get prompt from config or use default
         const promptConfig = getPromptConfig('mindmap');
         const systemPromptTemplate = promptConfig?.systemPrompt || defaultMindmapSystemPrompt;
-        const finalPrompt = systemPromptTemplate.replace('{fmt}', mindmapExpectedFormat).replace('{text}', contextText);
-
+        // const finalPrompt = systemPromptTemplate.replace('{fmt}', mindmapExpectedFormat).replace('{text}', contextText);
+        const finalPrompt = systemPromptTemplate + 'Le forma attendu en réponse est le suivant:\n' + mindmapExpectedFormat;
         const prompt = `${contextText}
 
 ${finalPrompt}`;

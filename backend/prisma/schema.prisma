@@ -122,6 +122,8 @@ model Project {
   versions        Version[]
   questions       Question[]        @relation("ProjectQuestion")
   types           Type[]            @relation("ProjectType")
+  decisions       ProjectDecision[]
+  impacts         ProjectImpact[]
 }
 
 model Todo {
@@ -419,6 +421,47 @@ model MindmapEdge {
 
   @@unique([mindmapId, externalId])
   @@index([mindmapId])
+}
+
+// Decision model for feasibility and strategic tracking
+model ProjectDecision {
+  decisionId      Int       @id @default(autoincrement()) @map("decision_id")
+  projectId       Int       @map("project_id")
+  // Board type: "faisabilite" or "strategique"
+  boardType       String    @default("faisabilite") @map("board_type")
+  // Decision type within the board
+  decisionType    String    @map("decision_type")
+  // Yes/No answer
+  isApproved      Boolean?  @map("is_approved")
+  // Reason/Why text
+  pourquoi        String?   @map("pourquoi")
+  // Manual decision finale (go, nogo, pending) - user selected per board
+  decisionFinale  String?   @map("decision_finale")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  project         Project   @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@unique([projectId, boardType, decisionType])
+  @@index([projectId])
+}
+
+// Impact model for tracking project impacts in ideation phase
+model ProjectImpact {
+  impactId           Int       @id @default(autoincrement()) @map("impact_id")
+  projectId          Int       @map("project_id")
+  // Impact row identifier (for ordering)
+  rowOrder           Int       @default(0) @map("row_order")
+  // 5 columns: Résultats Attendus, Critères, Indicateurs, Situation de Départ, Objectif
+  resultatsAttendus  String?   @map("resultats_attendus")
+  criteres           String?   @map("criteres")
+  indicateurs        String?   @map("indicateurs")
+  situationDepart    String?   @map("situation_depart")
+  objectif           String?   @map("objectif")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  project            Project   @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 enum BudgetCategory {

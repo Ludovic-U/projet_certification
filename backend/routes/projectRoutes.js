@@ -6,7 +6,12 @@ const {
   updateProjectSwotPost,
   getProjectSwotGet,
   updateProjectGoNogoPost,
-  getProjectsByUserIdGet
+  getProjectsByUserIdGet,
+  getProjectDecisionsGet,
+  updateProjectDecisionPost,
+  getProjectImpactsGet,
+  updateProjectImpactPost,
+  deleteProjectImpactDelete
 } = require('../controllers/projectController');
 const { authenticateUser } = require('../middlewares/auth');
 const router = Router()
@@ -22,5 +27,14 @@ router.get('/:projectId/swot', authenticateUser, getProjectSwotGet);
 
 // Go/NoGo route
 router.post('/:projectId/go-nogo', authenticateUser, updateProjectGoNogoPost);
+
+// Decision routes (feasibility analysis)
+router.get('/:projectId/decisions', authenticateUser, getProjectDecisionsGet);
+router.post('/:projectId/decisions', authenticateUser, updateProjectDecisionPost);
+
+// Impact routes (ideation phase)
+router.get('/:projectId/impact', authenticateUser, getProjectImpactsGet);
+router.post('/:projectId/impact', authenticateUser, updateProjectImpactPost);
+router.delete('/:projectId/impact/:impactId', authenticateUser, deleteProjectImpactDelete);
 
 module.exports = router;
