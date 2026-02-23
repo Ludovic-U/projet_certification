@@ -127,13 +127,20 @@ export const getDateRange = (tasks: Task[], minStartDate: Date): DateRange => {
   let end = new Date(today.getFullYear() + 1, 11, 31);
 
   if (tasks.length > 0) {
-    const dates = tasks.flatMap((t: Task) => [t.start.getTime(), t.end.getTime()]);
-    const minDate = new Date(Math.min(...dates));
-    const maxDate = new Date(Math.max(...dates));
+    // Filter out tasks with invalid dates before processing
+    const validTasks = tasks.filter((t: Task) => 
+      t.start && !isNaN(t.start.getTime()) && t.end && !isNaN(t.end.getTime())
+    );
+    
+    if (validTasks.length > 0) {
+      const dates = validTasks.flatMap((t: Task) => [t.start.getTime(), t.end.getTime()]);
+      const minDate = new Date(Math.min(...dates));
+      const maxDate = new Date(Math.max(...dates));
 
-    if (minDate < start) start = new Date(minDate);
-    start.setDate(1);
-    if (maxDate > end) end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
+      if (minDate < start) start = new Date(minDate);
+      start.setDate(1);
+      if (maxDate > end) end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
+    }
   }
 
   // Expand by margins to give breathing room (no margin on start to avoid previous years)

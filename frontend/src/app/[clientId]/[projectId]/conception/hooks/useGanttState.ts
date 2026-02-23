@@ -52,9 +52,21 @@ export const useGanttState = () => {
   const [versionId, setVersionId] = useState<number | null>(null);
 
   // UI state for editing and interactions
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTaskBase] = useState<Task | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [editorTab, setEditorTab] = useState<EditorTab>('general');
+  
+  // Wrapper to ensure budget is initialized when setting editing task
+  const setEditingTask = useCallback((task: Task | null) => {
+    if (task && !task.budget) {
+      setEditingTaskBase({
+        ...task,
+        budget: createEmptyBudget()
+      });
+    } else {
+      setEditingTaskBase(task);
+    }
+  }, []);
   const [hoveredTask, setHoveredTask] = useState<Task | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState<{ task: Task; x: number; y: number } | null>(null);
@@ -560,7 +572,8 @@ export const useGanttState = () => {
               assigneeIds: editingTask.assigneeIds || [],
               livrableIds: editingTask.livrableIds || [],
               color: editingTask.color || '#3b82f6',
-              versionId: versionId || null
+              versionId: versionId || null,
+              budget: editingTask.budget
             });
             
             // Replace the temporary task with the real one from server (with real ID)

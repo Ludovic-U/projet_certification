@@ -1,5 +1,6 @@
 import api from './axiosInstance';
 import { Task, Link, Livrable, User } from '@/app/[clientId]/[projectId]/data';
+import { Budget } from '@/app/[clientId]/[projectId]/conception/utils/budgetUtils';
 
 // Re-export types for convenience
 export type { Task, Link, Livrable, User };
@@ -73,6 +74,7 @@ export interface ApiTaskResponse {
   color?: string;
   subActionId?: number | null;
   actionId?: number;
+  budget?: Budget;
 }
 
 /**
@@ -81,8 +83,8 @@ export interface ApiTaskResponse {
 export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
   id: apiTask.id,
   text: apiTask.text,
-  start: apiTask.start ? new Date(apiTask.start) : new Date(),
-  end: apiTask.end ? new Date(apiTask.end) : new Date(),
+  start: apiTask.start && !isNaN(Date.parse(apiTask.start)) ? new Date(apiTask.start) : new Date(),
+  end: apiTask.end && !isNaN(Date.parse(apiTask.end)) ? new Date(apiTask.end) : new Date(),
   progress: apiTask.progress,
   parent: apiTask.parent,
   type: apiTask.type,
@@ -94,6 +96,7 @@ export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
   livrableIds: apiTask.livrableIds,
   goal: apiTask.goal,
   color: apiTask.color || '#3b82f6',
+  budget: apiTask.budget,
 });
 
 /**
@@ -129,8 +132,8 @@ export const createTask = async (
   return {
     id: task.id,
     text: task.text || 'New Task',
-    start: task.start ? new Date(task.start) : new Date(),
-    end: task.end ? new Date(task.end) : new Date(),
+    start: task.start && !isNaN(Date.parse(task.start)) ? new Date(task.start) : new Date(),
+    end: task.end && !isNaN(Date.parse(task.end)) ? new Date(task.end) : new Date(),
     progress: task.progress || 0,
     parent: task.parent || 0,
     type: task.type || 'task',
@@ -141,6 +144,7 @@ export const createTask = async (
     livrableIds: task.livrableIds || [],
     goal: task.goal,
     color: task.color || '#3b82f6',
+    budget: task.budget,
   };
 };
 
@@ -159,8 +163,8 @@ export const updateTask = async (
   return {
     id: task.id,
     text: task.text || 'Task',
-    start: task.start ? new Date(task.start) : new Date(),
-    end: task.end ? new Date(task.end) : new Date(),
+    start: task.start && !isNaN(Date.parse(task.start)) ? new Date(task.start) : new Date(),
+    end: task.end && !isNaN(Date.parse(task.end)) ? new Date(task.end) : new Date(),
     progress: task.progress || 0,
     parent: task.parent || 0,
     type: task.type || 'task',
@@ -171,6 +175,7 @@ export const updateTask = async (
     livrableIds: task.livrableIds || [],
     goal: task.goal,
     color: task.color || '#3b82f6',
+    budget: task.budget,
   };
 };
 
@@ -252,6 +257,7 @@ export const saveGanttState = async (
 export const formatDateForApi = (date: Date | string | null | undefined): string | null => {
   if (!date) return null;
   const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return null;
   return d.toISOString().split('T')[0];
 };
 
@@ -259,7 +265,7 @@ export const formatDateForApi = (date: Date | string | null | undefined): string
  * Format date from API (returns Date object)
  */
 export const formatDateFromApi = (dateString: string | null | undefined): Date | null => {
-  if (!dateString) return null;
+  if (!dateString || isNaN(Date.parse(dateString))) return null;
   return new Date(dateString);
 };
 

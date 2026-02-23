@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, UserMinus, CreditCard, Upload, Package } from 'lucide-react';
 import { Task, EditorTab, Livrable, SelectOption } from '../types';
-import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateExpenseLinesTotal, calculateBudgetTotals, getExpenseLinesByCategory, Budget } from '../utils/budgetUtils';
+import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateBudgetTotals, Budget } from '../utils/budgetUtils';
 import Select from 'react-select';
 
 // Task color options for Gantt chart display
@@ -219,9 +219,9 @@ const MoyensHumainsSection: React.FC<MoyensHumainsSectionProps> = ({
   setEditingTask,
   users,
 }) => {
-  const moyenHumainLines = editingTask.budget?.expenseLines.filter(line => 
+  const moyenHumainLines = (editingTask.budget?.expenseLines || []).filter(line => 
     line.nature?.startsWith('moyenHumain:') || (!line.nature?.includes(':') && line.nature)
-  ) || [];
+  );
 
   const assignedUserIds = editingTask.assigneeIds || [];
 
@@ -243,7 +243,7 @@ const MoyensHumainsSection: React.FC<MoyensHumainsSectionProps> = ({
       ...editingTask,
       budget: {
         ...editingTask.budget!,
-        expenseLines: editingTask.budget!.expenseLines.map(line =>
+        expenseLines: (editingTask.budget?.expenseLines || []).map(line =>
           line.id === id ? { ...line, unites: jours, prix: cout, nature: `moyenHumain:${user?.label || ''}` } : line
         )
       }
@@ -255,7 +255,7 @@ const MoyensHumainsSection: React.FC<MoyensHumainsSectionProps> = ({
       ...editingTask,
       budget: {
         ...editingTask.budget!,
-        expenseLines: editingTask.budget!.expenseLines.filter(line => line.id !== id)
+        expenseLines: (editingTask.budget?.expenseLines || []).filter(line => line.id !== id)
       }
     });
   };
@@ -396,9 +396,9 @@ const BudgetSectionWithLines: React.FC<BudgetSectionWithLinesProps> = ({
   updateExpenseLine,
   removeExpenseLine,
 }) => {
-  const expenseLines = editingTask.budget?.expenseLines.filter(line => 
+  const expenseLines = (editingTask.budget?.expenseLines || []).filter(line => 
     line.nature?.startsWith(category + ':') || (!line.nature?.includes(':') && category === 'moyenHumain')
-  ) || [];
+  );
 
   const categoryTotal = expenseLines.reduce((sum, line) => sum + calculateExpenseLineTotal(line), 0);
 
@@ -432,7 +432,7 @@ const BudgetSectionWithLines: React.FC<BudgetSectionWithLinesProps> = ({
               <div className="col-span-6">
                 <input
                   type="text"
-                  value={line.nature.replace(category + ':', '')}
+                  value={(line.nature || '').replace(category + ':', '')}
                   onChange={(e) => updateExpenseLine(line.id, { nature: `${category}:${e.target.value}` })}
                   placeholder="Nature / name..."
                   className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -546,7 +546,6 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
 
   const tabs: { id: EditorTab; label: string; icon: React.ReactNode; color: string; category: string }[] = [
     { id: 'general', label: 'Général', icon: <Settings className="w-4 h-4" />, color: 'text-blue-400', category: '' },
-    { id: 'budgets', label: 'Budgets', icon: <CreditCard className="w-4 h-4" />, color: 'text-cyan-400', category: 'budgets' },
     { id: 'moyenHumain', label: 'Moyen humain', icon: <Users className="w-4 h-4" />, color: 'text-emerald-400', category: 'moyenHumain' },
     { id: 'amenagements', label: 'Aménagements', icon: <Target className="w-4 h-4" />, color: 'text-purple-400', category: 'amenagements' },
     { id: 'equipementsPedagogiques', label: 'Équipements pédagogiques', icon: <FileText className="w-4 h-4" />, color: 'text-pink-400', category: 'equipements' },
@@ -590,7 +589,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
       ...editingTask,
       budget: {
         ...editingTask.budget!,
-        expenseLines: editingTask.budget!.expenseLines.map(line =>
+        expenseLines: (editingTask.budget?.expenseLines || []).map(line =>
           line.id === id ? { ...line, ...updates } : line
         )
       }
@@ -602,7 +601,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
       ...editingTask,
       budget: {
         ...editingTask.budget!,
-        expenseLines: editingTask.budget!.expenseLines.filter(line => line.id !== id)
+        expenseLines: (editingTask.budget?.expenseLines || []).filter(line => line.id !== id)
       }
     });
   };
@@ -769,7 +768,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   </label>
                   <input
                     type="date"
-                    value={new Date(editingTask.start).toISOString().split('T')[0]}
+                    value={editingTask.start && !isNaN(editingTask.start.getTime()) ? new Date(editingTask.start).toISOString().split('T')[0] : ''}
                     onChange={(e) => {
                       const newStart = new Date(e.target.value);
                       setEditingTask({ ...editingTask, start: newStart, end: editingTask.type === 'milestone' ? newStart : editingTask.end });
@@ -785,7 +784,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     </label>
                     <input
                       type="date"
-                      value={new Date(editingTask.end).toISOString().split('T')[0]}
+                      value={editingTask.end && !isNaN(editingTask.end.getTime()) ? new Date(editingTask.end).toISOString().split('T')[0] : ''}
                       onChange={(e) => setEditingTask({ ...editingTask, end: new Date(e.target.value) })}
                       className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     />

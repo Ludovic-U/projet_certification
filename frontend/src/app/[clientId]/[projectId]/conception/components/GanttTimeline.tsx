@@ -106,7 +106,7 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
             {groups.map((g) => (
               <div
                 key={g.key}
-                className="px-4 py-3 text-center text-sm font-semibold text-slate-300 border-r border-slate-700 flex items-center justify-center bg-slate-800/50"
+                className="px-3 py-2 text-center text-sm font-semibold text-slate-300 border-r border-slate-700 flex items-center justify-center bg-slate-800/50"
                 style={{ width: `${g.width}px` }}
               >
                 <span className="flex items-center gap-2">

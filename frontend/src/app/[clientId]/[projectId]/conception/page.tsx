@@ -7,6 +7,25 @@
 
 import React, { useState } from 'react';
 import { PageHeader } from '@/components/ui';
+import { useGanttState } from './hooks/useGanttState';
+import { useGanttHandlers } from './hooks/useGanttHandlers';
+import { useGanttExportImport } from './hooks/useGanttExportImport';
+import { GanttToolbar } from './components/GanttToolbar';
+import { GanttTaskList } from './components/GanttTaskList';
+import { GanttTimeline } from './components/GanttTimeline';
+import { GanttTaskEditor } from './components/GanttTaskEditor';
+import { GanttTaskSummary } from './components/GanttTaskSummary';
+import { GanttTooltip } from './components/GanttTooltip';
+import { GanttContextMenu } from './components/GanttContextMenu';
+import { GanttTutorial } from './components/GanttTutorial';
+import { BudgetOverview } from './components/BudgetOverview';
+import { generateColumns, getBaseStart } from './utils/timelineUtils';
+import { startOfDay } from './utils/dateUtils';
+import { DAY_MS } from './constants';
+import { toUTC } from './utils/dateUtils';
+import { MIN_PX_PER_DAY, MAX_PX_PER_DAY } from './constants';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+
 import { useParams } from 'next/navigation';
 import { useLocalStorage } from '@/context/LocalStorageContext';
 import dynamic from 'next/dynamic';

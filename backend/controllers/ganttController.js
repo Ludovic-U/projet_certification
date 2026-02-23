@@ -77,7 +77,8 @@ module.exports.createTask = async (req, res) => {
       goal: req.body.goal,
       color: req.body.color,
       assigneeIds: req.body.assigneeIds || [],
-      livrableIds: req.body.livrableIds || []
+      livrableIds: req.body.livrableIds || [],
+      budget: req.body.budget
     };
 
     const task = await createTask(taskData);
@@ -106,6 +107,7 @@ module.exports.updateTask = async (req, res) => {
   
   try {
     console.log('updateTask - received files:', req.body.files);
+    console.log('updateTask - received budget:', JSON.stringify(req.body.budget));
     const taskData = {
       projectId,
       versionId: req.body.versionId !== undefined ? (req.body.versionId ? Number(req.body.versionId) : null) : undefined,
@@ -122,7 +124,8 @@ module.exports.updateTask = async (req, res) => {
       goal: req.body.goal,
       color: req.body.color,
       assigneeIds: req.body.assigneeIds,
-      livrableIds: req.body.livrableIds
+      livrableIds: req.body.livrableIds,
+      budget: req.body.budget
     };
 
     const task = await updateTask(taskId, taskData);

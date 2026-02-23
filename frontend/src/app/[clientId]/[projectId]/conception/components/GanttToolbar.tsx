@@ -15,7 +15,8 @@ import {
   List,
   CalendarDays,
   Home,
-  HelpCircle
+  HelpCircle,
+  DollarSign
 } from 'lucide-react';
 import { ViewMode, MenuPosition } from '../types';
 import { PortalMenu } from './PortalMenu';
@@ -77,6 +78,8 @@ interface GanttToolbarProps {
   // Tutorial props
   tutorialOpen?: boolean;
   setTutorialOpen?: (open: boolean) => void;
+  // Budget view props
+  onOpenBudgetView?: () => void;
 }
 
 export const GanttToolbar: React.FC<GanttToolbarProps> = ({
@@ -131,6 +134,8 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   // Tutorial props
   tutorialOpen,
   setTutorialOpen,
+  // Budget view props
+  onOpenBudgetView,
 }) => {
   const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
     { value: 'day', label: 'Jour', icon: <CalendarDays className="w-4 h-4" /> },
@@ -428,6 +433,17 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             >
               <HelpCircle className="w-5 h-5" />
               <span className="hidden sm:inline">Tutoriel</span>
+            </button>
+          )}
+          {/* Budget Button */}
+          {onOpenBudgetView && (
+            <button
+              onClick={onOpenBudgetView}
+              className="flex items-center gap-2 px-4 py-2.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all text-sm font-medium"
+              data-tutorial-id="budget-btn"
+            >
+              <DollarSign className="w-5 h-5" />
+              <span className="hidden sm:inline">Budget</span>
             </button>
           )}
           {/* Add Task Button */}
