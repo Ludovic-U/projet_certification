@@ -220,6 +220,8 @@ model Task {
   type            String                  @default("task")
   versionId       Int?                    @map("version_id")
   color           String                  @default("#3b82f6")
+  // Budget fields - JSON stored as string
+  budget          String?                 @map("budget")
   parent          Task?                   @relation("TaskHierarchy", fields: [parentId], references: [taskId])
   children        Task[]                  @relation("TaskHierarchy")
   project         Project?                @relation(fields: [projectId], references: [projectId])

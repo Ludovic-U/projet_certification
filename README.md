@@ -15,7 +15,7 @@
 
 ## Overview
 
-F2S (Fade to Shine) is a comprehensive project management application designed for managing client projects through various phases: Ideation, Conception, Evaluation, and Pilotage. It provides tools for Gantt charts, mind mapping, SWOT analysis, budget management, decision tracking, and AI-powered assistance via Mistral AI.
+F2S (Figure de Skills) is a comprehensive project management application designed for managing client projects through various phases: Ideation, Conception, Evaluation, and Pilotage. It provides tools for Gantt charts, mind mapping, SWOT analysis, budget management, decision tracking, and AI-powered assistance via Mistral AI.
 
 ---
 

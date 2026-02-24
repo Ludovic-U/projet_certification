@@ -165,8 +165,8 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
         livrableIds: task.deliverables.map(d => d.id),
         goal: task.goal,
         color: task.color || '#3b82f6',
-        // Use stored budget if available, otherwise aggregate from expenses
-        budget: task.budget || {
+        // Parse stored budget if it's a JSON string, otherwise use as object
+        budget: task.budget ? (typeof task.budget === 'string' ? JSON.parse(task.budget) : task.budget) : {
           personnelDays: Math.round(personnelDays * 10) / 10,
           personnelCost: Math.round(moyenHumainCost * 100) / 100,
           internsDays: 0,
@@ -450,7 +450,10 @@ module.exports.updateTask = async (taskId, taskData) => {
     }
     if (goal !== undefined) updateData.goal = goal;
     if (color !== undefined) updateData.color = color;
-    if (budget !== undefined) updateData.budget = budget;
+    if (budget !== undefined) {
+      // Budget is stored as JSON string in the database
+      updateData.budget = typeof budget === 'string' ? budget : JSON.stringify(budget);
+    }
 
     const task = await prisma.task.update({
       where: { taskId: numericTaskId },
