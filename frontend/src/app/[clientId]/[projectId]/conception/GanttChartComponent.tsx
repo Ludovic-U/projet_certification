@@ -23,7 +23,8 @@ import { startOfDay } from './utils/dateUtils';
 import { DAY_MS } from './constants';
 import { toUTC } from './utils/dateUtils';
 import { MIN_PX_PER_DAY, MAX_PX_PER_DAY } from './constants';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { getTotalBudget, calculateBudgetTotals, getTaskBudget, calculateExpenseLinesTotal } from './utils/budgetUtils';
+import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 
 import { useParams } from 'next/navigation';
 import { fetchVersions, createVersion, deleteVersion as deleteVersionApi, activateVersion as activateVersionApi, Version } from '@/api/ganttApi';
@@ -38,6 +39,9 @@ export default function GanttChartComponent() {
   
   // Tutorial state
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  
+  // Budget view state
+  const [showBudgetView, setShowBudgetView] = useState(false);
   
   // Ref to track current version (for async operations)
   const currentVersionRef = useRef<Version | null>(null);
@@ -164,6 +168,11 @@ export default function GanttChartComponent() {
   
   // Use custom hooks for state management
   const ganttState = useGanttState();
+  
+  // Handler to open budget view - shows the project budget modal
+  const handleOpenBudgetView = useCallback(() => {
+    setShowBudgetView(true);
+  }, []);
   
   // Re-fetch Gantt data when currentVersion changes
   // Only load on version change, NOT on every ganttState change (which would break dragging)
@@ -325,6 +334,8 @@ export default function GanttChartComponent() {
           // Tutorial props
           tutorialOpen={tutorialOpen}
           setTutorialOpen={setTutorialOpen}
+          // Budget view props
+          onOpenBudgetView={handleOpenBudgetView}
         />
 
         {/* Main Gantt Chart Area */}
@@ -491,6 +502,100 @@ export default function GanttChartComponent() {
           isOpen={tutorialOpen} 
           onClose={() => setTutorialOpen(false)} 
         />
+        
+        {/* Budget View Modal */}
+        {showBudgetView && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex justify-between items-center p-6 border-b border-slate-700">
+                <h2 className="text-2xl font-bold text-white">Budget du Projet</h2>
+                <button 
+                  onClick={() => setShowBudgetView(false)}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 overflow-auto p-6">
+                {(() => {
+                  const tasksWithBudget = ganttState.tasks.filter(t => t.budget);
+                  const totalBudget = getTotalBudget(ganttState.tasks);
+                  
+                  return (
+                    <div className="space-y-6">
+                      {/* Total Budget Summary */}
+                      <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-2xl p-6 border border-cyan-500/30">
+                        <div className="text-center">
+                          <p className="text-slate-400 text-sm uppercase tracking-wide mb-2">Budget Total du Projet</p>
+                          <p className="text-4xl font-bold text-cyan-400">
+                            {totalBudget.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                          </p>
+                          <p className="text-slate-400 mt-2">
+                            {tasksWithBudget.length} tâche{tasksWithBudget.length !== 1 ? 's' : ''} avec budget
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Task Budgets */}
+                      <div className="grid gap-4">
+                        {tasksWithBudget.map(task => {
+                          const budget = task.budget!;
+                          const totals = calculateBudgetTotals(budget);
+                          return (
+                            <div key={task.id} className="bg-slate-700/50 rounded-xl p-4 hover:bg-slate-700/70 transition-colors">
+                              <div className="flex justify-between items-start mb-3">
+                                <h3 className="text-lg font-semibold text-white">{task.text}</h3>
+                                <span className="text-emerald-400 font-bold text-lg">
+                                  {totals.total.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  <span className="text-slate-400">Lignes de dépenses:</span>
+                                  <p className="text-cyan-400 font-medium">
+                                    {totals.expenseLinesTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                                  </p>
+                                </div>
+                                <div>
+                                  <span className="text-slate-400">Personnel:</span>
+                                  <p className="text-white font-medium">
+                                    {budget.personnelCost.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                                  </p>
+                                </div>
+                                <div>
+                                  <span className="text-slate-400">Frais:</span>
+                                  <p className="text-white font-medium">
+                                    {(budget.fittingsCost + budget.educationalEquipmentCost + budget.subcontractorCost + budget.travelCost + budget.otherPrestationsCost + budget.communicationCost).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                                  </p>
+                                </div>
+                                <div>
+                                  <span className="text-slate-400">Frais généraux:</span>
+                                  <p className="text-purple-400 font-medium">
+                                    {totals.overhead.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {tasksWithBudget.length === 0 && (
+                        <div className="text-center py-12">
+                          <p className="text-slate-400 text-lg">Aucune tâche avec budget défini</p>
+                          <p className="text-slate-500 text-sm mt-2">Créez une tâche et ajoutez un budget pour voir les détails ici</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

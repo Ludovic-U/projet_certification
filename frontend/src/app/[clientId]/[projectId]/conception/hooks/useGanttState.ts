@@ -57,8 +57,17 @@ export const useGanttState = () => {
   const [editorTab, setEditorTab] = useState<EditorTab>('general');
   
   // Wrapper to ensure budget is initialized when setting editing task
-  const setEditingTask = useCallback((task: Task | null) => {
-    if (task && !task.budget) {
+  const setEditingTask = useCallback((task: Task | null | ((prev: Task | null) => Task | null)) => {
+    if (typeof task === 'function') {
+      // Handle functional update
+      setEditingTaskBase(prev => {
+        const newTask = task(prev);
+        if (newTask && !newTask.budget) {
+          return { ...newTask, budget: createEmptyBudget() };
+        }
+        return newTask;
+      });
+    } else if (task && !task.budget) {
       setEditingTaskBase({
         ...task,
         budget: createEmptyBudget()

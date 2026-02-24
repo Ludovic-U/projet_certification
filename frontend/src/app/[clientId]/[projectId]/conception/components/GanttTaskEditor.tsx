@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, UserMinus, CreditCard, Upload, Package } from 'lucide-react';
 import { Task, EditorTab, Livrable, SelectOption } from '../types';
-import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateBudgetTotals, Budget } from '../utils/budgetUtils';
+import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateExpenseLinesTotal, calculateBudgetTotals, Budget, getExpenseLinesByCategory } from '../utils/budgetUtils';
 import Select from 'react-select';
 
 // Task color options for Gantt chart display
