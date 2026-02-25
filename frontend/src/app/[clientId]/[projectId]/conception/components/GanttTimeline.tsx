@@ -106,7 +106,7 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
             {groups.map((g) => (
               <div
                 key={g.key}
-                className="px-4 py-3 text-center text-sm font-semibold text-slate-300 border-r border-slate-700 flex items-center justify-center bg-slate-800/50"
+                className="px-3 py-2 text-center text-sm font-semibold text-slate-300 border-r border-slate-700 flex items-center justify-center bg-slate-800/50"
                 style={{ width: `${g.width}px` }}
               >
                 <span className="flex items-center gap-2">
@@ -236,6 +236,7 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
                 ) : (
                   <div
                     className="group absolute top-1/2 -translate-y-1/2 cursor-move z-10"
+                    data-tutorial-id="task-bar"
                     style={{
                       ...getTaskStyle(task),
                       minWidth: '40px',
@@ -278,6 +279,7 @@ export const GanttTimeline: React.FC<GanttTimelineProps> = ({
                       {/* Progress overlay */}
                       <div
                         className="absolute bottom-0 left-0 h-1 bg-white/30 rounded-b-lg"
+                        data-tutorial-id="task-progress"
                         style={{ width: `${task.progress}%` }}
                       />
 

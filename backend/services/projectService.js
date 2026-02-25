@@ -99,7 +99,7 @@ module.exports.getProjectsByUserId = async (userId) => {
     // Get projects where user is:
     // 1. Manager of the project
     // 2. Assigned to tasks in the project
-    // 3. Manager of the client's projects (Project.client is a single relation)
+    // 3. Client manager (isManager: true in clientUserRoles)
     const projects = await prisma.project.findMany({
       where: {
         OR: [
@@ -115,8 +115,9 @@ module.exports.getProjectsByUserId = async (userId) => {
           },
           {
             client: {
-              isManager: true,
-              userId: validUserId
+              userRoles: {
+                some: { userId: validUserId, isManager: true }
+              }
             }
           }
         ]
@@ -389,6 +390,236 @@ module.exports.updateProjectGoNogo = async (projectId, goNogo) => {
     return updatedProject;
   } catch (error) {
     console.error("Erreur lors de la mise à jour go/nogo :", error);
+    throw error;
+  }
+};
+
+// Get all feasibility decisions for a project
+module.exports.getProjectDecisions = async (projectId) => {
+  try {
+    const validProjectId = Number(projectId);
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+
+    // First verify the project exists
+    const project = await prisma.project.findUnique({
+      where: { projectId: validProjectId },
+      select: { projectId: true },
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    // Get all decisions for the project
+    const decisions = await prisma.projectDecision.findMany({
+      where: { projectId: validProjectId },
+      orderBy: [
+        { boardType: 'asc' },
+        { decisionType: 'asc' }
+      ],
+    });
+
+    return decisions;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des décisions :", error);
+    throw error;
+  }
+};
+
+// Update or create a feasibility decision
+module.exports.updateProjectDecision = async (projectId, data) => {
+  try {
+    const validProjectId = Number(projectId);
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+
+    const { feasibilityType, boardType, decisionType, isApproved, pourquoi, decisionFinale } = data;
+
+    // First verify the project exists
+    const project = await prisma.project.findUnique({
+      where: { projectId: validProjectId },
+      select: { projectId: true },
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    // Determine board type and decision type
+    const board = boardType || "faisabilite";
+    const decision = decisionType || feasibilityType;
+
+    // Decision data to upsert
+    const decisionData = {};
+    
+    if (isApproved !== undefined) {
+      decisionData.isApproved = isApproved ?? null;
+    }
+    if (pourquoi !== undefined) {
+      decisionData.pourquoi = pourquoi ?? null;
+    }
+    if (decisionFinale !== undefined) {
+      // Validate decisionFinale
+      const validFinales = ["go", "nogo", "pending", null];
+      if (!validFinales.includes(decisionFinale)) {
+        throw new Error("decisionFinale must be 'go', 'nogo', 'pending', or null");
+      }
+      decisionData.decisionFinale = decisionFinale;
+    }
+
+    const upsertedDecision = await prisma.projectDecision.upsert({
+      where: {
+        projectId_boardType_decisionType: {
+          projectId: validProjectId,
+          boardType: board,
+          decisionType: decision,
+        },
+      },
+      update: decisionData,
+      create: {
+        projectId: validProjectId,
+        boardType: board,
+        decisionType: decision,
+        ...decisionData,
+      },
+    });
+
+    return upsertedDecision;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de la décision :", error);
+    throw error;
+  }
+};
+
+// Get all impacts for a project
+module.exports.getProjectImpacts = async (projectId) => {
+  try {
+    const validProjectId = Number(projectId);
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+
+    // First verify the project exists
+    const project = await prisma.project.findUnique({
+      where: { projectId: validProjectId },
+      select: { projectId: true },
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    // Get all impacts for the project, ordered by rowOrder
+    const impacts = await prisma.projectImpact.findMany({
+      where: { projectId: validProjectId },
+      orderBy: { rowOrder: 'asc' },
+    });
+
+    return impacts;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des impacts :", error);
+    throw error;
+  }
+};
+
+// Update or create an impact row
+module.exports.updateProjectImpact = async (projectId, data) => {
+  try {
+    const validProjectId = Number(projectId);
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+
+    // First verify the project exists
+    const project = await prisma.project.findUnique({
+      where: { projectId: validProjectId },
+      select: { projectId: true },
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    const { id, rowOrder, resultatsAttendus, criteres, indicateurs, situationDepart, objectif } = data;
+
+    // If id is provided, update existing; otherwise create new
+    if (id) {
+      // Update existing impact
+      const updatedImpact = await prisma.projectImpact.update({
+        where: { impactId: id, projectId: validProjectId },
+        data: {
+          rowOrder: rowOrder ?? 0,
+          resultatsAttendus: resultatsAttendus ?? null,
+          criteres: criteres ?? null,
+          indicateurs: indicateurs ?? null,
+          situationDepart: situationDepart ?? null,
+          objectif: objectif ?? null,
+        },
+      });
+      return updatedImpact;
+    } else {
+      // Get max rowOrder to append at the end
+      const maxOrderImpact = await prisma.projectImpact.findFirst({
+        where: { projectId: validProjectId },
+        orderBy: { rowOrder: 'desc' },
+        select: { rowOrder: true },
+      });
+
+      const newRowOrder = maxOrderImpact ? maxOrderImpact.rowOrder + 1 : 0;
+
+      // Create new impact
+      const newImpact = await prisma.projectImpact.create({
+        data: {
+          projectId: validProjectId,
+          rowOrder: rowOrder ?? newRowOrder,
+          resultatsAttendus: resultatsAttendus ?? "",
+          criteres: criteres ?? "",
+          indicateurs: indicateurs ?? "",
+          situationDepart: situationDepart ?? "",
+          objectif: objectif ?? "",
+        },
+      });
+      return newImpact;
+    }
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de l'impact :", error);
+    throw error;
+  }
+};
+
+// Delete an impact row
+module.exports.deleteProjectImpact = async (projectId, impactId) => {
+  try {
+    const validProjectId = Number(projectId);
+    const validImpactId = Number(impactId);
+
+    if (!Number.isInteger(validProjectId) || validProjectId <= 0) {
+      throw new Error("Invalid projectId");
+    }
+    if (!Number.isInteger(validImpactId) || validImpactId <= 0) {
+      throw new Error("Invalid impactId");
+    }
+
+    // Verify the impact exists and belongs to the project
+    const impact = await prisma.projectImpact.findFirst({
+      where: { impactId: validImpactId, projectId: validProjectId },
+    });
+
+    if (!impact) {
+      throw new Error("Impact not found");
+    }
+
+    // Delete the impact
+    await prisma.projectImpact.delete({
+      where: { impactId: validImpactId },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Erreur lors de la suppression de l'impact :", error);
     throw error;
   }
 };

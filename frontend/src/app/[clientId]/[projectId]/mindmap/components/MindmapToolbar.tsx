@@ -11,8 +11,11 @@ import {
   Trash2,
   Save,
   ChevronDown,
-  Import,
+  Brain,
+  GitBranch,
 } from 'lucide-react';
+import { Version } from '@/api/ganttApi';
+import { VersionSelector } from '../../conception/components/VersionSelector';
 
 interface MindmapToolbarProps {
   onZoomIn: () => void;
@@ -23,13 +26,23 @@ interface MindmapToolbarProps {
   onAddNode: (type: string) => void;
   onDeleteSelected: () => void;
   onSave: () => void;
-  onImportToGantt: () => void;
+  onGenerateAI: () => void;
   canUndo: boolean;
   canRedo: boolean;
   hasSelection: boolean;
   selectedNodeType: string;
   onNodeTypeChange: (type: string) => void;
   className?: string;
+  // Version props
+  versions?: Version[];
+  currentVersion?: Version | null;
+  setCurrentVersion?: (version: Version | null) => void;
+  onCreateVersion?: (name: string, description?: string, sourceVersionId?: number | null) => void;
+  onDeleteVersion?: (versionId: number) => void;
+  onActivateVersion?: (versionId: number) => void;
+  onSaveToVersion?: () => void;
+  projectId?: number;
+  versionsKey?: number;
 }
 
 export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
@@ -41,18 +54,28 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
   onAddNode,
   onDeleteSelected,
   onSave,
-  onImportToGantt,
+  onGenerateAI,
   canUndo,
   canRedo,
   hasSelection,
   selectedNodeType,
   onNodeTypeChange,
   className = '',
+  // Version props
+  versions = [],
+  currentVersion = null,
+  setCurrentVersion = () => {},
+  onCreateVersion = async () => {},
+  onDeleteVersion = async () => {},
+  onActivateVersion = async () => {},
+  onSaveToVersion = async () => {},
+  projectId = 0,
+  versionsKey = 0,
 }) => {
   // Node types configuration
   const nodeTypes = [
-    { id: 'action', label: 'Action', color: '#ef4444' },
-    { id: 'sous_action', label: 'Sous Action', color: '#8b5cf6' },
+    { id: 'action', label: 'Action', color: '#96776e' },
+    { id: 'sous_action', label: 'Sous Action', color: '#698063' },
     { id: 'objectif', label: 'Objectif', color: '#ffffff' },
     { id: 'livrable', label: 'Livrable', color: '#22c55e' },
   ];
@@ -64,10 +87,10 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     display: 'flex',
     gap: '8px',
     padding: '12px 16px',
-    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    backgroundColor: 'rgba(105, 128, 99, 0.95)', // Dark green #698063
     borderRadius: '12px',
     backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(148, 163, 184, 0.2)',
+    border: '1px solid rgba(105, 128, 99, 0.4)',
     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
   };
 
@@ -78,9 +101,9 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     width: '36px',
     height: '36px',
     borderRadius: '8px',
-    backgroundColor: 'rgba(71, 85, 105, 0.6)',
-    border: '1px solid rgba(148, 163, 184, 0.15)',
-    color: '#e2e8f0',
+    backgroundColor: 'rgba(159, 179, 154, 0.4)', // Light green #9fb39a
+    border: '1px solid rgba(159, 179, 154, 0.4)',
+    color: '#ffffff',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
   };
@@ -90,9 +113,9 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     top: '100%',
     left: 0,
     marginTop: '8px',
-    backgroundColor: 'rgba(30, 41, 59, 0.98)',
+    backgroundColor: 'rgba(105, 128, 99, 0.98)', // Dark green #698063
     borderRadius: '8px',
-    border: '1px solid rgba(148, 163, 184, 0.2)',
+    border: '1px solid rgba(105, 128, 99, 0.4)',
     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
     minWidth: '160px',
     zIndex: 100,
@@ -106,7 +129,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     alignItems: 'center',
     gap: '10px',
     transition: 'background-color 0.15s ease',
-    color: '#e2e8f0',
+    color: '#ffffff',
   };
 
   const colorDotStyle: React.CSSProperties = {
@@ -127,7 +150,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
             opacity: canUndo ? 1 : 0.4,
             cursor: canUndo ? 'pointer' : 'not-allowed',
           }}
-          title="Undo"
+          title="Annuler"
         >
           <Undo size={18} />
         </button>
@@ -139,7 +162,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
             opacity: canRedo ? 1 : 0.4,
             cursor: canRedo ? 'pointer' : 'not-allowed',
           }}
-          title="Redo"
+          title="Rétablir"
         >
           <Redo size={18} />
         </button>
@@ -157,21 +180,21 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
         <button
           onClick={onZoomIn}
           style={{ ...buttonStyle }}
-          title="Zoom In"
+          title="Zoom avant"
         >
           <ZoomIn size={18} />
         </button>
         <button
           onClick={onZoomOut}
           style={{ ...buttonStyle }}
-          title="Zoom Out"
+          title="Zoom arrière"
         >
           <ZoomOut size={18} />
         </button>
         <button
           onClick={onFitView}
           style={{ ...buttonStyle }}
-          title="Fit View"
+          title="Ajuster la vue"
         >
           <Maximize size={18} />
         </button>
@@ -187,7 +210,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
 
       <div style={{ display: 'flex', gap: '4px', position: 'relative' }}>
         <button
-          onClick={() => onAddNode(selectedNodeType)}
+          onClick={() => setShowTypeDropdown(!showTypeDropdown)}
           style={{
             ...buttonStyle,
             width: 'auto',
@@ -196,14 +219,14 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
             backgroundColor: 'rgba(34, 197, 94, 0.2)',
             borderColor: 'rgba(34, 197, 94, 0.3)',
           }}
-          title="Add Node"
+          title="Ajouter un nœud"
         >
           <Plus size={18} />
-          <span style={{ fontSize: '13px', fontWeight: 500 }}>Add</span>
+          <span style={{ fontSize: '13px', fontWeight: 500 }}>Ajouter</span>
           <ChevronDown size={14} />
         </button>
 
-        {/* Type dropdown */}
+        {/* Type dropdown - integrated with Add button */}
         {showTypeDropdown && (
           <div style={dropdownStyle}>
             {nodeTypes.map((type) => (
@@ -229,6 +252,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
                 }}
                 onClick={() => {
                   onNodeTypeChange(type.id);
+                  onAddNode(type.id);
                   setShowTypeDropdown(false);
                 }}
               >
@@ -246,25 +270,6 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
       </div>
 
       <button
-        onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-        style={{
-          ...buttonStyle,
-          width: '36px',
-        }}
-        title="Select node type"
-      >
-        <span
-          style={{
-            width: '14px',
-            height: '14px',
-            borderRadius: '50%',
-            backgroundColor: currentType.color,
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-          }}
-        />
-      </button>
-
-      <button
         onClick={onDeleteSelected}
         disabled={!hasSelection}
         style={{
@@ -276,7 +281,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
           opacity: hasSelection ? 1 : 0.4,
           cursor: hasSelection ? 'pointer' : 'not-allowed',
         }}
-        title="Delete Selected"
+        title="Supprimer la sélection"
       >
         <Trash2 size={18} />
       </button>
@@ -299,27 +304,58 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
           backgroundColor: 'rgba(59, 130, 246, 0.3)',
           borderColor: 'rgba(59, 130, 246, 0.4)',
         }}
-        title="Save Mindmap"
+        title="Enregistrer en pré-projet"
       >
         <Save size={18} />
-        <span style={{ fontSize: '13px', fontWeight: 500 }}>Save</span>
+        <span style={{ fontSize: '13px', fontWeight: 500 }}>Enregistrer</span>
       </button>
 
       <button
-        onClick={onImportToGantt}
+        onClick={onGenerateAI}
         style={{
           ...buttonStyle,
           width: 'auto',
           padding: '0 12px',
           gap: '6px',
-          backgroundColor: 'rgba(168, 85, 247, 0.3)',
-          borderColor: 'rgba(168, 85, 247, 0.4)',
+          backgroundColor: 'rgba(147, 51, 234, 0.3)',
+          borderColor: 'rgba(147, 51, 234, 0.4)',
         }}
-        title="Import to Gantt Chart"
+        title="Générer une carte mentale avec IA"
       >
-        <Import size={18} />
-        <span style={{ fontSize: '13px', fontWeight: 500 }}>Import</span>
+        <Brain size={18} />
+        <span style={{ fontSize: '13px', fontWeight: 500 }}>IA</span>
       </button>
+
+      {/* Version Selector */}
+      {projectId > 0 && setCurrentVersion && (
+        <div style={{ marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <VersionSelector
+            versions={versions}
+            currentVersion={currentVersion}
+            setCurrentVersion={setCurrentVersion}
+            onCreateVersion={onCreateVersion}
+            onDeleteVersion={onDeleteVersion}
+            onActivateVersion={onActivateVersion}
+            projectId={projectId}
+            versionsKey={versionsKey}
+          />
+          {/* Save to Version button - only shows when a version is selected */}
+          {currentVersion && onSaveToVersion && (
+            <button
+              onClick={onSaveToVersion}
+              style={{
+                ...buttonStyle,
+                backgroundColor: '#22c55e', // Green
+                color: 'white',
+              }}
+              title="Save to this version"
+            >
+              <Save size={18} />
+              <span style={{ fontSize: '13px', fontWeight: 500, marginLeft: '4px' }}>Save</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

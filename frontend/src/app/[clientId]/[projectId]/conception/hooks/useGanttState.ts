@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Task, Link, Livrable, ViewMode, EditorTab, HistoryState, MenuPosition } from '../types';
-import { fetchGanttData, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, createDeliverable as apiCreateLivrable, createTask as apiCreateTask, GanttData } from '@/api/ganttApi';
+import { fetchGanttData, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, createDeliverable as apiCreateLivrable, createTask as apiCreateTask, GanttData, uploadFile, updateTaskDeliverable as apiUpdateTaskDeliverable, deleteTaskDeliverable as apiDeleteTaskDeliverable } from '@/api/ganttApi';
 import { createEmptyBudget } from '../utils/budgetUtils';
 import { getDateRange } from '../utils/timelineUtils';
 import { DEFAULT_DAY_WIDTH, MAX_HISTORY_STATES, MIN_START_DATE } from '../constants';
@@ -52,9 +52,30 @@ export const useGanttState = () => {
   const [versionId, setVersionId] = useState<number | null>(null);
 
   // UI state for editing and interactions
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTaskBase] = useState<Task | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [editorTab, setEditorTab] = useState<EditorTab>('general');
+  
+  // Wrapper to ensure budget is initialized when setting editing task
+  const setEditingTask = useCallback((task: Task | null | ((prev: Task | null) => Task | null)) => {
+    if (typeof task === 'function') {
+      // Handle functional update
+      setEditingTaskBase(prev => {
+        const newTask = task(prev);
+        if (newTask && !newTask.budget) {
+          return { ...newTask, budget: createEmptyBudget() };
+        }
+        return newTask;
+      });
+    } else if (task && !task.budget) {
+      setEditingTaskBase({
+        ...task,
+        budget: createEmptyBudget()
+      });
+    } else {
+      setEditingTaskBase(task);
+    }
+  }, []);
   const [hoveredTask, setHoveredTask] = useState<Task | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState<{ task: Task; x: number; y: number } | null>(null);
@@ -107,6 +128,8 @@ export const useGanttState = () => {
   const dragStartMapRef = useRef<Map<number, { start: number; end: number }>>(new Map());
   const draggingActiveRef = useRef(false);
   const lastClientXRef = useRef<number | null>(null);
+  // Ref for current tasks to avoid closure staleness in animation frame
+  const tasksRef = useRef<Task[]>([]);
 
   // Cursor position for timeline interaction
   const [cursorX, setCursorX] = useState<number | null>(null);
@@ -249,11 +272,17 @@ export const useGanttState = () => {
     setCurrentDateRange(getDateRange(tasks, MIN_START_DATE));
   }, [tasks, isDraggingAny]);
 
+  // Keep tasksRef in sync with tasks state for use in animation frames
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
+
   // Add new livrable handler
   const handleAddLivrable = async () => {
     if (newLivrableLabel.trim() && editingTask && projectId) {
       try {
         const newLivrable = await apiCreateLivrable(projectId, {
+          taskId: editingTask.id,
           label: newLivrableLabel.trim(),
           description: newLivrableDescription.trim()
         });
@@ -261,10 +290,21 @@ export const useGanttState = () => {
         // Add to local state
         setLivrables(prev => [...prev, newLivrable]);
         // Assign to editing task (array to support multiple livrables)
+        const newLivrableIds = [...(editingTask.livrableIds || []), newLivrable.id];
         setEditingTask({
           ...editingTask,
-          livrableIds: [...(editingTask.livrableIds || []), newLivrable.id]
+          livrableIds: newLivrableIds
         });
+        
+        // Recalculate and update progress locally
+        const newProgress = calculateLivrableProgress(newLivrableIds);
+        setEditingTask(prev => prev ? { ...prev, progress: newProgress } : null);
+        setTasks(prev => prev.map(t => 
+          t.id === editingTask.id 
+            ? { ...t, progress: newProgress, livrableIds: newLivrableIds } 
+            : t
+        ));
+        
         setShowAddLivrable(false);
         setNewLivrableLabel('');
         setNewLivrableDescription('');
@@ -278,15 +318,114 @@ export const useGanttState = () => {
           description: newLivrableDescription.trim()
         };
         setLivrables(prev => [...prev, localLivrable]);
+        const newLivrableIds = [...(editingTask.livrableIds || []), newId];
         setEditingTask({
           ...editingTask,
-          livrableIds: [...(editingTask.livrableIds || []), newId]
+          livrableIds: newLivrableIds
         });
+        // Recalculate progress
+        const newProgress = calculateLivrableProgress(newLivrableIds);
+        setEditingTask(prev => prev ? { ...prev, progress: newProgress } : null);
+        setTasks(prev => prev.map(t => 
+          t.id === editingTask.id 
+            ? { ...t, progress: newProgress, livrableIds: newLivrableIds } 
+            : t
+        ));
         setShowAddLivrable(false);
         setNewLivrableLabel('');
         setNewLivrableDescription('');
       }
     }
+  };
+
+  // Upload file to livrable handler
+  const handleUploadLivrableFile = async (livrableId: number, file: File) => {
+    if (!editingTask || !projectId) return;
+    
+    try {
+      // Upload file first
+      const uploadResult = await uploadFile(file);
+      
+      // Update the livrable with file URL
+      const updatedLivrable = await apiUpdateTaskDeliverable(
+        Number(projectId),
+        editingTask.id,
+        livrableId,
+        {
+          fileUrl: uploadResult.url,
+          fileName: uploadResult.originalName
+        }
+      );
+      
+      // Update local state
+      setLivrables(prev => prev.map(l => 
+        l.id === livrableId 
+          ? { 
+              ...l, 
+              fileUrl: updatedLivrable.fileUrl, 
+              fileName: updatedLivrable.fileName,
+              confirmed: updatedLivrable.confirmed 
+            } 
+          : l
+      ));
+      
+      // Update task progress if returned
+      if (updatedLivrable.progress !== undefined) {
+        setEditingTask(prev => prev ? { ...prev, progress: updatedLivrable.progress } : null);
+        setTasks(prev => prev.map(t => 
+          t.id === editingTask.id 
+            ? { ...t, progress: updatedLivrable.progress } 
+            : t
+        ));
+      }
+    } catch (err) {
+      console.error('Error uploading file to livrable:', err);
+    }
+  };
+
+  // Delete livrable handler
+  const handleDeleteLivrable = async (livrableId: number) => {
+    if (!editingTask || !projectId) return;
+    
+    try {
+      // Delete the deliverable from the database
+      await apiDeleteTaskDeliverable(
+        Number(projectId),
+        editingTask.id,
+        livrableId
+      );
+      
+      // Remove from local state
+      const newLivrableIds = editingTask.livrableIds?.filter(id => id !== livrableId) || [];
+      setLivrables(prev => prev.filter(l => l.id !== livrableId));
+      setEditingTask({
+        ...editingTask,
+        livrableIds: newLivrableIds
+      });
+      
+      // Recalculate and update progress locally
+      const newProgress = calculateLivrableProgress(newLivrableIds);
+      setEditingTask(prev => prev ? { ...prev, progress: newProgress } : null);
+      setTasks(prev => prev.map(t => 
+        t.id === editingTask.id 
+          ? { ...t, progress: newProgress, livrableIds: newLivrableIds } 
+          : t
+      ));
+    } catch (err) {
+      console.error('Error deleting livrable:', err);
+    }
+  };
+
+  // Calculate progress based on confirmed livrables
+  const calculateLivrableProgress = (taskLivrableIds: number[] | undefined): number => {
+    if (!taskLivrableIds || taskLivrableIds.length === 0) return 0;
+    
+    const confirmedLivrables = taskLivrableIds.filter(id => {
+      const livrable = livrables.find(l => l.id === id);
+      return livrable?.confirmed;
+    });
+    
+    return Math.round((confirmedLivrables.length / taskLivrableIds.length) * 100);
   };
 
   // Save state to history
@@ -442,9 +581,13 @@ export const useGanttState = () => {
               assigneeIds: editingTask.assigneeIds || [],
               livrableIds: editingTask.livrableIds || [],
               color: editingTask.color || '#3b82f6',
-              versionId: versionId || null
+              versionId: versionId || null,
+              budget: editingTask.budget
             });
             
+            // Replace the temporary task with the real one from server (with real ID)
+            const nextTasks = tasks.map(t => t.id === editingTask.id ? { ...createdTask, id: createdTask.id } : t);
+            setTasks(nextTasks);
             // Refresh data from server to ensure consistency
             await loadData(versionId || undefined);
           } catch (err) {
@@ -557,6 +700,7 @@ export const useGanttState = () => {
     dragStartMapRef,
     draggingActiveRef,
     lastClientXRef,
+    tasksRef,
     cursorX,
     timelineRef,
     taskListRef,
@@ -602,6 +746,9 @@ export const useGanttState = () => {
     
     // Actions
     handleAddLivrable,
+    handleUploadLivrableFile,
+    handleDeleteLivrable,
+    calculateLivrableProgress,
     saveState,
     undo,
     redo,

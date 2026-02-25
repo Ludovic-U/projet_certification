@@ -3,13 +3,13 @@ const prisma = new PrismaClient();
 
 /**
  * Node types that should be stored as descriptions on parent tasks
- * instead of being created as separate tasks
+ * Only "objectif" - "livrable" is handled as actual Deliverables
  */
-const DESCRIPTION_NODE_TYPES = ['objectif', 'livrable'];
+const DESCRIPTION_NODE_TYPES = ['objectif'];
 
 /**
  * Map nodeType from mindmap to task type
- * objectif and livrable are handled specially (as descriptions)
+ * objectif and livrable are handled specially
  */
 const mapNodeTypeToTaskType = (nodeType) => {
   const mapping = {
@@ -25,6 +25,13 @@ const mapNodeTypeToTaskType = (nodeType) => {
  */
 const isDescriptionNodeType = (nodeType) => {
   return DESCRIPTION_NODE_TYPES.includes(nodeType);
+};
+
+/**
+ * Check if a node type should be stored as livrable (deliverable)
+ */
+const isLivrableNodeType = (nodeType) => {
+  return nodeType === 'livrable';
 };
 
 /**
@@ -44,12 +51,12 @@ const getExistingTaskIdByNodeId = async (projectId, nodeId) => {
 
 /**
  * Process nodes and edges to create a map of description items for each parent
- * Returns a map: parentNodeId -> array of description texts
+ * Returns a map: parentNodeId -> array of description texts (only objectifs)
  */
 const buildDescriptionMap = (nodes, edges) => {
   const parentToDescriptions = {};
 
-  // First, find all objectif/livrable nodes and their parent
+  // Only process objectif nodes for descriptions
   for (const node of nodes) {
     if (!isDescriptionNodeType(node.data?.nodeType)) {
       continue;
@@ -75,25 +82,72 @@ const buildDescriptionMap = (nodes, edges) => {
 };
 
 /**
- * Save mindmap nodes as Tasks - Upsert approach (update if exists, create if not)
- * objectif/livrable nodes are stored as descriptions on parent tasks
+ * Process nodes and edges to create livrables and map them to parent tasks
+ * Uses TaskDeliverableStatus model (not Deliverable) since it links directly to Tasks
+ * Returns a map: parentNodeId -> array of livrable names (strings)
  */
-const saveMindmapAsTasks = async (projectId, nodes, edges) => {
+const buildLivrableMap = async (projectId, nodes, edges) => {
+  const parentToLivrables = {};
+
+  // Process livrable nodes
+  for (const node of nodes) {
+    if (!isLivrableNodeType(node.data?.nodeType)) {
+      continue;
+    }
+
+    // Find the parent node (the source of the edge pointing to this node)
+    const parentEdge = edges.find(e => e.target === node.id);
+    if (!parentEdge) {
+      continue;
+    }
+
+    const parentNodeId = parentEdge.source;
+    if (!parentToLivrables[parentNodeId]) {
+      parentToLivrables[parentNodeId] = [];
+    }
+
+    const label = node.data?.label || 'Untitled';
+
+    // Store the livrable name - we'll create TaskDeliverableStatus after tasks are created
+    parentToLivrables[parentNodeId].push(label);
+  }
+
+  return parentToLivrables;
+};
+
+/**
+ * Save mindmap nodes as Tasks - Upsert approach (update if exists, create if not)
+ * @param {number} projectId - The project ID
+ * @param {Array} nodes - Array of mindmap nodes
+ * @param {Array} edges - Array of mindmap edges
+ * @param {number|null} versionId - Optional version ID to associate tasks with
+ */
+const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => {
   const createdTasks = [];
   const nodeIdToTaskId = {};
 
-  // Build map of parent node ID -> description texts
+  // Build map of parent node ID -> description texts (only objectifs)
   const parentToDescriptions = buildDescriptionMap(nodes, edges);
 
-  // Get all existing mindmap tasks for this project
-  const existingTasks = await prisma.task.findMany({
+  // Build map of parent node ID -> livrable names
+  const parentToLivrables = await buildLivrableMap(projectId, nodes, edges);
+
+  // Get all existing mindmap tasks for this project (optionally filtered by version)
+  const existingTasksQuery = {
     where: {
       projectId,
       details: {
         contains: '"mindmapId":0',
       },
     },
-  });
+  };
+  
+  // If versionId is provided, only get tasks from that version
+  if (versionId) {
+    existingTasksQuery.where.versionId = versionId;
+  }
+  
+  const existingTasks = await prisma.task.findMany(existingTasksQuery);
 
   // Build map of nodeId -> existing taskId
   const existingNodeIdToTaskId = {};
@@ -110,16 +164,19 @@ const saveMindmapAsTasks = async (projectId, nodes, edges) => {
 
   // First pass: Process regular nodes (action, sous_action, root)
   for (const node of nodes) {
-    if (isDescriptionNodeType(node.data?.nodeType)) {
-      // Skip description nodes - they'll be attached to parent
+    if (isDescriptionNodeType(node.data?.nodeType) || isLivrableNodeType(node.data?.nodeType)) {
+      // Skip these nodes - they'll be handled separately
       continue;
     }
 
     const existingTaskId = existingNodeIdToTaskId[node.id];
     
-    // Build description from objectifs/livrables attached to this node
+    // Build description from objectifs attached to this node
     const descriptionTexts = parentToDescriptions[node.id] || [];
     const newDescription = descriptionTexts.join('\n');
+
+    // Get livrable names for this task (stored as strings)
+    const livrableNames = parentToLivrables[node.id] || [];
 
     const taskData = {
       projectId,
@@ -137,6 +194,11 @@ const saveMindmapAsTasks = async (projectId, nodes, edges) => {
       }),
     };
 
+    // Add versionId if provided
+    if (versionId) {
+      taskData.versionId = versionId;
+    }
+
     let task;
     if (existingTaskId) {
       // Update existing task, preserving description if no new one
@@ -144,15 +206,39 @@ const saveMindmapAsTasks = async (projectId, nodes, edges) => {
       if (!newDescription && oldTask?.description) {
         taskData.description = oldTask.description;
       }
+      
+      // Update task
       task = await prisma.task.update({
         where: { taskId: existingTaskId },
         data: taskData,
       });
+      
+      // Create TaskDeliverableStatus for this task (instead of taskDeliverable junction table)
+      for (const livrableName of livrableNames) {
+        await prisma.taskDeliverableStatus.create({
+          data: {
+            taskId: task.taskId,
+            name: livrableName,
+            status: 'pending',
+          },
+        });
+      }
     } else {
       // Create new task
       task = await prisma.task.create({
         data: taskData,
       });
+      
+      // Create TaskDeliverableStatus for this task
+      for (const livrableName of livrableNames) {
+        await prisma.taskDeliverableStatus.create({
+          data: {
+            taskId: task.taskId,
+            name: livrableName,
+            status: 'pending',
+          },
+        });
+      }
     }
 
     createdTasks.push(task);
@@ -162,7 +248,8 @@ const saveMindmapAsTasks = async (projectId, nodes, edges) => {
   // Reset parent relationships - will be set below
   for (const nodeId of Object.keys(existingNodeIdToTaskId)) {
     const taskId = existingNodeIdToTaskId[nodeId];
-    if (!isDescriptionNodeType(nodes.find(n => n.id === nodeId)?.data?.nodeType)) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (node && !isDescriptionNodeType(node?.data?.nodeType) && !isLivrableNodeType(node?.data?.nodeType)) {
       await prisma.task.update({
         where: { taskId },
         data: { parentId: null },
@@ -176,9 +263,11 @@ const saveMindmapAsTasks = async (projectId, nodes, edges) => {
     const sourceNode = nodes.find(n => n.id === edge.source);
     const targetNode = nodes.find(n => n.id === edge.target);
 
-    // Skip if either node is a description type
+    // Skip if either node is a description or livrable type
     if (isDescriptionNodeType(sourceNode?.data?.nodeType) || 
-        isDescriptionNodeType(targetNode?.data?.nodeType)) {
+        isLivrableNodeType(sourceNode?.data?.nodeType) ||
+        isDescriptionNodeType(targetNode?.data?.nodeType) ||
+        isLivrableNodeType(targetNode?.data?.nodeType)) {
       continue;
     }
 
@@ -193,12 +282,12 @@ const saveMindmapAsTasks = async (projectId, nodes, edges) => {
     }
   }
 
-  // Delete any orphaned description nodes (objectifs/livrables that were previously created)
+  // Delete any orphaned description/livrable nodes that were previously created
   for (const task of existingTasks) {
     try {
       const details = JSON.parse(task.details || '{}');
-      if (isDescriptionNodeType(details.nodeType)) {
-        // Delete this description node
+      if (isDescriptionNodeType(details.nodeType) || isLivrableNodeType(details.nodeType)) {
+        // Delete this task
         await prisma.task.delete({ where: { taskId: task.taskId } });
       }
     } catch (e) {
@@ -215,7 +304,7 @@ const saveMindmapAsTasks = async (projectId, nodes, edges) => {
 /**
  * Import mindmap nodes as Tasks - Fresh import approach
  * Deletes all existing mindmap tasks first, then creates new ones
- * objectif/livrable nodes are stored as descriptions on parent tasks
+ * objectif nodes are stored as descriptions, livrable nodes as TaskDeliverableStatus
  */
 const importMindmapAsTasks = async (projectId, nodes, edges) => {
   // First, delete all existing mindmap tasks for this project
@@ -231,18 +320,24 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
   const createdTasks = [];
   const nodeIdToTaskId = {};
 
-  // Build map of parent node ID -> description texts
+  // Build map of parent node ID -> description texts (only objectifs)
   const parentToDescriptions = buildDescriptionMap(nodes, edges);
+
+  // Build map of parent node ID -> livrable names
+  const parentToLivrables = await buildLivrableMap(projectId, nodes, edges);
 
   // Create regular tasks (action, sous_action, root)
   for (const node of nodes) {
-    if (isDescriptionNodeType(node.data?.nodeType)) {
+    if (isDescriptionNodeType(node.data?.nodeType) || isLivrableNodeType(node.data?.nodeType)) {
       continue;
     }
 
-    // Build description from objectifs/livrables attached to this node
+    // Build description from objectifs attached to this node
     const descriptionTexts = parentToDescriptions[node.id] || [];
     const newDescription = descriptionTexts.join('\n');
+
+    // Get livrable names for this task (stored as strings)
+    const livrableNames = parentToLivrables[node.id] || [];
 
     const task = await prisma.task.create({
       data: {
@@ -262,6 +357,17 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
       },
     });
 
+    // Link livrables to task via TaskDeliverableStatus
+    for (const livrableName of livrableNames) {
+      await prisma.taskDeliverableStatus.create({
+        data: {
+          taskId: task.taskId,
+          name: livrableName,
+          status: 'pending',
+        },
+      });
+    }
+
     createdTasks.push(task);
     nodeIdToTaskId[node.id] = task.taskId;
   }
@@ -271,9 +377,11 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
     const sourceNode = nodes.find(n => n.id === edge.source);
     const targetNode = nodes.find(n => n.id === edge.target);
 
-    // Skip if either node is a description type
+    // Skip if either node is a description or livrable type
     if (isDescriptionNodeType(sourceNode?.data?.nodeType) || 
-        isDescriptionNodeType(targetNode?.data?.nodeType)) {
+        isLivrableNodeType(sourceNode?.data?.nodeType) ||
+        isDescriptionNodeType(targetNode?.data?.nodeType) ||
+        isLivrableNodeType(targetNode?.data?.nodeType)) {
       continue;
     }
 
@@ -294,9 +402,477 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
   };
 };
 
+/**
+ * Get all mindmaps for a project
+ * @param {number} projectId - The project ID
+ * @returns {Promise<Array>} List of mindmaps
+ */
+const getMindmapsForProject = async (projectId) => {
+  try {
+    const mindmaps = await prisma.mindmap.findMany({
+      where: { projectId },
+      include: {
+        nodes: true,
+        edges: true,
+        version: {
+          select: {
+            versionId: true,
+            name: true,
+            isActive: true
+          }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    return mindmaps.map(m => ({
+      mindmapId: m.mindmapId,
+      projectId: m.projectId,
+      versionId: m.versionId,
+      name: m.name,
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt,
+      nodes: m.nodes.map(n => ({
+        nodeId: n.nodeId,
+        externalId: n.externalId,
+        label: n.label,
+        nodeType: n.nodeType,
+        positionX: n.positionX,
+        positionY: n.positionY,
+        color: n.color,
+        fontSize: n.fontSize,
+        isRoot: n.isRoot
+      })),
+      edges: m.edges.map(e => ({
+        edgeId: e.edgeId,
+        externalId: e.externalId,
+        source: e.source,
+        target: e.target
+      })),
+      version: m.version
+    }));
+  } catch (error) {
+    console.error('Error fetching mindmaps:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a single mindmap by ID
+ * @param {number} mindmapId - The mindmap ID
+ * @returns {Promise<Object>} Mindmap object with nodes and edges
+ */
+const getMindmapById = async (mindmapId) => {
+  try {
+    const mindmap = await prisma.mindmap.findUnique({
+      where: { mindmapId },
+      include: {
+        nodes: true,
+        edges: true,
+        version: {
+          select: {
+            versionId: true,
+            name: true,
+            isActive: true
+          }
+        }
+      }
+    });
+
+    if (!mindmap) {
+      return null;
+    }
+
+    return {
+      mindmapId: mindmap.mindmapId,
+      projectId: mindmap.projectId,
+      versionId: mindmap.versionId,
+      name: mindmap.name,
+      createdAt: mindmap.createdAt,
+      updatedAt: mindmap.updatedAt,
+      nodes: mindmap.nodes.map(n => ({
+        nodeId: n.nodeId,
+        externalId: n.externalId,
+        label: n.label,
+        nodeType: n.nodeType,
+        positionX: n.positionX,
+        positionY: n.positionY,
+        color: n.color,
+        fontSize: n.fontSize,
+        isRoot: n.isRoot
+      })),
+      edges: mindmap.edges.map(e => ({
+        edgeId: e.edgeId,
+        externalId: e.externalId,
+        source: e.source,
+        target: e.target
+      })),
+      version: mindmap.version
+    };
+  } catch (error) {
+    console.error('Error fetching mindmap:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a mindmap by version ID
+ * @param {number} versionId - The version ID
+ * @returns {Promise<Object|null>} Mindmap object or null
+ */
+const getMindmapByVersion = async (versionId) => {
+  try {
+    const mindmap = await prisma.mindmap.findFirst({
+      where: { versionId },
+      include: {
+        nodes: true,
+        edges: true,
+        version: {
+          select: {
+            versionId: true,
+            name: true,
+            isActive: true
+          }
+        }
+      }
+    });
+
+    if (!mindmap) {
+      return null;
+    }
+
+    return {
+      mindmapId: mindmap.mindmapId,
+      projectId: mindmap.projectId,
+      versionId: mindmap.versionId,
+      name: mindmap.name,
+      createdAt: mindmap.createdAt,
+      updatedAt: mindmap.updatedAt,
+      nodes: mindmap.nodes.map(n => ({
+        nodeId: n.nodeId,
+        externalId: n.externalId,
+        label: n.label,
+        nodeType: n.nodeType,
+        positionX: n.positionX,
+        positionY: n.positionY,
+        color: n.color,
+        fontSize: n.fontSize,
+        isRoot: n.isRoot
+      })),
+      edges: mindmap.edges.map(e => ({
+        edgeId: e.edgeId,
+        externalId: e.externalId,
+        source: e.source,
+        target: e.target
+      })),
+      version: mindmap.version
+    };
+  } catch (error) {
+    console.error('Error fetching mindmap by version:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new mindmap
+ * @param {number} projectId - The project ID
+ * @param {Object} data - Mindmap data
+ * @returns {Promise<Object>} Created mindmap
+ */
+const createMindmap = async (projectId, data) => {
+  try {
+    const { name, versionId } = data;
+
+    const mindmap = await prisma.mindmap.create({
+      data: {
+        projectId,
+        versionId: versionId || null,
+        name: name || 'Untitled Mindmap'
+      },
+      include: {
+        nodes: true,
+        edges: true
+      }
+    });
+
+    return {
+      mindmapId: mindmap.mindmapId,
+      projectId: mindmap.projectId,
+      versionId: mindmap.versionId,
+      name: mindmap.name,
+      createdAt: mindmap.createdAt,
+      updatedAt: mindmap.updatedAt
+    };
+  } catch (error) {
+    console.error('Error creating mindmap:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a mindmap with nodes and edges
+ * @param {number} mindmapId - The mindmap ID
+ * @param {Object} data - Update data with nodes and edges
+ * @returns {Promise<Object>} Updated mindmap
+ */
+const updateMindmap = async (mindmapId, data) => {
+  try {
+    const { name, nodes, edges } = data;
+
+    // First update the mindmap basic info
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+
+    // If nodes are provided, delete old nodes and create new ones
+    if (nodes) {
+      const deleteResult = await prisma.mindmapNode.deleteMany({ where: { mindmapId } });
+      console.log(`Deleted ${deleteResult.count} nodes for mindmap ${mindmapId}`);
+      
+      if (nodes.length > 0) {
+        // Use individual creates to avoid issues with delete/create timing
+        for (const node of nodes) {
+          try {
+            await prisma.mindmapNode.create({
+              data: {
+                mindmapId,
+                externalId: node.id || node.externalId,
+                label: node.data?.label || node.label || 'Untitled',
+                nodeType: node.data?.nodeType || node.nodeType || 'action',
+                positionX: node.position?.x || node.positionX || 0,
+                positionY: node.position?.y || node.positionY || 0,
+                color: node.data?.color || node.color || '#3b82f6',
+                fontSize: node.data?.fontSize || node.fontSize || 14,
+                isRoot: node.data?.isRoot || node.isRoot || false
+              }
+            });
+          } catch (e) {
+            console.warn('Error creating node:', e.message);
+          }
+        }
+      }
+    }
+
+    // If edges are provided, delete old edges and create new ones
+    if (edges) {
+      // First delete all existing edges
+      const deleteResult = await prisma.mindmapEdge.deleteMany({ where: { mindmapId } });
+      console.log(`Deleted ${deleteResult.count} edges for mindmap ${mindmapId}`);
+      
+      if (edges.length > 0) {
+        // Use individual creates to avoid issues with delete/create timing
+        for (const edge of edges) {
+          try {
+            await prisma.mindmapEdge.create({
+              data: {
+                mindmapId,
+                externalId: edge.id || edge.externalId,
+                source: edge.source,
+                target: edge.target
+              }
+            });
+          } catch (e) {
+            // Log but don't fail on duplicate - the delete should have removed it
+            console.warn('Error creating edge:', e.message);
+          }
+        }
+      }
+    }
+
+    // Update mindmap with new name if provided
+    if (name) {
+      await prisma.mindmap.update({
+        where: { mindmapId },
+        data: { name }
+      });
+    }
+
+    // Fetch and return the updated mindmap
+    const mindmap = await getMindmapById(mindmapId);
+    return mindmap;
+  } catch (error) {
+    console.error('Error updating mindmap:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a mindmap
+ * @param {number} mindmapId - The mindmap ID
+ * @returns {Promise<void>}
+ */
+const deleteMindmap = async (mindmapId) => {
+  try {
+    // Nodes and edges will be cascade deleted
+    await prisma.mindmap.delete({
+      where: { mindmapId }
+    });
+  } catch (error) {
+    console.error('Error deleting mindmap:', error);
+    throw error;
+  }
+};
+
+/**
+ * Save mindmap with a specific version
+ * @param {number} projectId - The project ID
+ * @param {number} versionId - The version ID
+ * @param {Array} nodes - Array of mindmap nodes with positions
+ * @param {Array} edges - Array of mindmap edges
+ * @returns {Promise<Object>} Saved mindmap
+ */
+const saveMindmapWithVersion = async (projectId, versionId, nodes, edges) => {
+  try {
+    console.log('saveMindmapWithVersion called:', { projectId, versionId, nodesCount: nodes?.length, edgesCount: edges?.length });
+    
+    // First check if a mindmap already exists for this version
+    let mindmap = await prisma.mindmap.findFirst({
+      where: { versionId }
+    });
+
+    if (mindmap) {
+      // Update existing mindmap
+      mindmap = await updateMindmap(mindmap.mindmapId, { nodes, edges });
+    } else {
+      // Create new mindmap for this version
+      mindmap = await prisma.mindmap.create({
+        data: {
+          projectId,
+          versionId,
+          name: `Mindmap - Version ${versionId}`
+        }
+      });
+
+      // Add nodes and edges
+      if (nodes && nodes.length > 0) {
+        await prisma.mindmapNode.createMany({
+          data: nodes.map(node => ({
+            mindmapId: mindmap.mindmapId,
+            externalId: node.id || node.externalId,
+            label: node.data?.label || node.label || 'Untitled',
+            nodeType: node.data?.nodeType || node.nodeType || 'action',
+            positionX: node.position?.x || node.positionX || 0,
+            positionY: node.position?.y || node.positionY || 0,
+            color: node.data?.color || node.color || '#3b82f6',
+            fontSize: node.data?.fontSize || node.fontSize || 14,
+            isRoot: node.data?.isRoot || node.isRoot || false
+          }))
+        });
+      }
+
+      if (edges && edges.length > 0) {
+        await prisma.mindmapEdge.createMany({
+          data: edges.map(edge => ({
+            mindmapId: mindmap.mindmapId,
+            externalId: edge.id || edge.externalId,
+            source: edge.source,
+            target: edge.target
+          }))
+        });
+      }
+
+      // Fetch the complete mindmap
+      mindmap = await getMindmapById(mindmap.mindmapId);
+    }
+
+    return mindmap;
+  } catch (error) {
+    console.error('Error saving mindmap with version:', error);
+    console.error('Error details:', error.message, error.stack);
+    throw error;
+  }
+};
+
+/**
+ * Duplicate a mindmap for a new version (copy all nodes and edges with positions)
+ * @param {number} sourceVersionId - Source version ID to duplicate from
+ * @param {number} targetVersionId - Target version ID to duplicate to
+ * @returns {Promise<Object>} New mindmap
+ */
+const duplicateMindmapForVersion = async (sourceVersionId, targetVersionId) => {
+  try {
+    // Find the source mindmap
+    const sourceMindmap = await prisma.mindmap.findFirst({
+      where: { versionId: sourceVersionId },
+      include: {
+        nodes: true,
+        edges: true
+      }
+    });
+
+    if (!sourceMindmap) {
+      // No mindmap to duplicate, just return null
+      return null;
+    }
+
+    // Create new mindmap for the target version
+    const newMindmap = await prisma.mindmap.create({
+      data: {
+        projectId: sourceMindmap.projectId,
+        versionId: targetVersionId,
+        name: `${sourceMindmap.name} (Copy)`
+      }
+    });
+
+    // Map to store old externalId to new externalId for edge duplication
+    const nodeIdMap = new Map();
+
+    // Duplicate nodes with their positions preserved
+    if (sourceMindmap.nodes && sourceMindmap.nodes.length > 0) {
+      const newNodes = await prisma.mindmapNode.createMany({
+        data: sourceMindmap.nodes.map(node => {
+          const newExternalId = `${node.externalId}_copy_${Date.now()}`;
+          nodeIdMap.set(node.externalId, newExternalId);
+          
+          return {
+            mindmapId: newMindmap.mindmapId,
+            externalId: newExternalId,
+            label: node.label,
+            nodeType: node.nodeType,
+            positionX: node.positionX,  // PRESERVE POSITIONS
+            positionY: node.positionY,  // PRESERVE POSITIONS
+            color: node.color,
+            fontSize: node.fontSize,
+            isRoot: node.isRoot
+          };
+        }),
+        returning: true
+      });
+    }
+
+    // Duplicate edges with the new node IDs
+    if (sourceMindmap.edges && sourceMindmap.edges.length > 0) {
+      await prisma.mindmapEdge.createMany({
+        data: sourceMindmap.edges.map(edge => ({
+          mindmapId: newMindmap.mindmapId,
+          externalId: `${edge.externalId}_copy_${Date.now()}`,
+          source: nodeIdMap.get(edge.source) || edge.source,
+          target: nodeIdMap.get(edge.target) || edge.target
+        }))
+      });
+    }
+
+    // Fetch and return the new mindmap
+    const result = await getMindmapById(newMindmap.mindmapId);
+    return result;
+  } catch (error) {
+    console.error('Error duplicating mindmap for version:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   saveMindmapAsTasks,
   importMindmapAsTasks,
   mapNodeTypeToTaskType,
   isDescriptionNodeType,
+  isLivrableNodeType,
+  // Version-related functions
+  getMindmapsForProject,
+  getMindmapById,
+  getMindmapByVersion,
+  createMindmap,
+  updateMindmap,
+  deleteMindmap,
+  saveMindmapWithVersion,
+  duplicateMindmapForVersion,
 };

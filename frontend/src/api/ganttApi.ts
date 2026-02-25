@@ -1,5 +1,6 @@
 import api from './axiosInstance';
 import { Task, Link, Livrable, User } from '@/app/[clientId]/[projectId]/data';
+import { Budget } from '@/app/[clientId]/[projectId]/conception/utils/budgetUtils';
 
 // Re-export types for convenience
 export type { Task, Link, Livrable, User };
@@ -25,6 +26,20 @@ interface FileUploadResponse {
   url: string;
   originalName: string;
   filename: string;
+}
+
+// Task Deliverable Status interface
+export interface TaskDeliverable {
+  id: number;
+  taskId: number;
+  name: string;
+  status: string;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  confirmed: boolean;
+  confirmedAt?: string | null;
+  notes?: string | null;
+  completedAt?: string | null;
 }
 
 // Version type
@@ -59,6 +74,7 @@ export interface ApiTaskResponse {
   color?: string;
   subActionId?: number | null;
   actionId?: number;
+  budget?: Budget;
 }
 
 /**
@@ -67,8 +83,8 @@ export interface ApiTaskResponse {
 export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
   id: apiTask.id,
   text: apiTask.text,
-  start: apiTask.start ? new Date(apiTask.start) : new Date(),
-  end: apiTask.end ? new Date(apiTask.end) : new Date(),
+  start: apiTask.start && !isNaN(Date.parse(apiTask.start)) ? new Date(apiTask.start) : new Date(),
+  end: apiTask.end && !isNaN(Date.parse(apiTask.end)) ? new Date(apiTask.end) : new Date(),
   progress: apiTask.progress,
   parent: apiTask.parent,
   type: apiTask.type,
@@ -80,6 +96,7 @@ export const convertApiTaskToTask = (apiTask: ApiTaskResponse): Task => ({
   livrableIds: apiTask.livrableIds,
   goal: apiTask.goal,
   color: apiTask.color || '#3b82f6',
+  budget: apiTask.budget,
 });
 
 /**
@@ -115,8 +132,8 @@ export const createTask = async (
   return {
     id: task.id,
     text: task.text || 'New Task',
-    start: task.start ? new Date(task.start) : new Date(),
-    end: task.end ? new Date(task.end) : new Date(),
+    start: task.start && !isNaN(Date.parse(task.start)) ? new Date(task.start) : new Date(),
+    end: task.end && !isNaN(Date.parse(task.end)) ? new Date(task.end) : new Date(),
     progress: task.progress || 0,
     parent: task.parent || 0,
     type: task.type || 'task',
@@ -127,6 +144,7 @@ export const createTask = async (
     livrableIds: task.livrableIds || [],
     goal: task.goal,
     color: task.color || '#3b82f6',
+    budget: task.budget,
   };
 };
 
@@ -145,8 +163,8 @@ export const updateTask = async (
   return {
     id: task.id,
     text: task.text || 'Task',
-    start: task.start ? new Date(task.start) : new Date(),
-    end: task.end ? new Date(task.end) : new Date(),
+    start: task.start && !isNaN(Date.parse(task.start)) ? new Date(task.start) : new Date(),
+    end: task.end && !isNaN(Date.parse(task.end)) ? new Date(task.end) : new Date(),
     progress: task.progress || 0,
     parent: task.parent || 0,
     type: task.type || 'task',
@@ -157,6 +175,7 @@ export const updateTask = async (
     livrableIds: task.livrableIds || [],
     goal: task.goal,
     color: task.color || '#3b82f6',
+    budget: task.budget,
   };
 };
 
@@ -172,7 +191,7 @@ export const deleteTask = async (projectId: number, taskId: number): Promise<voi
  */
 export const bulkUpdateTasks = async (
   projectId: number,
-  tasks: Array<{ id: number; start?: Date; end?: Date; progress?: number; parent?: number }>
+  tasks: Array<{ id: number; start?: Date | string; end?: Date | string; progress?: number; parent?: number }>
 ): Promise<void> => {
   await api.put(`/gantt/${projectId}/tasks/bulk`, { tasks });
 };
@@ -200,7 +219,7 @@ export const deleteTaskLink = async (projectId: number, linkId: number): Promise
  */
 export const createDeliverable = async (
   projectId: number,
-  deliverableData: { label: string; description?: string; startDate?: string; endDate?: string }
+  deliverableData: { taskId?: number; label: string; description?: string; startDate?: string; endDate?: string }
 ): Promise<Livrable> => {
   const response = await api.post(`/gantt/${projectId}/deliverables`, deliverableData);
   return response.data;
@@ -238,6 +257,7 @@ export const saveGanttState = async (
 export const formatDateForApi = (date: Date | string | null | undefined): string | null => {
   if (!date) return null;
   const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return null;
   return d.toISOString().split('T')[0];
 };
 
@@ -245,7 +265,7 @@ export const formatDateForApi = (date: Date | string | null | undefined): string
  * Format date from API (returns Date object)
  */
 export const formatDateFromApi = (dateString: string | null | undefined): Date | null => {
-  if (!dateString) return null;
+  if (!dateString || isNaN(Date.parse(dateString))) return null;
   return new Date(dateString);
 };
 
@@ -308,5 +328,64 @@ export const deleteVersion = async (projectId: number, versionId: number): Promi
  */
 export const activateVersion = async (projectId: number, versionId: number): Promise<Version> => {
   const response = await api.put(`/gantt/${projectId}/versions/${versionId}/activate`);
+  return response.data;
+};
+
+// ==================== TASK DELIVERABLE API ====================
+
+/**
+ * Get all deliverables for a task
+ */
+export const getTaskDeliverables = async (projectId: number, taskId: number): Promise<TaskDeliverable[]> => {
+  const response = await api.get(`/gantt/${projectId}/tasks/${taskId}/deliverables`);
+  return response.data;
+};
+
+/**
+ * Create a new task deliverable
+ */
+export const createTaskDeliverable = async (
+  projectId: number,
+  taskId: number,
+  data: { name: string }
+): Promise<TaskDeliverable> => {
+  const response = await api.post(`/gantt/${projectId}/tasks/${taskId}/deliverables`, data);
+  return response.data;
+};
+
+/**
+ * Update a task deliverable (upload file)
+ */
+export const updateTaskDeliverable = async (
+  projectId: number,
+  taskId: number,
+  deliverableId: number,
+  data: { fileUrl?: string; fileName?: string; notes?: string }
+): Promise<TaskDeliverable & { progress: number }> => {
+  const response = await api.put(`/gantt/${projectId}/tasks/${taskId}/deliverables/${deliverableId}`, data);
+  return response.data;
+};
+
+/**
+ * Confirm a task deliverable
+ */
+export const confirmTaskDeliverable = async (
+  projectId: number,
+  taskId: number,
+  deliverableId: number
+): Promise<TaskDeliverable & { progress: number }> => {
+  const response = await api.put(`/gantt/${projectId}/tasks/${taskId}/deliverables/${deliverableId}/confirm`);
+  return response.data;
+};
+
+/**
+ * Delete a task deliverable
+ */
+export const deleteTaskDeliverable = async (
+  projectId: number,
+  taskId: number,
+  deliverableId: number
+): Promise<{ message: string; progress: number }> => {
+  const response = await api.delete(`/gantt/${projectId}/tasks/${taskId}/deliverables/${deliverableId}`);
   return response.data;
 };

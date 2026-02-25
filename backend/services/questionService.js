@@ -37,6 +37,11 @@ module.exports.createQuestion = async (data) => {
   delete questionData.shouldMultiply;
   delete questionData.questionCategoryId;
 
+  // Ensure category is not null - use a default if not provided
+  if (questionData.category === null || questionData.category === undefined) {
+    questionData.category = 'general';
+  }
+
   return await prisma.question.create({
     data: {
       ...questionData,

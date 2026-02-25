@@ -162,11 +162,11 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
         notes: task.notes,
         files: task.files || [],
         assigneeIds: task.taskAssignments.map(ta => ta.userId),
-        livrableIds: task.tasks.map(t => t.deliverableId),
+        livrableIds: task.deliverables.map(d => d.id),
         goal: task.goal,
         color: task.color || '#3b82f6',
-        // Budget aggregated from expenses
-        budget: {
+        // Parse stored budget if it's a JSON string, otherwise use as object
+        budget: task.budget ? (typeof task.budget === 'string' ? JSON.parse(task.budget) : task.budget) : {
           personnelDays: Math.round(personnelDays * 10) / 10,
           personnelCost: Math.round(moyenHumainCost * 100) / 100,
           internsDays: 0,
@@ -196,13 +196,17 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
           hoursAssigned: a.hoursAssigned,
           dailyCost: a.dailyCost
         })),
-        deliverables: (task.deliverables || []).map(d => ({
+        livrables: (task.deliverables || []).map(d => ({
           id: d.id,
           taskId: d.taskId,
-          name: d.name,
-          delivered: d.delivered,
-          uploaded: d.uploaded,
-          filePath: d.filePath
+          label: d.name,
+          description: d.notes || '',
+          status: d.status,
+          fileUrl: d.fileUrl,
+          fileName: d.fileName,
+          confirmed: d.confirmed,
+          confirmedAt: d.confirmedAt,
+          completedAt: d.completedAt
         }))
       });
     });
@@ -251,21 +255,20 @@ module.exports.getGanttData = async (projectId, versionId = null) => {
       label: `${user.firstname} ${user.lastname}`
     }));
 
-    // Get all deliverables for tasks in this project
-    const deliverables = await prisma.deliverable.findMany({
+    // Get all task deliverable statuses for tasks in this project
+    const taskDeliverableStatuses = await prisma.taskDeliverableStatus.findMany({
       where: {
-        tasks: {
-          some: {
-            taskId: { in: allTaskIds }
-          }
-        }
+        taskId: { in: allTaskIds }
       }
     });
 
-    const formattedLivrables = deliverables.map(d => ({
-      id: d.deliverableId,
-      label: d.label || d.file,
-      description: d.description || ''
+    const formattedLivrables = taskDeliverableStatuses.map(d => ({
+      id: d.id,
+      label: d.name,
+      description: d.notes || '',
+      fileUrl: d.fileUrl,
+      fileName: d.fileName,
+      confirmed: d.confirmed
     }));
 
     return {
@@ -303,7 +306,8 @@ module.exports.createTask = async (taskData) => {
       goal = null,
       color = '#3b82f6',
       assigneeIds = [],
-      livrableIds = []
+      livrableIds = [],
+      budget = null
     } = taskData;
 
     // Create the task with projectId and optional versionId
@@ -323,6 +327,7 @@ module.exports.createTask = async (taskData) => {
         files: files || [],
         goal: goal || null,
         color: color || '#3b82f6',
+        budget: budget || null,
         taskAssignments: assigneeIds && assigneeIds.length > 0 ? {
           create: assigneeIds.map(userId => ({ userId: Number(userId) }))
         } : undefined,
@@ -344,11 +349,12 @@ module.exports.createTask = async (taskData) => {
 
     // Create task-livrable relations if provided
     if (livrableIds && livrableIds.length > 0) {
+      // Link to existing TaskDeliverableStatus records using the junction table
       await prisma.task.update({
         where: { taskId: task.taskId },
         data: {
-          tasks: {
-            connect: livrableIds.map(livrableId => ({ deliverableId: Number(livrableId) }))
+          deliverables: {
+            connect: livrableIds.map(id => ({ id: Number(id) }))
           }
         }
       });
@@ -369,6 +375,7 @@ module.exports.createTask = async (taskData) => {
       livrableIds: livrableIds || [],
       goal: task.goal,
       color: task.color,
+      budget: task.budget,
     };
   } catch (error) {
     console.error('Error creating task:', error);
@@ -384,6 +391,13 @@ module.exports.createTask = async (taskData) => {
  */
 module.exports.updateTask = async (taskId, taskData) => {
   try {
+    // Ensure taskId is a number
+    const numericTaskId = Number(taskId);
+    
+    if (!numericTaskId || isNaN(numericTaskId)) {
+      throw new Error('Invalid taskId: must be a valid number');
+    }
+    
     const {
       projectId,
       versionId,
@@ -400,12 +414,13 @@ module.exports.updateTask = async (taskId, taskData) => {
       goal,
       color,
       assigneeIds,
-      livrableIds
+      livrableIds,
+      budget
     } = taskData;
 
     // First, get current assignments and livrables
     const currentTask = await prisma.task.findUnique({
-      where: { taskId },
+      where: { taskId: numericTaskId },
       include: {
         taskAssignments: true,
         tasks: true
@@ -435,9 +450,13 @@ module.exports.updateTask = async (taskId, taskData) => {
     }
     if (goal !== undefined) updateData.goal = goal;
     if (color !== undefined) updateData.color = color;
+    if (budget !== undefined) {
+      // Budget is stored as JSON string in the database
+      updateData.budget = typeof budget === 'string' ? budget : JSON.stringify(budget);
+    }
 
     const task = await prisma.task.update({
-      where: { taskId },
+      where: { taskId: numericTaskId },
       data: updateData,
       include: {
         taskAssignments: {
@@ -458,28 +477,30 @@ module.exports.updateTask = async (taskId, taskData) => {
     if (assigneeIds !== undefined) {
       // Remove old assignments
       await prisma.taskAssignment.deleteMany({
-        where: { taskId }
+        where: { taskId: numericTaskId }
       });
       // Add new assignments
       if (assigneeIds.length > 0) {
         await prisma.taskAssignment.createMany({
-          data: assigneeIds.map(userId => ({ taskId, userId }))
+          data: assigneeIds.map(userId => ({ taskId: numericTaskId, userId }))
         });
       }
     }
 
     // Update task-livrable relations if provided
+    // Note: Deliverables are already linked to the task via their taskId field
+    // When createDeliverable is called with taskId, it creates the link automatically
+    // So we don't need to do anything here - the relation is managed at creation time
     if (livrableIds !== undefined) {
-      // Remove old relations and add new ones
-      await prisma.task.update({
-        where: { taskId },
-        data: {
-          tasks: {
-            set: livrableIds.map(livrableId => ({ deliverableId: Number(livrableId) }))
-          }
-        }
-      });
+      // The livrableIds are already connected to the task via taskId on TaskDeliverableStatus
+      // No action needed - just fetch the updated deliverables in the response
     }
+
+    // Calculate and update SubAction progress if task has subActionId
+    await module.exports.calculateAndUpdateSubActionProgress(taskId);
+    
+    // Calculate and update parent task progress based on children's progress
+    await module.exports.calculateParentTaskProgress(taskId);
 
     return {
       id: task.taskId,
@@ -493,9 +514,10 @@ module.exports.updateTask = async (taskId, taskData) => {
       notes: task.notes,
       files: task.files || [],
       assigneeIds: assigneeIds !== undefined ? assigneeIds : task.taskAssignments.map(ta => ta.userId),
-      livrableIds: livrableIds !== undefined ? livrableIds : currentTask.tasks.map(t => t.deliverableId),
+      livrableIds: livrableIds !== undefined ? livrableIds : (currentTask.deliverables?.map(d => d.id) || []),
       goal: task.goal,
       color: task.color,
+      budget: task.budget,
     };
   } catch (error) {
     console.error('Error updating task:', error);
@@ -614,15 +636,38 @@ module.exports.deleteTaskLink = async (linkId) => {
  */
 module.exports.createDeliverable = async (deliverableData) => {
   try {
-    const { label, description, startDate, endDate } = deliverableData;
+    const { label, description, startDate, endDate, taskId } = deliverableData;
 
+    // If taskId is provided, create a TaskDeliverableStatus
+    if (taskId) {
+      const deliverableStatus = await prisma.taskDeliverableStatus.create({
+        data: {
+          taskId,
+          name: label || '',
+          status: 'pending',
+          confirmed: false
+        }
+      });
+
+      return {
+        id: deliverableStatus.id,
+        taskId: deliverableStatus.taskId,
+        label: deliverableStatus.name,
+        description: deliverableStatus.notes || '',
+        confirmed: deliverableStatus.confirmed
+      };
+    }
+
+    // Otherwise create a legacy Deliverable (requires subActionId - but we'll make it optional for flexibility)
     const deliverable = await prisma.deliverable.create({
       data: {
         file: label,
         label,
         description,
         startDate: startDate ? new Date(startDate) : new Date(),
-        endDate: endDate ? new Date(endDate) : new Date()
+        endDate: endDate ? new Date(endDate) : new Date(),
+        // For backward compatibility - if no subActionId, we need to handle this differently
+        // But since the model requires subActionId, we won't change this behavior
       }
     });
 
@@ -748,15 +793,14 @@ module.exports.createTaskAssigneeDetail = async (assigneeData) => {
  */
 module.exports.createTaskDeliverableStatus = async (deliverableData) => {
   try {
-    const { taskId, name, delivered, uploaded, filePath } = deliverableData;
+    const { taskId, name } = deliverableData;
 
     const deliverableStatus = await prisma.taskDeliverableStatus.create({
       data: {
         taskId,
         name: name || '',
-        delivered: delivered || false,
-        uploaded: uploaded || false,
-        filePath: filePath || null
+        status: 'pending',
+        confirmed: false
       }
     });
 
@@ -764,12 +808,267 @@ module.exports.createTaskDeliverableStatus = async (deliverableData) => {
       id: deliverableStatus.id,
       taskId: deliverableStatus.taskId,
       name: deliverableStatus.name,
-      delivered: deliverableStatus.delivered,
-      uploaded: deliverableStatus.uploaded,
-      filePath: deliverableStatus.filePath
+      status: deliverableStatus.status,
+      fileUrl: deliverableStatus.fileUrl,
+      fileName: deliverableStatus.fileName,
+      confirmed: deliverableStatus.confirmed,
+      confirmedAt: deliverableStatus.confirmedAt,
+      notes: deliverableStatus.notes,
+      completedAt: deliverableStatus.completedAt
     };
   } catch (error) {
     console.error('Error creating task deliverable status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a task deliverable with file upload
+ * @param {number} deliverableId - Deliverable status ID
+ * @param {Object} updateData - Update data with file info
+ * @returns {Promise<Object>} Updated deliverable status
+ */
+module.exports.updateTaskDeliverable = async (deliverableId, updateData) => {
+  try {
+    const { fileUrl, fileName, notes } = updateData;
+
+    const deliverableStatus = await prisma.taskDeliverableStatus.update({
+      where: { id: deliverableId },
+      data: {
+        fileUrl: fileUrl || null,
+        fileName: fileName || null,
+        notes: notes,
+        status: fileUrl ? 'uploaded' : 'pending',
+        confirmed: fileUrl ? true : false,
+        confirmedAt: fileUrl ? new Date() : null
+      }
+    });
+
+    return {
+      id: deliverableStatus.id,
+      taskId: deliverableStatus.taskId,
+      name: deliverableStatus.name,
+      status: deliverableStatus.status,
+      fileUrl: deliverableStatus.fileUrl,
+      fileName: deliverableStatus.fileName,
+      confirmed: deliverableStatus.confirmed,
+      confirmedAt: deliverableStatus.confirmedAt,
+      notes: deliverableStatus.notes,
+      completedAt: deliverableStatus.completedAt
+    };
+  } catch (error) {
+    console.error('Error updating task deliverable:', error);
+    throw error;
+  }
+};
+
+/**
+ * Confirm a task deliverable (mark as completed)
+ * @param {number} deliverableId - Deliverable status ID
+ * @returns {Promise<Object>} Updated deliverable status
+ */
+module.exports.confirmTaskDeliverable = async (deliverableId) => {
+  try {
+    const deliverableStatus = await prisma.taskDeliverableStatus.update({
+      where: { id: deliverableId },
+      data: {
+        status: 'confirmed',
+        confirmed: true,
+        confirmedAt: new Date(),
+        completedAt: new Date()
+      }
+    });
+
+    return {
+      id: deliverableStatus.id,
+      taskId: deliverableStatus.taskId,
+      name: deliverableStatus.name,
+      status: deliverableStatus.status,
+      fileUrl: deliverableStatus.fileUrl,
+      fileName: deliverableStatus.fileName,
+      confirmed: deliverableStatus.confirmed,
+      confirmedAt: deliverableStatus.confirmedAt,
+      notes: deliverableStatus.notes,
+      completedAt: deliverableStatus.completedAt
+    };
+  } catch (error) {
+    console.error('Error confirming task deliverable:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a task deliverable
+ * @param {number} deliverableId - Deliverable status ID
+ * @returns {Promise<void>}
+ */
+module.exports.deleteTaskDeliverable = async (deliverableId) => {
+  try {
+    await prisma.taskDeliverableStatus.delete({
+      where: { id: deliverableId }
+    });
+  } catch (error) {
+    console.error('Error deleting task deliverable:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get all deliverables for a task
+ * @param {number} taskId - Task ID
+ * @returns {Promise<Array>} List of deliverables for the task
+ */
+module.exports.getTaskDeliverables = async (taskId) => {
+  try {
+    const deliverables = await prisma.taskDeliverableStatus.findMany({
+      where: { taskId },
+      orderBy: { id: 'asc' }
+    });
+
+    return deliverables.map(d => ({
+      id: d.id,
+      taskId: d.taskId,
+      name: d.name,
+      status: d.status,
+      fileUrl: d.fileUrl,
+      fileName: d.fileName,
+      confirmed: d.confirmed,
+      confirmedAt: d.confirmedAt,
+      notes: d.notes,
+      completedAt: d.completedAt
+    }));
+  } catch (error) {
+    console.error('Error getting task deliverables:', error);
+    throw error;
+  }
+};
+
+/**
+ * Calculate task progress based on confirmed deliverables
+ * @param {number} taskId - Task ID
+ * @returns {Promise<number>} Calculated progress percentage
+ */
+module.exports.calculateDeliverableProgress = async (taskId) => {
+  try {
+    const deliverables = await prisma.taskDeliverableStatus.findMany({
+      where: { taskId }
+    });
+
+    if (deliverables.length === 0) {
+      return 0;
+    }
+
+    const confirmedCount = deliverables.filter(d => d.confirmed).length;
+    return Math.round((confirmedCount / deliverables.length) * 100);
+  } catch (error) {
+    console.error('Error calculating deliverable progress:', error);
+    throw error;
+  }
+};
+
+/**
+ * Calculate and update parent task progress based on children's progress
+ * Called when a child's progress changes to update the parent
+ * @param {number} taskId - Child task ID that was updated
+ * @returns {Promise<number>} New parent task progress percentage
+ */
+module.exports.calculateParentTaskProgress = async (taskId) => {
+  try {
+    // Get the child task to find its parent
+    const childTask = await prisma.task.findUnique({
+      where: { taskId },
+      select: { parentId: true }
+    });
+    
+    if (!childTask || !childTask.parentId) {
+      return 0; // Task has no parent, nothing to update
+    }
+    
+    // Get all children of the parent task
+    const siblings = await prisma.task.findMany({
+      where: { parentId: childTask.parentId }
+    });
+    
+    if (siblings.length === 0) {
+      return 0;
+    }
+    
+    // Calculate average progress from all children
+    const totalProgress = siblings.reduce((sum, t) => sum + (t.progress || 0), 0);
+    const newProgress = Math.round(totalProgress / siblings.length);
+    
+    // Update the parent's progress
+    await prisma.task.update({
+      where: { taskId: childTask.parentId },
+      data: { progress: newProgress }
+    });
+    
+    // Recursively update grandparents if they exist
+    await module.exports.calculateParentTaskProgress(childTask.parentId);
+    
+    return newProgress;
+  } catch (error) {
+    console.error('Error calculating parent task progress:', error);
+    throw error;
+  }
+};
+module.exports.calculateAndUpdateSubActionProgress = async (taskId) => {
+  try {
+    // Get the task to find its parent SubAction
+    const task = await prisma.task.findUnique({
+      where: { taskId },
+      include: {
+        subAction: {
+          select: { actionId: true }
+        }
+      }
+    });
+    
+    if (!task || !task.subActionId) {
+      return 0; // Task has no SubAction, nothing to update
+    }
+    
+    const actionId = task.subAction.actionId;
+    
+    // Get all tasks for this SubAction
+    const subActionTasks = await prisma.task.findMany({
+      where: { subActionId: task.subActionId }
+    });
+    
+    if (subActionTasks.length === 0) {
+      return 0;
+    }
+    
+    // Calculate average progress
+    const totalProgress = subActionTasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+    const newProgress = Math.round(totalProgress / subActionTasks.length);
+    
+    // Update the SubAction's progress field
+    await prisma.subAction.update({
+      where: { subActionId: task.subActionId },
+      data: { progress: newProgress }
+    });
+    
+    // Also update the parent Action's progress (average of all SubActions)
+    if (actionId) {
+      const subActions = await prisma.subAction.findMany({
+        where: { actionId }
+      });
+      
+      if (subActions.length > 0) {
+        const totalSubProgress = subActions.reduce((sum, sa) => sum + (sa.progress || 0), 0);
+        const actionProgress = Math.round(totalSubProgress / subActions.length);
+        
+        await prisma.action.update({
+          where: { actionId },
+          data: { progress: actionProgress }
+        });
+      }
+    }
+    
+    return newProgress;
+  } catch (error) {
+    console.error('Error calculating SubAction progress:', error);
     throw error;
   }
 };

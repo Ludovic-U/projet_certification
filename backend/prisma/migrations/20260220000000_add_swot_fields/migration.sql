@@ -1,0 +1,5 @@
+-- Add SWOT fields to Project table
+ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "SWOT_strength" TEXT;
+ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "SWOT_weakness" TEXT;
+ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "SWOT_opportunity" TEXT;
+ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "SWOT_threat" TEXT;

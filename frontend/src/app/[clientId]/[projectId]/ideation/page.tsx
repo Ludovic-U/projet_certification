@@ -6,19 +6,9 @@ import { useParams, usePathname, useRouter, useSearchParams } from "next/navigat
 import { useConfig } from "@/context/ConfigContext";
 import { useLocalStorage } from "@/context/LocalStorageContext";
 import StrategicAnalysisTab from "./tabs/StrategicAnalysisTab";
-import PreProjectPanel from "./tabs/PreProjectPanel";
-import DecisionPanel from "./tabs/DecisionPanel";
 import IdeaProject from "./tabs/IdeaProject";
 
-type TabKey = "analyse" | "idee-projet" | "preprojet" | "decision";
-
-const isTabKey = (value: string | null): value is TabKey => {
-  return value === "analyse" || value === "idee-projet" 
-};
-
-const getTabFromSearchParam = (value: string | null): TabKey => {
-  return isTabKey(value) ? value : "analyse";
-};
+type TabKey = "analyse" | "idée projet";
 
 export default function IdeationPage() {
   const { data } = useLocalStorage();

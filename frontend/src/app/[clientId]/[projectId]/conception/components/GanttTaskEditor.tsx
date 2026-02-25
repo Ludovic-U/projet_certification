@@ -1,7 +1,7 @@
-import React from 'react';
-import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, UserMinus, CreditCard, Upload, Package } from 'lucide-react';
 import { Task, EditorTab, Livrable, SelectOption } from '../types';
-import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateBudgetTotals } from '../utils/budgetUtils';
+import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateExpenseLinesTotal, calculateBudgetTotals, Budget, getExpenseLinesByCategory } from '../utils/budgetUtils';
 import Select from 'react-select';
 
 // Task color options for Gantt chart display
@@ -14,6 +14,481 @@ const TASK_COLORS = [
   { name: 'Pink', value: '#ec4899' },
   { name: 'Cyan', value: '#06b6d4' },
 ];
+
+// Livrables Section Component
+interface LivrablesSectionProps {
+  editingTask: Task;
+  setEditingTask: (task: Task) => void;
+  livrables: Livrable[];
+  showAddLivrable: boolean;
+  setShowAddLivrable: (show: boolean) => void;
+  newLivrableLabel: string;
+  setNewLivrableLabel: (label: string) => void;
+  newLivrableDescription: string;
+  setNewLivrableDescription: (description: string) => void;
+  handleAddLivrable: () => void;
+  handleUploadLivrableFile?: (livrableId: number, file: File) => Promise<void>;
+  handleDeleteLivrable?: (livrableId: number) => Promise<void>;
+}
+
+const LivrablesSection: React.FC<LivrablesSectionProps> = ({
+  editingTask,
+  setEditingTask,
+  livrables,
+  showAddLivrable,
+  setShowAddLivrable,
+  newLivrableLabel,
+  setNewLivrableLabel,
+  newLivrableDescription,
+  setNewLivrableDescription,
+  handleAddLivrable,
+  handleUploadLivrableFile,
+  handleDeleteLivrable,
+}) => {
+  const [uploadingLivrableId, setUploadingLivrableId] = useState<number | null>(null);
+
+  const handleFileChange = async (livrableId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && handleUploadLivrableFile) {
+      setUploadingLivrableId(livrableId);
+      try {
+        await handleUploadLivrableFile(livrableId, file);
+      } finally {
+        setUploadingLivrableId(null);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
+        <Target className="w-4 h-4 text-emerald-400" />
+        Livrables
+      </label>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => {
+            setShowAddLivrable(!showAddLivrable);
+            if (!showAddLivrable) {
+              setNewLivrableLabel('');
+              setNewLivrableDescription('');
+            }
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all"
+        >
+          <Plus className="w-4 h-4" />
+          Ajouter un livrable
+        </button>
+      </div>
+      
+      {showAddLivrable ? (
+        <div className="p-4 bg-slate-800/50 border border-slate-600 rounded-xl space-y-3 animate-in slide-in-from-top-2">
+          <input
+            type="text"
+            value={newLivrableLabel}
+            onChange={(e) => setNewLivrableLabel(e.target.value)}
+            placeholder="Nom du livrable..."
+            className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            autoFocus
+          />
+          <input
+            type="text"
+            value={newLivrableDescription}
+            onChange={(e) => setNewLivrableDescription(e.target.value)}
+            placeholder="Description (optionnelle)..."
+            className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={handleAddLivrable}
+              disabled={!newLivrableLabel.trim()}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus className="w-4 h-4" />
+              Ajouter
+            </button>
+            <button
+              onClick={() => {
+                setShowAddLivrable(false);
+                setNewLivrableLabel('');
+                setNewLivrableDescription('');
+              }}
+              className="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      ) : editingTask.livrableIds && editingTask.livrableIds.length > 0 ? (
+        <div className="space-y-2">
+          {editingTask.livrableIds.map(livrableId => {
+            const livrable = livrables.find(l => l.id === livrableId);
+            if (!livrable) return null;
+            return (
+              <div key={livrableId} className="flex items-center gap-3 group">
+                <div className="flex-1 px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-white">{livrable.label}</p>
+                    {livrable.confirmed ? (
+                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
+                        Complété
+                      </span>
+                    ) : livrable.fileUrl ? (
+                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">
+                        Fichier上传é
+                      </span>
+                    ) : null}
+                  </div>
+                  {livrable.description && (
+                    <p className="text-sm text-slate-400 mt-1">{livrable.description}</p>
+                  )}
+                  {livrable.fileName && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      📎 {livrable.fileName}
+                    </p>
+                  )}
+                  {/* Upload button for livrable */}
+                  <div className="mt-3">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 border border-dashed border-slate-500 rounded-lg cursor-pointer transition-all text-sm text-slate-300 hover:text-white">
+                      <Upload className="w-4 h-4" />
+                      {uploadingLivrableId === livrableId ? 'Téléchargement...' : (livrable.fileUrl ? 'Remplacer le fichier' : 'Ajouter un fichier')}
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
+                        onChange={(e) => handleFileChange(livrableId, e)}
+                        disabled={uploadingLivrableId !== null}
+                      />
+                    </label>
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (handleDeleteLivrable) {
+                      await handleDeleteLivrable(livrableId);
+                    } else {
+                      setEditingTask({
+                        ...editingTask,
+                        livrableIds: editingTask.livrableIds!.filter(id => id !== livrableId)
+                      });
+                    }
+                  }}
+                  className="p-2 bg-slate-800 border border-slate-600 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-all opacity-0 group-hover:opacity-100"
+                  title="Supprimer le livrable"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-sm text-slate-500 italic bg-slate-800/30 px-4 py-3 rounded-xl">
+          Aucun livrable sélectionné
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Budget Total Preview Component
+const BudgetTotalPreview: React.FC<{ budget: Budget }> = ({ budget }) => {
+  const { total } = calculateBudgetTotals(budget);
+  
+  return (
+    <div className="mt-4 p-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/5 border border-blue-500/20 rounded-xl">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-slate-400">Budget total</span>
+        <span className="text-lg font-bold text-blue-400">
+          {total.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// Moyens Humains Section with User Assignment
+interface MoyensHumainsSectionProps {
+  editingTask: Task;
+  setEditingTask: (task: Task) => void;
+  users: { id: number; label: string }[];
+}
+
+const MoyensHumainsSection: React.FC<MoyensHumainsSectionProps> = ({
+  editingTask,
+  setEditingTask,
+  users,
+}) => {
+  const moyenHumainLines = (editingTask.budget?.expenseLines || []).filter(line => 
+    line.nature?.startsWith('moyenHumain:') || (!line.nature?.includes(':') && line.nature)
+  );
+
+  const assignedUserIds = editingTask.assigneeIds || [];
+
+  const addPersonne = () => {
+    const newLine = createEmptyExpenseLine();
+    setEditingTask({
+      ...editingTask,
+      assigneeIds: [...assignedUserIds, users[0]?.id].filter(Boolean),
+      budget: {
+        ...editingTask.budget!,
+        expenseLines: [...(editingTask.budget?.expenseLines || []), { ...newLine, nature: 'moyenHumain:' }]
+      }
+    });
+  };
+
+  const updatePersonne = (id: string, userId: number | null, jours: number, cout: number) => {
+    const user = users.find(u => u.id === userId);
+    setEditingTask({
+      ...editingTask,
+      budget: {
+        ...editingTask.budget!,
+        expenseLines: (editingTask.budget?.expenseLines || []).map(line =>
+          line.id === id ? { ...line, unites: jours, prix: cout, nature: `moyenHumain:${user?.label || ''}` } : line
+        )
+      }
+    });
+  };
+
+  const removePersonne = (id: string) => {
+    setEditingTask({
+      ...editingTask,
+      budget: {
+        ...editingTask.budget!,
+        expenseLines: (editingTask.budget?.expenseLines || []).filter(line => line.id !== id)
+      }
+    });
+  };
+
+  const moyenHumainTotal = moyenHumainLines.reduce((sum, line) => sum + calculateExpenseLineTotal(line), 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4 pb-3 border-b border-slate-700">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-slate-800 rounded-lg">
+            <Users className="w-5 h-5 text-emerald-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-white">Moyen humain</h3>
+        </div>
+      </div>
+      <div className="p-4 bg-gradient-to-r from-emerald-500/10 to-cyan-500/5 border border-emerald-500/20 rounded-xl">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-emerald-400">budgets Moyen humain</span>
+          <span className="text-xl font-bold text-emerald-400">
+            {moyenHumainTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-slate-800/50 rounded-t-xl text-sm font-medium text-slate-300">
+          <div className="col-span-5">Personne</div>
+          <div className="col-span-3 text-center">Jours</div>
+          <div className="col-span-3 text-center">Coût (€)</div>
+          <div className="col-span-1"></div>
+        </div>
+
+        <div className="space-y-2">
+          {moyenHumainLines.map((line) => (
+            <div key={line.id} className="grid grid-cols-12 gap-3 items-center px-4 py-3 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all">
+              <div className="col-span-5">
+                <Select
+                  options={users.map(user => ({ value: user.id, label: user.label }))}
+                  value={users.find(u => u.label === line.nature?.replace('moyenHumain:', '')) ? { value: users.find(u => u.label === line.nature?.replace('moyenHumain:', ''))!.id, label: users.find(u => u.label === line.nature?.replace('moyenHumain:', ''))!.label } : null}
+                  onChange={(selected) => {
+                    const userId = (selected as SelectOption)?.value || null;
+                    updatePersonne(line.id, userId, line.unites, line.prix);
+                  }}
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      backgroundColor: '#1e293b',
+                      borderColor: '#475569',
+                      color: 'white',
+                      borderRadius: '8px',
+                      minHeight: '36px',
+                    }),
+                    menu: (base) => ({ ...base, backgroundColor: '#1e293b', borderRadius: '8px' }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#334155' : 'transparent',
+                      color: 'white',
+                    }),
+                    singleValue: (base) => ({ ...base, color: 'white' }),
+                  }}
+                  placeholder="Sélectionner..."
+                  isClearable
+                />
+              </div>
+              <div className="col-span-3">
+                <input
+                  type="number"
+                  min="0"
+                  value={line.unites || ''}
+                  onChange={(e) => updatePersonne(line.id, null, parseFloat(e.target.value) || 0, line.prix)}
+                  placeholder="0"
+                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-center"
+                />
+              </div>
+              <div className="col-span-3">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={line.prix || ''}
+                  onChange={(e) => updatePersonne(line.id, null, line.unites, parseFloat(e.target.value) || 0)}
+                  placeholder="0.00"
+                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-center"
+                />
+              </div>
+              <div className="col-span-1 flex justify-end">
+                <button
+                  onClick={() => removePersonne(line.id)}
+                  className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-all"
+                  title="Supprimer"
+                >
+                  <UserMinus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {moyenHumainLines.length === 0 && (
+            <div className="text-center py-8 text-slate-500 bg-slate-800/20 border border-slate-700/50 rounded-xl">
+              Aucune personne assignée. Cliquez ci-dessous pour ajouter des personnes.
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={addPersonne}
+          className="flex items-center gap-2 px-4 py-3 bg-slate-800 text-slate-300 border border-slate-600 rounded-xl hover:bg-slate-700 hover:text-white transition-all w-full justify-center"
+        >
+          <Plus className="w-4 h-4" />
+          Ajouter une personne
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Budget Section with Expense Lines Component
+interface BudgetSectionWithLinesProps {
+  editingTask: Task;
+  setEditingTask: (task: Task) => void;
+  title: string;
+  icon: React.ReactNode;
+  category: string;
+  addExpenseLine: () => void;
+  updateExpenseLine: (id: string, updates: Partial<{ nature: string; unites: number; prix: number; }>) => void;
+  removeExpenseLine: (id: string) => void;
+}
+
+const BudgetSectionWithLines: React.FC<BudgetSectionWithLinesProps> = ({
+  editingTask,
+  title,
+  icon,
+  category,
+  addExpenseLine,
+  updateExpenseLine,
+  removeExpenseLine,
+}) => {
+  const expenseLines = (editingTask.budget?.expenseLines || []).filter(line => 
+    line.nature?.startsWith(category + ':') || (!line.nature?.includes(':') && category === 'moyenHumain')
+  );
+
+  const categoryTotal = expenseLines.reduce((sum, line) => sum + calculateExpenseLineTotal(line), 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4 pb-3 border-b border-slate-700">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-slate-800 rounded-lg">{icon}</div>
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
+        </div>
+      </div>
+      <div className="p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/5 border border-blue-500/20 rounded-xl">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-blue-400">budgets {title}</span>
+          <span className="text-xl font-bold text-white">
+            {categoryTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-slate-800/50 rounded-t-xl text-sm font-medium text-slate-300">
+          <div className="col-span-6">Nature / name</div>
+          <div className="col-span-3 text-center">Unité</div>
+          <div className="col-span-3 text-right">Prix (€)</div>
+        </div>
+
+        <div className="space-y-2">
+          {expenseLines.map((line) => (
+            <div key={line.id} className="grid grid-cols-12 gap-3 items-center px-4 py-3 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all">
+              <div className="col-span-6">
+                <input
+                  type="text"
+                  value={(line.nature || '').replace(category + ':', '')}
+                  onChange={(e) => updateExpenseLine(line.id, { nature: `${category}:${e.target.value}` })}
+                  placeholder="Nature / name..."
+                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              </div>
+              <div className="col-span-3">
+                <input
+                  type="number"
+                  min="0"
+                  value={line.unites || ''}
+                  onChange={(e) => updateExpenseLine(line.id, { unites: parseFloat(e.target.value) || 0 })}
+                  placeholder="0"
+                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-center"
+                />
+              </div>
+              <div className="col-span-2">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={line.prix || ''}
+                  onChange={(e) => updateExpenseLine(line.id, { prix: parseFloat(e.target.value) || 0 })}
+                  placeholder="0.00"
+                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right"
+                />
+              </div>
+              <div className="col-span-1 flex justify-end">
+                <button
+                  onClick={() => removeExpenseLine(line.id)}
+                  className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-all"
+                  title="Supprimer la ligne"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {expenseLines.length === 0 && (
+            <div className="text-center py-8 text-slate-500 bg-slate-800/20 border border-slate-700/50 rounded-xl">
+              Aucune dépense ajoutée. Cliquez ci-dessous pour ajouter des lignes de dépenses.
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={addExpenseLine}
+          className="flex items-center gap-2 px-4 py-3 bg-slate-800 text-slate-300 border border-slate-600 rounded-xl hover:bg-slate-700 hover:text-white transition-all w-full justify-center"
+        >
+          <Plus className="w-4 h-4" />
+          Ajouter une ligne de dépense
+        </button>
+      </div>
+    </div>
+  );
+};
 
 interface GanttTaskEditorProps {
   showEditor: boolean;
@@ -30,8 +505,11 @@ interface GanttTaskEditorProps {
   newLivrableDescription: string;
   setNewLivrableDescription: (description: string) => void;
   handleAddLivrable: () => void;
+  handleUploadLivrableFile?: (livrableId: number, file: File) => Promise<void>;
+  handleDeleteLivrable?: (livrableId: number) => Promise<void>;
   deleteTask: (id: number) => void;
   updateTask: () => void;
+  projectId: number | null;
   data: {
     users: { id: number; label: string }[];
   };
@@ -52,20 +530,34 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
   newLivrableDescription,
   setNewLivrableDescription,
   handleAddLivrable,
+  handleUploadLivrableFile,
+  handleDeleteLivrable,
   deleteTask,
   updateTask,
+  projectId, // eslint-disable-line @typescript-eslint/no-unused-vars
   data,
 }) => {
+  // State for custom budget types - must be called before any early returns
+  const [customBudgetTypes, setCustomBudgetTypes] = useState<{ id: string; name: string }[]>([]);
+  const [showAddBudgetType, setShowAddBudgetType] = useState(false);
+  const [newBudgetTypeName, setNewBudgetTypeName] = useState('');
+
   if (!showEditor || !editingTask) return null;
 
   const tabs: { id: EditorTab; label: string; icon: React.ReactNode; color: string; category: string }[] = [
     { id: 'general', label: 'Général', icon: <Settings className="w-4 h-4" />, color: 'text-blue-400', category: '' },
     { id: 'moyenHumain', label: 'Moyen humain', icon: <Users className="w-4 h-4" />, color: 'text-emerald-400', category: 'moyenHumain' },
-    { id: 'interns', label: 'Stagiaires', icon: <Users className="w-4 h-4" />, color: 'text-amber-400', category: 'interns' },
     { id: 'amenagements', label: 'Aménagements', icon: <Target className="w-4 h-4" />, color: 'text-purple-400', category: 'amenagements' },
     { id: 'equipementsPedagogiques', label: 'Équipements pédagogiques', icon: <FileText className="w-4 h-4" />, color: 'text-pink-400', category: 'equipements' },
     { id: 'prestations', label: 'Prestations', icon: <DollarSign className="w-4 h-4" />, color: 'text-cyan-400', category: 'prestations' },
     { id: 'communications', label: 'Communications', icon: <CheckCircle2 className="w-4 h-4" />, color: 'text-orange-400', category: 'communications' },
+    ...customBudgetTypes.map(bt => ({ 
+      id: bt.id as EditorTab, 
+      label: bt.name, 
+      icon: <Package className="w-4 h-4" />, 
+      color: 'text-yellow-400', 
+      category: bt.id 
+    }))
   ];
 
   const getTypeStyles = (type: string) => {
@@ -81,8 +573,8 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
 
   const typeStyles = getTypeStyles(editingTask.type);
 
-  const addExpenseLine = () => {
-    const newLine = createEmptyExpenseLine();
+  const addExpenseLine = (category: string) => {
+    const newLine = { ...createEmptyExpenseLine(), nature: `${category}:` };
     setEditingTask({
       ...editingTask,
       budget: {
@@ -97,7 +589,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
       ...editingTask,
       budget: {
         ...editingTask.budget!,
-        expenseLines: editingTask.budget!.expenseLines.map(line =>
+        expenseLines: (editingTask.budget?.expenseLines || []).map(line =>
           line.id === id ? { ...line, ...updates } : line
         )
       }
@@ -109,9 +601,24 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
       ...editingTask,
       budget: {
         ...editingTask.budget!,
-        expenseLines: editingTask.budget!.expenseLines.filter(line => line.id !== id)
+        expenseLines: (editingTask.budget?.expenseLines || []).filter(line => line.id !== id)
       }
     });
+  };
+
+  // Add a new custom budget type
+  const addCustomBudgetType = () => {
+    if (newBudgetTypeName.trim()) {
+      const newType = {
+        id: `custom_${Date.now()}`,
+        name: newBudgetTypeName.trim()
+      };
+      setCustomBudgetTypes([...customBudgetTypes, newType]);
+      setNewBudgetTypeName('');
+      setShowAddBudgetType(false);
+      // Switch to the new budget type tab
+      setEditorTab(newType.id as EditorTab);
+    }
   };
 
   return (
@@ -261,7 +768,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   </label>
                   <input
                     type="date"
-                    value={new Date(editingTask.start).toISOString().split('T')[0]}
+                    value={editingTask.start && !isNaN(editingTask.start.getTime()) ? new Date(editingTask.start).toISOString().split('T')[0] : ''}
                     onChange={(e) => {
                       const newStart = new Date(e.target.value);
                       setEditingTask({ ...editingTask, start: newStart, end: editingTask.type === 'milestone' ? newStart : editingTask.end });
@@ -277,7 +784,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                     </label>
                     <input
                       type="date"
-                      value={new Date(editingTask.end).toISOString().split('T')[0]}
+                      value={editingTask.end && !isNaN(editingTask.end.getTime()) ? new Date(editingTask.end).toISOString().split('T')[0] : ''}
                       onChange={(e) => setEditingTask({ ...editingTask, end: new Date(e.target.value) })}
                       className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     />
@@ -299,6 +806,25 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   placeholder="Enter task details..."
                 />
               </div>
+
+              {/* Livrables Section - NOW LOWER IN THE FORM */}
+              <LivrablesSection
+                editingTask={editingTask}
+                setEditingTask={setEditingTask}
+                livrables={livrables}
+                showAddLivrable={showAddLivrable}
+                setShowAddLivrable={setShowAddLivrable}
+                newLivrableLabel={newLivrableLabel}
+                setNewLivrableLabel={setNewLivrableLabel}
+                newLivrableDescription={newLivrableDescription}
+                setNewLivrableDescription={setNewLivrableDescription}
+                handleAddLivrable={handleAddLivrable}
+                handleUploadLivrableFile={handleUploadLivrableFile}
+                handleDeleteLivrable={handleDeleteLivrable}
+              />
+              
+              {/* Budget Total Preview */}
+              <BudgetTotalPreview budget={editingTask.budget || createEmptyBudget()} />
 
               {/* Assignees */}
               <div className="space-y-2">
@@ -359,102 +885,6 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 />
               </div>
 
-              {/* Livrables */}
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-slate-400" />
-                  Livrables
-                </label>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setShowAddLivrable(!showAddLivrable);
-                      if (!showAddLivrable) {
-                        setNewLivrableLabel('');
-                        setNewLivrableDescription('');
-                      }
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Ajouter un nouveau livrable
-                  </button>
-                </div>
-                
-                {showAddLivrable ? (
-                  <div className="p-4 bg-slate-800/50 border border-slate-600 rounded-xl space-y-3 animate-in slide-in-from-top-2">
-                    <input
-                      type="text"
-                      value={newLivrableLabel}
-                      onChange={(e) => setNewLivrableLabel(e.target.value)}
-                      placeholder="Nom du livrable..."
-                      className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      autoFocus
-                    />
-                    <input
-                      type="text"
-                      value={newLivrableDescription}
-                      onChange={(e) => setNewLivrableDescription(e.target.value)}
-                      placeholder="Description (optionnelle)..."
-                      className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleAddLivrable}
-                        disabled={!newLivrableLabel.trim()}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Ajouter
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowAddLivrable(false);
-                          setNewLivrableLabel('');
-                          setNewLivrableDescription('');
-                        }}
-                        className="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all"
-                      >
-                        Annuler
-                      </button>
-                    </div>
-                  </div>
-                ) : editingTask.livrableIds && editingTask.livrableIds.length > 0 ? (
-                  <div className="space-y-2">
-                    {editingTask.livrableIds.map(livrableId => {
-                      const livrable = livrables.find(l => l.id === livrableId);
-                      if (!livrable) return null;
-                      return (
-                        <div key={livrableId} className="flex items-center gap-3 group">
-                          <div className="flex-1 px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl">
-                            <p className="font-medium text-white">{livrable.label}</p>
-                            {livrable.description && (
-                              <p className="text-sm text-slate-400 mt-1">{livrable.description}</p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => {
-                              setEditingTask({
-                                ...editingTask,
-                                livrableIds: editingTask.livrableIds!.filter(id => id !== livrableId)
-                              });
-                            }}
-                            className="p-2 bg-slate-800 border border-slate-600 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-all opacity-0 group-hover:opacity-100"
-                            title="Supprimer le livrable"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-sm text-slate-500 italic bg-slate-800/30 px-4 py-3 rounded-xl">
-                    No livrable selected. Click Add New Livrable to create one.
-                  </div>
-                )}
-              </div>
-
               {/* Goal */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
@@ -478,27 +908,134 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 />
               </div>
             </div>
+          ) : editorTab === 'budgets' ? (
+            <div className="space-y-6">
+              {/* Budget Total */}
+              <BudgetTotalPreview budget={editingTask.budget || createEmptyBudget()} />
+              
+              {/* Moyen Humain Summary */}
+              <div className="p-4 bg-gradient-to-r from-emerald-500/10 to-cyan-500/5 border border-emerald-500/20 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-emerald-400">budgets Moyen humain</span>
+                  <span className="text-lg font-bold text-emerald-400">
+                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'moyenHumain')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Aménagements Summary */}
+              <div className="p-4 bg-gradient-to-r from-purple-500/10 to-cyan-500/5 border border-purple-500/20 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-purple-400">budgets Aménagements</span>
+                  <span className="text-lg font-bold text-purple-400">
+                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'amenagements')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Équipements Summary */}
+              <div className="p-4 bg-gradient-to-r from-pink-500/10 to-cyan-500/5 border border-pink-500/20 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-pink-400">budgets Équipements pédagogiques</span>
+                  <span className="text-lg font-bold text-pink-400">
+                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'equipements')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Prestations Summary */}
+              <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/5 border border-cyan-500/20 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-cyan-400">budgets Prestations</span>
+                  <span className="text-lg font-bold text-cyan-400">
+                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'prestations')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Communications Summary */}
+              <div className="p-4 bg-gradient-to-r from-orange-500/10 to-cyan-500/5 border border-orange-500/20 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-orange-400">budgets Communications</span>
+                  <span className="text-lg font-bold text-orange-400">
+                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'communications')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Custom Budget Types Summaries */}
+              {customBudgetTypes.map(customType => {
+                const customLines = editingTask.budget?.expenseLines.filter(line => 
+                  line.nature?.startsWith(customType.id + ':')
+                ) || [];
+                const customTotal = calculateExpenseLinesTotal(customLines);
+                return (
+                  <div key={customType.id} className="p-4 bg-gradient-to-r from-yellow-500/10 to-cyan-500/5 border border-yellow-500/20 rounded-xl cursor-pointer hover:border-yellow-400/50 transition-all" onClick={() => setEditorTab(customType.id as EditorTab)}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-yellow-400">budgets {customType.name}</span>
+                      <span className="text-lg font-bold text-yellow-400">
+                        {customTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Add Custom Budget Type Button */}
+              <div className="pt-4 border-t border-slate-700">
+                {showAddBudgetType ? (
+                  <div className="p-4 bg-slate-800/50 border border-slate-600 rounded-xl space-y-3 animate-in slide-in-from-top-2">
+                    <input
+                      type="text"
+                      value={newBudgetTypeName}
+                      onChange={(e) => setNewBudgetTypeName(e.target.value)}
+                      placeholder="Nom du type de budget..."
+                      className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') addCustomBudgetType();
+                        if (e.key === 'Escape') {
+                          setShowAddBudgetType(false);
+                          setNewBudgetTypeName('');
+                        }
+                      }}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={addCustomBudgetType}
+                        disabled={!newBudgetTypeName.trim()}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-xl hover:bg-yellow-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Ajouter
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAddBudgetType(false);
+                          setNewBudgetTypeName('');
+                        }}
+                        className="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAddBudgetType(true)}
+                    className="flex items-center gap-2 px-4 py-3 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-xl hover:bg-yellow-500/30 transition-all w-full justify-center"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Ajouter un type de budget personnalisé
+                  </button>
+                )}
+              </div>
+            </div>
           ) : editorTab === 'moyenHumain' ? (
-            <BudgetSectionWithLines
+            <MoyensHumainsSection
               editingTask={editingTask}
               setEditingTask={setEditingTask}
-              title="Moyen humain"
-              icon={<Users className="w-5 h-5 text-emerald-400" />}
-              category="moyenHumain"
-              addExpenseLine={addExpenseLine}
-              updateExpenseLine={updateExpenseLine}
-              removeExpenseLine={removeExpenseLine}
-            />
-          ) : editorTab === 'interns' ? (
-            <BudgetSectionWithLines
-              editingTask={editingTask}
-              setEditingTask={setEditingTask}
-              title="Stagiaires"
-              icon={<Users className="w-5 h-5 text-amber-400" />}
-              category="interns"
-              addExpenseLine={addExpenseLine}
-              updateExpenseLine={updateExpenseLine}
-              removeExpenseLine={removeExpenseLine}
+              users={data.users}
             />
           ) : editorTab === 'amenagements' ? (
             <BudgetSectionWithLines
@@ -507,7 +1044,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               title="Aménagements"
               icon={<Target className="w-5 h-5 text-purple-400" />}
               category="amenagements"
-              addExpenseLine={addExpenseLine}
+              addExpenseLine={() => addExpenseLine('amenagements')}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />
@@ -518,7 +1055,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               title="Équipements pédagogiques"
               icon={<FileText className="w-5 h-5 text-pink-400" />}
               category="equipements"
-              addExpenseLine={addExpenseLine}
+              addExpenseLine={() => addExpenseLine('equipements')}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />
@@ -529,7 +1066,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               title="Prestations"
               icon={<DollarSign className="w-5 h-5 text-cyan-400" />}
               category="prestations"
-              addExpenseLine={addExpenseLine}
+              addExpenseLine={() => addExpenseLine('prestations')}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />
@@ -540,7 +1077,18 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               title="Communications"
               icon={<CheckCircle2 className="w-5 h-5 text-orange-400" />}
               category="communications"
-              addExpenseLine={addExpenseLine}
+              addExpenseLine={() => addExpenseLine('communications')}
+              updateExpenseLine={updateExpenseLine}
+              removeExpenseLine={removeExpenseLine}
+            />
+          ) : customBudgetTypes.find(bt => bt.id === editorTab) ? (
+            <BudgetSectionWithLines
+              editingTask={editingTask}
+              setEditingTask={setEditingTask}
+              title={customBudgetTypes.find(bt => bt.id === editorTab)?.name || 'Budget'}
+              icon={<Package className="w-5 h-5 text-yellow-400" />}
+              category={editorTab}
+              addExpenseLine={() => addExpenseLine(editorTab)}
               updateExpenseLine={updateExpenseLine}
               removeExpenseLine={removeExpenseLine}
             />
@@ -574,149 +1122,6 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
               Enregistrer les modifications
             </button>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Budget Section with Expense Lines Component
-const BudgetSectionWithLines: React.FC<{
-  editingTask: Task;
-  setEditingTask: (task: Task) => void;
-  title: string;
-  icon: React.ReactNode;
-  category: string;
-  addExpenseLine: () => void;
-  updateExpenseLine: (id: string, updates: Partial<{ nature: string; unites: number; prix: number }>) => void;
-  removeExpenseLine: (id: string) => void;
-}> = ({ editingTask, title, icon, category, addExpenseLine, updateExpenseLine, removeExpenseLine }) => {
-  const expenseLines = editingTask.budget?.expenseLines.filter(line => 
-    line.nature?.startsWith(category + ':') || (!line.nature?.includes(':') && category === 'moyenHumain')
-  ) || [];
-
-  const categoryTotal = expenseLines.reduce((sum, line) => sum + calculateExpenseLineTotal(line), 0);
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 pb-3 border-b border-slate-700">
-        <div className="p-2 bg-slate-800 rounded-lg">{icon}</div>
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-      </div>
-
-      {/* Expense Lines Table */}
-      <div className="space-y-3">
-        <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-slate-800/50 rounded-t-xl text-sm font-medium text-slate-300">
-          <div className="col-span-4">Nature de dépense</div>
-          <div className="col-span-2 text-center">Unités</div>
-          <div className="col-span-2 text-center">Prix (€)</div>
-          <div className="col-span-3 text-right">Total (€)</div>
-          <div className="col-span-1"></div>
-        </div>
-
-        <div className="space-y-2">
-          {expenseLines.map((line) => (
-            <div key={line.id} className="grid grid-cols-12 gap-3 items-center px-4 py-3 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all">
-              <div className="col-span-4">
-                <input
-                  type="text"
-                  value={line.nature.replace(category + ':', '')}
-                  onChange={(e) => updateExpenseLine(line.id, { nature: `${category}:${e.target.value}` })}
-                  placeholder="Description..."
-                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                />
-              </div>
-              <div className="col-span-2">
-                <input
-                  type="number"
-                  min="0"
-                  value={line.unites || ''}
-                  onChange={(e) => updateExpenseLine(line.id, { unites: parseFloat(e.target.value) || 0 })}
-                  placeholder="0"
-                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-center"
-                />
-              </div>
-              <div className="col-span-2">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={line.prix || ''}
-                  onChange={(e) => updateExpenseLine(line.id, { prix: parseFloat(e.target.value) || 0 })}
-                  placeholder="0.00"
-                  className="w-full px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-center"
-                />
-              </div>
-              <div className="col-span-3 text-right">
-                <span className="text-white font-medium">
-                  {calculateExpenseLineTotal(line).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                </span>
-              </div>
-              <div className="col-span-1 flex justify-end">
-                <button
-                  onClick={() => removeExpenseLine(line.id)}
-                  className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-all"
-                  title="Supprimer la ligne"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {expenseLines.length === 0 && (
-            <div className="text-center py-8 text-slate-500 bg-slate-800/20 border border-slate-700/50 rounded-xl">
-              Aucune dépense ajoutée. Cliquez ci-dessous pour ajouter des lignes de dépenses.
-            </div>
-          )}
-        </div>
-
-        <button
-          onClick={addExpenseLine}
-          className="flex items-center gap-2 px-4 py-3 bg-slate-800 text-slate-300 border border-slate-600 rounded-xl hover:bg-slate-700 hover:text-white transition-all w-full justify-center"
-        >
-          <Plus className="w-4 h-4" />
-          Ajouter une ligne de dépense
-        </button>
-      </div>
-
-      {/* Category Total */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-        <div className="flex justify-between items-center">
-          <span className="text-slate-300 font-medium">Total {title}:</span>
-          <span className="text-xl font-bold text-white">
-            {categoryTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-          </span>
-        </div>
-      </div>
-
-      <BudgetTotal budget={editingTask.budget || createEmptyBudget()} />
-    </div>
-  );
-};
-
-// Budget Total Component
-const BudgetTotal: React.FC<{ budget: ReturnType<typeof createEmptyBudget> }> = ({ budget }) => {
-  const { subtotal, overhead, total } = calculateBudgetTotals(budget);
-  
-  return (
-    <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 border border-blue-500/30 rounded-xl p-6 mt-6">
-      <div className="flex items-center gap-2 mb-4">
-        <DollarSign className="w-5 h-5 text-blue-400" />
-        <h4 className="font-semibold text-white">Récapitulatif du budget</h4>
-      </div>
-      <div className="space-y-3">
-        <div className="flex justify-between text-slate-300">
-          <span>Subtotal:</span>
-          <span className="font-medium">{subtotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
-        </div>
-        <div className="flex justify-between text-slate-300">
-          <span>Overhead ({budget.overheadRate}%):</span>
-          <span className="font-medium">{overhead.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
-        </div>
-        <div className="flex justify-between text-xl font-bold text-white pt-3 border-t border-slate-600">
-          <span>Total Budget:</span>
-          <span className="text-blue-400">{total.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
         </div>
       </div>
     </div>

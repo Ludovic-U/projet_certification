@@ -35,3 +35,30 @@ exports.testMistral = async (req, res) => {
     res.status(500).json({ error: "Internal server error", details: error.message });
   } 
 };
+
+exports.generateMindmapFromResponses = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    
+    if (!projectId) {
+      return res.status(400).json({ error: "Project ID is required" });
+    }
+
+    const numericProjectId = parseInt(projectId, 10);
+    if (isNaN(numericProjectId)) {
+      return res.status(400).json({ error: "Invalid project ID" });
+    }
+
+    const response = await mistralService.GenerateMindmapFromResponses(numericProjectId);
+    
+    // If there's an error property in the response, return 404
+    if (response && response.error) {
+      return res.status(404).json(response);
+    }
+    
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error generating mindmap from responses:", error);
+    res.status(500).json({ error: "Internal server error", details: error.message });
+  }
+};

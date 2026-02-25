@@ -8,6 +8,25 @@ dotenv.config();
 const apiKey = process.env.MISTRAL_API_KEY;
 const client = new Mistral({ apiKey: apiKey });
 
+// Load app config for prompts
+const CONFIG_PATH = path.join(__dirname, '../config/app-config.json');
+
+function loadConfig() {
+    try {
+        const configData = fs.readFileSync(CONFIG_PATH, 'utf8');
+        return JSON.parse(configData);
+    } catch (error) {
+        console.error('Error loading config:', error);
+        return {};
+    }
+}
+
+// Get prompts from config, with fallbacks to hardcoded values
+function getPromptConfig(promptType) {
+    const config = loadConfig();
+    return config.prompts?.[promptType] || null;
+}
+
 exports.CallMistralAPI = async (prompt) => {
     const chatResponse = await client.chat.complete({
         model: "mistral-large-latest",
@@ -142,6 +161,100 @@ exports.uploadFile = async (filePath) => {
 // Genere un arbre de question/réponse à partir d'un texte
 exports.GenerateIdeationMistralAPI = async (textContent) => {
 
+}
+
+// Format attendu pour le Mindmap
+const mindmapExpectedFormat = `{
+    "nodes": [
+        {
+            "id": "root",
+            "label": "Nom du projet",
+            "nodeType": "action",
+            "color": "#3b82f6"
+        },
+        {
+            "id": "node-1",
+            "parentId": "root",
+            "label": "Titre de la catégorie ou question",
+            "nodeType": "action",
+            "color": "#96776e"
+        },
+        {
+            "id": "node-1-1",
+            "parentId": "node-1",
+            "label": "Réponse ou sous-catégorie",
+            "nodeType": "sous_action",
+            "color": "#698063"
+        }
+    ]
+}`;
+
+// Default system prompt for mindmap (fallback if not in config)
+const defaultMindmapSystemPrompt = `À partir de ces réponses aux questions, génère une structure de carte mentale (mindmap) organisée de manière hiérarchique.
+
+Règles:
+- Le premier nœud (root) doit être le nom du projet ou thème principal
+- Organise les réponses en catégories logiques
+- Utilise les types de nœuds: "action" pour les catégories principales, "sous_action" pour les sous-catégories, "livrable" pour les livrables, "objectif" pour les objectifs
+- Les couleurs recommandées: #3b82f6 (bleu) pour root, #96776e (marron) pour action, #698063 (vert) pour sous_action, #22c55e (vert clair) pour livrable, #ffffff (blanc) pour objectif
+- Génère un JSON valide sans texte supplémentaire`;
+
+// Génère un mindmap à partir des réponses du projet
+exports.GenerateMindmapFromResponses = async (projectId) => {
+    try {
+        // Fetch responses for this project
+        const { prisma } = require('../prisma/prismaClient');
+        
+        console.log('Fetching responses for projectId:', projectId);
+        
+        const responses = await prisma.response.findMany({
+            where: { projectId: projectId },
+            include: {
+                question: true,
+                option: true,
+            },
+        });
+        
+        console.log('Found responses:', responses.length);
+
+        if (!responses || responses.length === 0) {
+            return { error: 'Aucune réponse trouvée pour ce projet. Veuillez d\'abord répondre à des questions dans l\'onglet Questions/Réponses.' };
+        }
+
+        // Build context from responses
+        let contextText = 'Voici les réponses aux questions du projet:\n\n';
+        
+        // Group by question
+        const responsesByQuestion = {};
+        for (const response of responses) {
+            const questionLabel = response.question?.label || 'Question sans titre';
+            if (!responsesByQuestion[questionLabel]) {
+                responsesByQuestion[questionLabel] = [];
+            }
+            const responseText = response.label || (response.option?.label || 'Sans réponse');
+            responsesByQuestion[questionLabel].push(responseText);
+        }
+
+        // Format context
+        for (const [question, answers] of Object.entries(responsesByQuestion)) {
+            contextText += `Question: ${question}\n`;
+            contextText += `Réponses: ${answers.join(', ')}\n\n`;
+        }
+
+        // Get prompt from config or use default
+        const promptConfig = getPromptConfig('mindmap');
+        const systemPromptTemplate = promptConfig?.systemPrompt || defaultMindmapSystemPrompt;
+        // const finalPrompt = systemPromptTemplate.replace('{fmt}', mindmapExpectedFormat).replace('{text}', contextText);
+        const finalPrompt = systemPromptTemplate + 'Le forma attendu en réponse est le suivant:\n' + mindmapExpectedFormat;
+        const prompt = `${contextText}
+
+${finalPrompt}`;
+
+        return exports.CallMistralAPI(prompt);
+    } catch (err) {
+        console.error('Error generating mindmap from responses:', err);
+        return { error: 'Error generating mindmap', details: err.message };
+    }
 }
 
 // Simple wrapper used by controller tests

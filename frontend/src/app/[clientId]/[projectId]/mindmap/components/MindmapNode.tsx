@@ -59,6 +59,19 @@ const MindmapNode = ({ data, selected, id, onDelete }: MindmapNodeProps) => {
     position: 'relative',
   };
 
+  // Handle style - larger and more visible
+  const handleStyle: React.CSSProperties = {
+    backgroundColor: needsDarkText ? '#1e293b' : '#ffffff',
+    border: `2px solid ${needsDarkText ? '#1e293b' : color}`,
+    width: '16px',
+    height: '16px',
+    minWidth: '16px',
+    minHeight: '16px',
+    cursor: 'crosshair',
+    transition: 'all 0.15s ease',
+    opacity: 0.7,
+  };
+
   return (
     <div
       className={clsx(
@@ -70,10 +83,8 @@ const MindmapNode = ({ data, selected, id, onDelete }: MindmapNodeProps) => {
       <Handle
         type="target"
         position={Position.Top}
-        style={{
-          backgroundColor: needsDarkText ? '#1e293b' : '#ffffff',
-          border: `2px solid ${needsDarkText ? '#1e293b' : color}`,
-        }}
+        style={handleStyle}
+        className="hover:opacity-100 hover:scale-125"
       />
 
       <span
@@ -98,7 +109,7 @@ const MindmapNode = ({ data, selected, id, onDelete }: MindmapNodeProps) => {
             width: '24px',
             height: '24px',
             borderRadius: '50%',
-            backgroundColor: '#ef4444',
+            backgroundColor: '#698063',
             border: '2px solid #ffffff',
             color: '#ffffff',
             display: 'flex',
@@ -123,10 +134,8 @@ const MindmapNode = ({ data, selected, id, onDelete }: MindmapNodeProps) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{
-          backgroundColor: needsDarkText ? '#1e293b' : '#ffffff',
-          border: `2px solid ${needsDarkText ? '#1e293b' : color}`,
-        }}
+        style={handleStyle}
+        className="hover:opacity-100 hover:scale-125"
       />
     </div>
   );

@@ -22,15 +22,19 @@ frontend/src/app/[clientId]/[projectId]/conception/
 │   ├── GanttTaskList.tsx       # Task list sidebar
 │   ├── GanttToolbar.tsx         # Toolbar with controls
 │   ├── GanttTaskEditor.tsx      # Task edit modal
-│   ├── GanttTaskSummary.tsx     # Task details sidebar
+│   ├── GanttTaskSummary.tsx     # Task details sidebar (enhanced)
 │   ├── GanttTooltip.tsx         # Hover tooltips
 │   ├── GanttContextMenu.tsx     # Right-click context menu
-│   └── PortalMenu.tsx          # Portal-based menu
+│   ├── PortalMenu.tsx          # Portal-based menu
+│   ├── MistralModal.tsx        # AI-powered Gantt generation
+│   ├── VersionSelector.tsx     # Version management dropdown
+│   └── GanttTutorial.tsx       # Interactive user tutorial
 └── utils/
     ├── dateUtils.ts       # Date manipulation utilities
     ├── timelineUtils.ts   # Timeline generation
     ├── taskUtils.ts       # Task helpers
-    └── budgetUtils.ts     # Budget calculations
+    ├── budgetUtils.ts     # Budget calculations
+    └── mistralUtils.ts   # Mistral AI JSON parsing
 ```
 
 ## Data Types
@@ -50,8 +54,9 @@ interface Task {
   notes: string;          // Additional notes
   files: string[];        // Attached file URLs
   assigneeIds: number[];  // Assigned user IDs
-  livrableIds: number[];  // Related deliverable IDs
+  livrableIds: number[]; // Related deliverable IDs
   goal?: string;          // Task objective
+  color?: string;         // Custom task color (hex)
   budget?: Budget;        // Budget data
 }
 ```
@@ -135,6 +140,7 @@ Handles data import/export:
 | `exportToExcel()` | XLSX | Excel with Tasks/Links sheets |
 | `importFromExcel()` | XLSX | Import from Excel |
 | `exportToMSProject()` | XML | Microsoft Project format |
+| `importMistralGantt()` | JSON | Import AI-generated Gantt from Mistral |
 
 **Import process:**
 1. Parse file
@@ -142,6 +148,106 @@ Handles data import/export:
 3. Sort parents before children
 4. Save to API with ID mapping
 5. Update parent references with new IDs
+
+## New Features (v2.0)
+
+### Version Management
+
+The Gantt chart now supports **version management**, allowing you to create and manage multiple versions of your project plan.
+
+| Feature | Description |
+|----------|-------------|
+| Create Version | Create new named versions of the Gantt chart |
+| Switch Versions | Switch between different versions to compare plans |
+| Duplicate Version | Create a new version by copying an existing one |
+| Delete Version | Remove unwanted versions |
+| Activate Version | Mark a version as the active/default version |
+| Persistence | Version selection is saved to localStorage |
+
+**Usage:**
+- Click the version dropdown in the toolbar
+- Select "Nouvelle version" to create a new version
+- Check "Dupliquer les actions de..." to copy tasks from current version
+- The main version (no version selected) contains all tasks without version filtering
+
+### Mistral AI Integration
+
+Generate Gantt charts automatically using **Mistral AI** - describe your project in natural language and let AI create the task structure.
+
+**Features:**
+- Text input: Describe your project and tasks in French
+- File upload: Upload PDF, DOC, or text files with project details
+- AI Processing: Mistral AI parses your input and generates task structure
+- Import to Gantt: One-click import of AI-generated tasks
+
+**Usage:**
+1. Click the menu button (⋯) in the toolbar
+2. Select "Mistral" to open the AI modal
+3. Enter a description like: "Créer un projet de construction d'école avec 3 phases: préparation (2 semaines), construction (3 mois), inauguration (1 mois)"
+4. Click "Générer avec Mistral AI"
+5. Review the generated tasks and click "Importer dans le Gantt"
+
+### Interactive Tutorial
+
+A comprehensive **step-by-step tutorial** helps new users learn all Gantt chart features.
+
+**Tutorial Topics:**
+- Welcome & introduction
+- Adding tasks
+- Editing tasks
+- Moving tasks (drag & drop)
+- Resizing tasks
+- View modes (day/week/month)
+- Zoom controls
+- Today navigation
+- Undo/Redo functionality
+- Progress tracking
+- Subtasks & hierarchy
+- Assignees
+- Dependencies
+- Milestones
+- Keyboard shortcuts
+
+**Usage:**
+- Click the "Tutoriel" button in the toolbar
+- Navigate with arrow keys or click "Suivant/Précédent"
+- Press ESC to close at any time
+
+### Task List Toggle
+
+The left sidebar (task list) can now be **hidden/shown** for better timeline visibility.
+
+**Features:**
+- Toggle button on the edge between panels
+- Smooth animation when toggling
+- Visual indicator showing current state
+- Keyboard shortcut support
+
+### Enhanced Task Summary Panel
+
+The task details sidebar now includes **collapsible sections** and enhanced functionality:
+
+| Section | Features |
+|---------|----------|
+| Task Name | Prominent display with color indicator |
+| Budget Total | Real-time calculation display |
+| Livrables | List of associated deliverables with status |
+| Notes | Add/delete timestamped notes |
+| Files | Upload, view, and delete attachments |
+| Progress | Visual progress bar |
+| Quick Info | Start date, end date, assignees, status |
+| Description | Full task description |
+
+### Enhanced Import/Export
+
+New import options added:
+
+| Format | Description |
+|--------|-------------|
+| Mistral JSON | Import AI-generated Gantt structure |
+| CSV | Import from spreadsheet |
+| Excel | Import from Excel workbook |
+| JSON | Full data import |
 
 ## Components
 
@@ -184,6 +290,32 @@ Right-click context menu options:
 - Edit Task
 - Delete Task
 
+### MistralModal
+
+AI-powered Gantt generation modal:
+- Text input for project description
+- File upload for documents
+- Preview of generated tasks
+- Import to Gantt functionality
+
+### VersionSelector
+
+Version management dropdown:
+- Create new versions
+- Switch between versions
+- Delete versions
+- Activate/deactivate versions
+- Duplicate from current version
+
+### GanttTutorial
+
+Interactive tutorial modal:
+- Step-by-step guide
+- Keyboard navigation
+- Visual highlights
+- Progress tracking
+- 15+ tutorial topics
+
 ## API Integration
 
 ### Backend Endpoints
@@ -202,10 +334,20 @@ All endpoints require authentication via JWT cookie.
 | POST | `/api/gantt/:projectId/deliverables` | Create deliverable |
 | GET | `/api/gantt/:projectId/subactions` | Get subActions |
 
+### Version API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/gantt/:projectId/versions` | Fetch all versions |
+| POST | `/api/gantt/:projectId/versions` | Create new version |
+| PUT | `/api/gantt/:projectId/versions/:versionId` | Update version |
+| DELETE | `/api/gantt/:projectId/versions/:versionId` | Delete version |
+| PUT | `/api/gantt/:projectId/versions/:versionId/activate` | Activate version |
+
 ### API Functions (ganttApi.ts)
 
 ```typescript
-fetchGanttData(projectId): Promise<GanttData>
+fetchGanttData(projectId, versionId?): Promise<GanttData>
 createTask(projectId, taskData): Promise<Task>
 updateTask(projectId, taskId, taskData): Promise<Task>
 deleteTask(projectId, taskId): Promise<void>
@@ -214,6 +356,29 @@ createTaskLink(projectId, linkData): Promise<Link>
 deleteTaskLink(projectId, linkId): Promise<void>
 createDeliverable(projectId, data): Promise<Livrable>
 fetchSubActions(projectId): Promise<SubAction[]>
+
+// Version functions
+fetchVersions(projectId): Promise<Version[]>
+createVersion(projectId, versionData): Promise<Version>
+updateVersion(projectId, versionId, versionData): Promise<Version>
+deleteVersion(projectId, versionId): Promise<void>
+activateVersion(projectId, versionId): Promise<Version>
+```
+
+### Version Interface
+
+```typescript
+interface Version {
+  versionId: number;
+  projectId: number;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  taskCount?: number;
+  linkCount?: number;
+}
 ```
 
 ## Configuration
@@ -279,6 +444,14 @@ All date operations use **UTC** to avoid timezone issues:
 |----------|---------|
 | `createEmptyBudget()` | Create default budget object |
 | `calculateTotal()` | Calculate budget total |
+| `calculateBudgetTotals()` | Calculate detailed budget totals |
+
+### mistralUtils
+
+| Function | Purpose |
+|----------|---------|
+| `parseMistralJSON()` | Parse AI response JSON |
+| `transformMistralJSONToGanttTasks()` | Convert AI tasks to Gantt tasks |
 
 ## Common Issues
 
@@ -313,3 +486,15 @@ All date operations use **UTC** to avoid timezone issues:
 - **lucide-react** - Icons
 - **xlsx** - Excel import/export
 - **@/api/ganttApi** - API client
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `N` | Add new task |
+| `E` | Edit selected task |
+| `Delete` | Delete selected task |
+| `Ctrl+Z` | Undo |
+| `Ctrl+Y` | Redo |
+| `←/→` | Navigate tutorial steps |
+| `ESC` | Close modal / Exit tutorial
