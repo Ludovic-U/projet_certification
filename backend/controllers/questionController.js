@@ -26,12 +26,18 @@ module.exports.createQuestion = async (req, res) => {
     label,
     keyword,
     category,
+    onglet,
     numberOfSelectionableOpt,
     questionIdParent,
     types,
     projects,
     options,
   } = req.body;
+
+  const normalizedOnglet =
+    typeof onglet === "string" && onglet.trim().length > 0
+      ? onglet.trim()
+      : undefined;
 
   // Check required fields
   if (!label) {
@@ -48,6 +54,7 @@ module.exports.createQuestion = async (req, res) => {
       label,
       keyword,
       category,
+      ...(normalizedOnglet ? { onglet: normalizedOnglet } : {}),
       numberOfSelectionableOpt: numberOfSelectionableOpt ?? null,
       questionIdParent: idParent ?? null,
       types: types ?? [],
@@ -115,6 +122,7 @@ module.exports.updateQuestion = async (req, res) => {
     label,
     keyword,
     category,
+    onglet,
     numberOfSelectionableOpt,
     questionIdParent,
     addType,
@@ -122,6 +130,11 @@ module.exports.updateQuestion = async (req, res) => {
     addProject,
     removeProject,
   } = req.body;
+
+  const normalizedOnglet =
+    typeof onglet === "string" && onglet.trim().length > 0
+      ? onglet.trim()
+      : undefined;
 
   let normalizedParentId;
   if (questionIdParent === "" || questionIdParent === null) {
@@ -143,6 +156,7 @@ module.exports.updateQuestion = async (req, res) => {
       label,
       keyword,
       category,
+      ...(normalizedOnglet ? { onglet: normalizedOnglet } : {}),
       numberOfSelectionableOpt,
       questionIdParent: normalizedParentId,
       addType,

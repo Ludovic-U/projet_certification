@@ -63,6 +63,7 @@ export function useProjectQuestion(
                 answered: false,
                 status: "pending" as const,
                 category: q.category ?? "",
+                onglet: q.onglet ?? "analyse_existant",
                 numberOfSelectionableOpt: q.numberOfSelectionableOpt,
                 options: (q.options || []).map((opt: any) => opt.label),
                 types: q.types || [],

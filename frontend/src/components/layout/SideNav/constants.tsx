@@ -56,8 +56,19 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
         subMenu: true,
         subMenuItems: [
             { title: "Vue d'ensemble", path:"/vue_ensemble", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.tableCells}/>},
-            { title: "Ideation", path:"/ideation", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
-            { title: "Conception", path:"/conception", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
+            { title: "Ideation", path:"/ideation", requiredParams: ["clientId", "projectId"], subMenu: true,
+                 subMenuItems: [
+                    { title: "Analyse de l'existant", path:"/ideation", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+                    { title: "Ideation du projet", path:"/ideation?tab=idee-projet", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.compass}/>}
+                 ], icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+            { title: "Conception", path:"/conception", requiredParams: ["clientId", "projectId"], subMenu: true,
+                subMenuItems: [
+                    { title: "Pre-projet", path:"/conception", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.lightbulb}/>},
+                    { title: "Calendrier Prévisionnel (Gantt)", path:"/conception?tab=gantt", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.compass}/>},
+                    { title: "Budget Prévisionnel", path:"/conception?tab=budget", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.compass}/>},
+                    { title: "Impact", path:"/conception?tab=impact", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.compass}/>},
+                    { title: "Decision", path:"/conception?tab=decision", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.compass}/>},
+                 ], icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
             { title: "Pilotage", path:"/pilotage", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.compass}/>},
             { title: "Evaluation", path:"/evaluation", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.chartBar}/>},
             { title: "Reporting", path:"/reporting", requiredParams: ["clientId", "projectId"], icon: <FontAwesomeIcon icon={Icons.projectDiagram}/>},

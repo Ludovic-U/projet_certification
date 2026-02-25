@@ -343,11 +343,13 @@ model Question {
   questionId               Int        @id @default(autoincrement())
   label                    String
   keyword String
-  category                 String?
+  category                 String? //categorySWOT
+  onglet                   String     @default("analyse_existant")
   numberOfSelectionableOpt Int?
   questionIdParent         Int?
+  
 
-  types     Type[]     @relation("TypeQuestion")
+  types     Type[]     @relation("TypeQuestion") // type de projet
   options   Option[]
   responses Response[]
   projects  Project[]  @relation("ProjectQuestion")

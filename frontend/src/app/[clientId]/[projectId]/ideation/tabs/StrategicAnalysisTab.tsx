@@ -114,9 +114,13 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
   }, [modalQuestions.isOpen]);
 
   const filteredQuestions = useMemo(() => {
+    const analyseExistantQuestions = questions.filter(
+      (q) => (typeof q.onglet === "string" ? q.onglet : "analyse_existant") === "analyse_existant"
+    );
+
     return selectedCategory
-      ? questions.filter((q) => getQuestionCategoryLabel(q) === selectedCategory)
-      : questions;
+      ? analyseExistantQuestions.filter((q) => getQuestionCategoryLabel(q) === selectedCategory)
+      : analyseExistantQuestions;
   }, [questions, selectedCategory]);
 
   const treeQuestions = useMemo(() => {
@@ -127,8 +131,8 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
   }, [filteredQuestions]);
 
   const nonThemeQuestions = useMemo(() => {
-    return questions.filter((q) => !isThemeQuestion(q));
-  }, [questions]);
+    return filteredQuestions.filter((q) => !isThemeQuestion(q));
+  }, [filteredQuestions]);
 
   const visibleCategories = categories.filter((category) =>
     nonThemeQuestions.some((q) => getQuestionCategoryLabel(q) === category.label)

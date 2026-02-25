@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { PageHeader } from "@/components/ui";
-import { useParams } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useConfig } from "@/context/ConfigContext";
 import { useLocalStorage } from "@/context/LocalStorageContext";
 import StrategicAnalysisTab from "./tabs/StrategicAnalysisTab";
@@ -10,19 +10,49 @@ import PreProjectPanel from "./tabs/PreProjectPanel";
 import DecisionPanel from "./tabs/DecisionPanel";
 import IdeaProject from "./tabs/IdeaProject";
 
-type TabKey = "analyse" | "idée projet" | "preprojet" | "decision";
+type TabKey = "analyse" | "idee-projet" | "preprojet" | "decision";
+
+const isTabKey = (value: string | null): value is TabKey => {
+  return value === "analyse" || value === "idee-projet" 
+};
+
+const getTabFromSearchParam = (value: string | null): TabKey => {
+  return isTabKey(value) ? value : "analyse";
+};
 
 export default function IdeationPage() {
   const { data } = useLocalStorage();
   const { config } =  useConfig();
   const params = useParams();
-  const [activeTab, setActiveTab] = useState<TabKey>("analyse");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabKey>(() => getTabFromSearchParam(searchParams.get("tab")));
   const projectId = Array.isArray(params.projectId)
     ? params.projectId[0]
     : params.projectId;
   const clientId = Array.isArray(params.clientId)
     ? params.clientId[0]
     : params.clientId;
+
+  React.useEffect(() => {
+    setActiveTab(getTabFromSearchParam(searchParams.get("tab")));
+  }, [searchParams]);
+
+  const handleTabChange = (tab: TabKey) => {
+    setActiveTab(tab);
+    const nextParams = new URLSearchParams(searchParams.toString());
+
+    if (tab === "analyse") {
+      nextParams.delete("tab");
+    } else {
+      nextParams.set("tab", tab);
+    }
+
+    const query = nextParams.toString();
+    const nextUrl = query ? `${pathname}?${query}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  };
 
   if (!projectId || !clientId) {
     return null;
@@ -39,61 +69,38 @@ export default function IdeationPage() {
         </div>
       </div>
       <section className="w-full mb-6">
-        <div className="grid w-full grid-cols-4 overflow-hidden rounded-xl border border-dark/10 bg-white">
+        <div className="grid w-full grid-cols-2 overflow-hidden rounded-xl border border-dark/10 bg-white">
           <button
             type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
+            className={`px-6 py-2 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
               activeTab === "analyse"
                 ? "text-white bg-dark"
                 : "text-dark hover:bg-dark/5"
             }`}
-            onClick={() => setActiveTab("analyse")}
+            onClick={() => handleTabChange("analyse")}
           >
             Analyse strategique
           </button>
           <button
             type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
-              activeTab === "idée projet"
+            className={`px-6 py-2 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
+              activeTab === "idee-projet"
                 ? "text-white bg-dark"
                 : "text-dark hover:bg-dark/5"
             }`}
-            onClick={() => setActiveTab("idée projet")}
+            onClick={() => handleTabChange("idee-projet")}
           >
             Idée Projet
           </button>
-          <button
-            type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
-              activeTab === "preprojet"
-                ? "text-white bg-dark"
-                : "text-dark hover:bg-dark/5"
-            }`}
-            onClick={() => setActiveTab("preprojet")}
-          >
-            Pre-projet
-          </button>
-          <button
-            type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide ${
-              activeTab === "decision"
-                ? "text-white bg-dark"
-                : "text-dark hover:bg-dark/5"
-            }`}
-            onClick={() => setActiveTab("decision")}
-          >
-            Decision
-          </button>
+          
         </div>
       </section>
       {activeTab === "analyse" && (
         <StrategicAnalysisTab clientId={clientId} projectId={projectId} />
       )}
-      {activeTab === "idée projet" && (
+      {activeTab === "idee-projet" && (
         <IdeaProject />
       )}
-      {activeTab === "preprojet" && <PreProjectPanel />}
-      {activeTab === "decision" && <DecisionPanel />}
     </div>
   );
 }

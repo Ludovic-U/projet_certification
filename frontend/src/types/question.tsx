@@ -5,6 +5,7 @@ export interface Question extends Record<string, unknown> {
   answered: boolean;
   status?: "pending" | "answered" | "skipped";
   category?: string;
+  onglet?: string;
   numberOfSelectionableOpt?: number;
   options?: string[];
   parentId?: number | null;

@@ -9,6 +9,7 @@ const questionBaseSelect = {
   label: true,
   keyword: true,
   category: true,
+  onglet: true,
   numberOfSelectionableOpt: true,
   questionIdParent: true,
 };
@@ -39,6 +40,7 @@ module.exports.createQuestion = async (data) => {
   return await prisma.question.create({
     data: {
       ...questionData,
+      onglet: questionData.onglet ?? "analyse_existant",
       types:
         Array.isArray(types) && types.length > 0
           ? {

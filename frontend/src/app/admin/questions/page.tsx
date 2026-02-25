@@ -22,9 +22,8 @@ import { useProjectQuestion } from "@/hooks/useProjectQuestions";
 export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [types, setTypes] = useState<{ typeId: number; label: string }[]>([]);
-  const [categories, setCategories] = useState<{ questionCategoryId: number; label: string }[]>([]);
   const [selectedTypeLabel, setSelectedTypeLabel] = useState<string | null>("Général");
-  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>(null);
+  const [selectedOnglet, setSelectedOnglet] = useState<"analyse_existant" | "ideation_projet">("analyse_existant");
   const [pagination, setPagination] = useState({
     totalItems: 0,
     currentPage: 1,
@@ -48,18 +47,6 @@ export default function QuestionsPage() {
       return question.category;
     }
     return "";
-  };
-
-  const normalizeCategoryLabel = (label: string) => {
-    if (!label) {
-      return label;
-    }
-    const normalized = label.trim().toLowerCase();
-    return (
-      categories.find(
-        (category) => category.label.trim().toLowerCase() === normalized
-      )?.label || label
-    );
   };
 
   const getQuestionTypeLabels = (question: Question) => {
@@ -117,13 +104,14 @@ export default function QuestionsPage() {
       label,
       keyword: normalizedKeyword,
       category,
+      onglet: selectedOnglet,
       ...(formData.questionIdParent && { questionIdParent: formData.questionIdParent }),
       ...(selectedIds.length > 0 ? { types: selectedIds } : {}),
     };
   };
 
   useEffect(() => {
-    // Filter questions based on selected type and category
+    // Filter questions based on selected type and onglet
     let filteredQuestions = projectQuestions;
 
     // Filter by type label
@@ -139,10 +127,10 @@ export default function QuestionsPage() {
       });
     }
 
-    // Filter by category label
-    if (selectedCategoryLabel !== null) {
+    // Filter by onglet
+    if (selectedOnglet) {
       filteredQuestions = filteredQuestions.filter((q: Question) => {
-        return (typeof q.category === "string" ? q.category : "") === selectedCategoryLabel;
+        return (typeof q.onglet === "string" ? q.onglet : "analyse_existant") === selectedOnglet;
       });
     }
 
@@ -152,7 +140,7 @@ export default function QuestionsPage() {
         status: "skipped",
       }))
     );
-  }, [projectQuestions, selectedTypeLabel, selectedCategoryLabel, types, categories]);
+  }, [projectQuestions, selectedTypeLabel, selectedOnglet, types]);
 
   useEffect(() => {
     // Fetch types list
@@ -167,21 +155,6 @@ export default function QuestionsPage() {
     };
 
     fetchTypes();
-  }, []);
-
-  useEffect(() => {
-    // Fetch categories list
-    const fetchCategories = async () => {
-      try {
-        const res = await api_backend.get("/question/categories");
-        setCategories(res.data);
-        console.log("Catégories récupérées:", res.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -257,35 +230,31 @@ export default function QuestionsPage() {
         </div>
       </section>
 
-      {/* CATEGORY FILTER SECTION */}
+      {/* ONGLET FILTER SECTION */}
       <section className="w-full bg-gray-50 px-6 py-4 mb-6 rounded-lg border border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Catégories de questions</h3>
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Onglet</h3>
         <div className="flex items-center gap-3 overflow-x-auto">
           <button
-            onClick={() => setSelectedCategoryLabel(null)}
+            onClick={() => setSelectedOnglet("analyse_existant")}
             className={`shrink-0 px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
-              selectedCategoryLabel === null
+              selectedOnglet === "analyse_existant"
                 ? "bg-primary text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
             }`}
           >
-            Vue globale
+            Analyse de l'existant
           </button>
-          
-          {/* Category Rectangles */}
-          {categories.map((category: any) => (
-            <button
-              key={category.questionCategoryId}
-              onClick={() => setSelectedCategoryLabel(category.label)}
-              className={`shrink-0 px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
-                selectedCategoryLabel === category.label
-                  ? "bg-primary text-white shadow-md"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              {category.label}
-            </button>
-          ))}
+
+          <button
+            onClick={() => setSelectedOnglet("ideation_projet")}
+            className={`shrink-0 px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
+              selectedOnglet === "ideation_projet"
+                ? "bg-primary text-white shadow-md"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            Idéation du projet
+          </button>
         </div>
       </section>
 
