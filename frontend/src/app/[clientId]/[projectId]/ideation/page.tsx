@@ -8,7 +8,11 @@ import { useLocalStorage } from "@/context/LocalStorageContext";
 import StrategicAnalysisTab from "./tabs/StrategicAnalysisTab";
 import IdeaProject from "./tabs/IdeaProject";
 
-type TabKey = "analyse" | "idée projet";
+type TabKey = "analyse" | "idee-projet";
+
+const getTabFromSearchParam = (tabParam: string | null): TabKey => {
+  return tabParam === "idee-projet" ? "idee-projet" : "analyse";
+};
 
 export default function IdeationPage() {
   const { data } = useLocalStorage();
