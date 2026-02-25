@@ -99,7 +99,7 @@ module.exports.getProjectsByUserId = async (userId) => {
     // Get projects where user is:
     // 1. Manager of the project
     // 2. Assigned to tasks in the project
-    // 3. Manager of the client's projects (Project.client is a single relation)
+    // 3. Client manager (isManager: true in clientUserRoles)
     const projects = await prisma.project.findMany({
       where: {
         OR: [
@@ -115,8 +115,9 @@ module.exports.getProjectsByUserId = async (userId) => {
           },
           {
             client: {
-              isManager: true,
-              userId: validUserId
+              userRoles: {
+                some: { userId: validUserId, isManager: true }
+              }
             }
           }
         ]

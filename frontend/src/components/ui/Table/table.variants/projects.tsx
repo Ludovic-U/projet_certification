@@ -42,13 +42,13 @@ export const projectsList: Column<Project>[] = [
         key: "types",
         label: "Type(s)",
         render: (item) =>
-            <span className="inline-block border px-4 py-1 rounded-full text-xs font-bold">{item.types.join(", ")}</span>
+            <span className="inline-block border px-4 py-1 rounded-full text-xs font-bold">{(item.types || []).join(", ")}</span>
     },
     {
         key: "financeurs",
         label: "Financeur(s)",
         render: (item) =>
-            <span className="inline-block border px-4 py-1 rounded-full text-xs font-bold">{item.financeurs.join(", ")}</span>
+            <span className="inline-block border px-4 py-1 rounded-full text-xs font-bold">{(item.financeurs || []).join(", ")}</span>
     },
     {
         key: "actions",

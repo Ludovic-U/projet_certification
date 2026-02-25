@@ -38,6 +38,8 @@ async function main() {
     { permName: "user:update:proj", permDesc: "Assigner les utilisateurs à des taches" },
     { permName: "project:read:own", permDesc: "Voir ses projets" },
     { permName: "project:update:own", permDesc: "Modifier ses projets" },
+    { permName: "project:create:own", permDesc: "Créer un projet pour son client" },
+    { permName: "client:read:own", permDesc: "Voir les clients de ses projets" },
 
     
   ];
@@ -92,13 +94,14 @@ async function main() {
     "client:create", "client:update", "clientUserRole:update:any",
     "project:create:any", "project:read:any", "project:update:any", "project:delete:any", "financeur:manage"
     ],
-    admin_client: ["user:create:org", "user:read:org", "user:update:org", "user:delete:org",
-    "project:create:org", "project:read:org", "project:update:org", "project:delete:org",
-    "clientUserRole:update:org"
+    // admin_client - only access to their linked projects (not all projects in the organization)
+    admin_client: ["user:read:proj", "user:update:proj", "project:read:own", "project:update:own", "project:create:own"
   ],
-    chef_de_projet: ["user:read:proj", "user:update:proj", "project:read:own", "project:update:own", 
+    // chef_de_projet - only access to their own projects
+    chef_de_projet: ["user:read:proj", "user:update:proj", "project:read:own", "project:update:own", "client:read:own" 
   ],
-    contributeur: [] // rapporte ses info sans accès à l'application
+    // contributeur - no permissions (cannot access the application)
+    contributeur: []
   };
 
     // Lier automatiquement chaque rôle à ses permissions

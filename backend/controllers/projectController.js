@@ -164,14 +164,39 @@ module.exports.getAllProjects = async (req, res) => {
  * Get projects by client ID.
  * Expects clientId in req.params.
  * Responds with an array of project objects.
+ * If user doesn't have project:read:any or project:read:org permission,
+ * only returns projects where user is manager, assigned to tasks, or client manager.
  * */
 module.exports.getProjectsByClientId = async (req, res) => {
   const clientId = Number(req.params.clientId);
   // Validate clientId
   if (!validateId(clientId, "clientId", res)) return;
+  
   try {
-    const projects = await ProjectsByClientId(clientId);
-    res.status(200).json(projects);
+    const user = req.user;
+    const userPermissions = user?.permissions || [];
+    
+    console.log('User permissions:', userPermissions);
+    
+    // Check if user has permission to see all projects in the organization
+    // super_admin and admin_client with org permissions can see all
+    const hasFullAccess = userPermissions.includes('project:read:any') || 
+                          userPermissions.includes('project:read:org');
+    
+    if (hasFullAccess) {
+      // User has full access - return all projects for this client
+      const projects = await ProjectsByClientId(clientId);
+      return res.status(200).json(projects);
+    }
+    
+    // User has limited access (chef_de_projet with project:read:own)
+    // Only return projects they're assigned to
+    const projects = await getProjectsByUserId(user.userId);
+    
+    // Filter by the requested clientId
+    const filteredProjects = projects.filter(p => p.clientId === clientId);
+    console.log('Filtered projects:', filteredProjects.map(p => p.projectName));
+    res.status(200).json(filteredProjects);
   } catch (error) {
     console.error("Error fetching projects by clientId:", error);
     res.status(500).json({ error: "Internal server error" });
