@@ -41,7 +41,6 @@ model UserSession {
 model Client {
   clientId        Int              @id @default(autoincrement())
   clientName      String           @unique
-  clientType      String
   statusJuridique String?
   secteur         String?
   description     String?
@@ -95,35 +94,35 @@ model RolePermission {
 }
 
 model Project {
-  projectId       Int               @id @default(autoincrement())
-  projectName     String            @unique
-  startDate       DateTime?
-  endDate         DateTime?
-  projectManager  Int
-  projectStage    String?
-  projectStatus   String?
-  projectDesc     String?
-  createdAt       DateTime          @default(now())
-  clientId        Int
-  goNogo          String?
+  projectId        Int               @id @default(autoincrement())
+  projectName      String            @unique
+  startDate        DateTime?
+  endDate          DateTime?
+  projectManager   Int
+  projectStage     String?
+  projectStatus    String?
+  projectDesc      String?
+  createdAt        DateTime          @default(now())
+  clientId         Int
+  goNogo           String?
   // SWOT fields
-  SWOT_strength   String?
-  SWOT_weakness  String?
+  SWOT_strength    String?
+  SWOT_weakness    String?
   SWOT_opportunity String?
-  SWOT_threat     String?
-  actions         Action[]
-  FinanceurProjet FinanceurProjet[]
-  mindmaps        Mindmap[]
-  client          Client            @relation(fields: [clientId], references: [clientId])
-  manager         User              @relation("ProjectManager", fields: [projectManager], references: [userId])
-  responses       Response[]
-  tasks           Task[]
-  todos           Todo[]
-  versions        Version[]
-  questions       Question[]        @relation("ProjectQuestion")
-  types           Type[]            @relation("ProjectType")
-  decisions       ProjectDecision[]
-  impacts         ProjectImpact[]
+  SWOT_threat      String?
+  actions          Action[]
+  FinanceurProjet  FinanceurProjet[]
+  mindmaps         Mindmap[]
+  client           Client            @relation(fields: [clientId], references: [clientId])
+  manager          User              @relation("ProjectManager", fields: [projectManager], references: [userId])
+  responses        Response[]
+  tasks            Task[]
+  todos            Todo[]
+  versions         Version[]
+  questions        Question[]        @relation("ProjectQuestion")
+  types            Type[]            @relation("ProjectType")
+  decisions        ProjectDecision[]
+  impacts          ProjectImpact[]
 }
 
 model Todo {
@@ -173,7 +172,7 @@ model SubAction {
   piloteGrtId  Int?
   startDate    DateTime
   endDate      DateTime
-  progress     Int          @default(0) // Calculated from tasks
+  progress     Int           @default(0) // Calculated from tasks
   budgets      Budget[]
   deliverables Deliverable[]
   action       Action        @relation(fields: [actionId], references: [actionId])
@@ -337,14 +336,13 @@ model QuestionCategory {
 }
 
 model Question {
-  questionId               Int               @id @default(autoincrement())
+  questionId               Int     @id @default(autoincrement())
   label                    String
-  keyword String
+  keyword                  String
   category                 String? //categorySWOT
-  onglet                   String     @default("analyse_existant")
+  onglet                   String  @default("analyse_existant")
   numberOfSelectionableOpt Int?
   questionIdParent         Int?
-  
 
   types     Type[]     @relation("TypeQuestion") // type de projet
   options   Option[]
@@ -352,8 +350,10 @@ model Question {
   projects  Project[]  @relation("ProjectQuestion")
 
   // Self relations
-  parent   Question?  @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
-  children Question[] @relation("QuestionHierarchy")
+  parent                             Question?         @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
+  children                           Question[]        @relation("QuestionHierarchy")
+  QuestionCategory                   QuestionCategory? @relation(fields: [questionCategoryQuestionCategoryId], references: [questionCategoryId])
+  questionCategoryQuestionCategoryId Int?
 }
 
 model Option {
@@ -430,21 +430,21 @@ model MindmapEdge {
 
 // Decision model for feasibility and strategic tracking
 model ProjectDecision {
-  decisionId      Int       @id @default(autoincrement()) @map("decision_id")
-  projectId       Int       @map("project_id")
+  decisionId     Int      @id @default(autoincrement()) @map("decision_id")
+  projectId      Int      @map("project_id")
   // Board type: "faisabilite" or "strategique"
-  boardType       String    @default("faisabilite") @map("board_type")
+  boardType      String   @default("faisabilite") @map("board_type")
   // Decision type within the board
-  decisionType    String    @map("decision_type")
+  decisionType   String   @map("decision_type")
   // Yes/No answer
-  isApproved      Boolean?  @map("is_approved")
+  isApproved     Boolean? @map("is_approved")
   // Reason/Why text
-  pourquoi        String?   @map("pourquoi")
+  pourquoi       String?  @map("pourquoi")
   // Manual decision finale (go, nogo, pending) - user selected per board
-  decisionFinale  String?   @map("decision_finale")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  project         Project   @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  decisionFinale String?  @map("decision_finale")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  project        Project  @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
   @@unique([projectId, boardType, decisionType])
   @@index([projectId])
@@ -452,19 +452,19 @@ model ProjectDecision {
 
 // Impact model for tracking project impacts in ideation phase
 model ProjectImpact {
-  impactId           Int       @id @default(autoincrement()) @map("impact_id")
-  projectId          Int       @map("project_id")
+  impactId          Int      @id @default(autoincrement()) @map("impact_id")
+  projectId         Int      @map("project_id")
   // Impact row identifier (for ordering)
-  rowOrder           Int       @default(0) @map("row_order")
+  rowOrder          Int      @default(0) @map("row_order")
   // 5 columns: Résultats Attendus, Critères, Indicateurs, Situation de Départ, Objectif
-  resultatsAttendus  String?   @map("resultats_attendus")
-  criteres           String?   @map("criteres")
-  indicateurs        String?   @map("indicateurs")
-  situationDepart    String?   @map("situation_depart")
-  objectif           String?   @map("objectif")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
-  project            Project   @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  resultatsAttendus String?  @map("resultats_attendus")
+  criteres          String?  @map("criteres")
+  indicateurs       String?  @map("indicateurs")
+  situationDepart   String?  @map("situation_depart")
+  objectif          String?  @map("objectif")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  project           Project  @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
   @@index([projectId])
 }
