@@ -70,7 +70,7 @@ export default function ClientsPage() {
 
     return (
         <div className="h-full">
-            <PageHeader title="Liste des clients" description="Consultez la liste des clients et accèdez aux détails."/>
+            <PageHeader title="Liste des clients" description="Consultez la liste des clients et accèdez aux détails." helpKey="projectList"/>
             <section>
 
                 {/* ADD BTN + SEARCHBAR */}

@@ -101,6 +101,7 @@ export default function ProjectsPage() {
             <PageHeader 
                 title={clientName ? `${clientName} - Liste des projets` : "Liste des projets"} 
                 description={config?.subtitles.projectList}
+                helpKey="projectList"
             />
             <section>
 

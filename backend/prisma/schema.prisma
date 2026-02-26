@@ -324,7 +324,7 @@ model Version {
 
 model Type {
   typeId    Int        @id @default(autoincrement())
-  label     String
+  label     String     @unique
   projects  Project[]  @relation("ProjectType")
   questions Question[] @relation("TypeQuestion")
 }

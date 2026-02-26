@@ -43,7 +43,7 @@ CREATE INDEX IF NOT EXISTS "MindmapNode_mindmap_id_idx" ON "MindmapNode"("mindma
 CREATE INDEX IF NOT EXISTS "MindmapEdge_mindmap_id_idx" ON "MindmapEdge"("mindmap_id");
 
 ALTER TABLE "Mindmap" DROP CONSTRAINT IF EXISTS "Mindmap_project_id_fkey";
-ALTER TABLE "Mindmap" ADD CONSTRAINT "Mindmap_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "Project"("project_id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Mindmap" ADD CONSTRAINT "Mindmap_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "Project"("projectId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "MindmapNode" DROP CONSTRAINT IF EXISTS "MindmapNode_mindmap_id_fkey";
 ALTER TABLE "MindmapNode" ADD CONSTRAINT "MindmapNode_mindmap_id_fkey" FOREIGN KEY ("mindmap_id") REFERENCES "Mindmap"("mindmap_id") ON DELETE CASCADE ON UPDATE CASCADE;

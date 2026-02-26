@@ -327,7 +327,7 @@ module.exports.createTask = async (taskData) => {
         files: files || [],
         goal: goal || null,
         color: color || '#3b82f6',
-        budget: budget || null,
+        budget: budget ? JSON.stringify(budget) : null,
         taskAssignments: assigneeIds && assigneeIds.length > 0 ? {
           create: assigneeIds.map(userId => ({ userId: Number(userId) }))
         } : undefined,

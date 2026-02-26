@@ -14,4 +14,7 @@ router.get("/prompts", configController.getPrompts);
 // PUT /api/config/prompts - Mettre à jour seulement les prompts
 router.put("/prompts", configController.updatePrompts);
 
+// POST /api/config/help-dictionary - Mettre à jour le dictionnaire d'aide
+router.post("/help-dictionary", configController.updateHelpDictionary);
+
 module.exports = router;

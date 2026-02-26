@@ -1,0 +1,13 @@
+{
+  "projectList": "Liste de tous les projets. Vous pouvez créer, modifier ou supprimer des projets.",
+  "overview": "Vue d'ensemble du projet avec les étapes de réalisation.",
+  "ideation": "Phase d'idéation - Brainstorming et définition des besoins.",
+  "conception": "Phase de conception - Planification détaillée du projet.",
+  "pilotage": "Phase de pilotage - Suivi de l'avancement du projet.",
+  "evaluation": "Phase d'évaluation - Mesure des résultats obtenus.",
+  "reporting": "Reporting - Tableau de bord et statistiques.",
+  "gantt": "Diagramme de Gantt - Visualisation timeline du projet.",
+  "budget": "Budget - Gestion et suivi du budget du projet.",
+  "questions": "Questions - Répondez aux questions pour définir votre projet.",
+  "mindmap": "Mindmap - Carte mentale visuelle de votre projet."
+}

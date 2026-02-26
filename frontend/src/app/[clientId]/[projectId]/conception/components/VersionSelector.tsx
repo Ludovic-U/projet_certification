@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GitBranch, ChevronDown, PlusCircle, Trash2, Eye, Star, Check, Copy } from 'lucide-react';
+import { GitBranch, ChevronDown, PlusCircle, Trash2, Star, Check, Copy } from 'lucide-react';
 import { Version } from '@/api/ganttApi';
 
 interface VersionSelectorProps {
@@ -9,7 +9,7 @@ interface VersionSelectorProps {
   onCreateVersion: (name: string, description?: string, sourceVersionId?: number | null) => void;
   onDeleteVersion: (versionId: number) => void;
   onActivateVersion: (versionId: number) => void;
-  projectId: number;
+  projectId?: number;
   // Add a key prop to force re-render when versions change
   versionsKey?: number;
 }
@@ -21,9 +21,11 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
   onCreateVersion,
   onDeleteVersion,
   onActivateVersion,
-  projectId,
   versionsKey = 0,
 }) => {
+  // projectId prop kept for backwards compatibility but not used
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _projectId = 0;
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newVersionName, setNewVersionName] = useState('');

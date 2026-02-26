@@ -10,7 +10,7 @@ import api_backend from "@/api/axiosInstance";
 
 export default function VueEnsemblePage() {
     const router = useRouter();
-    const { data, setItem, removeItem } = useLocalStorage();
+    const { data } = useLocalStorage();
     const { config } = useConfig();
 
     // Progress placeholders (à remplacer par des calculs réels plus tard)
@@ -51,26 +51,26 @@ export default function VueEnsemblePage() {
                     ? responsesRes.data
                     : [];
 
-                const getQuestionCategoryLabel = (question: any) => {
+                const getQuestionCategoryLabel = (question: { category?: string | { toString(): string } }) => {
                     if (typeof question?.category === "string") {
                         return question.category;
                     }
                     return "";
                 };
 
-                const nonThemeQuestions = questions.filter((question: any) =>
+                const nonThemeQuestions = questions.filter((question: { category?: string | { toString(): string } }) =>
                     getQuestionCategoryLabel(question).trim().toLowerCase() !== "theme"
                 );
 
                 const nonThemeQuestionIds = new Set<number>(
                     nonThemeQuestions
-                        .map((question: any) => Number(question.questionId ?? question.id))
+                        .map((question: { questionId?: number; id?: number }) => Number(question.questionId ?? question.id))
                         .filter((questionId: number) => Number.isInteger(questionId))
                 );
 
                 const answeredQuestionIds = new Set<number>(
                     responses
-                        .map((response: any) => Number(response.questionId))
+                        .map((response: { questionId?: number }) => Number(response.questionId))
                         .filter(
                             (questionId: number) =>
                                 Number.isInteger(questionId) && nonThemeQuestionIds.has(questionId)
@@ -232,14 +232,14 @@ export default function VueEnsemblePage() {
                 max: ideationMax,
                 showPercent: false,
                 color: "#D4B2A7",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/ideation`
+                path: (p: { clientId?: string | string[]; projectId?: string | string[] }) => `/${p.clientId}/${p.projectId}/ideation`
             },
             {
                 title: "CONCEPTION",
                 description: "Définir et planifier les solutions.",
                 progress: conceptionProgress,
                 color: "#B49186",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/conception`
+                path: (p: { clientId?: string | string[]; projectId?: string | string[] }) => `/${p.clientId}/${p.projectId}/conception`
             }
         ]
         : [ // else
@@ -248,27 +248,27 @@ export default function VueEnsemblePage() {
                 description: "Suivre l'avancement et coordonner l'équipe.",
                 progress: pilotageProgress,
                 color: "#96776E",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/pilotage`
+                path: (p: { clientId?: string | string[]; projectId?: string | string[] }) => `/${p.clientId}/${p.projectId}/pilotage`
             },
             {
                 title: "EVALUATION",
                 description: "Analyser les résultats et partager les bilans.",
                 progress: evaluationProgress,
                 color: "#605049",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/reporting` // Suppose same route regroupe bilan
+                path: (p: { clientId?: string | string[]; projectId?: string | string[] }) => `/${p.clientId}/${p.projectId}/reporting`
             },
             {
                 title: "REPORTING",
                 description: "Analyser les résultats et partager les bilans.",
                 progress: reportingProgress,
                 color: "#605049",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/reporting`
+                path: (p: { clientId?: string | string[]; projectId?: string | string[] }) => `/${p.clientId}/${p.projectId}/reporting`
             }
         ];
 
     return (
         <div className="h-full flex flex-col">
-            <PageHeader title={"Projet " + (data?.projectName ?? "")} description={config?.subtitles.overview}/>
+            <PageHeader title={"Projet " + (data?.projectName ?? "")} description={config?.subtitles.overview} helpKey="overview"/>
             <section className="flex-1 flex flex-col items-center justify-evenly">
                  {/* ------------------------TODO list-------------------------------- */}
 
@@ -363,7 +363,11 @@ export default function VueEnsemblePage() {
                           progress={card.progress}
                                                     max={card.max}
                                                     showPercent={card.showPercent}
-                          onButtonClick={() => router.push(card.path(params))}
+                          onButtonClick={() => {
+                                const clientId = params.clientId as string;
+                                const projectId = params.projectId as string;
+                                router.push(card.path({ clientId, projectId }));
+                            }}
                         />
                     ))}
                     

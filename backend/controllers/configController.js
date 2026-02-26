@@ -115,3 +115,39 @@ exports.updatePrompts = async (req, res) => {
     });
   }
 };
+
+// Update help dictionary
+exports.updateHelpDictionary = async (req, res) => {
+  try {
+    // Vérifier les permissions
+    checkPermission(
+      req.user,
+      "financeur:manage"
+    );
+
+    const newHeaders = req.body;
+
+    // Validation basique
+    if (!newHeaders || typeof newHeaders !== 'object') {
+      return res.status(400).json({
+        message: "Dictionnaire d'aide invalide",
+      });
+    }
+
+    // Mettre à jour les headers dans la config principale
+    const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+    const config = JSON.parse(configData);
+    config.headers = newHeaders;
+    await fs.writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
+
+    res.status(200).json({
+      message: "Dictionnaire d'aide mis à jour avec succès",
+    });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du dictionnaire d'aide:", error);
+    res.status(500).json({
+      message: "Erreur lors de la mise à jour du dictionnaire d'aide",
+      error: error.message,
+    });
+  }
+};

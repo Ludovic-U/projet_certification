@@ -3,9 +3,11 @@ import api_backend from '../api/axiosInstance';
 
 export interface AppConfig {
   subtitles: Record<string, string>;
+  headers: Record<string, string>;
   labels: Record<string, string>;
   types: Record<string, string[]>;
-  [key: string]: any; // Permet d'ajouter d'autres sections dynamiquement
+  prompts: Record<string, Record<string, string>>;
+  [key: string]: unknown;
 }
 
 // Default fallback values
@@ -19,6 +21,15 @@ const DEFAULT_CONFIG: AppConfig = {
     evaluation: "Évaluation",
     reporting: "Reporting"
   },
+  headers: {
+    projectList: "Liste de tous les projets.",
+    overview: "Vue d'ensemble du projet.",
+    ideation: "Phase d'idéation.",
+    conception: "Phase de conception.",
+    pilotage: "Phase de pilotage.",
+    evaluation: "Phase d'évaluation.",
+    reporting: "Reporting."
+  },
   labels: {
     todoList: "Tâches à faire",
     actionList: "Actions planifiées"
@@ -27,7 +38,8 @@ const DEFAULT_CONFIG: AppConfig = {
     secteur_clients: [],
     projets: [],
     juridiques_clients: []
-  }
+  },
+  prompts: {}
 };
 
 export const useAppConfig = () => {
@@ -41,9 +53,9 @@ export const useAppConfig = () => {
         const response = await api_backend.get('/config');
         setConfig(response.data);
         setError(null);
-      } catch (err: any) {
+      } catch (err) {
         console.error('Erreur lors du chargement de la configuration:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Unknown error');
         // Keep using DEFAULT_CONFIG on error
       } finally {
         setLoading(false);

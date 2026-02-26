@@ -4,11 +4,9 @@ import { X, Upload, FileText } from 'lucide-react';
 import api_backend from '@/api/axiosInstance';
 import { 
   transformMistralJSONToGanttTasks, 
-  parseMistralJSON,
-  type MistralGanttJSON
+  parseMistralJSON
 } from '../utils/mistralUtils';
 import { Task, Link } from '../../data';
-import { createEmptyBudget } from '../utils/budgetUtils';
 import { convertApiTaskToTask, type ApiTaskResponse } from '@/api/ganttApi';
 
 interface MistralModalProps {

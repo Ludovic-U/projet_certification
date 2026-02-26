@@ -132,7 +132,6 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   projectId,
   versionsKey,
   // Tutorial props
-  tutorialOpen,
   setTutorialOpen,
   // Budget view props
   onOpenBudgetView,

@@ -59,6 +59,7 @@ export default function IdeationPage() {
           <PageHeader
             title={"Projet " + (data?.projectName ?? "") + " - IDEATION"}
             description={config?.subtitles.overview}
+            helpKey="ideation"
           />
         </div>
       </div>

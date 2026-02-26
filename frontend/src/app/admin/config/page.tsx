@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import api_backend from '../../../api/axiosInstance';
 import { Input } from '@/components/ui/Input';
 import {Button} from '@/components/ui/Button/Button';
+import helpDictionaryInitial from '@/config/help-dictionary.json';
 
 interface AppConfig {
   subtitles: {
@@ -26,6 +27,20 @@ interface AppConfig {
   };
 }
 
+interface HelpDictionary {
+  projectList: string;
+  overview: string;
+  ideation: string;
+  conception: string;
+  pilotage: string;
+  evaluation: string;
+  reporting: string;
+  gantt: string;
+  budget: string;
+  questions: string;
+  mindmap: string;
+}
+
 interface ProjectType {
   typeId: number;
   label: string;
@@ -45,6 +60,7 @@ export default function AdminConfigPage() {
   const [projets, setProjets] = useState<ProjectType[]>([]);
   const [juridiquesClients, setJuridiquesClients] = useState<string[]>([]);
   const [questionCategories, setQuestionCategories] = useState<QuestionCategory[]>([]);
+  const [helpDict, setHelpDict] = useState<HelpDictionary>(helpDictionaryInitial);
   
   const { control, handleSubmit, reset, formState } = useForm<AppConfig>();
 
@@ -62,6 +78,11 @@ export default function AdminConfigPage() {
         setJuridiquesClients(configResponse.data.types?.juridiques_clients || []);
         setProjets(typesResponse.data || []);
         setQuestionCategories(categoriesResponse.data || []);
+        
+        // Charger les headers depuis le backend
+        if (configResponse.data.headers) {
+          setHelpDict(configResponse.data.headers);
+        }
       } catch (error) {
         setMessage({ type: 'error', text: 'Erreur lors du chargement de la configuration' });
       } finally {
@@ -316,6 +337,181 @@ export default function AdminConfigPage() {
                 />
               )}
             />
+          </div>
+        </div>
+
+        {/* Textes d'Aide Section */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-2xl font-semibold mb-4">Dictionnaire d'Aide</h2>
+          <p className="text-gray-600 mb-6">
+            Définissez les textes d'aide pour chaque élément de l'application. Ces textes seront affichés dans une fenêtre d'aide.
+          </p>
+          
+          <div className="grid gap-6">
+            {/* Glossary-style entries */}
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">projectList</span>
+                <span className="text-gray-500 text-sm">Liste des projets</span>
+              </div>
+              <textarea
+                value={helpDict.projectList}
+                onChange={(e) => setHelpDict({ ...helpDict, projectList: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">overview</span>
+                <span className="text-gray-500 text-sm">Vue d'ensemble</span>
+              </div>
+              <textarea
+                value={helpDict.overview}
+                onChange={(e) => setHelpDict({ ...helpDict, overview: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">ideation</span>
+                <span className="text-gray-500 text-sm">Idéation</span>
+              </div>
+              <textarea
+                value={helpDict.ideation}
+                onChange={(e) => setHelpDict({ ...helpDict, ideation: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">conception</span>
+                <span className="text-gray-500 text-sm">Conception</span>
+              </div>
+              <textarea
+                value={helpDict.conception}
+                onChange={(e) => setHelpDict({ ...helpDict, conception: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">pilotage</span>
+                <span className="text-gray-500 text-sm">Pilotage</span>
+              </div>
+              <textarea
+                value={helpDict.pilotage}
+                onChange={(e) => setHelpDict({ ...helpDict, pilotage: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">evaluation</span>
+                <span className="text-gray-500 text-sm">Évaluation</span>
+              </div>
+              <textarea
+                value={helpDict.evaluation}
+                onChange={(e) => setHelpDict({ ...helpDict, evaluation: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">reporting</span>
+                <span className="text-gray-500 text-sm">Reporting</span>
+              </div>
+              <textarea
+                value={helpDict.reporting}
+                onChange={(e) => setHelpDict({ ...helpDict, reporting: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">gantt</span>
+                <span className="text-gray-500 text-sm">Diagramme de Gantt</span>
+              </div>
+              <textarea
+                value={helpDict.gantt}
+                onChange={(e) => setHelpDict({ ...helpDict, gantt: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">budget</span>
+                <span className="text-gray-500 text-sm">Budget</span>
+              </div>
+              <textarea
+                value={helpDict.budget}
+                onChange={(e) => setHelpDict({ ...helpDict, budget: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">questions</span>
+                <span className="text-gray-500 text-sm">Questions</span>
+              </div>
+              <textarea
+                value={helpDict.questions}
+                onChange={(e) => setHelpDict({ ...helpDict, questions: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
+                <span className="font-semibold text-gray-700 w-32">mindmap</span>
+                <span className="text-gray-500 text-sm">Mindmap</span>
+              </div>
+              <textarea
+                value={helpDict.mindmap}
+                onChange={(e) => setHelpDict({ ...helpDict, mindmap: e.target.value })}
+                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
+                placeholder="Entrez la définition..."
+              />
+            </div>
+          </div>
+          
+          <div className="mt-6 flex justify-end">
+            <Button
+              type="button"
+              onClick={async () => {
+                setSaving(true);
+                try {
+                  await api_backend.post('/config/help-dictionary', helpDict);
+                  setMessage({ type: 'success', text: 'Dictionnaire d\'aide enregistré avec succès' });
+                } catch (err: unknown) {
+                  const errorMsg = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement';
+                  setMessage({ type: 'error', text: errorMsg });
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              disabled={saving}
+            >
+              {saving ? 'Enregistrement...' : 'Enregistrer le dictionnaire'}
+            </Button>
           </div>
         </div>
 

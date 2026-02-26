@@ -127,7 +127,8 @@ async function main() {
     create: {
       clientName: 'F2S',
       description: 'Figure de Skills - Entreprise de formation',
-      clientType: 'entreprise'
+      statusJuridique: 'entreprise',
+      secteur: 'formation'
     }
   });
   console.log('Client créé:', client.clientName);
