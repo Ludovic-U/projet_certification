@@ -28,6 +28,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocalStorage } from '@/context/LocalStorageContext';
+import dynamic from 'next/dynamic';
 
 // Dynamic imports for panels to avoid SSR issues
 const PreProjectPanel = dynamic(
