@@ -28,6 +28,8 @@ export default function ClientsPage() {
 
     const [clients, setClients] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<any | null>(null);
+    const [apiError, setApiError] = useState<string>("");
+    const [isLoading, setIsLoading] = useState(false);
     const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -49,17 +51,45 @@ export default function ClientsPage() {
     const handleEditClient = (client: any, event: React.MouseEvent) => {
         event.stopPropagation();
         setSelectedClient(client);
+        setApiError("");
         modal.openModal();
     };
 
     const handleAddClient = () => {
         setSelectedClient(null);
+        setApiError("");
         modal.openModal();
     };
 
     const handleModalClose = () => {
         setSelectedClient(null);
+        setApiError("");
         modal.closeModal();
+    };
+
+    const getApiErrorMessage = (error: any) => {
+        return error?.response?.data?.error || "Une erreur est survenue. Veuillez réessayer.";
+    };
+
+    const handleSubmitClient = async (formData: any) => {
+        setApiError("");
+        setIsLoading(true);
+
+        try {
+            if (selectedClient) {
+                await api_backend.put(`/client/${selectedClient.clientId}`, { ...formData });
+            } else {
+                await api_backend.post('/client/create', { ...formData });
+            }
+
+            handleModalClose();
+            fetchClients();
+        } catch (error: any) {
+            setApiError(getApiErrorMessage(error));
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const totalPages = Math.ceil(clients.length / itemsPerPage);
@@ -91,26 +121,9 @@ export default function ClientsPage() {
                         description={selectedClient ? "Modifiez les informations du client" : "Entrez les informations du nouveau client"}>
                             <CreateClientForm
                                 initialData={selectedClient}
-                                onSubmit={(formData) => {
-                                    if (selectedClient) {
-                                        // Mode édition
-                                        api_backend.put(`/client/${selectedClient.clientId}`, { ...formData })
-                                            .then(response => {
-                                                handleModalClose();
-                                                fetchClients();
-                                            })
-                                            .catch(err => console.error(err));
-                                    } else {
-                                        // Mode création
-                                        api_backend.post('/client/create', { ...formData })
-                                            .then(response => {
-                                                handleModalClose();
-                                                fetchClients();
-                                            })
-                                            .catch(err => console.error(err));
-                                    }
-                                }}
-                                isLoading={false}
+                                onSubmit={handleSubmitClient}
+                                isLoading={isLoading}
+                                apiError={apiError}
                             />
                         </Modal>
                     </div>

@@ -7,8 +7,26 @@
 
 import React, { useState } from 'react';
 import { PageHeader } from '@/components/ui';
-import dynamic from 'next/dynamic';
-import { useParams } from 'next/navigation';
+import { useGanttState } from './hooks/useGanttState';
+import { useGanttHandlers } from './hooks/useGanttHandlers';
+import { useGanttExportImport } from './hooks/useGanttExportImport';
+import { GanttToolbar } from './components/GanttToolbar';
+import { GanttTaskList } from './components/GanttTaskList';
+import { GanttTimeline } from './components/GanttTimeline';
+import { GanttTaskEditor } from './components/GanttTaskEditor';
+import { GanttTaskSummary } from './components/GanttTaskSummary';
+import { GanttTooltip } from './components/GanttTooltip';
+import { GanttContextMenu } from './components/GanttContextMenu';
+import { GanttTutorial } from './components/GanttTutorial';
+import { BudgetOverview } from './components/BudgetOverview';
+import { generateColumns, getBaseStart } from './utils/timelineUtils';
+import { startOfDay } from './utils/dateUtils';
+import { DAY_MS } from './constants';
+import { toUTC } from './utils/dateUtils';
+import { MIN_PX_PER_DAY, MAX_PX_PER_DAY } from './constants';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocalStorage } from '@/context/LocalStorageContext';
 
 // Dynamic imports for panels to avoid SSR issues
@@ -32,16 +50,47 @@ import GanttChartComponent from './GanttChartComponent';
 
 type TabKey = 'preprojet' | 'decision' | 'impact' | 'gantt';
 
+const getTabFromSearchParam = (tabParam: string | null): TabKey => {
+  if (tabParam === 'decision') return 'decision';
+  if (tabParam === 'impact') return 'impact';
+  if (tabParam === 'gantt' || tabParam === 'budget') return 'gantt';
+  return 'preprojet';
+};
+
 export default function ConceptionPage() {
   const { data } = useLocalStorage();
   const params = useParams();
-  const [activeTab, setActiveTab] = useState<TabKey>('gantt');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabKey>(() =>
+    getTabFromSearchParam(searchParams.get('tab'))
+  );
   const projectId = Array.isArray(params.projectId)
     ? params.projectId[0]
     : params.projectId;
   const clientId = Array.isArray(params.clientId)
     ? params.clientId[0]
     : params.clientId;
+
+  React.useEffect(() => {
+    setActiveTab(getTabFromSearchParam(searchParams.get('tab')));
+  }, [searchParams]);
+
+  const handleTabChange = (tab: TabKey) => {
+    setActiveTab(tab);
+    const nextParams = new URLSearchParams(searchParams.toString());
+
+    if (tab === 'preprojet') {
+      nextParams.delete('tab');
+    } else {
+      nextParams.set('tab', tab);
+    }
+
+    const query = nextParams.toString();
+    const nextUrl = query ? `${pathname}?${query}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  };
 
   if (!projectId || !clientId) {
     return null;
@@ -67,31 +116,9 @@ export default function ConceptionPage() {
                 ? "text-white bg-dark"
                 : "text-dark hover:bg-dark/5"
             }`}
-            onClick={() => setActiveTab('preprojet')}
+            onClick={() => handleTabChange('preprojet')}
           >
             Pre-projet
-          </button>
-          <button
-            type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
-              activeTab === 'decision'
-                ? "text-white bg-dark"
-                : "text-dark hover:bg-dark/5"
-            }`}
-            onClick={() => setActiveTab('decision')}
-          >
-            Decision
-          </button>
-          <button
-            type="button"
-            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
-              activeTab === 'impact'
-                ? "text-white bg-dark"
-                : "text-dark hover:bg-dark/5"
-            }`}
-            onClick={() => setActiveTab('impact')}
-          >
-            Impact
           </button>
           <button
             type="button"
@@ -100,17 +127,41 @@ export default function ConceptionPage() {
                 ? "text-white bg-dark"
                 : "text-dark hover:bg-dark/5"
             }`}
-            onClick={() => setActiveTab('gantt')}
+            onClick={() => handleTabChange('gantt')}
           >
             Gantt
           </button>
+          <button
+            type="button"
+            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
+              activeTab === 'decision'
+                ? "text-white bg-dark"
+                : "text-dark hover:bg-dark/5"
+            }`}
+            onClick={() => handleTabChange('decision')}
+          >
+            Decision
+          </button>
+          
+          <button
+            type="button"
+            className={`px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide border-r border-dark/10 ${
+              activeTab === 'impact'
+                ? "text-white bg-dark"
+                : "text-dark hover:bg-dark/5"
+            }`}
+            onClick={() => handleTabChange('impact')}
+          >
+            Impact
+          </button>
+          
         </div>
       </section>
       <div className="flex-1 overflow-hidden">
         {activeTab === 'preprojet' && <PreProjectPanel />}
+        {activeTab === 'gantt' && <GanttChartComponent />}
         {activeTab === 'decision' && <DecisionPanel />}
         {activeTab === 'impact' && <ImpactPanel />}
-        {activeTab === 'gantt' && <GanttChartComponent />}
       </div>
     </div>
   );
