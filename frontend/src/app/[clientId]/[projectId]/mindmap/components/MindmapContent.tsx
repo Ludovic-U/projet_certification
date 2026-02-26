@@ -332,17 +332,69 @@ export const MindmapInner = () => {
   const saveMindmapAsTasksFn = useCallback(async () => {
     if (!projectId) return;
     
-    const nodesToSave = getNodes() as any[];
-    const edgesToSave = getEdges() as any[];
+    // Get nodes and edges directly from ReactFlow state
+    const nodesToSave = getNodes();
+    const edgesToSave = getEdges();
+    
+    console.log('saveMindmapAsTasksFn - raw nodes:', nodesToSave);
+    console.log('saveMindmapAsTasksFn - raw edges:', edgesToSave);
+    
+    // Handle ReactFlow's getNodes() which may return { nodes: [...] } or an array
+    let processedNodes = nodesToSave;
+    let processedEdges = edgesToSave;
+    
+    // Handle ReactFlow getNodes() return format
+    if (nodesToSave && typeof nodesToSave === 'object') {
+      if ('nodes' in nodesToSave && Array.isArray((nodesToSave as any).nodes)) {
+        processedNodes = (nodesToSave as any).nodes;
+      } else if (Array.isArray(nodesToSave)) {
+        processedNodes = nodesToSave;
+      } else {
+        // Try to get fresh nodes
+        const freshNodes = getNodes();
+        if (Array.isArray(freshNodes)) {
+          processedNodes = freshNodes;
+        } else if (freshNodes && 'nodes' in freshNodes) {
+          processedNodes = (freshNodes as any).nodes;
+        }
+      }
+    }
+    
+    // Handle ReactFlow getEdges() return format
+    if (edgesToSave && typeof edgesToSave === 'object') {
+      if ('edges' in edgesToSave && Array.isArray((edgesToSave as any).edges)) {
+        processedEdges = (edgesToSave as any).edges;
+      } else if (Array.isArray(edgesToSave)) {
+        processedEdges = edgesToSave;
+      } else {
+        // Try to get fresh edges
+        const freshEdges = getEdges();
+        if (Array.isArray(freshEdges)) {
+          processedEdges = freshEdges;
+        } else if (freshEdges && 'edges' in freshEdges) {
+          processedEdges = (freshEdges as any).edges;
+        }
+      }
+    }
+    
+    console.log('saveMindmapAsTasksFn - processed nodes count:', Array.isArray(processedNodes) ? processedNodes.length : 'not array');
+    console.log('saveMindmapAsTasksFn - processed edges count:', Array.isArray(processedEdges) ? processedEdges.length : 'not array');
+    
+    if (!Array.isArray(processedNodes) || !Array.isArray(processedEdges)) {
+      console.error('Invalid nodes or edges format:', { processedNodes, processedEdges });
+      alert('Error: Unable to get mindmap data. Please refresh the page.');
+      return;
+    }
     
     setIsSaving(true);
     try {
-      const result = await saveAsPreProjectVersion(projectId, nodesToSave, edgesToSave);
+      console.log('Saving to pre-project - nodes:', processedNodes.length, 'edges:', processedEdges.length);
+      const result = await saveAsPreProjectVersion(projectId, processedNodes, processedEdges);
       
       // Also save to localStorage as backup
       localStorage.setItem(`mindmap_${projectId}`, JSON.stringify({
-        nodes: nodesToSave,
-        edges: edgesToSave,
+        nodes: processedNodes,
+        edges: processedEdges,
       }));
       
       alert(`Successfully saved as Pre-project version! Created ${result.tasksCreated} tasks and ${result.linksCreated} links.`);
@@ -350,8 +402,8 @@ export const MindmapInner = () => {
       console.error('Failed to save mindmap as pre-project:', err);
       // Still save to localStorage as backup
       localStorage.setItem(`mindmap_${projectId}`, JSON.stringify({
-        nodes: nodesToSave,
-        edges: edgesToSave,
+        nodes: processedNodes,
+        edges: processedEdges,
       }));
       alert('Failed to save as pre-project version. Please try again.');
     } finally {
@@ -846,8 +898,51 @@ export const MindmapInner = () => {
   // Handle importing AI-generated mindmap nodes
   const handleAIImport = useCallback((newNodes: Node[], newEdges: Edge[]) => {
     saveToHistory();
-    setNodes((nds) => [...nds, ...(newNodes as any)]);
-    setEdges((eds) => [...eds, ...newEdges]);
+    
+    // For each Livrable (green) node, create an empty child Livrable node
+    const childNodes: Node[] = [];
+    const childEdges: Edge[] = [];
+    
+    newNodes.forEach((node: any, index: number) => {
+      // Check if this node is a Livrable type (green)
+      const nodeType = node.data?.nodeType || node.nodeType;
+      if (nodeType === 'livrable') {
+        // Create an empty child Livrable node
+        const childId = `livrable-child-${node.id}-${Date.now()}`;
+        const childNode: Node = {
+          id: childId,
+          type: 'mindmapNode',
+          position: {
+            x: (node.position?.x || 0) + 200,
+            y: (node.position?.y || 0) + 50
+          },
+          data: {
+            label: 'Nouveau Livrable',
+            nodeType: 'livrable',
+            color: '#22c55e',
+            fontSize: 14,
+            isRoot: false
+          }
+        };
+        childNodes.push(childNode);
+        
+        // Create edge from parent to child
+        childEdges.push({
+          id: `edge-${node.id}-${childId}`,
+          source: node.id,
+          target: childId,
+          type: 'smoothstep',
+          animated: true,
+          markerEnd: { type: MarkerType.ArrowClosed },
+          style: { stroke: '#94a3b8', strokeWidth: 2 }
+        });
+      }
+    });
+    
+    // Add all new nodes and edges, plus the child nodes
+    setNodes((nds) => [...nds, ...(newNodes as any), ...childNodes]);
+    setEdges((eds) => [...eds, ...newEdges, ...childEdges]);
+    
     // Auto-save after import
     setTimeout(() => {
       autoSave();

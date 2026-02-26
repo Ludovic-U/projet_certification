@@ -562,6 +562,12 @@ export const useGanttState = () => {
       // Check if this is a new task (negative ID indicates temporary local task)
       const isNewTask = editingTask.id < 0;
       
+      // Validate task title is not empty
+      if (!editingTask.text || editingTask.text.trim() === '') {
+        alert('Le titre de la tâche est requis');
+        return;
+      }
+      
       if (isNewTask) {
         // Create new task via API
         if (projectId) {
@@ -757,5 +763,16 @@ export const useGanttState = () => {
     deleteTask,
     updateTask,
     updateSelectedTask,
+    closeEditor: () => {
+      // Remove any temporary (unsaved) tasks with negative IDs
+      const tasksToRemove = tasks.filter(t => t.id < 0).map(t => t.id);
+      if (tasksToRemove.length > 0) {
+        const nextTasks = tasks.filter(t => !tasksToRemove.includes(t.id));
+        setTasks(nextTasks);
+        saveState(nextTasks, links);
+      }
+      setShowEditor(false);
+      setEditingTask(null);
+    },
   };
 };

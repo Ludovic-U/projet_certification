@@ -199,11 +199,21 @@ Règles:
 // Génère un mindmap à partir des réponses du projet
 exports.GenerateMindmapFromResponses = async (projectId) => {
     try {
-        // Fetch responses for this project
+        // Fetch project to get project name for root node
         const { prisma } = require('../prisma/prismaClient');
-
-        console.log('Fetching responses for projectId:', projectId);
-
+        
+        console.log('Fetching project and responses for projectId:', projectId);
+        
+        const project = await prisma.project.findUnique({
+            where: { projectId: projectId },
+            select: { projectName: true },
+        });
+        
+        // Use projectName, fallback to 'Projet'
+        const projectName = project?.projectName || 'Projet';
+        
+        console.log('Project name:', projectName);
+        
         const responses = await prisma.response.findMany({
             where: { projectId: projectId },
             include: {
