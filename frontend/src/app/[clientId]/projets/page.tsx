@@ -32,6 +32,8 @@ export default function ProjectsPage() {
     const [projects, setProjects] = useState<any[]>([]);
     const [clientName, setClientName] = useState<string>("");
     const [selectedProject, setSelectedProject] = useState<any | null>(null);
+    const [apiError, setApiError] = useState<string>("");
+    const [isLoading, setIsLoading] = useState(false);
 
     const fetchProjects = () => {
         api_backend.get(`/project/getByClientId/${params.clientId}`)
@@ -75,17 +77,51 @@ export default function ProjectsPage() {
     const handleEditProject = (project: any, event: React.MouseEvent) => {
         event.stopPropagation();
         setSelectedProject(project);
+        setApiError("");
         modal.openModal();
     };
 
     const handleAddProject = () => {
         setSelectedProject(null);
+        setApiError("");
         modal.openModal();
     };
 
     const handleModalClose = () => {
         setSelectedProject(null);
+        setApiError("");
         modal.closeModal();
+    };
+
+    const getApiErrorMessage = (error: any) => {
+        return error?.response?.data?.error || "Une erreur est survenue. Veuillez réessayer.";
+    };
+
+    const handleSubmitProject = async (formData: any) => {
+        setApiError("");
+        setIsLoading(true);
+
+        try {
+            if (selectedProject) {
+                await api_backend.put(`/project/${selectedProject.projectId}`, {
+                    ...formData,
+                    clientId: params.clientId,
+                });
+            } else {
+                await api_backend.post('/project/create', {
+                    ...formData,
+                    clientId: params.clientId,
+                });
+            }
+
+            handleModalClose();
+            fetchProjects();
+        } catch (error: any) {
+            setApiError(getApiErrorMessage(error));
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     
@@ -123,26 +159,9 @@ export default function ProjectsPage() {
                             <CreateProjectForm 
                                 clientId={Number(params.clientId)}
                                 initialData={selectedProject}
-                                onSubmit={(formData) => {
-                                    if (selectedProject) {
-                                        // Mode édition
-                                        api_backend.put(`/project/${selectedProject.projectId}`, { ...formData, clientId: params.clientId })
-                                            .then(response => {
-                                                handleModalClose();
-                                                fetchProjects();
-                                            })
-                                            .catch(err => console.error(err));
-                                    } else {
-                                        // Mode création
-                                        api_backend.post('/project/create', { ...formData, clientId: params.clientId })
-                                            .then(response => {
-                                                handleModalClose();
-                                                fetchProjects();
-                                            })
-                                            .catch(err => console.error(err));
-                                    }
-                                }}
-                                isLoading={false}/>
+                                onSubmit={handleSubmitProject}
+                                isLoading={isLoading}
+                                apiError={apiError}/>
                         </Modal>
                     </div>
 

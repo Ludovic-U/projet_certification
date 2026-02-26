@@ -62,6 +62,11 @@ module.exports.createProjectPost = async (req, res) => {
     res.status(201).json(newProject);
   } catch (error) {
     console.error("Erreur lors de la création du projet :", error);
+    if (error.code === "P2002") {
+      return res
+        .status(409)
+        .json({ error: "Un projet avec ce nom existe déjà." });
+    }
     res.status(500).json({ error: "Impossible de créer le projet." });
   }
 };
@@ -97,6 +102,14 @@ module.exports.updateProjectPost = async (req, res) => {
     res.status(200).json(updatedProject);
   } catch (error) {
     console.error("Error updating project:", error);
+    if (error.code === "P2002") {
+      return res
+        .status(409)
+        .json({ error: "Un projet avec ce nom existe déjà." });
+    }
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Project not found" });
+    }
     if (error.message === "Project not found") {
       return res.status(404).json({ error: "Project not found" });
     }

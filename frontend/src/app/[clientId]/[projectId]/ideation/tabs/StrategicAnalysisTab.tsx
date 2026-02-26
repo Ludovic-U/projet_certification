@@ -19,9 +19,16 @@ import ModalQuestion from "@/components/ui/ModalQuestion/ModalQuestion";
 type Props = {
   clientId: string;
   projectId: string;
+  questionOnglet?: "analyse_existant" | "ideation_projet";
+  showSwotCard?: boolean;
 };
 
-export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
+export default function StrategicAnalysisTab({
+  clientId,
+  projectId,
+  questionOnglet = "analyse_existant",
+  showSwotCard = true,
+}: Props) {
   const router = useRouter();
   const { questions, loading } = useProjectQuestion(Number(projectId));
   const [nodesState, setNodesState] = useState<Node[]>([]);
@@ -114,14 +121,16 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
   }, [modalQuestions.isOpen]);
 
   const filteredQuestions = useMemo(() => {
-    const analyseExistantQuestions = questions.filter(
-      (q) => (typeof q.onglet === "string" ? q.onglet : "analyse_existant") === "analyse_existant"
+    const ongletQuestions = questions.filter(
+      (q) =>
+        (typeof q.onglet === "string" ? q.onglet : "analyse_existant") ===
+        questionOnglet
     );
 
     return selectedCategory
-      ? analyseExistantQuestions.filter((q) => getQuestionCategoryLabel(q) === selectedCategory)
-      : analyseExistantQuestions;
-  }, [questions, selectedCategory]);
+      ? ongletQuestions.filter((q) => getQuestionCategoryLabel(q) === selectedCategory)
+      : ongletQuestions;
+  }, [questions, selectedCategory, questionOnglet]);
 
   const treeQuestions = useMemo(() => {
     return filteredQuestions.map((q) => ({
@@ -236,15 +245,17 @@ export default function StrategicAnalysisTab({ clientId, projectId }: Props) {
                 />
               );
             })}
-            <Card
-              color="#4CAF50"
-              title="Analyse SWOT"
-              max={4}
-              progress={swotProgress}
-              buttonLabel="Remplir l'analyse"
-              size="sm"
-              onButtonClick={() => router.push(`/${clientId}/${projectId}/swot`)}
-            />
+            {showSwotCard && (
+              <Card
+                color="#4CAF50"
+                title="Analyse SWOT"
+                max={4}
+                progress={swotProgress}
+                buttonLabel="Remplir l'analyse"
+                size="sm"
+                onButtonClick={() => router.push(`/${clientId}/${projectId}/swot`)}
+              />
+            )}
           </div>
         </div>
 

@@ -16,11 +16,10 @@ export default function VueEnsemblePage() {
     // Progress placeholders (à remplacer par des calculs réels plus tard)
     const [ideationProgress, setIdeationProgress] = useState(0);
     const [ideationMax, setIdeationMax] = useState(0);
-    const conceptionProgress = 20;
-    const [skip, setSkip] = useState(0);
-    const pilotageProgress = 60;
-    const evaluationProgress = 20;
-    const reportingProgress = 20;
+    const conceptionProgress = 0;
+    const pilotageProgress = 0;
+    const evaluationProgress = 0;
+    const reportingProgress = 0;
 
     // Todo list state
     const [todos, setTodos] = useState<{ id: number; text: string; completed: boolean; assignedTo?: number; assignedToName?: string; deadline?: string }[]>([]);
@@ -217,62 +216,59 @@ export default function VueEnsemblePage() {
         }
     ];
 
-    // Condition: tant que la somme n'atteint pas 200, afficher IDEATION + CONCEPTION uniquement
-    const ideationPercent = ideationMax > 0
-        ? Math.round((ideationProgress / ideationMax) * 100)
-        : 0;
-    const showIdeationConception = (ideationPercent + conceptionProgress + skip) < 200;
+    const cards = [
+        {
+            title: "IDEATION",
+            description: "Générer et structurer les idées initiales.",
+            progress: ideationProgress,
+            max: ideationMax,
+            showPercent: false,
+            color: "#D4B2A7",
+            path: (p: any) => `/${p.clientId}/${p.projectId}/ideation`
+        },
+        {
+            title: "CONCEPTION",
+            description: "Définir et planifier les solutions.",
+            progress: conceptionProgress,
+            color: "#B49186",
+            path: (p: any) => `/${p.clientId}/${p.projectId}/conception`
+        },
+        {
+            title: "PILOTAGE",
+            description: "Suivre l'avancement et coordonner l'équipe.",
+            progress: pilotageProgress,
+            color: "#96776E",
+            path: (p: any) => `/${p.clientId}/${p.projectId}/pilotage`
+        },
+        {
+            title: "EVALUATION",
+            description: "Analyser les résultats et partager les bilans.",
+            progress: evaluationProgress,
+            color: "#605049",
+            path: (p: any) => `/${p.clientId}/${p.projectId}/reporting`
+        },
+        {
+            title: "REPORTING",
+            description: "Analyser les résultats et partager les bilans.",
+            progress: reportingProgress,
+            color: "#605049",
+            path: (p: any) => `/${p.clientId}/${p.projectId}/reporting`
+        }
+    ];
 
-    const cards = showIdeationConception
-        ? [ // if true
-            {
-                title: "IDEATION",
-                description: "Générer et structurer les idées initiales.",
-                progress: ideationProgress,
-                max: ideationMax,
-                showPercent: false,
-                color: "#D4B2A7",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/ideation`
-            },
-            {
-                title: "CONCEPTION",
-                description: "Définir et planifier les solutions.",
-                progress: conceptionProgress,
-                color: "#B49186",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/conception`
-            }
-        ]
-        : [ // else
-            {
-                title: "PILOTAGE",
-                description: "Suivre l'avancement et coordonner l'équipe.",
-                progress: pilotageProgress,
-                color: "#96776E",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/pilotage`
-            },
-            {
-                title: "EVALUATION",
-                description: "Analyser les résultats et partager les bilans.",
-                progress: evaluationProgress,
-                color: "#605049",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/reporting` // Suppose same route regroupe bilan
-            },
-            {
-                title: "REPORTING",
-                description: "Analyser les résultats et partager les bilans.",
-                progress: reportingProgress,
-                color: "#605049",
-                path: (p: any) => `/${p.clientId}/${p.projectId}/reporting`
-            }
-        ];
+    const firstIncompleteIndex = cards.findIndex((card) => {
+        const targetMax = typeof card.max === "number" && card.max > 0 ? card.max : 100;
+        return card.progress < targetMax;
+    });
 
     return (
         <div className="h-full flex flex-col">
             <PageHeader title={"Projet " + (data?.projectName ?? "")} description={config?.subtitles.overview}/>
             <section className="flex-1 flex flex-col items-center justify-evenly">
-                 {/* ------------------------TODO list-------------------------------- */}
+                 {/* ------------------------TODO list + Aperçu action
+                 -------------------------------- */}
 
-                <div className="hidden md:flex gap-6 w-full max-w-6xl mb-8">
+                {/* <div className="hidden md:flex gap-6 w-full max-w-6xl mb-8">
                     <div className="flex-1 bg-white rounded-xl p-6">
                         <div className="flex flex-col gap-3 h-full">
                             <div className="flex items-center justify-between">
@@ -341,7 +337,6 @@ export default function VueEnsemblePage() {
                             </div>
                         </div>
                     </div>
-                     {/* -------------------------Aperçu action-------------------------------- */}
 
                     <div className="flex-2 bg-white rounded-xl p-6">
                         <div className="flex flex-col gap-2">
@@ -349,44 +344,30 @@ export default function VueEnsemblePage() {
                             <p className="font-noto text-greydarker text-sm">Aucune action ou échéance actuellement planifiée.</p>
                         </div>
                     </div>
-                </div>
+                </div> */}
  {/* -------------------------Etapes workflow-------------------------------- */}
-                <div className="flex flex-col md:flex-row items-center gap-8 relative">                 
+                                <div className="flex flex-col items-center gap-8 w-full">                 
 
-                    {cards.map(card => (
-                        <Card
-                          key={card.title}
-                          title={card.title}
-                          description={card.description}
-                          buttonLabel="Ouvrir"
-                          color={card.color}
-                          progress={card.progress}
-                                                    max={card.max}
-                                                    showPercent={card.showPercent}
-                          onButtonClick={() => router.push(card.path(params))}
-                        />
+                    {cards.map((card, index) => (
+                        <div key={card.title} className="relative w-full max-w-2xl rounded-xl">
+                            {index === firstIncompleteIndex && (
+                                <span className="absolute inset-1 rounded-xl border border-dark/80 animate-[ping_1.4s_cubic-bezier(0,0,1,1)_infinite] pointer-events-none"></span>
+                            )}
+                            <Card
+                              title={card.title}
+                              description={card.description}
+                              buttonLabel="Ouvrir"
+                              color={card.color}
+                              progress={card.progress}
+                              max={card.max}
+                              showPercent={card.showPercent}
+                              className={`w-full min-h-48 [&_h3]:text-3xl [&_p]:text-lg ${
+                                  index === firstIncompleteIndex ? "border-2 border-dark" : ""
+                              }`}
+                              onButtonClick={() => router.push(card.path(params))}
+                            />
+                        </div>
                     ))}
-                    
-                    {showIdeationConception && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:translate-x-[calc(100%+2rem)]"
-                          onClick={() => setSkip(200)}
-                        >
-                            Passer aux étapes suivantes
-                        </Button>
-                    )}
-                    {!showIdeationConception && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                            className="md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:-translate-x-[calc(100%+2rem)]"
-                          onClick={() => setSkip(0)}
-                        >
-                            Retour
-                        </Button>
-                    )}
                 </div>
 
                 

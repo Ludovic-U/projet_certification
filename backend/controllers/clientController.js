@@ -44,6 +44,9 @@ module.exports.createClientPost = async (req, res) => {
     } catch (error) {
         console.log(error)
         console.error('Error creating client:', error);
+        if (error.code === 'P2002') {
+            return res.status(409).json({ error: 'Un client avec ce nom existe déjà.' });
+        }
         res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -63,6 +66,12 @@ module.exports.updateClientPost = async (req, res) => {
         res.status(200).json(client);
     } catch (error) {
         console.error('Error updating client:', error);
+        if (error.code === 'P2002') {
+            return res.status(409).json({ error: 'Un client avec ce nom existe déjà.' });
+        }
+        if (error.code === 'P2025') {
+            return res.status(404).json({ error: 'Client not found' });
+        }
         res.status(500).json({ error: 'Internal server error' });
     }   
 }

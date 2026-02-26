@@ -29,7 +29,7 @@ function getPromptConfig(promptType) {
 
 exports.CallMistralAPI = async (prompt) => {
     const chatResponse = await client.chat.complete({
-        model: "mistral-large-latest",
+        model: "mistral-small-latest",
         messages: [{ role: 'user', content: prompt }],
         responseFormat: { type: 'json_object' },
     });
@@ -87,15 +87,15 @@ exports.GenerateGanttMistralAPI = async (textContent, projectId = 1) => {
     try {
 
         const prompt = textContent.trim()
-            ? `Analyse ce contenu et à partir des information pertinentes que tu y trouveras, retourne un objet JSON qui servira à créer un Gantt:
+            ? `Analyse ce contenu et à partir des informations pertinentes que tu y trouveras, retourne un objet JSON qui servira à créer un Gantt:
             \n\n${textContent}
             \n\nLe format attendu pour le Gantt est le suivant:\n${ganttExpectedForma}
             \n\nAssure toi que le JSON retourné est valide et respecte bien le format demandé.    `
             : 'How far is the moon from earth?';
 
-            // appel call mistral api 
+        // appel call mistral api 
         // for loop sur chaque task du json
-    
+
         // appel du controlelr gantt pour créer chaque task 
 
         // appel du controller dépense si la task a une depense 
@@ -158,10 +158,7 @@ exports.uploadFile = async (filePath) => {
     return signedUrl.url;
 }
 
-// Genere un arbre de question/réponse à partir d'un texte
-exports.GenerateIdeationMistralAPI = async (textContent) => {
 
-}
 
 // Format attendu pour le Mindmap
 const mindmapExpectedFormat = `{
@@ -204,9 +201,9 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
     try {
         // Fetch responses for this project
         const { prisma } = require('../prisma/prismaClient');
-        
+
         console.log('Fetching responses for projectId:', projectId);
-        
+
         const responses = await prisma.response.findMany({
             where: { projectId: projectId },
             include: {
@@ -214,7 +211,7 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
                 option: true,
             },
         });
-        
+
         console.log('Found responses:', responses.length);
 
         if (!responses || responses.length === 0) {
@@ -223,7 +220,7 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
 
         // Build context from responses
         let contextText = 'Voici les réponses aux questions du projet:\n\n';
-        
+
         // Group by question
         const responsesByQuestion = {};
         for (const response of responses) {
@@ -240,15 +237,14 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
             contextText += `Question: ${question}\n`;
             contextText += `Réponses: ${answers.join(', ')}\n\n`;
         }
+         console.log('Constructed context text for Mistral:', contextText);
 
         // Get prompt from config or use default
         const promptConfig = getPromptConfig('mindmap');
         const systemPromptTemplate = promptConfig?.systemPrompt || defaultMindmapSystemPrompt;
         // const finalPrompt = systemPromptTemplate.replace('{fmt}', mindmapExpectedFormat).replace('{text}', contextText);
         const finalPrompt = systemPromptTemplate + 'Le forma attendu en réponse est le suivant:\n' + mindmapExpectedFormat;
-        const prompt = `${contextText}
-
-${finalPrompt}`;
+        const prompt = `${finalPrompt} Contexte additionnel : ${contextText} `;
 
         return exports.CallMistralAPI(prompt);
     } catch (err) {

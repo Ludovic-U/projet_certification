@@ -93,7 +93,7 @@ export default function IdeationPage() {
         <StrategicAnalysisTab clientId={clientId} projectId={projectId} />
       )}
       {activeTab === "idee-projet" && (
-        <IdeaProject />
+        <IdeaProject clientId={clientId} projectId={projectId} />
       )}
     </div>
   );
