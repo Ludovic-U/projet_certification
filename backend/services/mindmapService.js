@@ -29,6 +29,7 @@ const isDescriptionNodeType = (nodeType) => {
 
 /**
  * Check if a node type should be stored as livrable (deliverable)
+ * Green nodes in the UI have nodeType 'livrable' - they are displayed with green color
  */
 const isLivrableNodeType = (nodeType) => {
   return nodeType === 'livrable';
@@ -85,12 +86,14 @@ const buildDescriptionMap = (nodes, edges) => {
  * Process nodes and edges to create livrables and map them to parent tasks
  * Uses TaskDeliverableStatus model (not Deliverable) since it links directly to Tasks
  * Returns a map: parentNodeId -> array of livrable names (strings)
+ * Also handles nodes with green color (treated as deliverables)
  */
 const buildLivrableMap = async (projectId, nodes, edges) => {
   const parentToLivrables = {};
 
-  // Process livrable nodes
+  // Process livrable nodes AND green-colored nodes
   for (const node of nodes) {
+    // Check nodeType for livrable status
     if (!isLivrableNodeType(node.data?.nodeType)) {
       continue;
     }
@@ -283,9 +286,11 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
   }
 
   // Delete any orphaned description/livrable nodes that were previously created
+  // Also clean up tasks that were green-colored (now treated as deliverables)
   for (const task of existingTasks) {
     try {
       const details = JSON.parse(task.details || '{}');
+      // Check if it's a description/livrable node type
       if (isDescriptionNodeType(details.nodeType) || isLivrableNodeType(details.nodeType)) {
         // Delete this task
         await prisma.task.delete({ where: { taskId: task.taskId } });
@@ -629,13 +634,25 @@ const updateMindmap = async (mindmapId, data) => {
       console.log(`Deleted ${deleteResult.count} nodes for mindmap ${mindmapId}`);
       
       if (nodes.length > 0) {
-        // Use individual creates to avoid issues with delete/create timing
+        // Use upsert to handle potential race conditions
         for (const node of nodes) {
           try {
+            const externalId = node.id || node.externalId;
+            // First try to delete any existing node with this externalId
+            await prisma.mindmapNode.deleteMany({
+              where: {
+                mindmapId_externalId: {
+                  mindmapId,
+                  externalId
+                }
+              }
+            }).catch(() => {}); // Ignore if doesn't exist
+            
+            // Then create the new node
             await prisma.mindmapNode.create({
               data: {
                 mindmapId,
-                externalId: node.id || node.externalId,
+                externalId,
                 label: node.data?.label || node.label || 'Untitled',
                 nodeType: node.data?.nodeType || node.nodeType || 'action',
                 positionX: node.position?.x || node.positionX || 0,
@@ -659,19 +676,30 @@ const updateMindmap = async (mindmapId, data) => {
       console.log(`Deleted ${deleteResult.count} edges for mindmap ${mindmapId}`);
       
       if (edges.length > 0) {
-        // Use individual creates to avoid issues with delete/create timing
+        // Use upsert to handle potential race conditions
         for (const edge of edges) {
           try {
+            const externalId = edge.id || edge.externalId;
+            // First try to delete any existing edge with this externalId
+            await prisma.mindmapEdge.deleteMany({
+              where: {
+                mindmapId_externalId: {
+                  mindmapId,
+                  externalId
+                }
+              }
+            }).catch(() => {}); // Ignore if doesn't exist
+            
+            // Then create the new edge
             await prisma.mindmapEdge.create({
               data: {
                 mindmapId,
-                externalId: edge.id || edge.externalId,
+                externalId,
                 source: edge.source,
                 target: edge.target
               }
             });
           } catch (e) {
-            // Log but don't fail on duplicate - the delete should have removed it
             console.warn('Error creating edge:', e.message);
           }
         }

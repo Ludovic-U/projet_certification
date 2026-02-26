@@ -479,6 +479,7 @@ export default function GanttChartComponent() {
           editingTask={ganttState.editingTask}
           setEditingTask={ganttState.setEditingTask}
           setShowEditor={ganttState.setShowEditor}
+          closeEditor={ganttState.closeEditor}
           editorTab={ganttState.editorTab}
           setEditorTab={ganttState.setEditorTab}
           livrables={ganttState.livrables}

@@ -495,6 +495,7 @@ interface GanttTaskEditorProps {
   editingTask: Task | null;
   setEditingTask: (task: Task | null) => void;
   setShowEditor: (show: boolean) => void;
+  closeEditor: () => void;
   editorTab: EditorTab;
   setEditorTab: (tab: EditorTab) => void;
   livrables: Livrable[];
@@ -520,6 +521,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
   editingTask,
   setEditingTask,
   setShowEditor,
+  closeEditor,
   editorTab,
   setEditorTab,
   livrables,
@@ -638,8 +640,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
             </div>
             <button
               onClick={() => {
-                setShowEditor(false);
-                setEditingTask(null);
+                closeEditor();
               }}
               className="p-2 hover:bg-slate-700 rounded-xl transition-colors group"
             >
@@ -1099,8 +1100,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
         <div className="p-6 border-t border-slate-700 bg-slate-800/30 flex justify-between items-center">
           <button
             onClick={() => {
-              setShowEditor(false);
-              setEditingTask(null);
+              closeEditor();
             }}
             className="px-6 py-3 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 hover:text-white transition-all font-medium"
           >

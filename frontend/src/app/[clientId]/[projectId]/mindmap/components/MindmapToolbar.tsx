@@ -92,6 +92,8 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
     backdropFilter: 'blur(8px)',
     border: '1px solid rgba(105, 128, 99, 0.4)',
     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+    flexWrap: 'wrap',
+    maxWidth: 'calc(100vw - 100px)',
   };
 
   const buttonStyle: React.CSSProperties = {

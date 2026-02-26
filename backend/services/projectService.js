@@ -136,6 +136,21 @@ module.exports.getProjectsByUserId = async (userId) => {
             lastname: true,
           },
         },
+        types: {
+          select: {
+            typeId: true,
+            label: true,
+          },
+        },
+        FinanceurProjet: {
+          include: {
+            financeur: {
+              select: {
+                FinanceurName: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         projectName: 'asc'
@@ -144,15 +159,20 @@ module.exports.getProjectsByUserId = async (userId) => {
 
     console.log('Found projects:', projects.length);
 
-    // Format the response
+    // Format the response to match frontend expectations
     const formattedProjects = projects.map((project) => ({
       projectId: project.projectId,
       projectName: project.projectName,
+      goNogo: project.goNogo ?? null,
+      projectManager: project.projectManager,
       clientId: project.client.clientId,
       clientName: project.client.clientName,
-      managerName: project.manager 
+      ChefDeProjet: project.manager 
         ? `${project.manager.firstname} ${project.manager.lastname}` 
         : "N/A",
+      types: project.types.map((t) => t.label),
+      typeIds: project.types.map((t) => t.typeId),
+      financeurs: project.FinanceurProjet.map((fp) => fp.financeur.FinanceurName),
     }));
 
     return formattedProjects;
