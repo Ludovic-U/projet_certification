@@ -14,7 +14,10 @@ import {
   YAxis, 
   CartesianGrid,
   AreaChart,
-  Area
+  Area,
+  LineChart,
+  Line,
+  ComposedChart
 } from 'recharts';
 import { X, ChevronDown, ChevronUp, TrendingUp, PieChart as PieChartIcon, BarChart3, Calendar, DollarSign, Target } from 'lucide-react';
 import { Task } from '../../data';
@@ -22,12 +25,14 @@ import {
   splitBudgetByYears, 
   getTotalBudget, 
   getBudgetByCategoryFromTasks,
+  calculateBudgetTotals,
   YearlyBudgetBreakdown 
 } from '../utils/budgetUtils';
 
 interface BudgetOverviewProps {
   tasks: Task[];
   onClose: () => void;
+  customBudgetTypes?: { id: string; name: string }[];
 }
 
 // Modern color palette
@@ -53,6 +58,16 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Autres prestations': '#14b8a6',
   'Communications': '#f97316',
   'Lignes de dépenses': '#6366f1',
+};
+
+// Generate colors for custom budget types
+const getCustomBudgetTypeColors = (customTypes: { id: string; name: string }[]): Record<string, string> => {
+  const colors: Record<string, string> = {};
+  const customColors = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1'];
+  customTypes.forEach((type, index) => {
+    colors[type.name] = customColors[index % customColors.length];
+  });
+  return colors;
 };
 
 const formatCurrency = (value: number): string => {
@@ -256,10 +271,10 @@ const CustomTooltip: React.FC<{
   return null;
 };
 
-export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }) => {
+export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose, customBudgetTypes = [] }) => {
   const [expandedYear, setExpandedYear] = useState<number | null>(null);
-  const [activeChart, setActiveChart] = useState<'year' | 'category'>('year');
-  const [chartType, setChartType] = useState<'pie' | 'bar' | 'area'>('pie');
+  const [activeChart, setActiveChart] = useState<'year' | 'category' | 'task'>('year');
+  const [chartType, setChartType] = useState<'pie' | 'bar' | 'area' | 'line'>('pie');
   
   const yearlyData = useMemo(() => splitBudgetByYears(tasks), [tasks]);
   const totalBudget = useMemo(() => getTotalBudget(tasks), [tasks]);
@@ -277,30 +292,80 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
   
   // Prepare pie chart data for categories
   const categoryPieData = useMemo(() => {
+    const customColors = getCustomBudgetTypeColors(customBudgetTypes);
+    const allColors = { ...CATEGORY_COLORS, ...customColors };
     return categoryData.map(item => ({
       name: item.category,
       value: item.budget,
-      color: CATEGORY_COLORS[item.category] || '#8884d8',
+      color: allColors[item.category] || '#8884d8',
       percentage: totalBudget > 0 ? (item.budget / totalBudget) * 100 : 0
     }));
-  }, [categoryData, totalBudget]);
+  }, [categoryData, totalBudget, customBudgetTypes]);
+  
+  // Get budget by task for "Par Action" view
+  const taskData = useMemo(() => {
+    return tasks
+      .filter(task => task.budget)
+      .map(task => {
+        const budget = task.budget!;
+        const totals = calculateBudgetTotals(budget);
+        return {
+          name: task.text.length > 25 ? task.text.substring(0, 25) + '...' : task.text,
+          fullName: task.text,
+          budget: totals.total,
+          color: task.color || '#3b82f6'
+        };
+      })
+      .sort((a, b) => b.budget - a.budget);
+  }, [tasks]);
+  
+  // Prepare pie chart data for tasks
+  const taskPieData = useMemo(() => {
+    return taskData.map(item => ({
+      name: item.name,
+      value: item.budget,
+      color: item.color,
+      percentage: totalBudget > 0 ? (item.budget / totalBudget) * 100 : 0
+    }));
+  }, [taskData, totalBudget]);
   
   // Prepare bar chart data
   const barChartData = useMemo(() => {
+    const customColors = getCustomBudgetTypeColors(customBudgetTypes);
+    const allColors = { ...CATEGORY_COLORS, ...customColors };
     if (activeChart === 'year') {
       return yearlyData.map(item => ({
         name: item.year.toString(),
         budget: item.budget,
         fill: COLORS[yearlyData.indexOf(item) % COLORS.length]
       }));
+    } else if (activeChart === 'task') {
+      return taskData.map(item => ({
+        name: item.name,
+        budget: item.budget,
+        fill: item.color
+      }));
     } else {
       return categoryData.map(item => ({
         name: item.category.length > 20 ? item.category.substring(0, 20) + '...' : item.category,
         budget: item.budget,
-        fill: CATEGORY_COLORS[item.category] || '#8884d8'
+        fill: allColors[item.category] || '#8884d8'
       }));
     }
-  }, [yearlyData, categoryData, activeChart]);
+  }, [yearlyData, categoryData, taskData, activeChart, customBudgetTypes]);
+  
+  // Calculate dynamic chart height based on data count
+  const chartHeight = useMemo(() => {
+    const dataCount = activeChart === 'year' ? yearlyData.length : activeChart === 'task' ? taskData.length : categoryData.length;
+    // Base height is 400, add more height for each item beyond 5
+    return Math.max(400, 200 + dataCount * 50);
+  }, [yearlyData, categoryData, taskData, activeChart]);
+  
+  // Calculate if horizontal scroll is needed for bar chart
+  const needsHorizontalScroll = useMemo(() => {
+    const dataCount = activeChart === 'year' ? yearlyData.length : activeChart === 'task' ? taskData.length : categoryData.length;
+    return dataCount > 5;
+  }, [yearlyData, categoryData, taskData, activeChart]);
   
   // Calculate stats
   const stats = useMemo(() => {
@@ -313,7 +378,7 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
     return { yearCount, avgBudgetPerYear, maxCategory };
   }, [yearlyData, totalBudget, categoryData]);
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const renderLegend = (props: any) => {
     const { payload } = props;
     if (!payload) return null;
@@ -427,7 +492,10 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
             <div className="flex items-center justify-between mb-6">
               <div className="flex gap-2 bg-slate-100 p-1 rounded-xl">
                 <button
-                  onClick={() => setActiveChart('year')}
+                  onClick={() => {
+                    setActiveChart('year');
+                    setChartType('pie');
+                  }}
                   className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     activeChart === 'year' 
                       ? 'bg-white text-indigo-600 shadow-md' 
@@ -437,7 +505,10 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
                   Par Année
                 </button>
                 <button
-                  onClick={() => setActiveChart('category')}
+                  onClick={() => {
+                    setActiveChart('category');
+                    setChartType('pie');
+                  }}
                   className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     activeChart === 'category' 
                       ? 'bg-white text-indigo-600 shadow-md' 
@@ -445,6 +516,19 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
                   }`}
                 >
                   Par Catégorie
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveChart('task');
+                    setChartType('line');
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    activeChart === 'task' 
+                      ? 'bg-white text-indigo-600 shadow-md' 
+                      : 'text-slate-600 hover:text-slate-800'
+                  }`}
+                >
+                  Par Action
                 </button>
               </div>
               
@@ -470,6 +554,15 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
                 >
                   <TrendingUp className="w-5 h-5" />
                 </button>
+                <button
+                  onClick={() => setChartType('line')}
+                  className={`p-2 rounded-lg transition-all ${chartType === 'line' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                  title="Ligne"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                  </svg>
+                </button>
               </div>
             </div>
             
@@ -478,14 +571,14 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
               {/* Primary Chart */}
               <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
                 <h3 className="text-xl font-bold text-slate-800 mb-6">
-                  {activeChart === 'year' ? 'Répartition par Année' : 'Répartition par Catégorie'}
+                  {activeChart === 'year' ? 'Répartition par Année' : activeChart === 'task' ? 'Répartition par Action' : 'Répartition par Catégorie'}
                 </h3>
                 
                 {chartType === 'pie' && (
                   <ResponsiveContainer width="100%" height={400}>
                     <PieChart>
                       <Pie
-                        data={activeChart === 'year' ? yearPieData : categoryPieData}
+                        data={activeChart === 'year' ? yearPieData : activeChart === 'task' ? taskPieData : categoryPieData}
                         cx="50%"
                         cy="50%"
                         labelLine={true}
@@ -495,7 +588,7 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
                         dataKey="value"
                         paddingAngle={2}
                       >
-                        {(activeChart === 'year' ? yearPieData : categoryPieData).map((entry, index) => (
+                        {(activeChart === 'year' ? yearPieData : activeChart === 'task' ? taskPieData : categoryPieData).map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
                         ))}
                       </Pie>
@@ -506,8 +599,9 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
                 )}
                 
                 {chartType === 'bar' && (
-                  <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={barChartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+                  <div className={needsHorizontalScroll ? 'overflow-x-auto' : ''}>
+                    <ResponsiveContainer width={needsHorizontalScroll ? Math.max(100, barChartData.length * 120) : "100%"} height={chartHeight}>
+                      <BarChart data={barChartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis 
                         dataKey="name" 
@@ -536,10 +630,12 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  </div>
                 )}
                 
                 {chartType === 'area' && (
-                  <ResponsiveContainer width="100%" height={400}>
+                  <div className={needsHorizontalScroll ? 'overflow-x-auto' : ''}>
+                    <ResponsiveContainer width={needsHorizontalScroll ? Math.max(100, barChartData.length * 120) : "100%"} height={chartHeight}>
                     <AreaChart data={barChartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                       <defs>
                         {barChartData.map((entry, index) => (
@@ -580,51 +676,131 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
                       />
                     </AreaChart>
                   </ResponsiveContainer>
+                  </div>
+                )}
+                
+                {chartType === 'line' && (
+                  <div className={needsHorizontalScroll ? 'overflow-x-auto' : ''}>
+                    <ResponsiveContainer width={needsHorizontalScroll ? Math.max(100, barChartData.length * 120) : "100%"} height={chartHeight}>
+                      <LineChart data={barChartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fontSize: 12, fill: '#64748b' }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis 
+                          tickFormatter={(value) => formatCurrency(value)}
+                          tick={{ fontSize: 11, fill: '#64748b' }}
+                        />
+                        <RechartsTooltip 
+                          formatter={(value: number) => formatCurrency(value)}
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                          }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="budget" 
+                          stroke="#6366f1" 
+                          strokeWidth={3}
+                          dot={{ fill: '#6366f1', strokeWidth: 2, r: 6 }}
+                          activeDot={{ r: 8 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
               </div>
               
               {/* Summary Table */}
               <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-                <h3 className="text-xl font-bold text-slate-800 mb-6">Résumé Financier</h3>
+                <h3 className="text-xl font-bold text-slate-800 mb-6">
+                  {activeChart === 'task' ? 'Budget par Action' : 'Résumé Financier'}
+                </h3>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-slate-200">
-                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-sm">Catégorie</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-sm">
+                          {activeChart === 'task' ? 'Action' : 'Catégorie'}
+                        </th>
                         <th className="text-right py-3 px-4 font-semibold text-slate-600 text-sm">Budget</th>
                         <th className="text-right py-3 px-4 font-semibold text-slate-600 text-sm">% du Total</th>
                         <th className="text-right py-3 px-4 font-semibold text-slate-600 text-sm">Répartition</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {categoryData.map((cat, idx) => (
-                        <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[cat.category] || '#8884d8' }}></div>
-                              <span className="font-medium text-slate-700">{cat.category}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-right font-semibold text-slate-800">{formatCurrency(cat.budget)}</td>
-                          <td className="py-3 px-4 text-right text-slate-600">{totalBudget > 0 ? ((cat.budget / totalBudget) * 100).toFixed(1) : 0}%</td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full rounded-full"
-                                  style={{ 
-                                    width: `${totalBudget > 0 ? (cat.budget / totalBudget) * 100 : 0}%`,
-                                    backgroundColor: CATEGORY_COLORS[cat.category] || '#8884d8'
-                                  }}
-                                />
+                      {activeChart === 'task' ? (
+                        // Task-based view
+                        taskData.map((task, idx) => (
+                          <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: task.color }}></div>
+                                <span className="font-medium text-slate-700" title={task.fullName}>{task.name}</span>
                               </div>
-                              <span className="text-xs text-slate-400 w-12 text-right">
-                                {totalBudget > 0 ? ((cat.budget / totalBudget) * 100).toFixed(0) : 0}%
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="py-3 px-4 text-right font-semibold text-slate-800">{formatCurrency(task.budget)}</td>
+                            <td className="py-3 px-4 text-right text-slate-600">{totalBudget > 0 ? ((task.budget / totalBudget) * 100).toFixed(1) : 0}%</td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full rounded-full"
+                                    style={{ 
+                                      width: `${totalBudget > 0 ? (task.budget / totalBudget) * 100 : 0}%`,
+                                      backgroundColor: task.color
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs text-slate-400 w-12 text-right">
+                                  {totalBudget > 0 ? ((task.budget / totalBudget) * 100).toFixed(0) : 0}%
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        // Category-based view
+                        categoryData.map((cat, idx) => {
+                          const customColors = getCustomBudgetTypeColors(customBudgetTypes);
+                          const allColors = { ...CATEGORY_COLORS, ...customColors };
+                          return (
+                          <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: allColors[cat.category] || '#8884d8' }}></div>
+                                <span className="font-medium text-slate-700">{cat.category}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-right font-semibold text-slate-800">{formatCurrency(cat.budget)}</td>
+                            <td className="py-3 px-4 text-right text-slate-600">{totalBudget > 0 ? ((cat.budget / totalBudget) * 100).toFixed(1) : 0}%</td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full rounded-full"
+                                    style={{ 
+                                      width: `${totalBudget > 0 ? (cat.budget / totalBudget) * 100 : 0}%`,
+                                      backgroundColor: allColors[cat.category] || '#8884d8'
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs text-slate-400 w-12 text-right">
+                                  {totalBudget > 0 ? ((cat.budget / totalBudget) * 100).toFixed(0) : 0}%
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                        })
+                      )}
                     </tbody>
                     <tfoot>
                       <tr className="bg-slate-50">
@@ -634,16 +810,33 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({ tasks, onClose }
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
                             <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden flex">
-                              {categoryData.slice(0, 6).map((cat, idx) => (
-                                <div 
-                                  key={idx}
-                                  className="h-full"
-                                  style={{ 
-                                    width: `${totalBudget > 0 ? (cat.budget / totalBudget) * 100 : 0}%`,
-                                    backgroundColor: CATEGORY_COLORS[cat.category] || '#8884d8'
-                                  }}
-                                />
-                              ))}
+                              {activeChart === 'task' ? (
+                                taskData.slice(0, 6).map((task, idx) => (
+                                  <div 
+                                    key={idx}
+                                    className="h-full"
+                                    style={{ 
+                                      width: `${totalBudget > 0 ? (task.budget / totalBudget) * 100 : 0}%`,
+                                      backgroundColor: task.color
+                                    }}
+                                  />
+                                ))
+                              ) : (
+                                categoryData.slice(0, 6).map((cat, idx) => {
+                                  const customColors = getCustomBudgetTypeColors(customBudgetTypes);
+                                  const allColors = { ...CATEGORY_COLORS, ...customColors };
+                                  return (
+                                  <div 
+                                    key={idx}
+                                    className="h-full"
+                                    style={{ 
+                                      width: `${totalBudget > 0 ? (cat.budget / totalBudget) * 100 : 0}%`,
+                                      backgroundColor: allColors[cat.category] || '#8884d8'
+                                    }}
+                                  />
+                                );
+                                })
+                              )}
                             </div>
                           </div>
                         </td>

@@ -340,10 +340,33 @@ export const getBudgetByCategoryFromTasks = (tasks: Task[]): CategoryBudget[] =>
     'Lignes de depenses': '#6366f1',
   };
   
+  // Collect custom budget types from expense lines
+  const customCategories: Record<string, number> = {};
+  const customColorsList = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1'];
+  
   const totals = tasks.reduce((acc, task) => {
     if (!task.budget) return acc;
     
-    const expenseLinesTotal = calculateExpenseLinesTotal(task.budget.expenseLines || []);
+    // Process expense lines - extract custom budget types
+    const expenseLines = task.budget.expenseLines || [];
+    expenseLines.forEach(line => {
+      if (line.nature) {
+        // Check if it's a custom budget type (starts with custom_)
+        if (line.nature.startsWith('custom_')) {
+          const parts = line.nature.split(':');
+          if (parts.length >= 2) {
+            const customName = parts[1].trim();
+            if (customName) {
+              customCategories[customName] = (customCategories[customName] || 0) + (line.unites * line.prix);
+            }
+          }
+        }
+      }
+    });
+    
+    const expenseLinesTotal = calculateExpenseLinesTotal(expenseLines.filter(line => 
+      !line.nature?.startsWith('custom_')
+    ));
     
     return {
       personnel: acc.personnel + (task.budget.personnelCost || 0),
@@ -368,7 +391,7 @@ export const getBudgetByCategoryFromTasks = (tasks: Task[]): CategoryBudget[] =>
     expenseLines: 0,
   });
   
-  return [
+  const result: CategoryBudget[] = [
     { category: 'Moyen humain', budget: totals.personnel, color: categoryColors['Moyen humain'] },
     { category: 'Stagiaires', budget: totals.interns, color: categoryColors['Stagiaires'] },
     { category: 'Amenagements', budget: totals.fittings, color: categoryColors['Amenagements'] },
@@ -378,5 +401,16 @@ export const getBudgetByCategoryFromTasks = (tasks: Task[]): CategoryBudget[] =>
     { category: 'Autres prestations', budget: totals.otherPrestations, color: categoryColors['Autres prestations'] },
     { category: 'Communications', budget: totals.communication, color: categoryColors['Communications'] },
     { category: 'Lignes de depenses', budget: totals.expenseLines, color: categoryColors['Lignes de depenses'] },
-  ].filter(c => c.budget > 0);
+  ];
+  
+  // Add custom budget types
+  Object.entries(customCategories).forEach(([name, budget], index) => {
+    result.push({
+      category: name,
+      budget: budget,
+      color: customColorsList[index % customColorsList.length]
+    });
+  });
+  
+  return result.filter(c => c.budget > 0);
 };

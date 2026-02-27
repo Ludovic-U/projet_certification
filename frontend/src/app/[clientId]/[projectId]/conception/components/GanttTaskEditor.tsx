@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, DollarSign, Settings, FileText, UserMinus, Upload, Package } from 'lucide-react';
+import { X, Save, Trash2, Plus, Calendar, CheckCircle2, Users, Target, Settings, FileText, UserMinus, Upload, Package } from 'lucide-react';
 import { Task, EditorTab, Livrable, SelectOption } from '../types';
-import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateExpenseLinesTotal, calculateBudgetTotals, Budget, getExpenseLinesByCategory } from '../utils/budgetUtils';
+import { createEmptyBudget, createEmptyExpenseLine, calculateExpenseLineTotal, calculateBudgetTotals, Budget } from '../utils/budgetUtils';
 import Select from 'react-select';
 
 // Task color options for Gantt chart display
@@ -547,10 +547,6 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
   const tabs: { id: EditorTab; label: string; icon: React.ReactNode; color: string; category: string }[] = [
     { id: 'general', label: 'Général', icon: <Settings className="w-4 h-4" />, color: 'text-blue-400', category: '' },
     { id: 'moyenHumain', label: 'Moyen humain', icon: <Users className="w-4 h-4" />, color: 'text-emerald-400', category: 'moyenHumain' },
-    { id: 'amenagements', label: 'Aménagements', icon: <Target className="w-4 h-4" />, color: 'text-purple-400', category: 'amenagements' },
-    { id: 'equipementsPedagogiques', label: 'Équipements pédagogiques', icon: <FileText className="w-4 h-4" />, color: 'text-pink-400', category: 'equipements' },
-    { id: 'prestations', label: 'Prestations', icon: <DollarSign className="w-4 h-4" />, color: 'text-cyan-400', category: 'prestations' },
-    { id: 'communications', label: 'Communications', icon: <CheckCircle2 className="w-4 h-4" />, color: 'text-orange-400', category: 'communications' },
     ...customBudgetTypes.map(bt => ({ 
       id: bt.id as EditorTab, 
       label: bt.name, 
@@ -621,6 +617,15 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
     }
   };
 
+  // Delete a custom budget type
+  const deleteCustomBudgetType = (typeId: string) => {
+    setCustomBudgetTypes(customBudgetTypes.filter(bt => bt.id !== typeId));
+    // If currently on this tab, switch to general
+    if (editorTab === typeId) {
+      setEditorTab('general');
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
@@ -651,19 +656,79 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
         {/* Tabs */}
         <div className="flex border-b border-slate-700 overflow-x-auto bg-slate-800/30 px-2">
           {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setEditorTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 font-medium transition-all whitespace-nowrap border-b-2 ${
-                editorTab === tab.id 
-                  ? `${tab.color} border-current opacity-100` 
-                  : 'text-slate-400 hover:text-white border-transparent opacity-60 hover:opacity-100'
-              }`}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-            </button>
+            <div key={tab.id} className="flex items-center">
+              <button
+                onClick={() => setEditorTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 font-medium transition-all whitespace-nowrap border-b-2 ${
+                  editorTab === tab.id 
+                    ? `${tab.color} border-current opacity-100` 
+                    : 'text-slate-400 hover:text-white border-transparent opacity-60 hover:opacity-100'
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+              {tab.id.startsWith('custom_') && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteCustomBudgetType(tab.id);
+                  }}
+                  className="p-1 text-slate-500 hover:text-red-400 transition-colors mr-1"
+                  title="Supprimer ce type de budget"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           ))}
+          {/* Add Custom Budget Type Button in Tabs */}
+          {showAddBudgetType ? (
+            <div className="flex items-center gap-2 px-2 py-2">
+              <input
+                type="text"
+                value={newBudgetTypeName}
+                onChange={(e) => setNewBudgetTypeName(e.target.value)}
+                placeholder="Nom du budget..."
+                className="w-32 px-2 py-1 bg-slate-800 text-white border border-yellow-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 text-sm"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addCustomBudgetType();
+                  if (e.key === 'Escape') {
+                    setShowAddBudgetType(false);
+                    setNewBudgetTypeName('');
+                  }
+                }}
+              />
+              <button
+                onClick={addCustomBudgetType}
+                disabled={!newBudgetTypeName.trim()}
+                className="p-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-400 disabled:opacity-50"
+                title="Ajouter"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  setShowAddBudgetType(false);
+                  setNewBudgetTypeName('');
+                }}
+                className="p-1 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600"
+                title="Annuler"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAddBudgetType(true)}
+              className="flex items-center gap-1 px-3 py-3 font-medium text-yellow-400 hover:text-yellow-300 transition-all whitespace-nowrap border-b-2 border-transparent opacity-60 hover:opacity-100"
+              title="Ajouter un type de budget"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="text-sm">Ajouter</span>
+            </button>
+          )}
         </div>
         
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
@@ -705,7 +770,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   >
                     <option value="task">Tâche</option>
                     <option value="milestone">Jalon</option>
-                    <option value="project">Projet</option>
+                    <option value="project">Action</option>
                   </select>
                 </div>
 
@@ -908,178 +973,11 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 />
               </div>
             </div>
-          ) : editorTab === 'budgets' ? (
-            <div className="space-y-6">
-              {/* Budget Total */}
-              <BudgetTotalPreview budget={editingTask.budget || createEmptyBudget()} />
-              
-              {/* Moyen Humain Summary */}
-              <div className="p-4 bg-gradient-to-r from-emerald-500/10 to-cyan-500/5 border border-emerald-500/20 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-emerald-400">budgets Moyen humain</span>
-                  <span className="text-lg font-bold text-emerald-400">
-                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'moyenHumain')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Aménagements Summary */}
-              <div className="p-4 bg-gradient-to-r from-purple-500/10 to-cyan-500/5 border border-purple-500/20 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-purple-400">budgets Aménagements</span>
-                  <span className="text-lg font-bold text-purple-400">
-                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'amenagements')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Équipements Summary */}
-              <div className="p-4 bg-gradient-to-r from-pink-500/10 to-cyan-500/5 border border-pink-500/20 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-pink-400">budgets Équipements pédagogiques</span>
-                  <span className="text-lg font-bold text-pink-400">
-                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'equipements')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Prestations Summary */}
-              <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/5 border border-cyan-500/20 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-cyan-400">budgets Prestations</span>
-                  <span className="text-lg font-bold text-cyan-400">
-                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'prestations')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Communications Summary */}
-              <div className="p-4 bg-gradient-to-r from-orange-500/10 to-cyan-500/5 border border-orange-500/20 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-orange-400">budgets Communications</span>
-                  <span className="text-lg font-bold text-orange-400">
-                    {calculateExpenseLinesTotal(getExpenseLinesByCategory(editingTask.budget?.expenseLines || [], 'communications')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                  </span>
-                </div>
-              </div>
-
-              {/* Custom Budget Types Summaries */}
-              {customBudgetTypes.map(customType => {
-                const customLines = editingTask.budget?.expenseLines.filter(line => 
-                  line.nature?.startsWith(customType.id + ':')
-                ) || [];
-                const customTotal = calculateExpenseLinesTotal(customLines);
-                return (
-                  <div key={customType.id} className="p-4 bg-gradient-to-r from-yellow-500/10 to-cyan-500/5 border border-yellow-500/20 rounded-xl cursor-pointer hover:border-yellow-400/50 transition-all" onClick={() => setEditorTab(customType.id as EditorTab)}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-yellow-400">budgets {customType.name}</span>
-                      <span className="text-lg font-bold text-yellow-400">
-                        {customTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Add Custom Budget Type Button */}
-              <div className="pt-4 border-t border-slate-700">
-                {showAddBudgetType ? (
-                  <div className="p-4 bg-slate-800/50 border border-slate-600 rounded-xl space-y-3 animate-in slide-in-from-top-2">
-                    <input
-                      type="text"
-                      value={newBudgetTypeName}
-                      onChange={(e) => setNewBudgetTypeName(e.target.value)}
-                      placeholder="Nom du type de budget..."
-                      className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') addCustomBudgetType();
-                        if (e.key === 'Escape') {
-                          setShowAddBudgetType(false);
-                          setNewBudgetTypeName('');
-                        }
-                      }}
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={addCustomBudgetType}
-                        disabled={!newBudgetTypeName.trim()}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-xl hover:bg-yellow-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Ajouter
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowAddBudgetType(false);
-                          setNewBudgetTypeName('');
-                        }}
-                        className="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all"
-                      >
-                        Annuler
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowAddBudgetType(true)}
-                    className="flex items-center gap-2 px-4 py-3 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-xl hover:bg-yellow-500/30 transition-all w-full justify-center"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Ajouter un type de budget personnalisé
-                  </button>
-                )}
-              </div>
-            </div>
           ) : editorTab === 'moyenHumain' ? (
             <MoyensHumainsSection
               editingTask={editingTask}
               setEditingTask={setEditingTask}
               users={data.users}
-            />
-          ) : editorTab === 'amenagements' ? (
-            <BudgetSectionWithLines
-              editingTask={editingTask}
-              setEditingTask={setEditingTask}
-              title="Aménagements"
-              icon={<Target className="w-5 h-5 text-purple-400" />}
-              category="amenagements"
-              addExpenseLine={() => addExpenseLine('amenagements')}
-              updateExpenseLine={updateExpenseLine}
-              removeExpenseLine={removeExpenseLine}
-            />
-          ) : editorTab === 'equipementsPedagogiques' ? (
-            <BudgetSectionWithLines
-              editingTask={editingTask}
-              setEditingTask={setEditingTask}
-              title="Équipements pédagogiques"
-              icon={<FileText className="w-5 h-5 text-pink-400" />}
-              category="equipements"
-              addExpenseLine={() => addExpenseLine('equipements')}
-              updateExpenseLine={updateExpenseLine}
-              removeExpenseLine={removeExpenseLine}
-            />
-          ) : editorTab === 'prestations' ? (
-            <BudgetSectionWithLines
-              editingTask={editingTask}
-              setEditingTask={setEditingTask}
-              title="Prestations"
-              icon={<DollarSign className="w-5 h-5 text-cyan-400" />}
-              category="prestations"
-              addExpenseLine={() => addExpenseLine('prestations')}
-              updateExpenseLine={updateExpenseLine}
-              removeExpenseLine={removeExpenseLine}
-            />
-          ) : editorTab === 'communications' ? (
-            <BudgetSectionWithLines
-              editingTask={editingTask}
-              setEditingTask={setEditingTask}
-              title="Communications"
-              icon={<CheckCircle2 className="w-5 h-5 text-orange-400" />}
-              category="communications"
-              addExpenseLine={() => addExpenseLine('communications')}
-              updateExpenseLine={updateExpenseLine}
-              removeExpenseLine={removeExpenseLine}
             />
           ) : customBudgetTypes.find(bt => bt.id === editorTab) ? (
             <BudgetSectionWithLines
