@@ -74,61 +74,69 @@ export default function SwotPage() {
       </div>
       
       <section className="mt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Forces */}
-          <div className="flex flex-col">
-            <div className="bg-green-600 text-white p-4 rounded-t-lg flex items-center gap-3">
-              <FontAwesomeIcon icon={Icons.check} className="text-xl" />
-              <h2 className="text-lg font-semibold">Forces</h2>
+        <div className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-5 md:px-6">
+            <h2 className="text-base font-semibold text-slate-700">Interne</h2>
+            <p className="text-sm text-slate-600 mt-1">Forces et faiblesses internes de la structure.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div className="flex flex-col">
+                <div className="bg-[#5f7a58] text-white p-4 rounded-t-lg flex items-center gap-3">
+                  <FontAwesomeIcon icon={Icons.check} className="text-xl" />
+                  <h3 className="text-lg font-semibold">Forces</h3>
+                </div>
+                <textarea
+                  value={strengths}
+                  onChange={(e) => setStrengths(e.target.value)}
+                  placeholder="Entrez les forces de votre entreprise...&#10;&#10;• Expertise reconnue&#10;• Équipe qualifiée&#10;• Innovation continue"
+                  className="w-full h-100 p-4 border-2 border-[#5f7a58] rounded-b-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#5f7a58] text-base font-noto"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <div className="bg-[#8c6d62] text-white p-4 rounded-t-lg flex items-center gap-3">
+                  <FontAwesomeIcon icon={Icons.check} className="text-xl" />
+                  <h3 className="text-lg font-semibold">Faiblesses</h3>
+                </div>
+                <textarea
+                  value={weaknesses}
+                  onChange={(e) => setWeaknesses(e.target.value)}
+                  placeholder="Entrez les faiblesses de votre entreprise...&#10;&#10;• Ressources limitées&#10;• Manque de visibilité&#10;• Processus à optimiser"
+                  className="w-full h-100 p-4 border-2 border-[#8c6d62] rounded-b-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#8c6d62] text-base font-noto"
+                />
+              </div>
             </div>
-            <textarea
-              value={strengths}
-              onChange={(e) => setStrengths(e.target.value)}
-              placeholder="Entrez les forces de votre entreprise...&#10;&#10;• Expertise reconnue&#10;• Équipe qualifiée&#10;• Innovation continue"
-              className="w-full h-100 p-4 border-2 border-green-600 rounded-b-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 text-base font-noto"
-            />
           </div>
 
-          {/* Faiblesses */}
-          <div className="flex flex-col">
-            <div className="bg-red-600 text-white p-4 rounded-t-lg flex items-center gap-3">
-              <FontAwesomeIcon icon={Icons.check} className="text-xl" />
-              <h2 className="text-lg font-semibold">Faiblesses</h2>
-            </div>
-            <textarea
-              value={weaknesses}
-              onChange={(e) => setWeaknesses(e.target.value)}
-              placeholder="Entrez les faiblesses de votre entreprise...&#10;&#10;• Ressources limitées&#10;• Manque de visibilité&#10;• Processus à optimiser"
-              className="w-full h-100 p-4 border-2 border-red-600 rounded-b-lg resize-none focus:outline-none focus:ring-2 focus:ring-red-500 text-base font-noto"
-            />
-          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-5 md:px-6">
+            <h2 className="text-base font-semibold text-slate-700">Externe</h2>
+            <p className="text-sm text-slate-600 mt-1">Opportunités et menaces liées aux paramêtres extérieurs à la structure.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div className="flex flex-col">
+                <div className="bg-[#7fae7b] text-white p-4 rounded-t-lg flex items-center gap-3">
+                  <FontAwesomeIcon icon={Icons.lightbulb} className="text-xl" />
+                  <h3 className="text-lg font-semibold">Opportunités</h3>
+                </div>
+                <textarea
+                  value={opportunities}
+                  onChange={(e) => setOpportunities(e.target.value)}
+                  placeholder="Entrez les opportunités pour votre entreprise...&#10;&#10;• Nouveaux marchés&#10;• Partenariats stratégiques&#10;• Évolution technologique"
+                  className="w-full h-100 p-4 border-2 border-[#7fae7b] rounded-b-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#7fae7b] text-base font-noto"
+                />
+              </div>
 
-          {/* Opportunités */}
-          <div className="flex flex-col">
-            <div className="bg-blue-600 text-white p-4 rounded-t-lg flex items-center gap-3">
-              <FontAwesomeIcon icon={Icons.lightbulb} className="text-xl" />
-              <h2 className="text-lg font-semibold">Opportunités</h2>
+              <div className="flex flex-col">
+                <div className="bg-[#b08f83] text-white p-4 rounded-t-lg flex items-center gap-3">
+                  <FontAwesomeIcon icon={Icons.check} className="text-xl" />
+                  <h3 className="text-lg font-semibold">Menaces</h3>
+                </div>
+                <textarea
+                  value={threats}
+                  onChange={(e) => setThreats(e.target.value)}
+                  placeholder="Entrez les menaces pour votre entreprise...&#10;&#10;• Concurrence accrue&#10;• Évolution réglementaire&#10;• Crise économique"
+                  className="w-full h-100 p-4 border-2 border-[#b08f83] rounded-b-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#b08f83] text-base font-noto"
+                />
+              </div>
             </div>
-            <textarea
-              value={opportunities}
-              onChange={(e) => setOpportunities(e.target.value)}
-              placeholder="Entrez les opportunités pour votre entreprise...&#10;&#10;• Nouveaux marchés&#10;• Partenariats stratégiques&#10;• Évolution technologique"
-              className="w-full h-100 p-4 border-2 border-blue-600 rounded-b-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-base font-noto"
-            />
-          </div>
-
-          {/* Menaces */}
-          <div className="flex flex-col">
-            <div className="bg-orange-600 text-white p-4 rounded-t-lg flex items-center gap-3">
-              <FontAwesomeIcon icon={Icons.check} className="text-xl" />
-              <h2 className="text-lg font-semibold">Menaces</h2>
-            </div>
-            <textarea
-              value={threats}
-              onChange={(e) => setThreats(e.target.value)}
-              placeholder="Entrez les menaces pour votre entreprise...&#10;&#10;• Concurrence accrue&#10;• Évolution réglementaire&#10;• Crise économique"
-              className="w-full h-100 p-4 border-2 border-orange-600 rounded-b-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 text-base font-noto"
-            />
           </div>
         </div>
 

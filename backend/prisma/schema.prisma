@@ -149,7 +149,7 @@ model FinanceurProjet {
   pourcentage Int
   montant     Decimal?
   financeur   Financeur @relation(fields: [financeurId], references: [financeurId])
-  project     Project   @relation(fields: [projectId], references: [projectId])
+  project     Project   @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
   @@id([projectId, financeurId])
 }
@@ -161,7 +161,7 @@ model Action {
   projectId  Int
   startDate  DateTime
   progress   Int         @default(0) // Calculated from subActions
-  project    Project     @relation(fields: [projectId], references: [projectId])
+  project    Project     @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   subActions SubAction[]
 }
 
@@ -223,7 +223,7 @@ model Task {
   budget          String?                 @map("budget")
   parent          Task?                   @relation("TaskHierarchy", fields: [parentId], references: [taskId])
   children        Task[]                  @relation("TaskHierarchy")
-  project         Project?                @relation(fields: [projectId], references: [projectId])
+  project         Project?                @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   subAction       SubAction?              @relation(fields: [subActionId], references: [subActionId])
   version         Version?                @relation(fields: [versionId], references: [versionId])
   assigneeDetails TaskAssigneeDetail[]
@@ -317,7 +317,7 @@ model Version {
   tasks       Task[]
   links       TaskLink[]
   mindmaps    Mindmap[]
-  project     Project    @relation(fields: [projectId], references: [projectId])
+  project     Project    @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
   @@index([projectId])
 }
@@ -373,7 +373,7 @@ model Response {
   optionId         Int?
   responseIdParent Int?
   option           Option?    @relation(fields: [optionId], references: [optionId])
-  project          Project    @relation(fields: [projectId], references: [projectId])
+  project          Project    @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   question         Question   @relation(fields: [questionId], references: [questionId])
   parent           Response?  @relation("ResponseHierarchy", fields: [responseIdParent], references: [responseId])
   children         Response[] @relation("ResponseHierarchy")

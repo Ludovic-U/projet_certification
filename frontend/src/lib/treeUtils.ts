@@ -4,6 +4,10 @@ import { Question } from "@/types/question"
 
 export type TreeNodeKind = "theme" | "question" | "response";
 
+type BuildHierarchyOptions = {
+    rootLabel?: string;
+};
+
 interface ThemeTreeNode {
     nodeKind: "theme";
     id: string;
@@ -44,7 +48,7 @@ function isThemeQuestionType(question: Question): boolean {
  * @param questions - Tableau de toutes les questions
  * @returns root - La racine de l'arbre D3
 */
-export function buildHierarchy(questions: Question[]) {
+export function buildHierarchy(questions: Question[], options?: BuildHierarchyOptions) {
     const questionsByParent = new Map<string, Question[]>();
 
     questions.forEach((question) => {
@@ -57,7 +61,7 @@ export function buildHierarchy(questions: Question[]) {
     const virtualRoot: ThemeTreeNode = {
         nodeKind: "theme",
         id: "virtual-root",
-        label: "Ideation",
+        label: options?.rootLabel ?? "Ideation",
         themeKey: "virtual-root",
         isVirtualRoot: true,
     };

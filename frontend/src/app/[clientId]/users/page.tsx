@@ -28,6 +28,18 @@ export default function UsersPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const params = useParams();
 
+    const fetchUsers = () => {
+        api_backend.get(`/user/by-client/${params.clientId}`)
+            .then(res => {
+                setUsers(res.data);
+                console.log("users", res.data);
+            })
+            .catch(err => {
+                console.error("Error fetching users:", err);
+                setUsers([]);
+            });
+    };
+
     const fetchClient = () => {
         api_backend.get(`/client/getById/${params.clientId}`)
             .then(res => {
@@ -39,17 +51,9 @@ export default function UsersPage() {
     }
 
     useEffect(() => {
-        api_backend.get(`/user/by-client/${params.clientId}`)
-            .then(res => {
-                setUsers(res.data);
-                console.log("users", res.data);
-            })
-            .catch(err => {
-                console.error("Error fetching users:", err);
-                setUsers([]);
-            });
+        fetchUsers();
         fetchClient();
-    }, []);
+    }, [params.clientId]);
 
     const totalPages = Math.ceil(users.length / itemsPerPage);
     const currentData = users.slice(
@@ -83,13 +87,14 @@ export default function UsersPage() {
                             description="Entrez les informations du nouvel utilisateur">
                             <CreateUserForm
                                 onSubmit={(formData) => {
-                                    // Handle form submission logic here
-                                    // Example: send formData to backend and refresh users list
                                     api_backend.post('/user/register', { ...formData, clientId: params.clientId })
-                                        .then(response => {
-                                            // reload page
-                                            router.refresh;
+                                        .then(() => {
+                                            modal.closeModal();
+                                            fetchUsers();
                                         })
+                                        .catch((error) => {
+                                            console.error("Error creating user:", error);
+                                        });
                                 }}
                                 isLoading={false}
                             />

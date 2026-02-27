@@ -21,6 +21,7 @@ type Props = {
   projectId: string;
   questionOnglet?: "analyse_existant" | "ideation_projet";
   showSwotCard?: boolean;
+  rootLabel?: string;
 };
 
 export default function StrategicAnalysisTab({
@@ -28,6 +29,7 @@ export default function StrategicAnalysisTab({
   projectId,
   questionOnglet = "analyse_existant",
   showSwotCard = true,
+  rootLabel = "La structure",
 }: Props) {
   const router = useRouter();
   const { questions, loading } = useProjectQuestion(Number(projectId));
@@ -155,6 +157,15 @@ export default function StrategicAnalysisTab({
     );
   }, [projectResponses]);
 
+  const globalQuestionsTotal = nonThemeQuestions.length;
+  const globalQuestionsCompleted = nonThemeQuestions.filter((q) =>
+    completedQuestionIds.has(Number(q.questionId))
+  ).length;
+  const isGlobalCompleted =
+    globalQuestionsTotal > 0 && globalQuestionsCompleted === globalQuestionsTotal;
+  const showPreProjectButton =
+    questionOnglet === "ideation_projet" && isGlobalCompleted;
+
   const categoryColors = [
     "#96776E",
     "#A3B18A",
@@ -187,11 +198,20 @@ export default function StrategicAnalysisTab({
       <section className="flex flex-1 gap-4 min-h-0">
         <div className="flex flex-col gap-4 w-[320px] min-w-[320px] min-h-0">
           <div className="flex flex-col gap-4 overflow-y-auto pr-1 pl-2 pt-2 flex-1">
+            {showPreProjectButton && (
+              <Button
+                size="sm"
+                className="w-full justify-center animate-pulse bg-green-600 hover:bg-green-700 border-2 border-green-600"
+                onClick={() => router.push(`/${clientId}/${projectId}/conception`)}
+              >
+                Passer à l'étape pré-projet
+              </Button>
+            )}
             <Card
               color="#6366F1"
               title="Vue globale"
-              max={nonThemeQuestions.length}
-              progress={nonThemeQuestions.filter((q) => completedQuestionIds.has(Number(q.questionId))).length}
+              max={globalQuestionsTotal}
+              progress={globalQuestionsCompleted}
               buttonLabel="voir toutes les questions"
               size="sm"
               className={
@@ -262,6 +282,7 @@ export default function StrategicAnalysisTab({
         <div className="flex rounded-xl flex-col bg-white border border-dark/10 flex-1 items-center justify-center">
           <TreeView
             questions={treeQuestions}
+            rootLabel={rootLabel}
             onNodesChange={setNodesState}
             fitViewTrigger={fitViewTrigger}
             onProjectResponsesChange={handleProjectResponsesChange}

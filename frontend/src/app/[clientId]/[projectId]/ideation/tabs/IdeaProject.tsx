@@ -14,6 +14,7 @@ export default function IdeaProject({ clientId, projectId }: Props) {
       projectId={projectId}
       questionOnglet="ideation_projet"
       showSwotCard={false}
+      rootLabel="Le projet"
     />
   );
 }

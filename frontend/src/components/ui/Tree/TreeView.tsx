@@ -33,6 +33,7 @@ interface TreeViewProps {
   onQuestionClick?: (question: Question, node: Node) => void;
   fitViewTrigger?: number;
   onProjectResponsesChange?: (responses: any[]) => void;
+  rootLabel?: string;
 }
 
 type TreeNodeKind = "theme" | "question" | "response";
@@ -67,6 +68,7 @@ export default function TreeView({
   onQuestionClick,
   fitViewTrigger,
   onProjectResponsesChange,
+  rootLabel,
 }: TreeViewProps) {
   // Identifiant du projet récupéré depuis la route Next.js.
   const params = useParams();
@@ -196,10 +198,10 @@ export default function TreeView({
       return { nodes: [], edges: [] };
     }
 
-    const root = buildHierarchy(questions);
+    const root = buildHierarchy(questions, { rootLabel });
     const laidOutRoot = computeTreeLayout(root);
     return d3ToReactFlow(laidOutRoot);
-  }, [questions]);
+  }, [questions, rootLabel]);
 
   // Applique la logique d'affichage:
   // - visibilité des questions selon parent/thème/réponse
