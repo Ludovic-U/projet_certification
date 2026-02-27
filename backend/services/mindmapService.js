@@ -10,29 +10,34 @@ const DESCRIPTION_NODE_TYPES = ['objectif'];
 /**
  * Map nodeType from mindmap to task type
  * objectif and livrable are handled specially
+ * root type is mapped to 'root' for distinct display in Gantt
+ * Case-insensitive check
  */
 const mapNodeTypeToTaskType = (nodeType) => {
+  const normalizedType = nodeType?.toLowerCase();
   const mapping = {
     'action': 'task',
     'sous_action': 'task',
-    'root': 'project',
+    'root': 'root',
   };
-  return mapping[nodeType] || 'task';
+  return mapping[normalizedType] || 'task';
 };
 
 /**
  * Check if a node type should be stored as description
+ * Case-insensitive check to handle potential case mismatches
  */
 const isDescriptionNodeType = (nodeType) => {
-  return DESCRIPTION_NODE_TYPES.includes(nodeType);
+  return DESCRIPTION_NODE_TYPES.includes(nodeType?.toLowerCase());
 };
 
 /**
  * Check if a node type should be stored as livrable (deliverable)
  * Green nodes in the UI have nodeType 'livrable' - they are displayed with green color
+ * Case-insensitive check to handle potential case mismatches
  */
 const isLivrableNodeType = (nodeType) => {
-  return nodeType === 'livrable';
+  return nodeType?.toLowerCase() === 'livrable';
 };
 
 /**
@@ -93,7 +98,7 @@ const buildLivrableMap = async (projectId, nodes, edges) => {
 
   // Process livrable nodes AND green-colored nodes
   for (const node of nodes) {
-    // Check nodeType for livrable status
+    // Check nodeType for livrable status (case-insensitive)
     if (!isLivrableNodeType(node.data?.nodeType)) {
       continue;
     }

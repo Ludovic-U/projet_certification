@@ -5,7 +5,7 @@ export interface Task {
   end: Date;
   progress: number;
   parent: number;
-  type: 'task' | 'milestone' | 'project';
+  type: 'task' | 'milestone' | 'project' | 'root';
   details: string;
   description?: string;
   notes: string;

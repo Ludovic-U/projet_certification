@@ -190,9 +190,9 @@ const mindmapExpectedFormat = `{
 const defaultMindmapSystemPrompt = `À partir de ces réponses aux questions, génère une structure de carte mentale (mindmap) organisée de manière hiérarchique.
 
 Règles:
-- Le premier nœud (root) doit être le nom du projet ou thème principal
+- Le premier nœud (root) doit être le nom du projet ou thème principal avec le type "root"
 - Organise les réponses en catégories logiques
-- Utilise les types de nœuds: "action" pour les catégories principales, "sous_action" pour les sous-catégories, "livrable" pour les livrables, "objectif" pour les objectifs
+- Utilise les types de nœuds: "root" pour le nœud principal, "action" pour les catégories principales, "sous_action" pour les sous-catégories, "livrable" pour les livrables, "objectif" pour les objectifs
 - Les couleurs recommandées: #3b82f6 (bleu) pour root, #96776e (marron) pour action, #698063 (vert) pour sous_action, #22c55e (vert clair) pour livrable, #ffffff (blanc) pour objectif
 - Génère un JSON valide sans texte supplémentaire`;
 

@@ -62,6 +62,8 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
         return { icon: '◆', color: 'text-purple-400', bg: 'bg-purple-500/20' };
       case 'project':
         return { icon: '■', color: 'text-emerald-400', bg: 'bg-emerald-500/20' };
+      case 'root':
+        return { icon: '●', color: 'text-blue-400', bg: 'bg-blue-500/20' };
       default:
         return { icon: '○', color: 'text-blue-400', bg: 'bg-blue-500/20' };
     }
@@ -176,6 +178,8 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
                     <div className="w-4 h-4 bg-purple-400" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
                   ) : task.type === 'project' ? (
                     <span className="text-emerald-400 font-bold text-sm">■</span>
+                  ) : task.type === 'root' ? (
+                    <span className="w-3 h-3 rounded-full bg-blue-400" />
                   ) : (
                     <span className="w-2 h-2 rounded-full bg-blue-400" />
                   )}

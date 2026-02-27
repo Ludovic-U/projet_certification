@@ -72,6 +72,7 @@ export const MindmapAIModal: React.FC<MindmapAIModalProps> = ({
 
       // Color mapping for node types
       const typeColors: Record<string, string> = {
+        root: '#3b82f6',
         action: '#96776e',
         sous_action: '#698063',
         objectif: '#ffffff',
