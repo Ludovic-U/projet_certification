@@ -703,7 +703,7 @@ module.exports.createTaskDeliverable = async (req, res) => {
 };
 
 /**
- * Update a task deliverable with file upload
+ * Update a task deliverable with file upload or manual confirmation
  * PUT /api/gantt/:projectId/tasks/:taskId/deliverables/:deliverableId
  */
 module.exports.updateTaskDeliverable = async (req, res) => {
@@ -719,7 +719,8 @@ module.exports.updateTaskDeliverable = async (req, res) => {
     const deliverable = await updateTaskDeliverable(deliverableId, {
       fileUrl: req.body.fileUrl,
       fileName: req.body.fileName,
-      notes: req.body.notes
+      notes: req.body.notes,
+      confirmed: req.body.confirmed
     });
     
     // Calculate new progress based on confirmed deliverables

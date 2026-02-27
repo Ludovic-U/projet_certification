@@ -823,25 +823,62 @@ module.exports.createTaskDeliverableStatus = async (deliverableData) => {
 };
 
 /**
- * Update a task deliverable with file upload
+ * Update a task deliverable with file upload or manual confirmation
  * @param {number} deliverableId - Deliverable status ID
- * @param {Object} updateData - Update data with file info
+ * @param {Object} updateData - Update data with file info or confirmed status
  * @returns {Promise<Object>} Updated deliverable status
  */
 module.exports.updateTaskDeliverable = async (deliverableId, updateData) => {
   try {
-    const { fileUrl, fileName, notes } = updateData;
+    const { fileUrl, fileName, notes, confirmed } = updateData;
+
+    // Determine if confirmed should be updated manually or based on file upload
+    let confirmedValue;
+    let confirmedAtValue;
+    let statusValue;
+    
+    if (confirmed !== undefined) {
+      // Manual confirmation via checkbox - use the explicit value
+      confirmedValue = confirmed;
+      confirmedAtValue = confirmed ? new Date() : null;
+      statusValue = confirmed ? 'confirmed' : (fileUrl ? 'uploaded' : 'pending');
+    } else if (fileUrl !== undefined) {
+      // File upload - use old logic
+      confirmedValue = fileUrl ? true : false;
+      confirmedAtValue = fileUrl ? new Date() : null;
+      statusValue = fileUrl ? 'uploaded' : 'pending';
+    } else {
+      // No changes to confirmed status
+      confirmedValue = undefined;
+      confirmedAtValue = undefined;
+      statusValue = undefined;
+    }
+
+    // Build the update data object
+    const updateObj = {};
+    if (fileUrl !== undefined) {
+      updateObj.fileUrl = fileUrl || null;
+      updateObj.fileName = fileName || null;
+    }
+    if (notes !== undefined) {
+      updateObj.notes = notes;
+    }
+    if (statusValue !== undefined) {
+      updateObj.status = statusValue;
+    }
+    if (confirmedValue !== undefined) {
+      updateObj.confirmed = confirmedValue;
+    }
+    if (confirmedAtValue !== undefined) {
+      updateObj.confirmedAt = confirmedAtValue;
+      if (confirmedValue) {
+        updateObj.completedAt = new Date();
+      }
+    }
 
     const deliverableStatus = await prisma.taskDeliverableStatus.update({
       where: { id: deliverableId },
-      data: {
-        fileUrl: fileUrl || null,
-        fileName: fileName || null,
-        notes: notes,
-        status: fileUrl ? 'uploaded' : 'pending',
-        confirmed: fileUrl ? true : false,
-        confirmedAt: fileUrl ? new Date() : null
-      }
+      data: updateObj
     });
 
     return {
