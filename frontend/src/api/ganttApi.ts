@@ -354,13 +354,13 @@ export const createTaskDeliverable = async (
 };
 
 /**
- * Update a task deliverable (upload file)
+ * Update a task deliverable (upload file or toggle confirmation)
  */
 export const updateTaskDeliverable = async (
   projectId: number,
   taskId: number,
   deliverableId: number,
-  data: { fileUrl?: string; fileName?: string; notes?: string }
+  data: { fileUrl?: string; fileName?: string; notes?: string; confirmed?: boolean }
 ): Promise<TaskDeliverable & { progress: number }> => {
   const response = await api.put(`/gantt/${projectId}/tasks/${taskId}/deliverables/${deliverableId}`, data);
   return response.data;

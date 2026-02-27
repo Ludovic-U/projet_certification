@@ -416,6 +416,45 @@ export const useGanttState = () => {
     }
   };
 
+  // Toggle livrable confirmed status handler (for checkbox)
+  const handleToggleLivrableConfirmed = async (livrableId: number, confirmed: boolean) => {
+    if (!editingTask || !projectId) return;
+    
+    try {
+      // Update the livrable confirmed status
+      const updatedLivrable = await apiUpdateTaskDeliverable(
+        Number(projectId),
+        editingTask.id,
+        livrableId,
+        { confirmed }
+      );
+      
+      // Update local state
+      setLivrables(prev => prev.map(l => 
+        l.id === livrableId 
+          ? { 
+              ...l, 
+              confirmed: updatedLivrable.confirmed,
+              confirmedAt: updatedLivrable.confirmedAt,
+              status: updatedLivrable.status
+            } 
+          : l
+      ));
+      
+      // Update task progress if returned
+      if (updatedLivrable.progress !== undefined) {
+        setEditingTask(prev => prev ? { ...prev, progress: updatedLivrable.progress } : null);
+        setTasks(prev => prev.map(t => 
+          t.id === editingTask.id 
+            ? { ...t, progress: updatedLivrable.progress } 
+            : t
+        ));
+      }
+    } catch (err) {
+      console.error('Error toggling livrable confirmation:', err);
+    }
+  };
+
   // Calculate progress based on confirmed livrables
   const calculateLivrableProgress = (taskLivrableIds: number[] | undefined): number => {
     if (!taskLivrableIds || taskLivrableIds.length === 0) return 0;
@@ -754,6 +793,7 @@ export const useGanttState = () => {
     handleAddLivrable,
     handleUploadLivrableFile,
     handleDeleteLivrable,
+    handleToggleLivrableConfirmed,
     calculateLivrableProgress,
     saveState,
     undo,

@@ -492,6 +492,7 @@ export default function GanttChartComponent() {
           handleAddLivrable={ganttState.handleAddLivrable}
           handleUploadLivrableFile={ganttState.handleUploadLivrableFile}
           handleDeleteLivrable={ganttState.handleDeleteLivrable}
+          handleToggleLivrableConfirmed={ganttState.handleToggleLivrableConfirmed}
           deleteTask={ganttState.deleteTask}
           updateTask={ganttState.updateTask}
           projectId={projectId}

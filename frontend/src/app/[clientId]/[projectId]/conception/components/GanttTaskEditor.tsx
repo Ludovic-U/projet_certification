@@ -29,6 +29,7 @@ interface LivrablesSectionProps {
   handleAddLivrable: () => void;
   handleUploadLivrableFile?: (livrableId: number, file: File) => Promise<void>;
   handleDeleteLivrable?: (livrableId: number) => Promise<void>;
+  handleToggleLivrableConfirmed?: (livrableId: number, confirmed: boolean) => Promise<void>;
 }
 
 const LivrablesSection: React.FC<LivrablesSectionProps> = ({
@@ -44,6 +45,7 @@ const LivrablesSection: React.FC<LivrablesSectionProps> = ({
   handleAddLivrable,
   handleUploadLivrableFile,
   handleDeleteLivrable,
+  handleToggleLivrableConfirmed,
 }) => {
   const [uploadingLivrableId, setUploadingLivrableId] = useState<number | null>(null);
 
@@ -135,7 +137,7 @@ const LivrablesSection: React.FC<LivrablesSectionProps> = ({
                       </span>
                     ) : livrable.fileUrl ? (
                       <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">
-                        Fichier上传é
+                        Fichier envoyé
                       </span>
                     ) : null}
                   </div>
@@ -143,8 +145,19 @@ const LivrablesSection: React.FC<LivrablesSectionProps> = ({
                     <p className="text-sm text-slate-400 mt-1">{livrable.description}</p>
                   )}
                   {livrable.fileName && (
-                    <p className="text-xs text-slate-500 mt-2">
-                      📎 {livrable.fileName}
+                    <p className="text-xs text-slate-500 mt-2 flex items-center gap-2">
+                      <span>📎 {livrable.fileName}</span>
+                      {livrable.fileUrl && (
+                        <a
+                          href={livrable.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 underline ml-2"
+                          title="Télécharger ou prévisualiser"
+                        >
+                          Voir/Télécharger
+                        </a>
+                      )}
                     </p>
                   )}
                   {/* Upload button for livrable */}
@@ -159,6 +172,24 @@ const LivrablesSection: React.FC<LivrablesSectionProps> = ({
                         onChange={(e) => handleFileChange(livrableId, e)}
                         disabled={uploadingLivrableId !== null}
                       />
+                    </label>
+                  </div>
+                  {/* Checkbox for manual confirmation */}
+                  <div className="mt-3 flex items-center gap-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={livrable.confirmed || false}
+                        onChange={(e) => {
+                          if (handleToggleLivrableConfirmed) {
+                            handleToggleLivrableConfirmed(livrableId, e.target.checked);
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-slate-500 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-800 bg-slate-700"
+                      />
+                      <span className="text-sm text-slate-300">
+                        Confirmer le livrable
+                      </span>
                     </label>
                   </div>
                 </div>
@@ -508,6 +539,7 @@ interface GanttTaskEditorProps {
   handleAddLivrable: () => void;
   handleUploadLivrableFile?: (livrableId: number, file: File) => Promise<void>;
   handleDeleteLivrable?: (livrableId: number) => Promise<void>;
+  handleToggleLivrableConfirmed?: (livrableId: number, confirmed: boolean) => Promise<void>;
   deleteTask: (id: number) => void;
   updateTask: () => void;
   projectId: number | null;
@@ -534,6 +566,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
   handleAddLivrable,
   handleUploadLivrableFile,
   handleDeleteLivrable,
+  handleToggleLivrableConfirmed,
   deleteTask,
   updateTask,
   projectId, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -865,7 +898,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                   Details
                 </label>
                 <textarea
-                  value={editingTask.details}
+                  value={editingTask.details || ''}
                   onChange={(e) => setEditingTask({ ...editingTask, details: e.target.value })}
                   rows={4}
                   className="w-full px-4 py-3 bg-slate-800 text-white border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
@@ -887,6 +920,7 @@ export const GanttTaskEditor: React.FC<GanttTaskEditorProps> = ({
                 handleAddLivrable={handleAddLivrable}
                 handleUploadLivrableFile={handleUploadLivrableFile}
                 handleDeleteLivrable={handleDeleteLivrable}
+                handleToggleLivrableConfirmed={handleToggleLivrableConfirmed}
               />
               
               {/* Budget Total Preview */}
