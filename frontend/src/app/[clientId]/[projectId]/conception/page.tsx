@@ -158,7 +158,7 @@ export default function ConceptionPage() {
           
         </div>
       </section>
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {activeTab === 'preprojet' && <PreProjectPanel />}
         {activeTab === 'gantt' && <GanttChartComponent />}
         {activeTab === 'decision' && <DecisionPanel />}

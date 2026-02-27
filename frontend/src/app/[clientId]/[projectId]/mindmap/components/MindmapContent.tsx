@@ -616,11 +616,13 @@ export const MindmapInner = () => {
     );
     setSelectedNodes((prev) => prev.filter((id) => id !== nodeId));
     
-    // Auto-save after deletion
-    setTimeout(() => {
-      autoSave();
-    }, 100);
-  }, [setNodes, setEdges, saveToHistory, autoSave]);
+    // Save immediately after deletion (not debounced)
+    if (currentMindmap) {
+      const updatedNodes = getNodes().filter((n) => n.id !== nodeId);
+      const updatedEdges = getEdges().filter((e) => e.source !== nodeId && e.target !== nodeId);
+      saveMindmap(updatedNodes as any, updatedEdges as any);
+    }
+  }, [setNodes, setEdges, saveToHistory, autoSave, currentMindmap, getNodes, getEdges, saveMindmap]);
   
   // Delete selected nodes and/or edges
   const handleDeleteSelected = useCallback(() => {
@@ -644,11 +646,11 @@ export const MindmapInner = () => {
     setSelectedNodes([]);
     setSelectedEdges([]);
     
-    // Auto-save after deletion
-    setTimeout(() => {
-      autoSave();
-    }, 100);
-  }, [selectedNodes, selectedEdges, setNodes, setEdges, saveToHistory, autoSave]);
+    // Save immediately after deletion (not debounced)
+    if (currentMindmap) {
+      saveMindmap(getNodes() as any, getEdges() as any);
+    }
+  }, [selectedNodes, selectedEdges, setNodes, setEdges, saveToHistory, autoSave, currentMindmap, getNodes, getEdges, saveMindmap]);
   
   // Add new node
   const handleAddNode = useCallback((type: string = selectedNodeType) => {
@@ -665,6 +667,7 @@ export const MindmapInner = () => {
     
     // Get color based on type
     const typeColors: Record<string, string> = {
+      root: '#3b82f6',
       action: '#96776e',
       sous_action: '#698063',
       objectif: '#ffffff',
@@ -672,6 +675,7 @@ export const MindmapInner = () => {
     };
     
     const typeLabels: Record<string, string> = {
+      root: 'Racine',
       action: 'Action',
       sous_action: 'Sous Action',
       objectif: 'Objectif',
@@ -791,6 +795,7 @@ export const MindmapInner = () => {
         
         // Convert AI nodes to our format (similar to MindmapAIModal)
         const typeColors: Record<string, string> = {
+          root: '#3b82f6',
           action: '#96776e',
           sous_action: '#698063',
           objectif: '#ffffff',
@@ -1081,7 +1086,8 @@ export const MindmapInner = () => {
             onRedo={handleRedo}
             onAddNode={handleAddNode}
             onDeleteSelected={handleDeleteSelected}
-            onSave={saveMindmapAsTasksFn}
+            onImport={saveMindmapAsTasksFn}
+            onSave={() => saveMindmap(getNodes() as any, getEdges() as any)}
             onGenerateAI={handleAIGenerate}
             canUndo={historyIndex > 0}
             canRedo={historyIndex < history.length - 1}

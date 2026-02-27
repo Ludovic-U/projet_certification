@@ -25,6 +25,7 @@ interface MindmapToolbarProps {
   onRedo: () => void;
   onAddNode: (type: string) => void;
   onDeleteSelected: () => void;
+  onImport: () => void;
   onSave: () => void;
   onGenerateAI: () => void;
   canUndo: boolean;
@@ -53,6 +54,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
   onRedo,
   onAddNode,
   onDeleteSelected,
+  onImport,
   onSave,
   onGenerateAI,
   canUndo,
@@ -74,6 +76,7 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
 }) => {
   // Node types configuration
   const nodeTypes = [
+    { id: 'root', label: 'Racine', color: '#3b82f6' },
     { id: 'action', label: 'Action', color: '#96776e' },
     { id: 'sous_action', label: 'Sous Action', color: '#698063' },
     { id: 'objectif', label: 'Objectif', color: '#ffffff' },
@@ -296,8 +299,26 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
         }}
       />
 
+      {/* Sauvegarder button - saves mindmap to database */}
       <button
         onClick={onSave}
+        style={{
+          ...buttonStyle,
+          width: 'auto',
+          padding: '0 12px',
+          gap: '6px',
+          backgroundColor: 'rgba(34, 197, 94, 0.3)',
+          borderColor: 'rgba(34, 197, 94, 0.4)',
+        }}
+        title="Sauvegarder la carte mentale"
+      >
+        <Save size={18} />
+        <span style={{ fontSize: '13px', fontWeight: 500 }}>Sauvegarder</span>
+      </button>
+
+      {/* Importer button - imports mindmap to Gantt */}
+      <button
+        onClick={onImport}
         style={{
           ...buttonStyle,
           width: 'auto',
@@ -306,10 +327,10 @@ export const MindmapToolbar: React.FC<MindmapToolbarProps> = ({
           backgroundColor: 'rgba(59, 130, 246, 0.3)',
           borderColor: 'rgba(59, 130, 246, 0.4)',
         }}
-        title="Enregistrer en pré-projet"
+        title="Importer vers le diagramme de Gantt"
       >
-        <Save size={18} />
-        <span style={{ fontSize: '13px', fontWeight: 500 }}>Enregistrer</span>
+        <GitBranch size={18} />
+        <span style={{ fontSize: '13px', fontWeight: 500 }}>Importer</span>
       </button>
 
       <button

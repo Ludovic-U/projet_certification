@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Button, LoadingSpinner } from "@/components/ui";
 import api_backend from "@/api/axiosInstance";
@@ -83,6 +83,7 @@ export default function DecisionPanel() {
   const [decisions, setDecisions] = useState<Record<string, ProjectDecision>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const debounceTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   // Fetch decisions on mount
   useEffect(() => {
@@ -141,35 +142,49 @@ export default function DecisionPanel() {
     [projectId, decisions, saving]
   );
 
-  // Handle pourquoi text change
+  // Handle pourquoi text change with debounce
   const handlePourquoiChange = useCallback(
-    async (boardType: BoardType, decisionType: string, pourquoi: string) => {
-      if (!projectId || saving) return;
+    (boardType: BoardType, decisionType: string, pourquoi: string) => {
+      const key = `${boardType}_${decisionType}`;
+      
+      // Update local state immediately for smooth typing
+      setDecisions((prev) => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          pourquoi,
+        },
+      }));
 
-      setSaving(true);
-      try {
-        const key = `${boardType}_${decisionType}`;
-        const currentDecision = decisions[key];
-        const response = await api_backend.post(`/project/${projectId}/decisions`, {
-          boardType,
-          decisionType,
-          isApproved: currentDecision?.isApproved ?? null,
-          pourquoi: pourquoi || null,
-        });
-
-        const updatedDecision = response.data;
-
-        setDecisions((prev) => ({
-          ...prev,
-          [key]: updatedDecision,
-        }));
-      } catch (error) {
-        console.error("Error updating pourquoi:", error);
-      } finally {
-        setSaving(false);
+      // Clear existing timer for this field
+      const existingTimer = debounceTimers.current.get(key);
+      if (existingTimer) {
+        clearTimeout(existingTimer);
       }
+
+      // Set new debounce timer
+      const timer = setTimeout(async () => {
+        if (!projectId) return;
+
+        setSaving(true);
+        try {
+          const currentDecision = decisions[key];
+          await api_backend.post(`/project/${projectId}/decisions`, {
+            boardType,
+            decisionType,
+            isApproved: currentDecision?.isApproved ?? null,
+            pourquoi: pourquoi || null,
+          });
+        } catch (error) {
+          console.error("Error updating pourquoi:", error);
+        } finally {
+          setSaving(false);
+        }
+      }, 1000); // 1 second debounce
+
+      debounceTimers.current.set(key, timer);
     },
-    [projectId, decisions, saving]
+    [projectId, decisions]
   );
 
   // Handle decision finale change (manual selection) - uses faisabilite board by default
@@ -307,7 +322,6 @@ export default function DecisionPanel() {
             placeholder="Expliquez votre choix..."
             value={decision?.pourquoi || ""}
             onChange={(e) => handlePourquoiChange(boardType, decisionType, e.target.value)}
-            disabled={saving}
           />
         </div>
       </div>
