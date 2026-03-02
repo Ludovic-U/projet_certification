@@ -17,7 +17,7 @@ import {
   Area,
   LineChart,
   Line,
-  ComposedChart
+  // ComposedChart
 } from 'recharts';
 import { X, ChevronDown, ChevronUp, TrendingUp, PieChart as PieChartIcon, BarChart3, Calendar, DollarSign, Target } from 'lucide-react';
 import { Task } from '../../data';

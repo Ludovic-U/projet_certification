@@ -141,7 +141,7 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
               onContextMenu={(e) => handleTaskContextMenu(task, e)}
             >
               <div 
-                className="flex-1 px-4 border-r border-slate-700 h-full flex items-center gap-2 transition-colors"
+                className="flex-1 px-4 border-r border-slate-700 h-full flex items-center gap-2 transition-colors overflow-hidden"
                 style={{ 
                   paddingLeft: `${indent + 8}px`,
                   backgroundColor: `${task.color}20`
@@ -194,6 +194,10 @@ export const GanttTaskList: React.FC<GanttTaskListProps> = ({
                     {expandedTasks.has(task.id) ? 'Développé' : 'Réduit'}
                   </span>
                 )}
+                
+                <span className="ml-2 text-xs text-slate-500">
+                  ({task.type === 'milestone' ? 'jalon' : task.type === 'project' ? 'action' : 'tâche'})
+                </span>
               </div>
               
               <div className="w-28 px-3 border-r border-slate-700 h-full flex items-center justify-center" style={{ backgroundColor: `${task.color}15` }}>
