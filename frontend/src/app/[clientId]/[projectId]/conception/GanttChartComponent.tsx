@@ -345,7 +345,7 @@ export default function GanttChartComponent() {
             <button
               onClick={() => ganttState.setShowTaskList(!ganttState.showTaskList)}
               className={`
-                absolute top-1/2 -translate-y-1/2 z-50
+                absolute top-1/2 -translate-y-1/2 z-1
                 flex items-center gap-2 px-3 py-3
                 bg-slate-800 border border-slate-700
                 rounded-r-xl shadow-lg

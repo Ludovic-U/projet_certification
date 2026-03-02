@@ -31,7 +31,7 @@ export const GanttTooltip: React.FC<GanttTooltipProps> = ({
       <div className="bg-slate-900 border border-slate-700 p-4 rounded-lg shadow-2xl max-w-xs">
         <div className="mb-2">
           <span className="font-semibold text-blue-400">Type :</span>
-          <span className="ml-2 text-white">{hoveredTask.type}</span>
+          <span className="ml-2 text-white">{hoveredTask.type === 'milestone' ? 'Jalon' : hoveredTask.type === 'project' ? 'Action' : 'Tâche'}</span>
         </div>
         <div className="mb-2">
           <span className="font-semibold text-blue-400">Détails :</span>
