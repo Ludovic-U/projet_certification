@@ -17,9 +17,13 @@ import api_backend from "@/api/axiosInstance";
 import { Question } from "@/types/question";
 import TreeView from "@/components/ui/Tree/TreeView";
 import { useProjectQuestion } from "@/hooks/useProjectQuestions";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 
 
 export default function QuestionsPage() {
+  const { user } = useUser();
+  const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [types, setTypes] = useState<{ typeId: number; label: string }[]>([]);
   const [selectedTypeLabel, setSelectedTypeLabel] = useState<string | null>("Général");
@@ -36,11 +40,20 @@ export default function QuestionsPage() {
   const [createInitialValues, setCreateInitialValues] = useState<
     Partial<CreateQuestionInputs> | undefined
   >(undefined);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   // treeview questions state
   const [treeQuestions, setTreeQuestions] = useState<Question[]>([]);
   const { questions: projectQuestions, refetch: refetchProjectQuestions } =
     useProjectQuestion(undefined, { mode: "all", pageSize: 1000 });
+
+  // Check authorization on mount - redirect if not super_admin
+  useEffect(() => {
+    if (user && !user.roles?.includes("super_admin")) {
+      router.push("/");
+    }
+  }, [user]);
 
   const getQuestionCategoryLabel = (question: Question) => {
     if (typeof question.category === "string") {
@@ -203,6 +216,16 @@ export default function QuestionsPage() {
 
   return (
     <div className="h-full">
+      {checkingAuth && (
+        <div className="flex justify-center items-center h-64">
+          <p>Vérification des droits...</p>
+        </div>
+      )}
+      {!checkingAuth && !isAuthorized && (
+        <div className="flex justify-center items-center h-64">
+          <p>Accès refusé</p>
+        </div>
+      )}
       <PageHeader
         title="Liste des questions"
         description="Consultez la liste des questions et accèdez aux détails"

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import api_backend from "@/api/axiosInstance";
 import { PageHeader } from "@/components/ui";
 import { Button } from "@/components/ui/Button/Button";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 
 interface PromptConfig {
   name: string;
@@ -127,6 +129,8 @@ function extractUserPart(fullPrompt: string, fixedParts: string[]): string {
 }
 
 export default function PromptsPage() {
+  const { user } = useUser();
+  const router = useRouter();
   const [prompts, setPrompts] = useState<Prompts>({});
   const [userMindmapPart, setUserMindmapPart] = useState("");
   const [userGanttPart, setUserGanttPart] = useState("");
@@ -134,6 +138,13 @@ export default function PromptsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>("mindmap");
+
+  // Check authorization on mount - redirect if not super_admin
+  useEffect(() => {
+    if (user && !user.roles?.includes("super_admin")) {
+      router.push("/");
+    }
+  }, [user]);
 
   useEffect(() => {
     fetchPrompts();

@@ -20,6 +20,72 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
+// ============================================================================
+// SECURITY HEADERS (OWASP A05: Security Misconfiguration)
+// ============================================================================
+app.use((req, res, next) => {
+  // Prevent clickjacking
+  res.setHeader('X-Frame-Options', 'DENY');
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  // XSS Protection (legacy but still useful)
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  // Referrer Policy
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // Content Security Policy - basic (can be refined based on needs)
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';");
+  // Force HTTPS (if behind a reverse proxy)
+  // res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+});
+
+// Rate limiting - simple in-memory implementation (OWASP A04: Rate Limiting)
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX_REQUESTS = 300; // max requests per window (increased for active usage)
+
+app.use((req, res, next) => {
+  // Skip rate limiting for health checks or certain paths
+  if (req.path === '/health' || req.path === '/') {
+    return next();
+  }
+  
+  const clientIp = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  
+  if (!rateLimitStore.has(clientIp)) {
+    rateLimitStore.set(clientIp, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+  } else {
+    const clientData = rateLimitStore.get(clientIp);
+    
+    if (now > clientData.resetTime) {
+      // Reset window
+      clientData.count = 1;
+      clientData.resetTime = now + RATE_LIMIT_WINDOW_MS;
+    } else {
+      clientData.count++;
+      
+      if (clientData.count > RATE_LIMIT_MAX_REQUESTS) {
+        return res.status(429).json({ 
+          error: 'Too many requests, please try again later',
+          retryAfter: Math.ceil((clientData.resetTime - now) / 1000)
+        });
+      }
+    }
+  }
+  next();
+});
+
+// Clean up old rate limit entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of rateLimitStore.entries()) {
+    if (now > data.resetTime + RATE_LIMIT_WINDOW_MS) {
+      rateLimitStore.delete(ip);
+    }
+  }
+}, RATE_LIMIT_WINDOW_MS);
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
