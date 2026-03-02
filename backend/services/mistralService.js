@@ -166,7 +166,7 @@ const mindmapExpectedFormat = `{
         {
             "id": "root",
             "label": "Nom du projet",
-            "nodeType": "action",
+            "nodeType": "root",
             "color": "#3b82f6"
         },
         {

@@ -171,9 +171,15 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
   }
 
   // First pass: Process regular nodes (action, sous_action, root)
+  // Note: root nodes are not imported to Gantt - they only exist in the mindmap
   for (const node of nodes) {
+    // Skip description and livrable nodes - they are stored differently
     if (isDescriptionNodeType(node.data?.nodeType) || isLivrableNodeType(node.data?.nodeType)) {
-      // Skip these nodes - they'll be handled separately
+      continue;
+    }
+
+    // Skip root nodes - they should not be imported to Gantt
+    if (node.data?.nodeType === 'root' || node.data?.isRoot === true) {
       continue;
     }
 
@@ -192,14 +198,7 @@ const saveMindmapAsTasks = async (projectId, nodes, edges, versionId = null) => 
       type: mapNodeTypeToTaskType(node.data?.nodeType || 'action'),
       color: node.data?.color || '#3b82f6',
       description: newDescription || undefined, // Only set if there's a description
-      details: JSON.stringify({
-        mindmapId: 0,
-        nodeId: node.id,
-        nodeType: node.data?.nodeType || 'action',
-        positionX: node.position?.x || 0,
-        positionY: node.position?.y || 0,
-        isRoot: node.data?.isRoot || false,
-      }),
+      // Note: details field is kept empty for user input - node metadata not stored here
     };
 
     // Add versionId if provided
@@ -337,8 +336,15 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
   const parentToLivrables = await buildLivrableMap(projectId, nodes, edges);
 
   // Create regular tasks (action, sous_action, root)
+  // Note: root nodes are not imported to Gantt - they only exist in the mindmap
   for (const node of nodes) {
+    // Skip description and livrable nodes - they are stored differently
     if (isDescriptionNodeType(node.data?.nodeType) || isLivrableNodeType(node.data?.nodeType)) {
+      continue;
+    }
+
+    // Skip root nodes - they should not be imported to Gantt
+    if (node.data?.nodeType === 'root' || node.data?.isRoot === true) {
       continue;
     }
 
@@ -356,15 +362,8 @@ const importMindmapAsTasks = async (projectId, nodes, edges) => {
         type: mapNodeTypeToTaskType(node.data?.nodeType || 'action'),
         color: node.data?.color || '#3b82f6',
         description: newDescription || undefined,
-        details: JSON.stringify({
-          mindmapId: 0,
-          nodeId: node.id,
-          nodeType: node.data?.nodeType || 'action',
-          positionX: node.position?.x || 0,
-          positionY: node.position?.y || 0,
-          isRoot: node.data?.isRoot || false,
-        }),
-      },
+        // Note: details field is kept empty for user input - node metadata not stored here
+      }
     });
 
     // Link livrables to task via TaskDeliverableStatus
