@@ -1,13 +1,36 @@
 {
-  "projectList": "Liste de tous les projets. Vous pouvez créer, modifier ou supprimer des projets.",
-  "overview": "Vue d'ensemble du projet avec les étapes de réalisation.",
-  "ideation": "Phase d'idéation - Brainstorming et définition des besoins.",
-  "conception": "Phase de conception - Planification détaillée du projet.",
-  "pilotage": "Phase de pilotage - Suivi de l'avancement du projet.",
-  "evaluation": "Phase d'évaluation - Mesure des résultats obtenus.",
-  "reporting": "Reporting - Tableau de bord et statistiques.",
-  "gantt": "Diagramme de Gantt - Visualisation timeline du projet.",
-  "budget": "Budget - Gestion et suivi du budget du projet.",
-  "questions": "Questions - Répondez aux questions pour définir votre projet.",
-  "mindmap": "Mindmap - Carte mentale visuelle de votre projet."
+  "projectList": [
+    { "term": "Projet", "definition": "Un projet est un ensemble d'activités temporaires entreprises pour créer un produit, service ou résultat unique." },
+    { "term": "Client", "definition": "Le client est l'organisation ou la personne qui commande et finance le projet." }
+  ],
+  "overview": [
+    { "term": "Vue d'ensemble", "definition": "La vue d'ensemble summarize l'état actuel du projet et ses principales métriques." }
+  ],
+  "ideation": [
+    { "term": "Idéation", "definition": "Phase de brainstorming pour générer des idées et définir les besoins du projet." }
+  ],
+  "conception": [
+    { "term": "Conception", "definition": "Phase de planification détaillée incluant la définition des tâches, ressources et délais." }
+  ],
+  "pilotage": [
+    { "term": "Pilotage", "definition": "Phase de suivi et contrôle de l'avancement du projet." }
+  ],
+  "evaluation": [
+    { "term": "Évaluation", "definition": "Phase de mesure des résultats et analyse des performances du projet." }
+  ],
+  "reporting": [
+    { "term": "Reporting", "definition": "Génération de rapports et tableaux de bord pour le suivi du projet." }
+  ],
+  "gantt": [
+    { "term": "Diagramme de Gantt", "definition": "Outil de visualisation de la timeline du projet sous forme de graphique à barres." }
+  ],
+  "budget": [
+    { "term": "Budget", "definition": "Planification et suivi des ressources financières allouées au projet." }
+  ],
+  "questions": [
+    { "term": "Questions", "definition": "Ensemble de questions guidant la définition et la structuration du projet." }
+  ],
+  "mindmap": [
+    { "term": "Mindmap", "definition": "Carte mentale visuelle représentant les idées et leurs relations." }
+  ]
 }

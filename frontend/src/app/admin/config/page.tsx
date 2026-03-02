@@ -27,18 +27,23 @@ interface AppConfig {
   };
 }
 
+interface HelpDictionaryEntry {
+  term: string;
+  definition: string;
+}
+
 interface HelpDictionary {
-  projectList: string;
-  overview: string;
-  ideation: string;
-  conception: string;
-  pilotage: string;
-  evaluation: string;
-  reporting: string;
-  gantt: string;
-  budget: string;
-  questions: string;
-  mindmap: string;
+  projectList: HelpDictionaryEntry[];
+  overview: HelpDictionaryEntry[];
+  ideation: HelpDictionaryEntry[];
+  conception: HelpDictionaryEntry[];
+  pilotage: HelpDictionaryEntry[];
+  evaluation: HelpDictionaryEntry[];
+  reporting: HelpDictionaryEntry[];
+  gantt: HelpDictionaryEntry[];
+  budget: HelpDictionaryEntry[];
+  questions: HelpDictionaryEntry[];
+  mindmap: HelpDictionaryEntry[];
 }
 
 interface ProjectType {
@@ -81,7 +86,24 @@ export default function AdminConfigPage() {
         
         // Charger les headers depuis le backend
         if (configResponse.data.headers) {
-          setHelpDict(configResponse.data.headers);
+          // Convert old string format to new array format if needed
+          const headers = configResponse.data.headers;
+          const convertedHeaders: HelpDictionary = {} as HelpDictionary;
+          
+          (Object.keys(helpDictionaryInitial) as (keyof HelpDictionary)[]).forEach(key => {
+            const backendValue = headers[key];
+            if (Array.isArray(backendValue)) {
+              convertedHeaders[key] = backendValue;
+            } else if (typeof backendValue === 'string' && backendValue) {
+              // Convert old string format to array
+              convertedHeaders[key] = [{ term: '', definition: backendValue }];
+            } else {
+              // Use default from initial config
+              convertedHeaders[key] = helpDictionaryInitial[key];
+            }
+          });
+          
+          setHelpDict(convertedHeaders);
         }
       } catch (error) {
         setMessage({ type: 'error', text: 'Erreur lors du chargement de la configuration' });
@@ -178,6 +200,26 @@ export default function AdminConfigPage() {
       const errorMsg = error.response?.data?.error || 'Erreur lors de la suppression de la catégorie';
       setMessage({ type: 'error', text: errorMsg });
     }
+  };
+
+  // Help dictionary entry management
+  const updateHelpEntry = (key: keyof HelpDictionary, index: number, field: 'term' | 'definition', value: string) => {
+    const newEntries = [...helpDict[key]];
+    newEntries[index] = { ...newEntries[index], [field]: value };
+    setHelpDict({ ...helpDict, [key]: newEntries });
+    setHasUnsavedChanges(true);
+  };
+
+  const addHelpEntry = (key: keyof HelpDictionary) => {
+    const newEntries = [...helpDict[key], { term: '', definition: '' }];
+    setHelpDict({ ...helpDict, [key]: newEntries });
+    setHasUnsavedChanges(true);
+  };
+
+  const removeHelpEntry = (key: keyof HelpDictionary, index: number) => {
+    const newEntries = helpDict[key].filter((_, i) => i !== index);
+    setHelpDict({ ...helpDict, [key]: newEntries });
+    setHasUnsavedChanges(true);
   };
 
   if (loading) {
@@ -344,153 +386,80 @@ export default function AdminConfigPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-2xl font-semibold mb-4">Dictionnaire d'Aide</h2>
           <p className="text-gray-600 mb-6">
-            Définissez les textes d'aide pour chaque élément de l'application. Ces textes seront affichés dans une fenêtre d'aide.
+            Définissez les termes et définitions pour chaque élément de l'application. Vous pouvez ajouter plusieurs entrées par section.
           </p>
           
-          <div className="grid gap-6">
-            {/* Glossary-style entries */}
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">projectList</span>
-                <span className="text-gray-500 text-sm">Liste des projets</span>
-              </div>
-              <textarea
-                value={helpDict.projectList}
-                onChange={(e) => setHelpDict({ ...helpDict, projectList: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
+          <div className="grid gap-8">
+            {/* Helper function to render dictionary entry fields */}
+            {Object.entries(helpDict).map(([key, entries]) => {
+              const labelMap: Record<string, string> = {
+                projectList: 'Liste des projets',
+                overview: 'Vue d\'ensemble',
+                ideation: 'Idéation',
+                conception: 'Conception',
+                pilotage: 'Pilotage',
+                evaluation: 'Évaluation',
+                reporting: 'Reporting',
+                gantt: 'Diagramme de Gantt',
+                budget: 'Budget',
+                questions: 'Questions',
+                mindmap: 'Mindmap'
+              };
 
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">overview</span>
-                <span className="text-gray-500 text-sm">Vue d'ensemble</span>
-              </div>
-              <textarea
-                value={helpDict.overview}
-                onChange={(e) => setHelpDict({ ...helpDict, overview: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">ideation</span>
-                <span className="text-gray-500 text-sm">Idéation</span>
-              </div>
-              <textarea
-                value={helpDict.ideation}
-                onChange={(e) => setHelpDict({ ...helpDict, ideation: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">conception</span>
-                <span className="text-gray-500 text-sm">Conception</span>
-              </div>
-              <textarea
-                value={helpDict.conception}
-                onChange={(e) => setHelpDict({ ...helpDict, conception: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">pilotage</span>
-                <span className="text-gray-500 text-sm">Pilotage</span>
-              </div>
-              <textarea
-                value={helpDict.pilotage}
-                onChange={(e) => setHelpDict({ ...helpDict, pilotage: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">evaluation</span>
-                <span className="text-gray-500 text-sm">Évaluation</span>
-              </div>
-              <textarea
-                value={helpDict.evaluation}
-                onChange={(e) => setHelpDict({ ...helpDict, evaluation: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">reporting</span>
-                <span className="text-gray-500 text-sm">Reporting</span>
-              </div>
-              <textarea
-                value={helpDict.reporting}
-                onChange={(e) => setHelpDict({ ...helpDict, reporting: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">gantt</span>
-                <span className="text-gray-500 text-sm">Diagramme de Gantt</span>
-              </div>
-              <textarea
-                value={helpDict.gantt}
-                onChange={(e) => setHelpDict({ ...helpDict, gantt: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">budget</span>
-                <span className="text-gray-500 text-sm">Budget</span>
-              </div>
-              <textarea
-                value={helpDict.budget}
-                onChange={(e) => setHelpDict({ ...helpDict, budget: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">questions</span>
-                <span className="text-gray-500 text-sm">Questions</span>
-              </div>
-              <textarea
-                value={helpDict.questions}
-                onChange={(e) => setHelpDict({ ...helpDict, questions: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-3">
-                <span className="font-semibold text-gray-700 w-32">mindmap</span>
-                <span className="text-gray-500 text-sm">Mindmap</span>
-              </div>
-              <textarea
-                value={helpDict.mindmap}
-                onChange={(e) => setHelpDict({ ...helpDict, mindmap: e.target.value })}
-                className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] font-mono text-sm"
-                placeholder="Entrez la définition..."
-              />
-            </div>
+              return (
+                <div key={key} className="border rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-3 border-b flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-gray-700 w-32">{key}</span>
+                      <span className="text-gray-500 text-sm">{labelMap[key] || key}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => addHelpEntry(key as keyof HelpDictionary)}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      + Ajouter un terme
+                    </button>
+                  </div>
+                  
+                  <div className="divide-y divide-gray-100">
+                    {(entries as HelpDictionaryEntry[]).map((entry, index) => (
+                      <div key={index} className="p-4">
+                        <div className="flex gap-4 items-start">
+                          <div className="flex-1">
+                            <label className="block text-xs font-medium text-gray-500 mb-1">Terme</label>
+                            <input
+                              type="text"
+                              value={entry.term}
+                              onChange={(e) => updateHelpEntry(key as keyof HelpDictionary, index, 'term', e.target.value)}
+                              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                              placeholder="Entrez le terme..."
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs font-medium text-gray-500 mb-1">Définition</label>
+                            <textarea
+                              value={entry.definition}
+                              onChange={(e) => updateHelpEntry(key as keyof HelpDictionary, index, 'definition', e.target.value)}
+                              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-y min-h-[60px]"
+                              placeholder="Entrez la définition..."
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeHelpEntry(key as keyof HelpDictionary, index)}
+                            className="mt-5 p-1 text-red-500 hover:text-red-700"
+                            title="Supprimer"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
           
           <div className="mt-6 flex justify-end">

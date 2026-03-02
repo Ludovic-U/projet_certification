@@ -1,8 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { HelpCircle, X } from 'lucide-react';
+
+interface HelpDictionaryEntry {
+  term: string;
+  definition: string;
+}
 
 interface HelpButtonProps {
   headerKey: string;
@@ -11,14 +17,9 @@ interface HelpButtonProps {
 
 export function HelpButton({ headerKey, className = '' }: HelpButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
   const { config } = useAppConfig();
   
-  const helpText = config.headers?.[headerKey] || '';
-  
-  if (!helpText) {
-    return null;
-  }
-
   // Get a nicer title from the key
   const getTitle = (key: string) => {
     const titles: Record<string, string> = {
@@ -36,6 +37,31 @@ export function HelpButton({ headerKey, className = '' }: HelpButtonProps) {
     };
     return titles[key] || key;
   };
+  
+  // Handle both old (string) and new (array) data formats
+  const rawHeaders = config.headers?.[headerKey];
+  let helpEntries: HelpDictionaryEntry[];
+  
+  if (Array.isArray(rawHeaders)) {
+    helpEntries = rawHeaders;
+  } else if (typeof rawHeaders === 'string' && rawHeaders) {
+    // Convert old string format to array format for backward compatibility
+    helpEntries = [{ term: getTitle(headerKey), definition: rawHeaders }];
+  } else {
+    helpEntries = [];
+  }
+  
+  // Reset active tab when entries change
+  useEffect(() => {
+    setActiveTab(0);
+  }, [helpEntries]);
+  
+  // Only show button if there are entries with content
+  const hasContent = helpEntries.some(entry => entry.term || entry.definition);
+  
+  if (!hasContent) {
+    return null;
+  }
 
   return (
     <>
@@ -48,52 +74,93 @@ export function HelpButton({ headerKey, className = '' }: HelpButtonProps) {
         <HelpCircle className="w-5 h-5" />
       </button>
       
-      {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Modal */}
-          <div className="relative z-10 w-full max-w-lg mx-4 bg-white rounded-xl shadow-2xl overflow-hidden">
+          {/* Dictionary Modal - Modern Style */}
+          <div className="relative z-[100000] w-full max-w-xl mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-primary/10 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <HelpCircle className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Aide - {getTitle(headerKey)}
-                </h2>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  {/* Dictionary Icon */}
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <HelpCircle className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white tracking-wide">
+                      AIDE
+                    </h2>
+                    <p className="text-blue-100 text-sm font-medium">
+                      {getTitle(headerKey)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-colors"
+                  type="button"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                type="button"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
             
-            {/* Content */}
-            <div className="px-6 py-5">
-              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                {helpText}
-              </p>
+            {/* Content - Tabbed Layout */}
+            <div className="px-6 py-4">
+              {/* Tabs */}
+              {helpEntries.length > 1 && (
+                <div className="flex border-b border-gray-200 mb-4 overflow-x-auto">
+                  <span className="px-2 py-2 text-sm text-gray-500 font-medium self-center">Termes:</span>
+                  {helpEntries.map((entry, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveTab(index)}
+                      className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                        activeTab === index
+                          ? 'border-blue-600 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      {entry.term || `Terme ${index + 1}`}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {/* Tab Content */}
+              {helpEntries.length > 0 && helpEntries[activeTab] && (
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold uppercase tracking-wider rounded">
+                      Définition
+                    </span>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {helpEntries[activeTab].definition}
+                  </p>
+                </div>
+              )}
             </div>
             
             {/* Footer */}
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
               <button
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm"
                 type="button"
               >
                 Fermer
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
