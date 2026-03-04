@@ -1,86 +1,87 @@
-# Conception Page Gantt Chart
+# Page de Conception du Diagramme de Gantt
 
-## Overview
+## Vue d'ensemble
 
-This module provides a full-featured Gantt chart for project planning and task management. It includes interactive features like drag-and-drop, task hierarchy, dependencies, and import/export capabilities.
+Ce module fournit un diagramme de Gantt complet pour la planification de projet et la gestion des tâches. Il inclut des fonctionnalités interactives comme le glisser-déposer, la hiérarchie des tâches, les dépendances, et les capacités d'import/export.
 
-## File Structure
+## Structure des fichiers
 
 ```
 frontend/src/app/[clientId]/[projectId]/conception/
-├── page.tsx              # Main Gantt chart component
-├── README.md             # This file
-├── constants.ts          # Configuration constants
-├── types.ts             # TypeScript type definitions
-├── data.ts              # Type definitions and sample data
+├── page.tsx              # Composant principal du Gantt
+├── README.md             # Ce fichier
+├── constants.ts          # Constantes de configuration
+├── types.ts             # Définitions de types TypeScript
+├── data.ts              # Définitions de types et données d'exemple
 ├── hooks/
-│   ├── useGanttState.ts       # Main state management hook
-│   ├── useGanttHandlers.ts    # Event handlers (drag, resize, etc.)
-│   └── useGanttExportImport.ts # Import/Export functionality
+│   ├── useGanttState.ts       # Gestion d'état principal
+│   ├── useGanttHandlers.ts    # Gestionnaires d'événements (glisser, redimensionner, etc.)
+│   └── useGanttExportImport.ts # Fonctionnalité d'import/export
 ├── components/
-│   ├── GanttTimeline.tsx       # Timeline visualization
-│   ├── GanttTaskList.tsx       # Task list sidebar
-│   ├── GanttToolbar.tsx         # Toolbar with controls
-│   ├── GanttTaskEditor.tsx      # Task edit modal
-│   ├── GanttTaskSummary.tsx     # Task details sidebar (enhanced)
-│   ├── GanttTooltip.tsx         # Hover tooltips
-│   ├── GanttContextMenu.tsx     # Right-click context menu
-│   ├── PortalMenu.tsx          # Portal-based menu
-│   ├── MistralModal.tsx        # AI-powered Gantt generation
-│   ├── VersionSelector.tsx     # Version management dropdown
-│   └── GanttTutorial.tsx       # Interactive user tutorial
+│   ├── GanttTimeline.tsx       # Visualisation de la timeline
+│   ├── GanttTaskList.tsx       # Barre latérale des tâches
+│   ├── GanttToolbar.tsx         # Barre d'outils avec contrôles
+│   ├── GanttTaskEditor.tsx      # Modale d'édition de tâche
+│   ├── GanttTaskSummary.tsx     # Barre latérale des détails (améliorée)
+│   ├── GanttTooltip.tsx         # Info-bulles au survol
+│   ├── GanttContextMenu.tsx     # Menu contextuel clic droit
+│   ├── PortalMenu.tsx          # Menu basé sur Portal
+│   ├── MistralModal.tsx        # Génération de Gantt par IA
+│   ├── VersionSelector.tsx     # Sélecteur de version
+│   ├── GanttTutorial.tsx       # Tutoriel interactif
+│   └── BudgetPrevisionnel.tsx  # Gestion des prévisions budgétaires
 └── utils/
-    ├── dateUtils.ts       # Date manipulation utilities
-    ├── timelineUtils.ts   # Timeline generation
-    ├── taskUtils.ts       # Task helpers
-    ├── budgetUtils.ts     # Budget calculations
-    └── mistralUtils.ts   # Mistral AI JSON parsing
+    ├── dateUtils.ts       # Utilitaires de manipulation de dates
+    ├── timelineUtils.ts   # Génération de timeline
+    ├── taskUtils.ts       # Assistants de tâches
+    ├── budgetUtils.ts     # Calculs budgétaires
+    └── mistralUtils.ts   # Parsing JSON Mistral IA
 ```
 
-## Data Types
+## Types de données
 
-### Task Interface
+### Interface Task
 
 ```typescript
 interface Task {
-  id: number;              // Unique identifier
-  text: string;           // Task name
-  start: Date;            // Start date
-  end: Date;              // End date
-  progress: number;        // 0-100 completion percentage
-  parent: number;         // Parent task ID (0 for root tasks)
+  id: number;              // Identifiant unique
+  text: string;           // Nom de la tâche
+  start: Date;            // Date de début
+  end: Date;              // Date de fin
+  progress: number;        // Pourcentage d'avancement 0-100
+  parent: number;         // ID de la tâche parente (0 pour les racines)
   type: 'task' | 'milestone' | 'project';
   details: string;        // Description
-  notes: string;          // Additional notes
-  files: string[];        // Attached file URLs
-  assigneeIds: number[];  // Assigned user IDs
-  livrableIds: number[]; // Related deliverable IDs
-  goal?: string;          // Task objective
-  color?: string;         // Custom task color (hex)
-  budget?: Budget;        // Budget data
+  notes: string;          // Notes supplémentaires
+  files: string[];        // URLs des fichiers joints
+  assigneeIds: number[];  // IDs des utilisateurs assignés
+  livrableIds: number[]; // IDs des livrables associés
+  goal?: string;          // Objectif de la tâche
+  color?: string;         // Couleur personnalisée (hex)
+  budget?: Budget;        // Données budgétaires
 }
 ```
 
-### Task Types
+### Types de tâches
 
-| Type | Description | Visual |
+| Type | Description | Visuel |
 |------|-------------|--------|
-| `task` | Regular task | Rounded rectangle bar |
-| `milestone` | Single-point milestone | Diamond shape |
-| `project` | Parent container task | Square indicator |
+| `task` | Tâche régulière | Barre rectangulaire arrondie |
+| `milestone` | Jalon unique | Forme losange |
+| `project` | Conteneur parent | Indicateur carré |
 
-### Link Interface
+### Interface Link
 
 ```typescript
 interface Link {
   id: number;
-  source: number;  // Source task ID
-  target: number;  // Target task ID
+  source: number;  // ID de la tâche source
+  target: number;  // ID de la tâche cible
   type: number;    // 0: finish-to-start, 1: start-to-start, etc.
 }
 ```
 
-### GanttData Interface
+### Interface GanttData
 
 ```typescript
 interface GanttData {
@@ -95,256 +96,327 @@ interface GanttData {
 
 ### useGanttState
 
-Manages all React state for the Gantt chart.
+Gère tout l'état React du diagramme de Gantt.
 
-**State managed:**
-- `tasks` - Array of tasks
-- `links` - Array of dependencies
-- `data` - Full Gantt data from API
+**État géré:**
+- `tasks` - Tableau de tâches
+- `links` - Tableau de dépendances
+- `data` - Données Gantt complètes de l'API
 - `viewMode` - 'day' | 'week' | 'month'
-- `pxPerDay` - Zoom level
-- `expandedTasks` - Set of expanded parent task IDs
-- `history` - Undo/redo history stack
-- `selectedTask` - Currently selected task
-- `editingTask` - Task being edited
+- `pxPerDay` - Niveau de zoom
+- `expandedTasks` - Ensemble des IDs de tâches parentes développées
+- `history` - Pile d'historique undo/redo
+- `selectedTask` - Tâche actuellement sélectionnée
+- `editingTask` - Tâche en cours d'édition
 
 **Actions:**
-- `addTask()` - Create new task
-- `addChildTask(parentId)` - Create subtask
-- `deleteTask(id)` - Delete task (cascades to children)
-- `updateTask()` - Save task changes
-- `undo()` / `redo()` - History navigation
+- `addTask()` - Créer une nouvelle tâche
+- `addChildTask(parentId)` - Créer une sous-tâche
+- `deleteTask(id)` - Supprimer une tâche (en cascade)
+- `updateTask()` - Sauvegarder les modifications
+- `undo()` / `redo()` - Navigation dans l'historique
 
 ### useGanttHandlers
 
-Handles all mouse/touch interactions:
+Gère toutes les interactions souris/tactile:
 
-| Handler | Purpose |
-|---------|---------|
-| `handleMouseDown` | Initiate drag/resize/progress change |
-| `handleMouseMove` | Update position during drag |
-| `handleMouseUp` | Finalize drag and save state |
-| `handleTaskContextMenu` | Show right-click menu |
-| `handleTimelineMouseMove` | Update cursor position |
+| Gestionnaire | Fonction |
+|--------------|----------|
+| `handleMouseDown` | Initier glisser/redimensionner/changer progression |
+| `handleMouseMove` | Mettre à jour la position pendant le glisser |
+| `handleMouseUp` | Finaliser le glisser et sauvegarder |
+| `handleTaskContextMenu` | Afficher le menu contextuel |
+| `handleTimelineMouseMove` | Mettre à jour la position du curseur |
 
 ### useGanttExportImport
 
-Handles data import/export:
+Gère l'import/export des données:
 
-| Function | Format | Description |
+| Fonction | Format | Description |
 |----------|--------|-------------|
-| `exportData()` | JSON | Full export with tasks and links |
-| `importData()` | JSON | Import from JSON file |
-| `exportToCSV()` | CSV | Tabular export |
-| `importFromCSV()` | CSV | Import from CSV |
-| `exportToExcel()` | XLSX | Excel with Tasks/Links sheets |
-| `importFromExcel()` | XLSX | Import from Excel |
-| `exportToMSProject()` | XML | Microsoft Project format |
-| `importMistralGantt()` | JSON | Import AI-generated Gantt from Mistral |
+| `exportData()` | JSON | Export complet avec tâches et liens |
+| `importData()` | JSON | Import depuis fichier JSON |
+| `exportToCSV()` | CSV | Export tabulaire |
+| `importFromCSV()` | CSV | Import depuis CSV |
+| `exportToExcel()` | XLSX | Excel avec feuilles Tâches/Liens |
+| `importFromExcel()` | XLSX | Import depuis Excel |
+| `exportToMSProject()` | XML | Format Microsoft Project |
+| `importMistralGantt()` | JSON | Import Gantt généré par IA depuis Mistral |
 
-**Import process:**
-1. Parse file
-2. Create tasks with temporary IDs
-3. Sort parents before children
-4. Save to API with ID mapping
-5. Update parent references with new IDs
+**Processus d'import:**
+1. Parser le fichier
+2. Créer les tâches avec des IDs temporaires
+3. Trier les parents avant les enfants
+4. Sauvegarder via l'API avec mapping des IDs
+5. Mettre à jour les références parents avec les nouveaux IDs
 
-## New Features (v2.0)
+## Nouvelles fonctionnalités (v2.0)
 
-### Version Management
+### Gestion des versions
 
-The Gantt chart now supports **version management**, allowing you to create and manage multiple versions of your project plan.
+Le diagramme de Gantt supporte désormais la **gestion des versions**, permettant de créer et gérer plusieurs versions de votre plan de projet.
 
-| Feature | Description |
-|----------|-------------|
-| Create Version | Create new named versions of the Gantt chart |
-| Switch Versions | Switch between different versions to compare plans |
-| Duplicate Version | Create a new version by copying an existing one |
-| Delete Version | Remove unwanted versions |
-| Activate Version | Mark a version as the active/default version |
-| Persistence | Version selection is saved to localStorage |
+| Fonctionnalité | Description |
+|----------------|-------------|
+| Créer une version | Créer des versions nommées du Gantt |
+| Changer de version | Basculer entre les différentes versions |
+| Dupliquer une version | Créer une nouvelle version en copiant une existante |
+| Supprimer une version | Retirer les versions indésirables |
+| Activer une version | Marquer une version comme active/par défaut |
+| Persistance | La sélection de version est sauvegardée dans localStorage |
 
-**Usage:**
-- Click the version dropdown in the toolbar
-- Select "Nouvelle version" to create a new version
-- Check "Dupliquer les actions de..." to copy tasks from current version
-- The main version (no version selected) contains all tasks without version filtering
+**Utilisation:**
+- Cliquez sur le menu déroulant des versions dans la barre d'outils
+- Sélectionnez "Nouvelle version" pour en créer une nouvelle
+- Cochez "Dupliquer les actions de..." pour copier les tâches de la version actuelle
+- La version principale (sans version sélectionnée) contient toutes les tâches sans filtrage
 
-### Mistral AI Integration
+### Intégration Mistral IA
 
-Generate Gantt charts automatically using **Mistral AI** - describe your project in natural language and let AI create the task structure.
+Générez des diagrammes de Gantt automatiquement avec **Mistral IA** - décrivez votre projet en langage naturel et laissez l'IA créer la structure des tâches.
 
-**Features:**
-- Text input: Describe your project and tasks in French
-- File upload: Upload PDF, DOC, or text files with project details
-- AI Processing: Mistral AI parses your input and generates task structure
-- Import to Gantt: One-click import of AI-generated tasks
+**Fonctionnalités:**
+- Saisie textuelle: Décrivez votre projet et vos tâches en français
+- Upload de fichiers: Téléchargez des fichiers PDF, DOC ou texte avec les détails du projet
+- Traitement IA: Mistral IA parse votre saisie et génère la structure des tâches
+- Import vers Gantt: Import en un clic des tâches générées
 
-**Usage:**
-1. Click the menu button (⋯) in the toolbar
-2. Select "Mistral" to open the AI modal
-3. Enter a description like: "Créer un projet de construction d'école avec 3 phases: préparation (2 semaines), construction (3 mois), inauguration (1 mois)"
-4. Click "Générer avec Mistral AI"
-5. Review the generated tasks and click "Importer dans le Gantt"
+**Utilisation:**
+1. Cliquez sur le bouton menu (⋯) dans la barre d'outils
+2. Sélectionnez "Mistral" pour ouvrir la modal IA
+3. Entrez une description comme: "Créer un projet de construction d'école avec 3 phases: préparation (2 semaines), construction (3 mois), inauguration (1 mois)"
+4. Cliquez sur "Générer avec Mistral AI"
+5. Examinez les tâches générées et cliquez sur "Importer dans le Gantt"
 
-### Interactive Tutorial
+### Tutoriel interactif
 
-A comprehensive **step-by-step tutorial** helps new users learn all Gantt chart features.
+Un **tutoriel pas à pas** complet aide les nouveaux utilisateurs à découvrir toutes les fonctionnalités du Gantt.
 
-**Tutorial Topics:**
-- Welcome & introduction
-- Adding tasks
-- Editing tasks
-- Moving tasks (drag & drop)
-- Resizing tasks
-- View modes (day/week/month)
-- Zoom controls
-- Today navigation
-- Undo/Redo functionality
-- Progress tracking
-- Subtasks & hierarchy
-- Assignees
-- Dependencies
-- Milestones
-- Keyboard shortcuts
+**Sujets du tutoriel:**
+- Bienvenue et introduction
+- Ajouter des tâches
+- Éditer des tâches
+- Déplacer des tâches (glisser-déposer)
+- Redimensionner des tâches
+- Modes de vue (jour/semaine/mois)
+- Contrôles de zoom
+- Navigation vers aujourd'hui
+- Fonctionnalité Annuler/Rétablir
+- Suivi de la progression
+- Sous-tâches et hiérarchie
+- Assignés
+- Dépendances
+- Jalons
+- Raccourcis clavier
 
-**Usage:**
-- Click the "Tutoriel" button in the toolbar
-- Navigate with arrow keys or click "Suivant/Précédent"
-- Press ESC to close at any time
+**Utilisation:**
+- Cliquez sur le bouton "Tutoriel" dans la barre d'outils
+- Naviguez avec les flèches ou cliquez "Suivant/Précédent"
+- Appuyez sur ESC pour fermer à tout moment
 
-### Task List Toggle
+### Affichage/Masquage de la liste des tâches
 
-The left sidebar (task list) can now be **hidden/shown** for better timeline visibility.
+La barre latérale gauche (liste des tâches) peut maintenant être **affichée/masquée** pour une meilleure visibilité de la timeline.
 
-**Features:**
-- Toggle button on the edge between panels
-- Smooth animation when toggling
-- Visual indicator showing current state
-- Keyboard shortcut support
+**Fonctionnalités:**
+- Bouton de bascule sur le bord entre les panneaux
+- Animation fluide lors du basculement
+- Indicateur visuel de l'état actuel
+- Support des raccourcis clavier
 
-### Enhanced Task Summary Panel
+### Panneau de résumé des tâches amélioré
 
-The task details sidebar now includes **collapsible sections** and enhanced functionality:
+La barre latérale des détails inclut désormais des **sections dépliables** et des fonctionnalités améliorées:
 
-| Section | Features |
-|---------|----------|
-| Task Name | Prominent display with color indicator |
-| Budget Total | Real-time calculation display |
-| Livrables | List of associated deliverables with status |
-| Notes | Add/delete timestamped notes |
-| Files | Upload, view, and delete attachments |
-| Progress | Visual progress bar |
-| Quick Info | Start date, end date, assignees, status |
-| Description | Full task description |
+| Section | Fonctionnalités |
+|---------|-----------------|
+| Nom de la tâche | Affichage proéminent avec indicateur de couleur |
+| Budget total | Affichage du calcul en temps réel |
+| Livrables | Liste des livrables associés avec statut |
+| Notes | Ajouter/supprimer des notes horodatées |
+| Fichiers | Upload, visualisation et suppression de pièces jointes |
+| Progression | Barre de progression visuelle |
+| Info rapide | Date de début, fin, assignés, statut |
+| Description | Description complète de la tâche |
 
-### Enhanced Import/Export
+### Import/Export amélioré
 
-New import options added:
+Nouvelles options d'import ajoutées:
 
 | Format | Description |
 |--------|-------------|
-| Mistral JSON | Import AI-generated Gantt structure |
-| CSV | Import from spreadsheet |
-| Excel | Import from Excel workbook |
-| JSON | Full data import |
+| Mistral JSON | Import de structure Gantt générée par IA |
+| CSV | Import depuis tableur |
+| Excel | Import depuis classeur Excel |
+| JSON | Import complet des données |
 
-## Components
+### Budget Prévisionnel
+
+La fonctionnalité Budget Prévisionnel permet de créer et gérer des prévisions budgétaires avec plusieurs scénarios et options de granularité.
+
+#### Accès
+- Cliquez sur le bouton "Prévisionnel" (icône calculatrice) dans la barre d'outils du Gantt
+- S'ouvre comme une modal avec trois onglets: Aperçu, Prévision, et Comparaison
+
+#### Fonctionnalités
+
+**Onglet Aperçu**
+- Comparaison Réel vs Prévision (graphiques en barres et aire)
+- Tableau détaillé par année avec analyse des écarts
+- Indicateurs de statut budgétaire (Excellent/Correct/Écart)
+
+**Onglet Prévision**
+- **Scénarios**: Créer plusieurs scénarios de prévision (Optimiste, Pessimiste, Base)
+- **Options de granularité**:
+  - Annuel - Grouper par année
+  - Trimestriel - Grouper par trimestre (T1-T4)
+  - Mensuel - Grouper par mois (Janvier-Décembre)
+- **Prévisions manuelles**: Ajouter des éléments avec:
+  - Description
+  - Catégorie (avec autocomplétion pour les catégories existantes, ou texte libre pour personnalisées)
+  - Montant
+  - Année
+  - Trimestre (optionnel)
+  - Mois (optionnel)
+- **Génération automatique**: Générer des prévisions depuis les données historiques avec taux de croissance
+
+**Onglet Comparaison**
+- Comparaison visuelle budget réel vs prévisionnel
+- Analyse des écarts avec indicateurs de pourcentage
+
+#### Types de données
+
+```typescript
+interface ForecastItem {
+  id: string;
+  category: string;        // Catégorie personnalisée ou prédéfinie
+  description: string;
+  amount: number;
+  year: number;
+  quarter?: string;        // T1, T2, T3, T4 (optionnel)
+  month?: number;          // 1-12 (optionnel)
+  isManual: boolean;       // true si ajouté manuellement
+}
+
+interface ForecastScenario {
+  id: string;
+  name: string;            // ex: "Scénario de base"
+  items: ForecastItem[];
+  growthRate: number;      // Pourcentage pour la génération automatique
+}
+
+type Granularity = 'yearly' | 'quarterly' | 'monthly';
+```
+
+#### Catégories
+Catégories budgétaires par défaut:
+- Moyen humain
+- Stagiaires
+- Aménagements
+- Équipements pédagogiques
+- Prestations
+- Frais de déplacement
+- Autres prestations
+- Communications
+
+Les catégories personnalisées peuvent être ajoutées en saisissant dans le champ catégorie (l'autocomplétion affiche les catégories existantes).
+
+## Composants
 
 ### GanttTimeline
 
-The main timeline visualization component.
+Le composant principal de visualisation de la timeline.
 
-**Features:**
-- Sticky headers (groups + units)
-- Today marker (red vertical line)
-- Cursor date indicator
-- Grid lines for time units
-- Task bars with resize handles
-- Milestone diamond shapes
+**Fonctionnalités:**
+- En-têtes persistants (groupes + unités)
+- Marqueur du jour (ligne verticale rouge)
+- Indicateur de date au curseur
+- Grille pour les unités de temps
+- Barres de tâches avec poignées de redimensionnement
+- Formes losange pour les jalons
 
 ### GanttTaskList
 
-Left sidebar displaying task hierarchy:
-- Task name with hierarchy indentation
-- Start/end dates
-- Assignees
-- Progress percentage + visual bar
-- Expand/collapse parent tasks
+Barre latérale affichant la hiérarchie des tâches:
+- Nom de la tâche avec indentation hiérarchique
+- Dates de début/fin
+- Assignés
+- Pourcentage de progression + barre visuelle
+- Développer/réduire les tâches parentes
 
 ### GanttTaskEditor
 
-Modal editor with tabs:
-1. **General** - Basic task info
-2. **Moyen humain** - Personnel costs
-3. **Interns** - Intern budget
-4. **Amenagements** - Fittings costs
-5. **Equipements pedagogiques** - Equipment costs
-6. **Prestations** - Subcontractor/travel costs
-7. **Communications** - Communication costs
+Modale d'édition avec onglets:
+1. **Général** - Info de base
+2. **Moyen humain** - Coûts de personnel
+3. **Stagiaires** - Budget stages
+4. **Aménagements** - Coûts d'aménagement
+5. **Équipements pédagogiques** - Coûts d'équipement
+6. **Prestations** - Sous-traitance/déplacements
+7. **Communications** - Coûts de communication
 
 ### GanttContextMenu
 
-Right-click context menu options:
-- Add Child Task
-- Edit Task
-- Delete Task
+Options du menu contextuel clic droit:
+- Ajouter une sous-tâche
+- Éditer la tâche
+- Supprimer la tâche
 
 ### MistralModal
 
-AI-powered Gantt generation modal:
-- Text input for project description
-- File upload for documents
-- Preview of generated tasks
-- Import to Gantt functionality
+Modale de génération de Gantt par IA:
+- Saisie textuelle de la description du projet
+- Upload de documents
+- Aperçu des tâches générées
+- Fonctionnalité d'import vers Gantt
 
 ### VersionSelector
 
-Version management dropdown:
-- Create new versions
-- Switch between versions
-- Delete versions
-- Activate/deactivate versions
-- Duplicate from current version
+Menu déroulant de gestion des versions:
+- Créer de nouvelles versions
+- Basculer entre les versions
+- Supprimer des versions
+- Activer/désactiver des versions
+- Dupliquer depuis la version actuelle
 
 ### GanttTutorial
 
-Interactive tutorial modal:
-- Step-by-step guide
-- Keyboard navigation
-- Visual highlights
-- Progress tracking
-- 15+ tutorial topics
+Modale de tutoriel interactif:
+- Guide pas à pas
+- Navigation clavier
+- Surbrillances visuelles
+- Suivi de la progression
+- 15+ sujets de tutoriel
 
-## API Integration
+## Intégration API
 
-### Backend Endpoints
+### Points de terminaison backend
 
-All endpoints require authentication via JWT cookie.
+Tous les points de terminaison nécessitent l'authentification via cookie JWT.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/gantt/:projectId` | Fetch all Gantt data |
-| POST | `/api/gantt/:projectId/tasks` | Create task |
-| PUT | `/api/gantt/:projectId/tasks/:taskId` | Update task |
-| DELETE | `/api/gantt/:projectId/tasks/:taskId` | Delete task (cascades) |
-| PUT | `/api/gantt/:projectId/tasks/bulk` | Bulk update |
-| POST | `/api/gantt/:projectId/links` | Create dependency |
-| DELETE | `/api/gantt/:projectId/links/:linkId` | Delete dependency |
-| POST | `/api/gantt/:projectId/deliverables` | Create deliverable |
-| GET | `/api/gantt/:projectId/subactions` | Get subActions |
+| Méthode | Point de terminaison | Description |
+|---------|---------------------|-------------|
+| GET | `/api/gantt/:projectId` | Récupérer toutes les données Gantt |
+| POST | `/api/gantt/:projectId/tasks` | Créer une tâche |
+| PUT | `/api/gantt/:projectId/tasks/:taskId` | Mettre à jour une tâche |
+| DELETE | `/api/gantt/:projectId/tasks/:taskId` | Supprimer une tâche (en cascade) |
+| PUT | `/api/gantt/:projectId/tasks/bulk` | Mise à jour en masse |
+| POST | `/api/gantt/:projectId/links` | Créer une dépendance |
+| DELETE | `/api/gantt/:projectId/links/:linkId` | Supprimer une dépendance |
+| POST | `/api/gantt/:projectId/deliverables` | Créer un livrable |
+| GET | `/api/gantt/:projectId/subactions` | Récupérer les sous-actions |
 
-### Version API Endpoints
+### Points de terminaison API de version
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/gantt/:projectId/versions` | Fetch all versions |
-| POST | `/api/gantt/:projectId/versions` | Create new version |
-| PUT | `/api/gantt/:projectId/versions/:versionId` | Update version |
-| DELETE | `/api/gantt/:projectId/versions/:versionId` | Delete version |
-| PUT | `/api/gantt/:projectId/versions/:versionId/activate` | Activate version |
+| Méthode | Point de terminaison | Description |
+|---------|---------------------|-------------|
+| GET | `/api/gantt/:projectId/versions` | Récupérer toutes les versions |
+| POST | `/api/gantt/:projectId/versions` | Créer une nouvelle version |
+| PUT | `/api/gantt/:projectId/versions/:versionId` | Mettre à jour une version |
+| DELETE | `/api/gantt/:projectId/versions/:versionId` | Supprimer une version |
+| PUT | `/api/gantt/:projectId/versions/:versionId/activate` | Activer une version |
 
-### API Functions (ganttApi.ts)
+### Fonctions API (ganttApi.ts)
 
 ```typescript
 fetchGanttData(projectId, versionId?): Promise<GanttData>
@@ -357,7 +429,7 @@ deleteTaskLink(projectId, linkId): Promise<void>
 createDeliverable(projectId, data): Promise<Livrable>
 fetchSubActions(projectId): Promise<SubAction[]>
 
-// Version functions
+// Fonctions de version
 fetchVersions(projectId): Promise<Version[]>
 createVersion(projectId, versionData): Promise<Version>
 updateVersion(projectId, versionId, versionData): Promise<Version>
@@ -365,7 +437,7 @@ deleteVersion(projectId, versionId): Promise<void>
 activateVersion(projectId, versionId): Promise<Version>
 ```
 
-### Version Interface
+### Interface de version
 
 ```typescript
 interface Version {
@@ -383,118 +455,118 @@ interface Version {
 
 ## Configuration
 
-### Constants (constants.ts)
+### Constantes (constants.ts)
 
 ```typescript
-const ROW_HEIGHT = 60;           // Task row height in px
+const ROW_HEIGHT = 60;           // Hauteur de ligne en px
 const MIN_START_DATE = new Date(2020, 0, 1);
 const MAX_HISTORY_STATES = 20;
 const DEFAULT_DAY_WIDTH = {
-  day: 24,    // 24px per day
-  week: 18,   // 18px per day
-  month: 6,   // 6px per day
+  day: 24,    // 24px par jour
+  week: 18,   // 18px par jour
+  month: 6,   // 6px par jour
 };
 ```
 
-### View Modes
+### Modes de vue
 
-| Mode | Description | Default Width |
-|------|-------------|---------------|
-| `day` | Daily view | 24px/day |
-| `week` | Weekly view | 18px/day |
-| `month` | Monthly view | 6px/day |
+| Mode | Description | Largeur par défaut |
+|------|-------------|-------------------|
+| `day` | Vue journalière | 24px/jour |
+| `week` | Vue hebdomadaire | 18px/jour |
+| `month` | Vue mensuelle | 6px/jour |
 
-## Color Coding
+## Codage couleur
 
-Task bar colors indicate progress:
+Les couleurs des barres de tâches indiquent la progression:
 
-| Progress | Color | Hex |
-|----------|-------|-----|
-| 100% | Green | `#00C000` |
-| 75-99% | Emerald | `#10b981` |
-| 50-74% | Amber | `#f59e0b` |
+| Progression | Couleur | Hex |
+|-------------|---------|-----|
+| 100% | Vert | `#00C000` |
+| 75-99% | Émeraude | `#10b981` |
+| 50-74% | Ambre | `#f59e0b` |
 | 1-49% | Orange | `#f97316` |
-| 0% | Gray | `#6b7280` |
+| 0% | Gris | `#6b7280` |
 
-## Utilities
+## Utilitaires
 
 ### dateUtils
 
-All date operations use **UTC** to avoid timezone issues:
+Toutes les opérations de date utilisent **UTC** pour éviter les problèmes de fuseau horaire:
 
-| Function | Purpose |
+| Fonction | Utilité |
 |----------|---------|
-| `toUTC(d)` | Convert to UTC timestamp |
-| `startOfDay(d)` | Get start of day in UTC |
-| `addDays/Weeks/Months` | Add time periods |
-| `daysInMonth(d)` | Get days in month |
-| `getISOWeek(d)` | Get ISO week number |
+| `toUTC(d)` | Convertir en timestamp UTC |
+| `startOfDay(d)` | Obtenir le début du jour en UTC |
+| `addDays/Weeks/Months` | Ajouter des périodes |
+| `daysInMonth(d)` | Obtenir les jours dans le mois |
+| `getISOWeek(d)` | Obtenir le numéro de semaine ISO |
 
 ### timelineUtils
 
-| Function | Purpose |
+| Fonction | Utilité |
 |----------|---------|
-| `generateColumns()` | Create timeline columns |
-| `getBaseStart()` | Get timeline start date |
-| `getDateRange()` | Calculate date range from tasks |
+| `generateColumns()` | Créer les colonnes de timeline |
+| `getBaseStart()` | Obtenir la date de début de timeline |
+| `getDateRange()` | Calculer la plage de dates depuis les tâches |
 
 ### budgetUtils
 
-| Function | Purpose |
+| Fonction | Utilité |
 |----------|---------|
-| `createEmptyBudget()` | Create default budget object |
-| `calculateTotal()` | Calculate budget total |
-| `calculateBudgetTotals()` | Calculate detailed budget totals |
+| `createEmptyBudget()` | Créer un objet budget par défaut |
+| `calculateTotal()` | Calculer le total du budget |
+| `calculateBudgetTotals()` | Calculer les totaux détaillés du budget |
 
 ### mistralUtils
 
-| Function | Purpose |
+| Fonction | Utilité |
 |----------|---------|
-| `parseMistralJSON()` | Parse AI response JSON |
-| `transformMistralJSONToGanttTasks()` | Convert AI tasks to Gantt tasks |
+| `parseMistralJSON()` | Parser la réponse JSON de l'IA |
+| `transformMistralJSONToGanttTasks()` | Convertir les tâches IA en tâches Gantt |
 
-## Common Issues
+## Problèmes courants
 
-### Tasks not appearing after reload
-- Check API connection
-- Verify projectId in URL
-- Check browser console for errors
+### Les tâches n'apparaissent pas après rechargement
+- Vérifier la connexion API
+- Vérifier le projectId dans l'URL
+- Vérifier la console du navigateur pour les erreurs
 
-### Drag and drop not working
-- Ensure no other mouse button is pressed
-- Check for conflicting event listeners
+### Le glisser-déposer ne fonctionne pas
+- S'assurer qu'aucun autre bouton de souris n'est pressé
+- Vérifier les écouteurs d'événements conflictuels
 
-### Import failing
-- Verify JSON/CSV format matches expected structure
-- Check for duplicate IDs
-- Ensure parent tasks exist before children
+### L'import échoue
+- Vérifier que le format JSON/CSV correspond à la structure attendue
+- Vérifier les IDs en double
+- S'assurer que les tâches parentes existent avant les enfants
 
-### Subtasks not deleted with parent
-- Backend should cascade delete (see ganttService.js)
-- Ensure server was restarted after updates
+### Les sous-tâches ne sont pas supprimées avec le parent
+- Le backend devrait supprimer en cascade (voir ganttService.js)
+- S'assurer que le serveur a été redémarré après les mises à jour
 
 ## Performance
 
-- `useMemo` for expensive calculations
-- `requestAnimationFrame` for smooth dragging
-- History limited to 20 states
-- Virtual scrolling via overflow management
+- `useMemo` pour les calculs coûteux
+- `requestAnimationFrame` pour un glisser fluide
+- Historique limité à 20 états
+- Défilement virtuel via gestion du overflow
 
-## Dependencies
+## Dépendances
 
-- **React** - UI library
-- **lucide-react** - Icons
-- **xlsx** - Excel import/export
-- **@/api/ganttApi** - API client
+- **React** - Bibliothèque UI
+- **lucide-react** - Icônes
+- **xlsx** - Import/export Excel
+- **@/api/ganttApi** - Client API
 
-## Keyboard Shortcuts
+## Raccourcis clavier
 
-| Key | Action |
-|-----|--------|
-| `N` | Add new task |
-| `E` | Edit selected task |
-| `Delete` | Delete selected task |
-| `Ctrl+Z` | Undo |
-| `Ctrl+Y` | Redo |
-| `←/→` | Navigate tutorial steps |
-| `ESC` | Close modal / Exit tutorial
+| Touche | Action |
+|--------|--------|
+| `N` | Ajouter une nouvelle tâche |
+| `E` | Éditer la tâche sélectionnée |
+| `Delete` | Supprimer la tâche sélectionnée |
+| `Ctrl+Z` | Annuler |
+| `Ctrl+Y` | Rétablir |
+| `←/→` | Naviguer dans les étapes du tutoriel |
+| `ESC` | Fermer la modal / Quitter le tutoriel |

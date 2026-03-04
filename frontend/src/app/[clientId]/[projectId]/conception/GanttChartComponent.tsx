@@ -19,6 +19,7 @@ import { GanttTooltip } from './components/GanttTooltip';
 import { GanttContextMenu } from './components/GanttContextMenu';
 import { GanttTutorial } from './components/GanttTutorial';
 import { BudgetOverview } from './components/BudgetOverview';
+import { BudgetPrevisionnel } from './components/BudgetPrevisionnel';
 import { generateColumns, getBaseStart } from './utils/timelineUtils';
 import { startOfDay } from './utils/dateUtils';
 import { DAY_MS } from './constants';
@@ -42,6 +43,7 @@ export default function GanttChartComponent() {
   
   // Budget view state
   const [showBudgetView, setShowBudgetView] = useState(false);
+  const [showBudgetPrevisionnel, setShowBudgetPrevisionnel] = useState(false);
   
   // Ref to track current version (for async operations)
   const currentVersionRef = useRef<Version | null>(null);
@@ -172,6 +174,11 @@ export default function GanttChartComponent() {
   // Handler to open budget view - shows the project budget modal
   const handleOpenBudgetView = useCallback(() => {
     setShowBudgetView(true);
+  }, []);
+  
+  // Handler to open budget previsionnel view - shows the budget previsionnel modal
+  const handleOpenBudgetPrevisionnel = useCallback(() => {
+    setShowBudgetPrevisionnel(true);
   }, []);
   
   // Re-fetch Gantt data when currentVersion changes
@@ -336,6 +343,7 @@ export default function GanttChartComponent() {
           setTutorialOpen={setTutorialOpen}
           // Budget view props
           onOpenBudgetView={handleOpenBudgetView}
+          onOpenBudgetPrevisionnel={handleOpenBudgetPrevisionnel}
         />
 
         {/* Main Gantt Chart Area */}
@@ -510,6 +518,14 @@ export default function GanttChartComponent() {
           <BudgetOverview 
             tasks={ganttState.tasks} 
             onClose={() => setShowBudgetView(false)} 
+          />
+        )}
+        
+        {/* Budget Prévisionnel Modal */}
+        {showBudgetPrevisionnel && (
+          <BudgetPrevisionnel 
+            tasks={ganttState.tasks} 
+            onClose={() => setShowBudgetPrevisionnel(false)} 
           />
         )}
       </div>

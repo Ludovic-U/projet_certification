@@ -16,7 +16,8 @@ import {
   CalendarDays,
   Home,
   HelpCircle,
-  DollarSign
+  DollarSign,
+  Calculator
 } from 'lucide-react';
 import { ViewMode, MenuPosition } from '../types';
 import { PortalMenu } from './PortalMenu';
@@ -80,6 +81,7 @@ interface GanttToolbarProps {
   setTutorialOpen?: (open: boolean) => void;
   // Budget view props
   onOpenBudgetView?: () => void;
+  onOpenBudgetPrevisionnel?: () => void;
 }
 
 export const GanttToolbar: React.FC<GanttToolbarProps> = ({
@@ -135,6 +137,7 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
   setTutorialOpen,
   // Budget view props
   onOpenBudgetView,
+  onOpenBudgetPrevisionnel,
 }) => {
   const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
     { value: 'day', label: 'Jour', icon: <CalendarDays className="w-4 h-4" /> },
@@ -443,6 +446,17 @@ export const GanttToolbar: React.FC<GanttToolbarProps> = ({
             >
               <DollarSign className="w-5 h-5" />
               <span className="hidden sm:inline">Budget</span>
+            </button>
+          )}
+          {/* Budget Prévisionnel Button */}
+          {onOpenBudgetPrevisionnel && (
+            <button
+              onClick={onOpenBudgetPrevisionnel}
+              className="flex items-center gap-2 px-4 py-2.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-xl hover:bg-amber-500/30 transition-all text-sm font-medium"
+              data-tutorial-id="budget-prev-btn"
+            >
+              <Calculator className="w-5 h-5" />
+              <span className="hidden sm:inline">Prévisionnel</span>
             </button>
           )}
           {/* Add Task Button */}
