@@ -194,6 +194,18 @@ const ForecastItemModal: React.FC<{
   const [quarter, setQuarter] = useState(item?.quarter || '');
   const [month, setMonth] = useState(item?.month || 0);
 
+  // Reset form when modal opens or item changes
+  React.useEffect(() => {
+    if (isModalOpen) {
+      setDescription(item?.description || '');
+      setCategory(item?.category || availableCategories[0] || 'Moyen humain');
+      setAmount(item?.amount?.toString() || '');
+      setYear(item?.year || existingYears[0] || new Date().getFullYear());
+      setQuarter(item?.quarter || '');
+      setMonth(item?.month || 0);
+    }
+  }, [isModalOpen, item, availableCategories, existingYears]);
+
   if (!isModalOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
