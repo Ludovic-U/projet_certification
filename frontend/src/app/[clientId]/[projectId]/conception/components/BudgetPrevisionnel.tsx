@@ -25,7 +25,9 @@ import {
   Calculator,
   AlertCircle,
   ArrowRight,
-  RefreshCw
+  RefreshCw,
+  Check,
+  Copy
 } from 'lucide-react';
 import { Task } from '../../data';
 import { 
@@ -146,8 +148,10 @@ const ForecastItemRow: React.FC<{
   item: ForecastItem;
   onEdit: (item: ForecastItem) => void;
   onDelete: (id: string) => void;
+  onConfirmDelete: (id: string) => void;
   color: string;
-}> = ({ item, onEdit, onDelete, color }) => (
+  deleteConfirmId: string | null;
+}> = ({ item, onEdit, onDelete, onConfirmDelete, color, deleteConfirmId }) => (
   <div className="flex items-center justify-between py-3 px-4 bg-white rounded-lg border border-slate-100 hover:border-slate-200 transition-colors">
     <div className="flex items-center gap-4">
       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></div>
@@ -166,13 +170,32 @@ const ForecastItemRow: React.FC<{
         >
           <Edit3 className="w-4 h-4 text-slate-400" />
         </button>
-        <button 
-          onClick={() => onDelete(item.id)}
-          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-          title="Supprimer"
-        >
-          <Trash2 className="w-4 h-4 text-red-400" />
-        </button>
+        {deleteConfirmId === item.id ? (
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => onConfirmDelete(item.id)}
+              className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              title="Confirmer la suppression"
+            >
+              <Check className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => onDelete('')}
+              className="p-2 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-colors"
+              title="Annuler"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={() => onDelete(item.id)}
+            className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+            title="Supprimer"
+          >
+            <Trash2 className="w-4 h-4 text-red-400" />
+          </button>
+        )}
       </div>
     </div>
   </div>
@@ -193,6 +216,7 @@ const ForecastItemModal: React.FC<{
   const [year, setYear] = useState(item?.year || existingYears[0] || new Date().getFullYear());
   const [quarter, setQuarter] = useState(item?.quarter || '');
   const [month, setMonth] = useState(item?.month || 0);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Reset form when modal opens or item changes
   React.useEffect(() => {
@@ -203,17 +227,56 @@ const ForecastItemModal: React.FC<{
       setYear(item?.year || existingYears[0] || new Date().getFullYear());
       setQuarter(item?.quarter || '');
       setMonth(item?.month || 0);
+      setErrors({});
     }
   }, [isModalOpen, item, availableCategories, existingYears]);
+
+  // Keyboard shortcuts: Escape to close, Enter to submit
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isModalOpen) return;
+      
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isModalOpen, onClose]);
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!description.trim()) {
+      newErrors.description = 'La description est requise';
+    }
+    
+    if (!amount || parseFloat(amount) <= 0) {
+      newErrors.amount = 'Le montant doit être supérieur à 0';
+    }
+    
+    if (!category.trim()) {
+      newErrors.category = 'La catégorie est requise';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   if (!isModalOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     const newItem: ForecastItem = {
       id: item?.id || generateId(),
-      description,
-      category,
+      description: description.trim(),
+      category: category.trim(),
       amount: parseFloat(amount) || 0,
       year,
       quarter: quarter || undefined,
@@ -260,11 +323,20 @@ const ForecastItemModal: React.FC<{
             <input
               type="text"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
+              }}
+              className={`w-full px-4 py-3 rounded-xl border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all ${
+                errors.description ? 'border-red-500 bg-red-50' : 'border-slate-200'
+              }`}
               placeholder="Description de la dépense"
               required
+              autoFocus
             />
+            {errors.description && (
+              <p className="mt-1 text-sm text-red-500">{errors.description}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Catégorie</label>
@@ -272,10 +344,18 @@ const ForecastItemModal: React.FC<{
               type="text"
               list="category-options"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+              onChange={(e) => {
+                setCategory(e.target.value);
+                if (errors.category) setErrors(prev => ({ ...prev, category: '' }));
+              }}
+              className={`w-full px-4 py-3 rounded-xl border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all ${
+                errors.category ? 'border-red-500 bg-red-50' : 'border-slate-200'
+              }`}
               placeholder="Entrez une catégorie"
             />
+            {errors.category && (
+              <p className="mt-1 text-sm text-red-500">{errors.category}</p>
+            )}
             <datalist id="category-options">
               {availableCategories.map(cat => (
                 <option key={cat} value={cat} />
@@ -287,12 +367,20 @@ const ForecastItemModal: React.FC<{
             <input
               type="number"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+              onChange={(e) => {
+                setAmount(e.target.value);
+                if (errors.amount) setErrors(prev => ({ ...prev, amount: '' }));
+              }}
+              className={`w-full px-4 py-3 rounded-xl border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all ${
+                errors.amount ? 'border-red-500 bg-red-50' : 'border-slate-200'
+              }`}
               placeholder="0"
               min="0"
               required
             />
+            {errors.amount && (
+              <p className="mt-1 text-sm text-red-500">{errors.amount}</p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -362,7 +450,8 @@ const ScenarioSelector: React.FC<{
   onSelect: (id: string) => void;
   onCreate: () => void;
   onDelete: (id: string) => void;
-}> = ({ scenarios, currentScenarioId, onSelect, onCreate, onDelete }) => (
+  onCopy: (id: string) => void;
+}> = ({ scenarios, currentScenarioId, onSelect, onCreate, onDelete, onCopy }) => (
   <div className="flex items-center gap-2">
     <select
       value={currentScenarioId}
@@ -379,6 +468,13 @@ const ScenarioSelector: React.FC<{
       title="Créer un nouveau scénario"
     >
       <Plus className="w-5 h-5" />
+    </button>
+    <button
+      onClick={() => onCopy(currentScenarioId)}
+      className="p-2 bg-blue-50 text-blue-500 rounded-lg hover:bg-blue-100 transition-colors"
+      title="Dupliquer ce scénario"
+    >
+      <Copy className="w-5 h-5" />
     </button>
     {scenarios.length > 1 && (
       <button
@@ -398,8 +494,10 @@ const QuarterlyView: React.FC<{
   allColors: Record<string, string>;
   onEdit: (item: ForecastItem) => void;
   onDelete: (id: string) => void;
+  onConfirmDelete: (id: string) => void;
   formatCurrency: (value: number) => string;
-}> = ({ items, allColors, onEdit, onDelete, formatCurrency }) => {
+  deleteConfirmId: string | null;
+}> = ({ items, allColors, onEdit, onDelete, onConfirmDelete, formatCurrency, deleteConfirmId }) => {
   const quarterLabels: Record<string, string> = { T1: 'T1 (Jan-Mar)', T2: 'T2 (Avr-Juin)', T3: 'T3 (Juil-Sep)', T4: 'T4 (Oct-Dec)' };
   
   const itemsByQuarter = useMemo(() => {
@@ -430,7 +528,9 @@ const QuarterlyView: React.FC<{
                 item={item}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onConfirmDelete={onConfirmDelete}
                 color={allColors[item.category] || '#8884d8'}
+                deleteConfirmId={deleteConfirmId}
               />
             ))}
           </div>
@@ -446,8 +546,10 @@ const MonthlyView: React.FC<{
   allColors: Record<string, string>;
   onEdit: (item: ForecastItem) => void;
   onDelete: (id: string) => void;
+  onConfirmDelete: (id: string) => void;
   formatCurrency: (value: number) => string;
-}> = ({ items, allColors, onEdit, onDelete, formatCurrency }) => {
+  deleteConfirmId: string | null;
+}> = ({ items, allColors, onEdit, onDelete, onConfirmDelete, formatCurrency, deleteConfirmId }) => {
   const monthLabels = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
   
   const itemsByMonth = useMemo(() => {
@@ -477,7 +579,9 @@ const MonthlyView: React.FC<{
                   item={item}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onConfirmDelete={onConfirmDelete}
                   color={allColors[item.category] || '#8884d8'}
+                  deleteConfirmId={deleteConfirmId}
                 />
               ))
             ) : (
@@ -724,15 +828,19 @@ const ForecastTab: React.FC<{
   onSelectScenario: (id: string) => void;
   onCreateScenario: () => void;
   onDeleteScenario: (id: string) => void;
+  onCopyScenario: (id: string) => void;
   onAddItem: () => void;
   onEditItem: (item: ForecastItem) => void;
   onDeleteItem: (id: string) => void;
+  onConfirmDeleteItem: (id: string) => void;
   onGenerateForecast: () => void;
   onGrowthRateChange: (rate: number) => void;
   availableCategories: string[];
   CATEGORY_COLORS: Record<string, string>;
   customBudgetTypes: { id: string; name: string }[];
   formatCurrency: (value: number) => string;
+  deleteConfirmId: string | null;
+  isGeneratingForecast?: boolean;
 }> = ({ 
   forecastItems, 
   currentScenario,
@@ -741,14 +849,18 @@ const ForecastTab: React.FC<{
   onSelectScenario,
   onCreateScenario,
   onDeleteScenario,
+  onCopyScenario,
   onAddItem,
   onEditItem,
   onDeleteItem,
+  onConfirmDeleteItem,
   onGenerateForecast,
   onGrowthRateChange,
   CATEGORY_COLORS,
   customBudgetTypes,
-  formatCurrency 
+  formatCurrency,
+  deleteConfirmId,
+  isGeneratingForecast = false
 }) => {
   const customColors = getCustomBudgetTypeColors(customBudgetTypes);
   const allColors = { ...CATEGORY_COLORS, ...customColors };
@@ -778,6 +890,7 @@ const ForecastTab: React.FC<{
               onSelect={onSelectScenario}
               onCreate={onCreateScenario}
               onDelete={onDeleteScenario}
+              onCopy={onCopyScenario}
             />
             <div className="flex items-center gap-2">
               <label className="text-sm text-slate-600">Taux de croissance:</label>
@@ -795,10 +908,15 @@ const ForecastTab: React.FC<{
           <div className="flex gap-3">
             <button
               onClick={onGenerateForecast}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors"
+              disabled={isGeneratingForecast}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+                isGeneratingForecast 
+                  ? 'bg-indigo-100 text-indigo-400 cursor-not-allowed' 
+                  : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'
+              }`}
             >
-              <RefreshCw className="w-4 h-4" />
-              Générer depuis l'historique
+              <RefreshCw className={`w-4 h-4 ${isGeneratingForecast ? 'animate-spin' : ''}`} />
+              {isGeneratingForecast ? 'Génération...' : 'Générer depuis l\'historique'}
             </button>
             <button
               onClick={onAddItem}
@@ -886,16 +1004,18 @@ const ForecastTab: React.FC<{
                         item={item}
                         onEdit={onEditItem}
                         onDelete={onDeleteItem}
+                        onConfirmDelete={onConfirmDeleteItem}
                         color={allColors[item.category] || '#8884d8'}
+                        deleteConfirmId={deleteConfirmId}
                       />
                     ))}
                   </div>
                 </div>
               ))
             ) : granularity === 'quarterly' ? (
-              <QuarterlyView items={forecastItems} allColors={allColors} onEdit={onEditItem} onDelete={onDeleteItem} formatCurrency={formatCurrency} />
+              <QuarterlyView items={forecastItems} allColors={allColors} onEdit={onEditItem} onDelete={onDeleteItem} onConfirmDelete={onConfirmDeleteItem} formatCurrency={formatCurrency} deleteConfirmId={deleteConfirmId} />
             ) : (
-              <MonthlyView items={forecastItems} allColors={allColors} onEdit={onEditItem} onDelete={onDeleteItem} formatCurrency={formatCurrency} />
+              <MonthlyView items={forecastItems} allColors={allColors} onEdit={onEditItem} onDelete={onDeleteItem} onConfirmDelete={onConfirmDeleteItem} formatCurrency={formatCurrency} deleteConfirmId={deleteConfirmId} />
             )}
           </div>
         )}
@@ -1016,6 +1136,8 @@ export const BudgetPrevisionnel: React.FC<BudgetPrevisionnelProps> = ({ tasks, o
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ForecastItem | null>(null);
   const [currentScenarioId, setCurrentScenarioId] = useState<string>('default');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isGeneratingForecast, setIsGeneratingForecast] = useState(false);
   
   // Scenarios state
   const [scenarios, setScenarios] = useState<ForecastScenario[]>([
@@ -1118,40 +1240,53 @@ export const BudgetPrevisionnel: React.FC<BudgetPrevisionnelProps> = ({ tasks, o
 
   // Generate forecast from historical data
   const generateForecastFromHistory = () => {
-    if (yearlyData.length === 0) return;
-
-    const growthRate = currentScenario.growthRate / 100;
-    const lastYear = Math.max(...yearlyData.map(y => y.year));
-    const lastYearData = yearlyData.find(y => y.year === lastYear);
+    setIsGeneratingForecast(true);
     
-    if (!lastYearData) return;
+    // Simulate async operation
+    setTimeout(() => {
+      if (yearlyData.length === 0) {
+        setIsGeneratingForecast(false);
+        return;
+      }
 
-    // Generate forecast for next 2 years
-    const newItems: ForecastItem[] = [];
-    
-    for (let i = 1; i <= 2; i++) {
-      const projectedYear = lastYear + i;
-      const projectedAmount = lastYearData.budget * Math.pow(1 + growthRate, i);
+      const growthRate = currentScenario.growthRate / 100;
+      const lastYear = Math.max(...yearlyData.map(y => y.year));
+      const lastYearData = yearlyData.find(y => y.year === lastYear);
       
-      // Distribute by category
-      categoryData.forEach(cat => {
-        const categoryRatio = cat.budget / lastYearData.budget;
-        newItems.push({
-          id: generateId(),
-          category: cat.category,
-          description: `Prévision ${cat.category} - ${projectedYear}`,
-          amount: Math.round(projectedAmount * categoryRatio),
-          year: projectedYear,
-          isManual: false
-        });
-      });
-    }
+      if (!lastYearData) {
+        setIsGeneratingForecast(false);
+        return;
+      }
 
-    setScenarios(prev => prev.map(s => 
-      s.id === currentScenarioId 
-        ? { ...s, items: [...s.items.filter(item => item.isManual), ...newItems] }
-        : s
-    ));
+      // Generate forecast for next 2 years
+      const newItems: ForecastItem[] = [];
+      
+      for (let i = 1; i <= 2; i++) {
+        const projectedYear = lastYear + i;
+        const projectedAmount = lastYearData.budget * Math.pow(1 + growthRate, i);
+        
+        // Distribute by category
+        categoryData.forEach(cat => {
+          const categoryRatio = cat.budget / lastYearData.budget;
+          newItems.push({
+            id: generateId(),
+            category: cat.category,
+            description: `Prévision ${cat.category} - ${projectedYear}`,
+            amount: Math.round(projectedAmount * categoryRatio),
+            year: projectedYear,
+            isManual: false
+          });
+        });
+      }
+
+      setScenarios(prev => prev.map(s => 
+        s.id === currentScenarioId 
+          ? { ...s, items: [...s.items.filter(item => item.isManual), ...newItems] }
+          : s
+      ));
+      
+      setIsGeneratingForecast(false);
+    }, 500);
   };
 
   // Add/Edit forecast item
@@ -1171,11 +1306,23 @@ export const BudgetPrevisionnel: React.FC<BudgetPrevisionnelProps> = ({ tasks, o
 
   // Delete forecast item
   const handleDeleteItem = (id: string) => {
+    if (!id) {
+      // Cancel delete confirmation
+      setDeleteConfirmId(null);
+      return;
+    }
+    // Show confirmation
+    setDeleteConfirmId(id);
+  };
+
+  // Confirm delete forecast item
+  const handleConfirmDeleteItem = (id: string) => {
     setScenarios(prev => prev.map(s => 
       s.id === currentScenarioId 
         ? { ...s, items: s.items.filter(i => i.id !== id) }
         : s
     ));
+    setDeleteConfirmId(null);
   };
 
   // Create new scenario
@@ -1197,6 +1344,26 @@ export const BudgetPrevisionnel: React.FC<BudgetPrevisionnelProps> = ({ tasks, o
     if (currentScenarioId === id) {
       setCurrentScenarioId(scenarios[0].id);
     }
+  };
+
+  // Copy/duplicate scenario
+  const handleCopyScenario = (id: string) => {
+    const scenarioToCopy = scenarios.find(s => s.id === id);
+    if (!scenarioToCopy) return;
+    
+    const newId = generateId();
+    const copiedItems = scenarioToCopy.items.map(item => ({
+      ...item,
+      id: generateId()
+    }));
+    
+    setScenarios(prev => [...prev, {
+      id: newId,
+      name: `${scenarioToCopy.name} (copie)`,
+      items: copiedItems,
+      growthRate: scenarioToCopy.growthRate
+    }]);
+    setCurrentScenarioId(newId);
   };
 
   // Update growth rate
@@ -1381,15 +1548,19 @@ export const BudgetPrevisionnel: React.FC<BudgetPrevisionnelProps> = ({ tasks, o
               onSelectScenario={setCurrentScenarioId}
               onCreateScenario={handleCreateScenario}
               onDeleteScenario={handleDeleteScenario}
+              onCopyScenario={handleCopyScenario}
               onAddItem={() => setShowAddModal(true)}
               onEditItem={setEditingItem}
               onDeleteItem={handleDeleteItem}
+              onConfirmDeleteItem={handleConfirmDeleteItem}
               onGenerateForecast={generateForecastFromHistory}
               onGrowthRateChange={handleGrowthRateChange}
               availableCategories={availableCategories}
               CATEGORY_COLORS={CATEGORY_COLORS}
               customBudgetTypes={customBudgetTypes}
               formatCurrency={formatCurrency}
+              deleteConfirmId={deleteConfirmId}
+              isGeneratingForecast={isGeneratingForecast}
             />
           )}
 
