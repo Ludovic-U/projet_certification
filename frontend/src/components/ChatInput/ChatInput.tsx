@@ -31,6 +31,10 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
   const [showSettings, setShowSettings] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [history, setHistory] = useState<Message[]>([]);
+  const [speechSupported, setSpeechSupported] = useState(true);
+  const [ttsSupported, setTtsSupported] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [ttsError, setTtsError] = useState<string | null>(null);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
     voice: null,
     rate: 1,
@@ -42,7 +46,13 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
 
   // Load available voices
   useEffect(() => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    if (typeof window !== "undefined") {
+      if (!("speechSynthesis" in window)) {
+        console.warn("Speech Synthesis API not supported in this browser");
+        setTtsSupported(false);
+        return;
+      }
+      
       const loadVoices = () => {
         const availableVoices = window.speechSynthesis.getVoices();
         setVoices(availableVoices);
@@ -74,26 +84,82 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
   // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Check if SpeechRecognition is available
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = false;
-        recognitionRef.current.interimResults = true;
+      const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (!SpeechRecognitionAPI) {
+        console.warn("Speech Recognition API not supported in this browser");
+        setSpeechSupported(false);
+        return;
+      }
+      
+      try {
+        // Create new instance
+        const recognition = new SpeechRecognitionAPI();
         
+        // Configure recognition
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = "fr-FR";
+        recognition.maxAlternatives = 1;
+        
+        // Handle results - this is where voice gets converted to text
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        recognitionRef.current.onresult = (event: any) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const transcript = Array.from(event.results as any[])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((result: any) => result[0].transcript)
-            .join("");
-          setInput(transcript);
+        recognition.onresult = (event: any) => {
+          let finalTranscript = "";
+          let interimTranscript = "";
+          
+          // Process all results
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+          
+          // Use final transcript if available, otherwise interim
+          if (finalTranscript) {
+            setInput((prev) => prev + finalTranscript);
+          } else if (interimTranscript) {
+            setInput(interimTranscript);
+          }
         };
         
-        recognitionRef.current.onend = () => {
+        // Handle end of recognition
+        recognition.onend = () => {
           setIsListening(false);
         };
+        
+        // Handle errors
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error:", event.error);
+          setIsListening(false);
+          
+          switch (event.error) {
+            case "not-allowed":
+              setErrorMessage("Microphone non autorisé. Veuillez autoriser l'accès au microphone.");
+              break;
+            case "no-speech":
+              setErrorMessage("Aucune parole détectée. Veuillez réessayer.");
+              break;
+            case "network":
+              setErrorMessage("Erreur réseau. Vérifiez votre connexion Internet.");
+              break;
+            default:
+              setErrorMessage("Erreur de reconnaissance vocale.");
+          }
+        };
+        
+        // Store reference
+        recognitionRef.current = recognition;
+        
+      } catch (error) {
+        console.error("Failed to initialize SpeechRecognition:", error);
+        setSpeechSupported(false);
       }
     }
   }, []);
@@ -120,35 +186,74 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
   };
 
   const toggleListening = () => {
+    if (!speechSupported) {
+      setErrorMessage("La reconnaissance vocale n'est pas supportée par votre navigateur. Utilisez Chrome ou Edge.");
+      return;
+    }
+    
     if (recognitionRef.current) {
-      if (isListening) {
-        recognitionRef.current.stop();
-      } else {
-        recognitionRef.current.start();
-        setIsListening(true);
+      try {
+        if (isListening) {
+          // Stop listening
+          recognitionRef.current.stop();
+          setIsListening(false);
+        } else {
+          // Start listening
+          setErrorMessage(null);
+          setInput(""); // Clear input to start fresh
+          recognitionRef.current.start();
+          setIsListening(true);
+        }
+      } catch (error) {
+        console.error("Error toggling speech recognition:", error);
+        setIsListening(false);
+        setErrorMessage("Erreur lors de la reconnaissance vocale.");
       }
+    } else {
+      setErrorMessage("La reconnaissance vocale n'est pas disponible.");
     }
   };
 
   const handleTextToSpeech = (text: string) => {
-    if ("speechSynthesis" in window) {
-      if (isSpeaking) {
-        window.speechSynthesis.cancel();
-        setIsSpeaking(false);
-      } else {
-        const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Apply voice settings
-        if (voiceSettings.voice) {
-          utterance.voice = voiceSettings.voice;
-        }
-        utterance.rate = voiceSettings.rate;
-        utterance.pitch = voiceSettings.pitch;
-        
-        utterance.onend = () => setIsSpeaking(false);
-        window.speechSynthesis.speak(utterance);
-        setIsSpeaking(true);
+    if (!("speechSynthesis" in window)) {
+      setTtsError("La synthèse vocale n'est pas supportée par votre navigateur.");
+      return;
+    }
+    
+    try {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Apply voice settings
+      if (voiceSettings.voice) {
+        utterance.voice = voiceSettings.voice;
       }
+      utterance.rate = voiceSettings.rate;
+      utterance.pitch = voiceSettings.pitch;
+      utterance.lang = "fr-FR"; // Set French as default
+      
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setTtsError(null);
+      };
+      
+      utterance.onend = () => {
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = (event) => {
+        console.error("TTS Error:", event);
+        setIsSpeaking(false);
+        setTtsError("Erreur lors de la synthèse vocale.");
+      };
+      
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error("Error with speech synthesis:", error);
+      setTtsError("Erreur lors de la synthèse vocale.");
+      setIsSpeaking(false);
     }
   };
 
@@ -225,21 +330,50 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
               rows={1}
               disabled={isLoading}
             />
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-1 text-red-500 text-xs">
+                {errorMessage}
+              </div>
+            )}
+            {/* Listening Indicator */}
+            {isListening && (
+              <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-1 text-red-500 animate-pulse">
+                <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="text-xs font-medium">Écoute en cours...</span>
+              </div>
+            )}
           </div>
 
           {/* Text-to-Speech Button (Microphone) */}
-          <button
-            onClick={toggleListening}
-            className={cn(
-              "p-3 rounded-lg transition-colors",
-              isListening ? "bg-red-500 text-white" : "hover:bg-dark/5"
-            )}
-            aria-label={isListening ? "Arrêter l'écoute" : "Commencer la saisie vocale"}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-            </svg>
-          </button>
+          {speechSupported ? (
+            <button
+              onClick={toggleListening}
+              className={cn(
+                "p-3 rounded-lg transition-colors relative",
+                isListening ? "bg-red-500 text-white animate-pulse" : "hover:bg-dark/5"
+              )}
+              aria-label={isListening ? "Arrêter l'écoute" : "Commencer la saisie vocale"}
+            >
+              {isListening ? (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              )}
+            </button>
+          ) : (
+            <div className="p-3" title="Reconnaissance vocale non supportée">
+              <svg className="w-5 h-5 text-grey" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clipRule="evenodd" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+              </svg>
+            </div>
+          )}
 
           {/* Settings Button */}
           <button
@@ -343,9 +477,18 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
               </div>
 
               {/* Test Button */}
-              <Button onClick={testVoice} className="w-full bg-transparent border border-dark/10 hover:bg-dark/5">
-                Tester la voix
-              </Button>
+              {ttsSupported ? (
+                <>
+                  <Button onClick={testVoice} className="w-full bg-transparent border border-dark/10 hover:bg-dark/5">
+                    Tester la voix
+                  </Button>
+                  {ttsError && (
+                    <p className="text-red-500 text-sm mt-2">{ttsError}</p>
+                  )}
+                </>
+              ) : (
+                <p className="text-grey text-sm">La synthèse vocale n&apos;est pas supportée par votre navigateur.</p>
+              )}
             </div>
           </div>
         </div>
