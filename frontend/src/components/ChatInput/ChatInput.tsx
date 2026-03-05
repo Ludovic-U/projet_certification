@@ -85,17 +85,18 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
   // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Check if SpeechRecognition is available
+      // Check if SpeechRecognition is available (Chrome, Edge) or webkit prefix (Safari)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
       if (!SpeechRecognitionAPI) {
         console.warn("Speech Recognition API not supported in this browser");
         setSpeechSupported(false);
-        return;
+        // Even without SpeechRecognition, we can still try to check for microphone
+        // This allows the button to show if there's a microphone, even if browser doesn't support the API
       }
       
-      // Check if microphone is available/detected
+      // Check if microphone is available/detected (works in all modern browsers)
       const checkMicrophone = async () => {
         try {
           // First try to enumerate devices
@@ -126,6 +127,11 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
       };
       
       checkMicrophone();
+      
+      // Only proceed with SpeechRecognition initialization if the API exists
+      if (!SpeechRecognitionAPI) {
+        return;
+      }
       
       try {
         // Create new instance
@@ -220,7 +226,7 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
 
   const toggleListening = () => {
     if (!speechSupported) {
-      setErrorMessage("La reconnaissance vocale n'est pas supportée par votre navigateur. Utilisez Chrome ou Edge.");
+      setErrorMessage("La reconnaissance vocale n'est pas supportée par ce navigateur. Essayez Chrome, Edge ou Firefox.");
       return;
     }
     
@@ -384,14 +390,17 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
           </div>
 
           {/* Voice Input Button (Microphone) */}
-          {speechSupported && micDetected !== false ? (
+          {micDetected !== false ? (
             <button
               onClick={toggleListening}
+              disabled={!speechSupported}
               className={cn(
                 "p-3 rounded-lg transition-colors relative",
-                isListening ? "bg-red-500 text-white animate-pulse" : "hover:bg-dark/5"
+                isListening ? "bg-red-500 text-white animate-pulse" : "hover:bg-dark/5",
+                !speechSupported && "opacity-50 cursor-not-allowed"
               )}
               aria-label={isListening ? "Arrêter l'écoute" : "Commencer la saisie vocale"}
+              title={!speechSupported ? "Reconnaissance vocale non supportée par ce navigateur" : "Cliquer pour saisir la parole"}
             >
               {isListening ? (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -405,7 +414,7 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
               )}
             </button>
           ) : (
-            <div className="p-3" title={!speechSupported ? "Reconnaissance vocale non supportée par ce navigateur" : "Aucun microphone détecté sur cet appareil"}>
+            <div className="p-3" title="Aucun microphone détecté sur cet appareil">
               <svg className="w-5 h-5 text-grey" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clipRule="evenodd" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
