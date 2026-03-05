@@ -17,15 +17,51 @@ export interface ChatInputProps {
   className?: string;
 }
 
+interface VoiceSettings {
+  voice: SpeechSynthesisVoice | null;
+  rate: number;
+  pitch: number;
+}
+
 export function ChatInput({ onSendMessage, isLoading = false, className }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [history, setHistory] = useState<Message[]>([]);
+  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
+    voice: null,
+    rate: 1,
+    pitch: 1,
+  });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+
+  // Load available voices
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      const loadVoices = () => {
+        const availableVoices = window.speechSynthesis.getVoices();
+        setVoices(availableVoices);
+        // Set default voice (preferably French)
+        const frenchVoice = availableVoices.find((v) => v.lang.startsWith("fr"));
+        setVoiceSettings((prev) => ({
+          ...prev,
+          voice: frenchVoice || availableVoices[0] || null,
+        }));
+      };
+
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+
+      return () => {
+        window.speechSynthesis.onvoiceschanged = null;
+      };
+    }
+  }, []);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -101,6 +137,14 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
         setIsSpeaking(false);
       } else {
         const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Apply voice settings
+        if (voiceSettings.voice) {
+          utterance.voice = voiceSettings.voice;
+        }
+        utterance.rate = voiceSettings.rate;
+        utterance.pitch = voiceSettings.pitch;
+        
         utterance.onend = () => setIsSpeaking(false);
         window.speechSynthesis.speak(utterance);
         setIsSpeaking(true);
@@ -116,7 +160,7 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any).__handleTextToSpeech;
     };
-  }, [isSpeaking]);
+  }, [isSpeaking, voiceSettings]);
 
   const loadFromHistory = (message: Message) => {
     setInput(message.content);
@@ -125,6 +169,29 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
 
   const toggleHistory = () => {
     setShowHistory(!showHistory);
+    if (!showHistory) setShowSettings(false);
+  };
+
+  const toggleSettings = () => {
+    setShowSettings(!showSettings);
+    if (!showSettings) setShowHistory(false);
+  };
+
+  const handleVoiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedVoice = voices.find((v) => v.name === e.target.value);
+    setVoiceSettings((prev) => ({ ...prev, voice: selectedVoice || null }));
+  };
+
+  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVoiceSettings((prev) => ({ ...prev, rate: parseFloat(e.target.value) }));
+  };
+
+  const handlePitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVoiceSettings((prev) => ({ ...prev, pitch: parseFloat(e.target.value) }));
+  };
+
+  const testVoice = () => {
+    handleTextToSpeech("Ceci est un test de la synthèse vocale.");
   };
 
   return (
@@ -132,7 +199,7 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
       {/* Main Input Row */}
       <div className="max-w-4xl mx-auto p-4">
         <div className="flex items-end gap-3">
-          {/* Hamburger Menu Button */}
+          {/* Hamburger Menu Button (History) */}
           <button
             onClick={toggleHistory}
             className={cn(
@@ -174,6 +241,22 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
             </svg>
           </button>
 
+          {/* Settings Button */}
+          <button
+            onClick={toggleSettings}
+            className={cn(
+              "p-3 rounded-lg transition-colors",
+              showSettings ? "bg-dark text-white" : "hover:bg-dark/5"
+            )}
+            aria-label={showSettings ? "Fermer les paramètres" : "Ouvrir les paramètres"}
+            title="Paramètres vocaux"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+
           {/* Send Button */}
           <Button
             onClick={handleSend}
@@ -184,6 +267,89 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
           </Button>
         </div>
       </div>
+
+      {/* Settings Panel - appears below textarea when toggled */}
+      {showSettings && (
+        <div className="border-t border-dark/10 bg-light max-h-60 overflow-y-auto">
+          <div className="max-w-4xl mx-auto p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-semibold text-lg">Paramètres vocaux</h3>
+              <button 
+                onClick={toggleSettings} 
+                className="p-2 hover:bg-dark/5 rounded"
+                aria-label="Fermer les paramètres"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Voice Selection */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Voix</label>
+                <select
+                  value={voiceSettings.voice?.name || ""}
+                  onChange={handleVoiceChange}
+                  className="w-full p-2 border border-dark/10 rounded-lg bg-white"
+                >
+                  {voices.map((voice) => (
+                    <option key={voice.name} value={voice.name}>
+                      {voice.name} ({voice.lang})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Speed/Rate Control */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Vitesse: {voiceSettings.rate}x
+                </label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={voiceSettings.rate}
+                  onChange={handleRateChange}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-grey">
+                  <span>Lent</span>
+                  <span>Normal</span>
+                  <span>Rapide</span>
+                </div>
+              </div>
+
+              {/* Pitch Control */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Hauteur: {voiceSettings.pitch}
+                </label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={voiceSettings.pitch}
+                  onChange={handlePitchChange}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-grey">
+                  <span>Grave</span>
+                  <span>Normal</span>
+                  <span>Aigu</span>
+                </div>
+              </div>
+
+              {/* Test Button */}
+              <Button onClick={testVoice} className="w-full bg-transparent border border-dark/10 hover:bg-dark/5">
+                Tester la voix
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* History Panel - appears below textarea when toggled */}
       {showHistory && (
