@@ -33,6 +33,7 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
   const [history, setHistory] = useState<Message[]>([]);
   const [speechSupported, setSpeechSupported] = useState(true);
   const [ttsSupported, setTtsSupported] = useState(true);
+  const [micDetected, setMicDetected] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [ttsError, setTtsError] = useState<string | null>(null);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
@@ -93,6 +94,38 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
         setSpeechSupported(false);
         return;
       }
+      
+      // Check if microphone is available/detected
+      const checkMicrophone = async () => {
+        try {
+          // First try to enumerate devices
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const hasMicrophone = devices.some((device) => device.kind === "audioinput");
+          
+          if (!hasMicrophone) {
+            console.warn("No microphone detected on this device (enumerateDevices)");
+            setMicDetected(false);
+            return;
+          }
+          
+          // Also try to get user media to confirm microphone is actually accessible
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // If we get here, microphone is accessible - stop the stream
+            stream.getTracks().forEach((track) => track.stop());
+            setMicDetected(true);
+          } catch {
+            // Permission denied but microphone exists
+            console.warn("Microphone permission denied but device exists");
+            setMicDetected(true); // Still show the button, user can grant permission
+          }
+        } catch (error) {
+          console.error("Error checking for microphone:", error);
+          setMicDetected(false);
+        }
+      };
+      
+      checkMicrophone();
       
       try {
         // Create new instance
@@ -188,6 +221,11 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
   const toggleListening = () => {
     if (!speechSupported) {
       setErrorMessage("La reconnaissance vocale n'est pas supportée par votre navigateur. Utilisez Chrome ou Edge.");
+      return;
+    }
+    
+    if (micDetected === false) {
+      setErrorMessage("Aucun microphone détecté sur cet appareil.");
       return;
     }
     
@@ -345,8 +383,8 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
             )}
           </div>
 
-          {/* Text-to-Speech Button (Microphone) */}
-          {speechSupported ? (
+          {/* Voice Input Button (Microphone) */}
+          {speechSupported && micDetected !== false ? (
             <button
               onClick={toggleListening}
               className={cn(
@@ -367,7 +405,7 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
               )}
             </button>
           ) : (
-            <div className="p-3" title="Reconnaissance vocale non supportée">
+            <div className="p-3" title={!speechSupported ? "Reconnaissance vocale non supportée par ce navigateur" : "Aucun microphone détecté sur cet appareil"}>
               <svg className="w-5 h-5 text-grey" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clipRule="evenodd" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
