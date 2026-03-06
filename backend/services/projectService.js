@@ -44,24 +44,38 @@ module.exports.createProject = async (data) => {
     }
     const typesData = Object.keys(typesRelation).length > 0 ? typesRelation : undefined;
 
-    const newProject = await prisma.project.create({
-      data: {
-        projectName: data.projectName,
-        startDate: data.startDate ? new Date(data.startDate) : new Date(),
-        endDate: data.endDate ? new Date(data.endDate) : null,
-        projectStage: data.projectStage ?? "Idéation",
-        projectStatus: data.projectStatus ?? "en cours",
-        projectDesc: data.projectDesc ?? null,
-        manager: { connect: { userId: managerId } },
-        client: { connect: { clientId: clientId } },
-        types: typesData,
-      },
-      include: {
-        manager: true,
-        client: true,
-        types: true,
-        questions: true,
-      },
+    const newProject = await prisma.$transaction(async (tx) => {
+      const createdProject = await tx.project.create({
+        data: {
+          projectName: data.projectName,
+          startDate: data.startDate ? new Date(data.startDate) : new Date(),
+          endDate: data.endDate ? new Date(data.endDate) : null,
+          projectStage: data.projectStage ?? "Idéation",
+          projectStatus: data.projectStatus ?? "en cours",
+          projectDesc: data.projectDesc ?? null,
+          manager: { connect: { userId: managerId } },
+          client: { connect: { clientId: clientId } },
+          types: typesData,
+        },
+        include: {
+          manager: true,
+          client: true,
+          types: true,
+          questions: true,
+        },
+      });
+
+      await tx.ideationChatBotMistral.upsert({
+        where: { projectId: createdProject.projectId },
+        update: {},
+        create: {
+          projectId: createdProject.projectId,
+          chatSummary: null,
+          lastMessages: null,
+        },
+      });
+
+      return createdProject;
     });
 
     // Créer la tâche todo initiale

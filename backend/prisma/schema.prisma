@@ -123,6 +123,7 @@ model Project {
   types            Type[]            @relation("ProjectType")
   decisions        ProjectDecision[]
   impacts          ProjectImpact[]
+  ideationChatbot  IdeationChatBotMistral?
 }
 
 model Todo {
@@ -350,10 +351,11 @@ model Question {
   projects  Project[]  @relation("ProjectQuestion")
 
   // Self relations
-  parent                             Question?         @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
-  children                           Question[]        @relation("QuestionHierarchy")
-  QuestionCategory                   QuestionCategory? @relation(fields: [questionCategoryQuestionCategoryId], references: [questionCategoryId])
+  parent                             Question?               @relation("QuestionHierarchy", fields: [questionIdParent], references: [questionId])
+  children                           Question[]              @relation("QuestionHierarchy")
+  QuestionCategory                   QuestionCategory?       @relation(fields: [questionCategoryQuestionCategoryId], references: [questionCategoryId])
   questionCategoryQuestionCategoryId Int?
+  ideationChatBotMistrals            IdeationChatBotMistral[] @relation("IdeationRemainingQuestions")
 }
 
 model Option {
@@ -475,4 +477,14 @@ enum BudgetCategory {
   EQUIPEMENTS_PEDAGOGIQUES
   PRESTATIONS
   COMMUNICATION_EVENEMENTIEL
+}
+
+// MISTRAL MEMORY
+model IdeationChatBotMistral {
+  chatbotId               Int        @id @default(autoincrement())
+  projectId               Int        @unique
+  chatSummary             String?
+  lastMessages            String? // JSON
+  project                 Project    @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  remainingQuestionsToAsk Question[] @relation("IdeationRemainingQuestions")
 }

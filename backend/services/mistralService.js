@@ -267,3 +267,4 @@ exports.GenerateMindmapFromResponses = async (projectId) => {
 exports.testMistralAPI = async (testContent) => {
     return exports.GenerateGanttMistralAPI(testContent);
 };
+
