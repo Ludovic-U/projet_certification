@@ -92,20 +92,10 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
     }
   }, [input]);
 
-  // Initialize speech recognition
+  // Initialize speech recognition - DISABLED for now, using Whisper only
+  // Web Speech API can be re-enabled later
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Check if SpeechRecognition is available (Chrome, Edge) or webkit prefix (Safari)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      
-      if (!SpeechRecognitionAPI) {
-        console.warn("Speech Recognition API not supported in this browser");
-        setSpeechSupported(false);
-        // Even without SpeechRecognition, we can still try to check for microphone
-        // This allows the button to show if there's a microphone, even if browser doesn't support the API
-      }
-      
       // Check if microphone is available/detected (works in all modern browsers)
       const checkMicrophone = async () => {
         try {
@@ -137,79 +127,6 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
       };
       
       checkMicrophone();
-      
-      // Only proceed with SpeechRecognition initialization if the API exists
-      if (!SpeechRecognitionAPI) {
-        return;
-      }
-      
-      try {
-        // Create new instance
-        const recognition = new SpeechRecognitionAPI();
-        
-        // Configure recognition
-        recognition.continuous = false;
-        recognition.interimResults = true;
-        recognition.lang = "fr-FR";
-        recognition.maxAlternatives = 1;
-        
-        // Handle results - this is where voice gets converted to text
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        recognition.onresult = (event: any) => {
-          let finalTranscript = "";
-          let interimTranscript = "";
-          
-          // Process all results
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript;
-            } else {
-              interimTranscript += transcript;
-            }
-          }
-          
-          // Use final transcript if available, otherwise interim
-          if (finalTranscript) {
-            setInput((prev) => prev + finalTranscript);
-          } else if (interimTranscript) {
-            setInput(interimTranscript);
-          }
-        };
-        
-        // Handle end of recognition
-        recognition.onend = () => {
-          setIsListening(false);
-        };
-        
-        // Handle errors
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        recognition.onerror = (event: any) => {
-          console.error("Speech recognition error:", event.error);
-          setIsListening(false);
-          
-          switch (event.error) {
-            case "not-allowed":
-              setErrorMessage("Microphone non autorisé. Veuillez autoriser l'accès au microphone.");
-              break;
-            case "no-speech":
-              setErrorMessage("Aucune parole détectée. Veuillez réessayer.");
-              break;
-            case "network":
-              setErrorMessage("Erreur réseau. Vérifiez votre connexion Internet.");
-              break;
-            default:
-              setErrorMessage("Erreur de reconnaissance vocale.");
-          }
-        };
-        
-        // Store reference
-        recognitionRef.current = recognition;
-        
-      } catch (error) {
-        console.error("Failed to initialize SpeechRecognition:", error);
-        setSpeechSupported(false);
-      }
     }
   }, []);
 
@@ -241,27 +158,9 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
       return;
     }
     
-    // If Web Speech API is supported, use it
-    if (speechSupported && recognitionRef.current) {
-      try {
-        if (isListening) {
-          // Stop listening
-          recognitionRef.current.stop();
-          setIsListening(false);
-        } else {
-          // Start listening
-          setErrorMessage(null);
-          setInput(""); // Clear input to start fresh
-          recognitionRef.current.start();
-          setIsListening(true);
-        }
-      } catch (error) {
-        console.error("Error toggling speech recognition:", error);
-        setIsListening(false);
-        setErrorMessage("Erreur lors de la reconnaissance vocale.");
-      }
-    } else if (micDetected !== false) {
-      // Use Whisper as fallback
+    // For now, always use Whisper (disabled Web Speech API to fix issues)
+    // TODO: Re-enable Web Speech API once issues are resolved
+    if (micDetected !== false) {
       setErrorMessage(null);
       whisperRecognition.startListening();
     } else {
