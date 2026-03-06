@@ -2,8 +2,12 @@
 
 import { useState, useEffect } from "react";
 import api_backend from "@/api/axiosInstance";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 
 export default function GenerateGanttPage() {
+  const { user } = useUser();
+  const router = useRouter();
   const [result, setResult] = useState("");
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
@@ -11,12 +15,21 @@ export default function GenerateGanttPage() {
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   // const [inputMode, setInputMode] = useState("both"); // 'text', 'file', or 'both'
 
-  // Fetch projects on mount
+  // Check authorization on mount
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (user && !user.roles?.includes("super_admin")) {
+      // Not authorized, redirect to home
+      router.push("/");
+    } else if (user) {
+      setIsAuthorized(true);
+      setCheckingAuth(false);
+      fetchProjects();
+    }
+  }, [user]);
 
   async function fetchProjects() {
     try {
@@ -125,6 +138,23 @@ export default function GenerateGanttPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Show loading while checking authorization
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Vérification des droits...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authorized
+  if (!isAuthorized) {
+    return null;
   }
 
   return (

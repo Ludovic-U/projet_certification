@@ -17,7 +17,7 @@ module.exports.canAttributeRole = (assigningUserRole, roleToAssign) => {
   return allowedRoles.includes(roleToAssign);
 }
 
-// Exemple d’utilisation
+// Exemple d'utilisation
 // checkPermission(user, "project:create:any");
 // checkPermission(user, ["project:create:any", "project:create:org"]); 
 module.exports.checkPermission = (user, permissionsRequired) => {
@@ -42,26 +42,50 @@ module.exports.checkPermission = (user, permissionsRequired) => {
 };
 
 
+/**
+ * Check if user has super_admin role
+ * @param {Object} user - User object with roles array
+ * @returns {boolean} - True if user has super_admin role
+ */
+module.exports.isSuperAdmin = (user) => {
+  if (!user || !user.roles) {
+    return false;
+  }
+  return user.roles.includes('super_admin');
+}
 
-
-
-// Obsolete functions, kept for reference
-
+/**
+ * Check if user has admin level access (super_admin or admin_client)
+ * @param {Object} user - User object with roles array
+ * @returns {boolean} - True if user has admin level access
+ */
 module.exports.isAdmin = (user) => {
-  if (user && user.roles.includes('admin')) {
-    return true; // User is admin
+  if (!user || !user.roles) {
+    return false;
   }
-  return false; // User is not admin
+  return user.roles.includes('super_admin') || user.roles.includes('admin_client');
 }
-module.exports.isManager = (user) => {
-  if (user && user.roles.includes('manager')) {
-    return true; // User is manager
-  }
-  return false; // User is not manager
-}
+
+/**
+ * Check if user has chef_de_projet role
+ * @param {Object} user - User object with roles array
+ * @returns {boolean} - True if user has chef_de_projet role
+ */
 module.exports.isProjectManager = (user) => {
-  if (user && user.roles.includes('project_manager')){
-    return true; // User is project manager
+  if (!user || !user.roles) {
+    return false;
   }
-  return false; // User is not project manager
+  return user.roles.includes('chef_de_projet');
+}
+
+/**
+ * Check if user has contributeur role
+ * @param {Object} user - User object with roles array
+ * @returns {boolean} - True if user has contributeur role
+ */
+module.exports.isContributeur = (user) => {
+  if (!user || !user.roles) {
+    return false;
+  }
+  return user.roles.includes('contributeur');
 }

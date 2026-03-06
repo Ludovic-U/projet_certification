@@ -17,14 +17,23 @@ import { useModal } from "@/hooks";
 import { FontAwesomeIcon, Icons } from "@/lib/icons";
 import api_backend from "@/api/axiosInstance";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
 
 export default function FinanceursPage() {
+    const { user } = useUser();
     const router = useRouter();
     const modal = useModal();
 
     const [financeurs, setFinanceurs] = useState<any[]>([]);
     const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
+
+    // Check authorization on mount - redirect if not super_admin
+    useEffect(() => {
+        if (user && !user.roles?.includes("super_admin")) {
+            router.push("/");
+        }
+    }, [user]);
 
     const fetchFinanceurs = () => {
         console.log("Fetching financeurs...");

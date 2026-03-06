@@ -6,6 +6,8 @@ import api_backend from '../../../api/axiosInstance';
 import { Input } from '@/components/ui/Input';
 import {Button} from '@/components/ui/Button/Button';
 import helpDictionaryInitial from '@/config/help-dictionary.json';
+import { useUser } from '@/context/UserContext';
+import { useRouter } from 'next/navigation';
 
 interface AppConfig {
   subtitles: {
@@ -57,6 +59,8 @@ interface QuestionCategory {
 }
 
 export default function AdminConfigPage() {
+  const { user } = useUser();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -66,10 +70,25 @@ export default function AdminConfigPage() {
   const [juridiquesClients, setJuridiquesClients] = useState<string[]>([]);
   const [questionCategories, setQuestionCategories] = useState<QuestionCategory[]>([]);
   const [helpDict, setHelpDict] = useState<HelpDictionary>(helpDictionaryInitial);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   
   const { control, handleSubmit, reset, formState } = useForm<AppConfig>();
 
+  // Check authorization on mount
   useEffect(() => {
+    if (user && !user.roles?.includes("super_admin")) {
+      router.push("/");
+    } else if (user) {
+      setIsAuthorized(true);
+      setCheckingAuth(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    // Don't fetch if not authorized
+    if (!isAuthorized) return;
+    
     const fetchConfig = async () => {
       try {
         const [configResponse, typesResponse, categoriesResponse] = await Promise.all([
@@ -202,32 +221,16 @@ export default function AdminConfigPage() {
     }
   };
 
-  // Help dictionary entry management
-  const updateHelpEntry = (key: keyof HelpDictionary, index: number, field: 'term' | 'definition', value: string) => {
-    const newEntries = [...helpDict[key]];
-    newEntries[index] = { ...newEntries[index], [field]: value };
-    setHelpDict({ ...helpDict, [key]: newEntries });
-    setHasUnsavedChanges(true);
-  };
-
-  const addHelpEntry = (key: keyof HelpDictionary) => {
-    const newEntries = [...helpDict[key], { term: '', definition: '' }];
-    setHelpDict({ ...helpDict, [key]: newEntries });
-    setHasUnsavedChanges(true);
-  };
-
-  const removeHelpEntry = (key: keyof HelpDictionary, index: number) => {
-    const newEntries = helpDict[key].filter((_, i) => i !== index);
-    setHelpDict({ ...helpDict, [key]: newEntries });
-    setHasUnsavedChanges(true);
-  };
-
-  if (loading) {
+  if (loading || checkingAuth) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <p>Chargement de la configuration...</p>
+        <p>Vérification des droits...</p>
       </div>
     );
+  }
+
+  if (!isAuthorized) {
+    return null;
   }
 
   return (

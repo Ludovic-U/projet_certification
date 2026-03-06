@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { PageHeader } from "@/components/ui";
+import { ChatInput } from "@/components/ChatInput";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useConfig } from "@/context/ConfigContext";
 import { useLocalStorage } from "@/context/LocalStorageContext";
@@ -22,6 +23,7 @@ export default function IdeationPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabKey>(() => getTabFromSearchParam(searchParams.get("tab")));
+  const [isLoading, setIsLoading] = useState(false);
   const projectId = Array.isArray(params.projectId)
     ? params.projectId[0]
     : params.projectId;
@@ -46,6 +48,42 @@ export default function IdeationPage() {
     const query = nextParams.toString();
     const nextUrl = query ? `${pathname}?${query}` : pathname;
     router.replace(nextUrl, { scroll: false });
+  };
+
+  const handleSendMessage = async (message: string) => {
+    setIsLoading(true);
+    try {
+      // TODO: Replace with your actual AI chatbot API endpoint
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          message,
+          projectId,
+          clientId 
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to get response from AI");
+      }
+      
+      const data = await response.json();
+      
+      // If the AI response should be spoken aloud, call the TTS function
+      if (data.response && window.__handleTextToSpeech) {
+        window.__handleTextToSpeech(data.response);
+      }
+      
+      // Handle the response data as needed
+      console.log("AI Response:", data);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!projectId || !clientId) {
@@ -96,6 +134,10 @@ export default function IdeationPage() {
       {activeTab === "idee-projet" && (
         <IdeaProject clientId={clientId} projectId={projectId} />
       )}
+      <ChatInput 
+        onSendMessage={handleSendMessage} 
+        isLoading={isLoading}
+      />
     </div>
   );
 }
