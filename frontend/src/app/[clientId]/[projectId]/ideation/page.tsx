@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import { PageHeader } from "@/components/ui";
-import { ChatInput } from "@/components/ChatInput";
+import { ChatInput, type Message } from "@/components/ChatInput";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useConfig } from "@/context/ConfigContext";
 import { useLocalStorage } from "@/context/LocalStorageContext";
+import api_backend from "@/api/axiosInstance";
+import axios from "axios";
 import StrategicAnalysisTab from "./tabs/StrategicAnalysisTab";
 import IdeaProject from "./tabs/IdeaProject";
 
@@ -24,6 +26,7 @@ export default function IdeationPage() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabKey>(() => getTabFromSearchParam(searchParams.get("tab")));
   const [isLoading, setIsLoading] = useState(false);
+  const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const projectId = Array.isArray(params.projectId)
     ? params.projectId[0]
     : params.projectId;
@@ -34,6 +37,55 @@ export default function IdeationPage() {
   React.useEffect(() => {
     setActiveTab(getTabFromSearchParam(searchParams.get("tab")));
   }, [searchParams]);
+
+  React.useEffect(() => {
+    if (!projectId) {
+      return;
+    }
+
+    const loadChatHistory = async () => {
+      try {
+        const response = await api_backend.get(`/ideation-chatbot/project/${projectId}`);
+        const responseData = response.data as { lastMessages?: string | null };
+
+        if (!responseData.lastMessages) {
+          setChatHistory([]);
+          return;
+        }
+
+        const parsedMessages = JSON.parse(responseData.lastMessages) as Array<{
+          role?: "user" | "assistant";
+          content?: string;
+          timestamp?: string;
+        }>;
+
+        if (!Array.isArray(parsedMessages)) {
+          setChatHistory([]);
+          return;
+        }
+
+        const normalizedHistory: Message[] = parsedMessages
+          .filter((message) => message && typeof message.content === "string" && message.content.trim().length > 0)
+          .map((message, index) => ({
+            id: `${index}-${message.timestamp ?? Date.now()}`,
+            role: message.role === "assistant" ? "assistant" : "user",
+            content: message.content!.trim(),
+            timestamp: message.timestamp ? new Date(message.timestamp) : new Date(),
+          }));
+
+        setChatHistory(normalizedHistory);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          setChatHistory([]);
+          return;
+        }
+
+        console.error("Error loading ideation chat history:", error);
+      }
+    };
+
+    void loadChatHistory();
+  }, [projectId]);
 
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab);
@@ -50,37 +102,31 @@ export default function IdeationPage() {
     router.replace(nextUrl, { scroll: false });
   };
 
-  const handleSendMessage = async (message: string) => {
+  const handleSendMessage = async (message: string): Promise<string | undefined> => {
     setIsLoading(true);
     try {
-      // TODO: Replace with your actual AI chatbot API endpoint
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
+      const response = await api_backend.post(
+        `/ideation-chatbot/project/${projectId}/chat`,
+        {
           message,
-          projectId,
-          clientId 
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error("Failed to get response from AI");
-      }
-      
-      const data = await response.json();
+          clientId,
+        }
+      );
+
+      const responseData = response.data as { response?: string };
+      const assistantText = responseData.response?.trim();
       
       // If the AI response should be spoken aloud, call the TTS function
-      if (data.response && window.__handleTextToSpeech) {
-        window.__handleTextToSpeech(data.response);
+      if (assistantText && window.__handleTextToSpeech) {
+        window.__handleTextToSpeech(assistantText);
       }
       
       // Handle the response data as needed
-      console.log("AI Response:", data);
+      console.log("AI Response:", responseData);
+      return assistantText;
     } catch (error) {
       console.error("Error sending message:", error);
+      return undefined;
     } finally {
       setIsLoading(false);
     }
@@ -136,6 +182,7 @@ export default function IdeationPage() {
       )}
       <ChatInput 
         onSendMessage={handleSendMessage} 
+        initialHistory={chatHistory}
         isLoading={isLoading}
       />
     </div>

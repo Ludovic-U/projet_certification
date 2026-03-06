@@ -13,7 +13,8 @@ export interface Message {
 }
 
 export interface ChatInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string) => Promise<string | undefined>;
+  initialHistory?: Message[];
   isLoading?: boolean;
   className?: string;
 }
@@ -24,7 +25,7 @@ interface VoiceSettings {
   pitch: number;
 }
 
-export function ChatInput({ onSendMessage, isLoading = false, className }: ChatInputProps) {
+export function ChatInput({ onSendMessage, initialHistory = [], isLoading = false, className }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -92,6 +93,11 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
     }
   }, [input]);
 
+  // Hydrate chat history provided by the page (e.g. persisted DB conversation)
+  useEffect(() => {
+    setHistory(initialHistory);
+  }, [initialHistory]);
+
   // Initialize speech recognition - DISABLED for now, using Whisper only
   // Web Speech API can be re-enabled later
   useEffect(() => {
@@ -130,24 +136,35 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
     }
   }, []);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (input.trim() && !isLoading) {
+      const content = input.trim();
       const newMessage: Message = {
         id: Date.now().toString(),
         role: "user",
-        content: input.trim(),
+        content,
         timestamp: new Date(),
       };
       setHistory((prev) => [...prev, newMessage]);
-      onSendMessage(input.trim());
       setInput("");
+
+      const assistantReply = await onSendMessage(content);
+      if (assistantReply) {
+        const assistantMessage: Message = {
+          id: `${Date.now()}-assistant`,
+          role: "assistant",
+          content: assistantReply,
+          timestamp: new Date(),
+        };
+        setHistory((prev) => [...prev, assistantMessage]);
+      }
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   };
 
@@ -365,7 +382,9 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
 
           {/* Send Button */}
           <Button
-            onClick={handleSend}
+            onClick={() => {
+              void handleSend();
+            }}
             disabled={!input.trim() || isLoading}
             loading={isLoading}
           >

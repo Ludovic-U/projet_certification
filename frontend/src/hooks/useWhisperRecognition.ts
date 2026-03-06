@@ -1,13 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { pipeline, env } from "@xenova/transformers";
-
-// Configure environment
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(env as any).allowLocalModels = false;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(env as any).useBrowserCache = true;
 
 // Model configuration - using base model for better accuracy
 const MODEL_ID = "Xenova/whisper-base";
@@ -30,6 +23,30 @@ export interface UseWhisperRecognitionReturn {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PipelineType = any;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TransformersModule = any;
+
+let transformersModulePromise: Promise<TransformersModule> | null = null;
+
+async function loadTransformersModule(): Promise<TransformersModule> {
+  if (typeof window === "undefined") {
+    throw new Error("Transformers can only be loaded in the browser.");
+  }
+
+  if (!transformersModulePromise) {
+    transformersModulePromise = import("@xenova/transformers").then((mod) => {
+      // Configure environment after module is loaded to avoid SSR/runtime import crashes.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mod.env as any).allowLocalModels = false;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mod.env as any).useBrowserCache = true;
+      return mod;
+    });
+  }
+
+  return transformersModulePromise;
+}
 
 export function useWhisperRecognition(
   props: UseWhisperRecognitionProps
@@ -69,6 +86,7 @@ export function useWhisperRecognition(
 
     try {
       console.log("Loading Whisper model...");
+      const { pipeline } = await loadTransformersModule();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const recognizer = await pipeline(TASK, MODEL_ID) as any;
       recognizerRef.current = recognizer;
