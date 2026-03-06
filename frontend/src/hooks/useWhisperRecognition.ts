@@ -9,8 +9,8 @@ import { pipeline, env } from "@xenova/transformers";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (env as any).useBrowserCache = true;
 
-// Model configuration - using tiny model for faster loading
-const MODEL_ID = "Xenova/whisper-tiny";
+// Model configuration - using base model for better accuracy
+const MODEL_ID = "Xenova/whisper-base";
 const TASK = "automatic-speech-recognition";
 
 export interface UseWhisperRecognitionProps {
@@ -34,7 +34,7 @@ type PipelineType = any;
 export function useWhisperRecognition(
   props: UseWhisperRecognitionProps
 ): UseWhisperRecognitionReturn {
-  const language = props.language || "french";
+  const language = props.language || "fr"; // Use ISO 639-1 code
   const onTranscript = props.onTranscript;
 
   const [isLoading, setIsLoading] = useState(false);
@@ -87,35 +87,54 @@ export function useWhisperRecognition(
   // Convert audio blob to transcript using Whisper
   const processAudio = useCallback(
     async (audioBlob: Blob): Promise<void> => {
+      console.log("Processing audio blob, size:", audioBlob.size);
+      
       const recognizer = await loadModel();
       if (!recognizer) {
+        console.error("No recognizer available");
         return;
       }
 
       try {
         // Convert blob to array buffer
         const arrayBuffer = await audioBlob.arrayBuffer();
+        console.log("ArrayBuffer created, length:", arrayBuffer.byteLength);
+        
         const audioContext = new (window.AudioContext ||
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (window as any).webkitAudioContext)();
+        console.log("AudioContext sample rate:", audioContext.sampleRate);
+        
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        console.log("AudioBuffer duration:", audioBuffer.duration, "seconds");
 
         // Convert AudioBuffer to Float32Array
         const channelData = audioBuffer.getChannelData(0);
         const samplingRate = audioBuffer.sampleRate;
 
         // Run transcription
+        console.log("Running transcription with language:", language, "sampling rate:", samplingRate);
         const result = await recognizer(channelData, {
           sampling_rate: samplingRate,
-          language: language,
         });
+
+        console.log("Transcription result:", result);
 
         if (result.text) {
           const text = result.text.trim();
-          setTranscript(text);
-          if (onTranscript) {
-            onTranscript(text);
+          console.log("Transcribed text:", text);
+          if (text && text.length > 0) {
+            setTranscript(text);
+            if (onTranscript) {
+              onTranscript(text);
+            }
+          } else {
+            console.warn("Empty transcription result");
+            setError("Aucun texte détecté. Veuillez parler plus clairement.");
           }
+        } else {
+          console.warn("No text in result");
+          setError("Impossible de détecter la parole. Veuillez réessayer.");
         }
       } catch (err) {
         console.error("Transcription error:", err);
