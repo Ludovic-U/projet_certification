@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui";
 import { cn } from "@/utils/utils";
+import { useWhisperRecognition } from "@/hooks/useWhisperRecognition";
 
 export interface Message {
   id: string;
@@ -44,6 +45,15 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+
+  // Whisper recognition hook (used as fallback)
+  const whisperRecognition = useWhisperRecognition({
+    language: "fr",
+    onTranscript: (text) => {
+      setInput(text);
+      setIsListening(false);
+    },
+  });
 
   // Load available voices
   useEffect(() => {
@@ -225,17 +235,14 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
   };
 
   const toggleListening = () => {
-    if (!speechSupported) {
-      setErrorMessage("La reconnaissance vocale n'est pas supportée par ce navigateur. Essayez Chrome, Edge ou Firefox.");
+    // If Whisper is already listening, stop it
+    if (whisperRecognition.isListening) {
+      whisperRecognition.stopListening();
       return;
     }
     
-    if (micDetected === false) {
-      setErrorMessage("Aucun microphone détecté sur cet appareil.");
-      return;
-    }
-    
-    if (recognitionRef.current) {
+    // If Web Speech API is supported, use it
+    if (speechSupported && recognitionRef.current) {
       try {
         if (isListening) {
           // Stop listening
@@ -253,10 +260,24 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
         setIsListening(false);
         setErrorMessage("Erreur lors de la reconnaissance vocale.");
       }
+    } else if (micDetected !== false) {
+      // Use Whisper as fallback
+      setErrorMessage(null);
+      whisperRecognition.startListening();
     } else {
-      setErrorMessage("La reconnaissance vocale n'est pas disponible.");
+      setErrorMessage("Aucun microphone détecté sur cet appareil.");
     }
   };
+
+  // Sync Whisper state with local state
+  useEffect(() => {
+    if (whisperRecognition.isListening) {
+      setIsListening(true);
+    }
+    if (whisperRecognition.error) {
+      setErrorMessage(whisperRecognition.error);
+    }
+  }, [whisperRecognition.isListening, whisperRecognition.error]);
 
   const handleTextToSpeech = (text: string) => {
     if (!("speechSynthesis" in window)) {
@@ -393,16 +414,21 @@ export function ChatInput({ onSendMessage, isLoading = false, className }: ChatI
           {micDetected !== false ? (
             <button
               onClick={toggleListening}
-              disabled={!speechSupported}
+              disabled={whisperRecognition.isLoading}
               className={cn(
                 "p-3 rounded-lg transition-colors relative",
                 isListening ? "bg-red-500 text-white animate-pulse" : "hover:bg-dark/5",
-                !speechSupported && "opacity-50 cursor-not-allowed"
+                whisperRecognition.isLoading && "opacity-50 cursor-not-allowed"
               )}
               aria-label={isListening ? "Arrêter l'écoute" : "Commencer la saisie vocale"}
-              title={!speechSupported ? "Reconnaissance vocale non supportée par ce navigateur" : "Cliquer pour saisir la parole"}
+              title={whisperRecognition.isLoading ? "Chargement du modèle..." : "Cliquer pour saisir la parole"}
             >
-              {isListening ? (
+              {whisperRecognition.isLoading ? (
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : isListening ? (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
                   <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
