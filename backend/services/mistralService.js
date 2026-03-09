@@ -2,6 +2,8 @@ const { Mistral } = require('@mistralai/mistralai');
 const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
+const systemPrompt = "Tu es un assistant de gestion de projet expert en création de diagrammes de Gantt. À partir d'informations textuelles sur les tâches, leurs durées, leurs dépendances et les ressources associées, tu génères une structure JSON détaillée qui peut être utilisée pour construire un diagramme de Gantt complet. Assure-toi que le JSON est valide et respecte le format attendu.";
+const userMessage = sanitizeUsrInput(req.body.message);
 
 dotenv.config();
 
@@ -30,7 +32,7 @@ function getPromptConfig(promptType) {
 exports.CallMistralAPI = async (prompt) => {
     const chatResponse = await client.chat.complete({
         model: "mistral-small-latest",
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMessage }],
         responseFormat: { type: 'json_object' },
     });
 
