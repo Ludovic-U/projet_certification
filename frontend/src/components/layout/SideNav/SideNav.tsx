@@ -7,9 +7,10 @@ import { useParams, usePathname } from "next/navigation"; // Hook pour récupér
 import { SIDENAV_ITEMS } from "./constants"; // Liste des items du menu (icônes, titres, liens...)
 import { SideNavItem, SideNavProps } from "./types"; // Type TypeScript décrivant la forme d'un item de menu
 import { FontAwesomeIcon, Icons } from "@/lib/icons"; // Icones utilisés dans la navbar
-import { Button, Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
+import { Button, Modal, Tooltip } from "@/components/ui"; // Composant Tooltip pour affichage au survol
 import { useLocalStorage } from "@/context/LocalStorageContext";
 import { useUser } from "@/context/UserContext";
+import { useModal } from "@/hooks";
 
 
 // ------------------------------------------------------------
@@ -33,6 +34,9 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     // Empêche le rendu prématuré de certains éléments côté serveur
     // (ex: dépendants du contexte client / localStorage).
     const [mounted, setMounted] = useState(false);
+    const feedbackModal = useModal();
+    const [feedbackMessage, setFeedbackMessage] = useState("");
+    const [feedbackError, setFeedbackError] = useState("");
 
     // Ouvre / ferme un sous-menu principal en fonction de son index.
     // Si on reclique sur le même index, on le referme.
@@ -61,6 +65,33 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
     React.useEffect(() => {
         setMounted(true);
     }, []);
+
+    const feedbackRecipient = process.env.NEXT_PUBLIC_FEEDBACK_EMAIL || "contact@figuresdeskills.fr";
+
+    const handleOpenFeedbackModal = () => {
+        setFeedbackMessage("");
+        setFeedbackError("");
+        feedbackModal.openModal();
+    };
+
+    const handleSendFeedback = () => {
+        if (!feedbackMessage.trim()) {
+            setFeedbackError("Merci de renseigner votre feedback.");
+            return;
+        }
+
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const currentUrl = window.location.href;
+        const body = `${currentUrl}\n\n${feedbackMessage.trim()}`;
+        const subject = `Feedback application - ${data?.projectName || "F2S"}`;
+        const mailtoLink = `mailto:${feedbackRecipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        window.location.href = mailtoLink;
+        feedbackModal.closeModal();
+    };
 
     return (
                 // Conteneur global de la sidebar:
@@ -104,7 +135,32 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                   6) rendre chaque item via <MenuItem />
                 */}
                 <div className={`flex flex-col space-y-2 md:px-6 mt-8 overflow-y-auto flex-1 pb-20 ${isCollapsed ? "items-center px-0" : ""}`}>
-                    {mounted && SIDENAV_ITEMS
+                    {mounted && (
+                    <>
+                    {isCollapsed ? (
+                        <Tooltip content="Feedback" position="rightMenu">
+                            <Button
+                             size="icon"
+                             variant="secondary"
+                             onClick={handleOpenFeedbackModal}
+                             className="mb-1"
+                            >
+                                <FontAwesomeIcon icon={Icons.envelope} />
+                            </Button>
+                        </Tooltip>
+                    ) : (
+                        <Button
+                         size="sm"
+                         variant="secondary"
+                         onClick={handleOpenFeedbackModal}
+                         className="w-full justify-start mb-1"
+                        >
+                            <FontAwesomeIcon icon={Icons.envelope} />
+                            Feedback application
+                        </Button>
+                    )}
+
+                    {SIDENAV_ITEMS
                     
                     // Garde uniquement les items dont les params requis existent dans l'URL.
                     .filter(item => !item.requiredParams || item.requiredParams?.every(param => param in params))
@@ -156,7 +212,44 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
                             </div>
                         );
                     })}
+                    </>
+                    )}
                 </div>
+
+                <Modal
+                 modal={feedbackModal}
+                 title="Envoyer un feedback"
+                 description="Le message commencera automatiquement par l'URL de la page actuelle."
+                >
+                    <div className="w-[min(90vw,540px)] flex flex-col gap-3">
+                        <p className="w-full rounded-md bg-dark/5 px-3 py-2 text-xs text-dark/80 break-all">
+                            {mounted && typeof window !== "undefined" ? window.location.href : "URL en cours de chargement..."}
+                        </p>
+                        <textarea
+                         value={feedbackMessage}
+                         onChange={(e) => {
+                             setFeedbackMessage(e.target.value);
+                             if (feedbackError) {
+                                 setFeedbackError("");
+                             }
+                         }}
+                         rows={6}
+                         className="w-full rounded-lg border border-dark/20 bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+                         placeholder="Décrivez votre feedback ici..."
+                        />
+                        {feedbackError && (
+                            <p className="text-sm text-red-600">{feedbackError}</p>
+                        )}
+                        <div className="flex w-full justify-end gap-2">
+                            <Button variant="primaryBorder" size="sm" onClick={feedbackModal.closeModal}>
+                                Annuler
+                            </Button>
+                            <Button size="sm" onClick={handleSendFeedback}>
+                                Envoyer
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
 
                 {/* Bouton flottant de collapse/expand de la sidebar. */}
                 <button

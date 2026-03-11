@@ -17,6 +17,19 @@ const getTabFromSearchParam = (tabParam: string | null): TabKey => {
   return tabParam === "idee-projet" ? "idee-projet" : "analyse";
 };
 
+const getLastAssistantMessage = (
+  messages: Array<{ role?: "user" | "assistant"; content?: string }>
+): string | null => {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i];
+    if (message?.role === "assistant" && typeof message.content === "string" && message.content.trim()) {
+      return message.content.trim();
+    }
+  }
+
+  return null;
+};
+
 export default function IdeationPage() {
   const { data } = useLocalStorage();
   const { config } =  useConfig();
@@ -27,6 +40,8 @@ export default function IdeationPage() {
   const [activeTab, setActiveTab] = useState<TabKey>(() => getTabFromSearchParam(searchParams.get("tab")));
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
+  const [responsesRefreshTrigger, setResponsesRefreshTrigger] = useState(0);
+  const [lastAssistantMessage, setLastAssistantMessage] = useState<string | null>(null);
   const projectId = Array.isArray(params.projectId)
     ? params.projectId[0]
     : params.projectId;
@@ -50,6 +65,7 @@ export default function IdeationPage() {
 
         if (!responseData.lastMessages) {
           setChatHistory([]);
+          setLastAssistantMessage(null);
           return;
         }
 
@@ -61,6 +77,7 @@ export default function IdeationPage() {
 
         if (!Array.isArray(parsedMessages)) {
           setChatHistory([]);
+          setLastAssistantMessage(null);
           return;
         }
 
@@ -74,9 +91,11 @@ export default function IdeationPage() {
           }));
 
         setChatHistory(normalizedHistory);
+        setLastAssistantMessage(getLastAssistantMessage(parsedMessages));
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 404) {
           setChatHistory([]);
+          setLastAssistantMessage(null);
           return;
         }
 
@@ -113,8 +132,22 @@ export default function IdeationPage() {
         }
       );
 
-      const responseData = response.data as { response?: string };
+      const responseData = response.data as {
+        response?: string;
+        actionExecution?: {
+          applied?: Array<{ type?: string }>;
+        };
+      };
       const assistantText = responseData.response?.trim();
+      setLastAssistantMessage(assistantText || null);
+
+      const hasAppliedIdeationResponseAction = (responseData.actionExecution?.applied || []).some(
+        (item) => item?.type === "GENERATE_NEW_IDEATION_RESPONSE"
+      );
+
+      if (hasAppliedIdeationResponseAction) {
+        setResponsesRefreshTrigger((prev) => prev + 1);
+      }
       
       // If the AI response should be spoken aloud, call the TTS function
       if (assistantText && window.__handleTextToSpeech) {
@@ -175,10 +208,30 @@ export default function IdeationPage() {
         </div>
       </section>
       {activeTab === "analyse" && (
-        <StrategicAnalysisTab clientId={clientId} projectId={projectId} />
+        <StrategicAnalysisTab
+          clientId={clientId}
+          projectId={projectId}
+          responsesRefreshTrigger={responsesRefreshTrigger}
+        />
       )}
       {activeTab === "idee-projet" && (
-        <IdeaProject clientId={clientId} projectId={projectId} />
+        <IdeaProject
+          clientId={clientId}
+          projectId={projectId}
+          responsesRefreshTrigger={responsesRefreshTrigger}
+        />
+      )}
+      {lastAssistantMessage && (
+        <div className="fixed bottom-24 left-0 right-0 z-30 pointer-events-none">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="rounded-lg border border-dark/10 bg-white/95 px-4 py-3 text-sm text-dark shadow-sm backdrop-blur-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-dark/60 mb-1">
+                Dernier message de l'IA
+              </p>
+              <p className="line-clamp-3">{lastAssistantMessage}</p>
+            </div>
+          </div>
+        </div>
       )}
       <ChatInput 
         onSendMessage={handleSendMessage} 

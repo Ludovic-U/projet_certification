@@ -263,6 +263,19 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
     if (!showSettings) setShowHistory(false);
   };
 
+  // Lock page scroll while history overlay is open.
+  useEffect(() => {
+    if (!showHistory) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showHistory]);
+
   const handleVoiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedVoice = voices.find((v) => v.name === e.target.value);
     setVoiceSettings((prev) => ({ ...prev, voice: selectedVoice || null }));
@@ -485,39 +498,46 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
         </div>
       )}
 
-      {/* History Panel - appears below textarea when toggled */}
+      {/* History Overlay - full screen above the input when toggled */}
       {showHistory && (
-        <div className="border-t border-dark/10 bg-light max-h-60 overflow-y-auto">
-          <div className="max-w-4xl mx-auto p-4">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="font-semibold text-lg">Historique de la conversation</h3>
-              <button 
-                onClick={toggleHistory} 
-                className="p-2 hover:bg-dark/5 rounded"
-                aria-label="Fermer l'historique"
-              >
-                ✕
-              </button>
-            </div>
-            {history.length === 0 ? (
-              <p className="text-grey text-sm">Aucun historique de conversation.</p>
-            ) : (
-              <div className="space-y-2">
-                {history.map((msg) => (
-                  <div
-                    key={msg.id}
-                    onClick={() => loadFromHistory(msg)}
-                    className="p-3 bg-white rounded-lg cursor-pointer hover:bg-dark/5 transition-colors border border-dark/10"
+        <div className="fixed inset-0 bottom-24 z-40 bg-black/30 backdrop-blur-[1px]">
+          <div className="h-full overflow-y-auto">
+            <div className="max-w-4xl mx-auto p-4 h-full">
+              <div className="h-full rounded-xl border border-dark/10 bg-light shadow-lg overflow-hidden flex flex-col">
+                <div className="flex justify-between items-center p-4 border-b border-dark/10 bg-white sticky top-0 z-10">
+                  <h3 className="font-semibold text-lg">Historique de la conversation</h3>
+                  <button
+                    onClick={toggleHistory}
+                    className="p-2 hover:bg-dark/5 rounded"
+                    aria-label="Fermer l'historique"
                   >
-                    <p className="text-sm font-medium">{msg.role === "user" ? "Vous" : "IA"}</p>
-                    <p className="text-sm text-dark truncate">{msg.content}</p>
-                    <p className="text-xs text-grey mt-1">
-                      {msg.timestamp.toLocaleTimeString()}
-                    </p>
-                  </div>
-                ))}
+                    ✕
+                  </button>
+                </div>
+
+                <div className="p-4 overflow-y-auto flex-1">
+                  {history.length === 0 ? (
+                    <p className="text-grey text-sm">Aucun historique de conversation.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {history.map((msg) => (
+                        <div
+                          key={msg.id}
+                          onClick={() => loadFromHistory(msg)}
+                          className="p-3 bg-white rounded-lg cursor-pointer hover:bg-dark/5 transition-colors border border-dark/10"
+                        >
+                          <p className="text-sm font-medium">{msg.role === "user" ? "Vous" : "IA"}</p>
+                          <p className="text-sm text-dark truncate">{msg.content}</p>
+                          <p className="text-xs text-grey mt-1">
+                            {msg.timestamp.toLocaleTimeString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}

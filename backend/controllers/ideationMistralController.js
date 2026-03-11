@@ -4,88 +4,15 @@ const {
   updateIdeationChatbot,
   deleteIdeationChatbot,
   generateIdeationAnswer,
+  parseStoredMessages,
+  extractIdeationAssistantPayload,
+  getAvailableQuestionsForProject,
+  applyIdeationActions,
+  buildIdeationPrompt,
 } = require('../services/IdeationMistralService');
 const { validateId } = require('../middlewares/validateId');
-const { prisma } = require('../prisma/prismaClient');
 
 const MAX_STORED_MESSAGES = 50;
-const ALLOWED_ACTION = 'GENERATE_NEW_IDEATION_RESPONSE';
-
-function parseStoredMessages(lastMessages) {
-  if (!lastMessages) return [];
-
-  try {
-    const parsed = JSON.parse(lastMessages);
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed
-      .filter((message) => message && typeof message === 'object')
-      .map((message) => ({
-        role: message.role === 'assistant' ? 'assistant' : 'user',
-        content: typeof message.content === 'string' ? message.content : '',
-        timestamp: message.timestamp || new Date().toISOString(),
-      }))
-      .filter((message) => message.content.trim().length > 0);
-  } catch (error) {
-    console.warn('Invalid lastMessages JSON, resetting history.');
-    return [];
-  }
-}
-
-function normalizeActions(rawActions) {
-  if (!Array.isArray(rawActions)) return [];
-
-  return rawActions
-    .filter((action) => action && typeof action === 'object')
-    .map((action) => ({
-      type: action.type === ALLOWED_ACTION ? ALLOWED_ACTION : null,
-      questionId: Number(action.questionId),
-      reason: typeof action.reason === 'string' ? action.reason.trim() : '',
-    }))
-    .filter((action) => action.type === ALLOWED_ACTION && Number.isInteger(action.questionId) && action.questionId > 0)
-    .map((action) => ({
-      type: action.type,
-      questionId: action.questionId,
-      reason: action.reason,
-    }));
-}
-
-function extractAssistantPayload(rawResponse) {
-  const fallback = {
-    response: 'Je n\'ai pas de reponse pour le moment.',
-    actions: [],
-  };
-
-  if (!rawResponse) return fallback;
-
-  if (typeof rawResponse === 'object') {
-    return {
-      response: typeof rawResponse.response === 'string' && rawResponse.response.trim()
-        ? rawResponse.response.trim()
-        : fallback.response,
-      actions: normalizeActions(rawResponse.actions),
-    };
-  }
-
-  if (typeof rawResponse === 'string') {
-    try {
-      const parsed = JSON.parse(rawResponse);
-      return {
-        response: typeof parsed?.response === 'string' && parsed.response.trim()
-          ? parsed.response.trim()
-          : rawResponse.trim() || fallback.response,
-        actions: normalizeActions(parsed?.actions),
-      };
-    } catch (_error) {
-      return {
-        response: rawResponse.trim() || fallback.response,
-        actions: [],
-      };
-    }
-  }
-
-  return fallback;
-}
 
 module.exports.createIdeationChatbotPost = async (req, res) => {
   try {
@@ -183,6 +110,7 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
   }
 
   try {
+    // 1) Recuperer (ou creer) l'instance chatbot du projet.
     let chatbot;
     try {
       chatbot = await getIdeationChatbotByProjectId(projectId);
@@ -195,81 +123,39 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
       });
     }
 
+    // 2) Reconstruire l'historique utile et injecter le dernier message utilisateur.
     const history = parseStoredMessages(chatbot.lastMessages);
     const userMessage = {
       role: 'user',
       content: message,
       timestamp: new Date().toISOString(),
     };
-
     const historyWithUser = [...history, userMessage].slice(-MAX_STORED_MESSAGES);
 
-    const projectLinkedQuestions = await prisma.question.findMany({
-      where: {
-        projects: {
-          some: {
-            projectId,
-          },
-        },
-      },
-      select: {
-        questionId: true,
-        label: true,
-        keyword: true,
-        category: true,
-        onglet: true,
-      },
-      orderBy: {
-        questionId: 'asc',
-      },
-    });
-
-    // Fallback for projects where question links are not populated yet.
-    const fallbackQuestions = projectLinkedQuestions.length > 0
-      ? []
-      : await prisma.question.findMany({
-        select: {
-          questionId: true,
-          label: true,
-          keyword: true,
-          category: true,
-          onglet: true,
-        },
-        orderBy: {
-          questionId: 'asc',
-        },
-      });
-
-    const availableQuestions = projectLinkedQuestions.length > 0
-      ? projectLinkedQuestions
-      : fallbackQuestions;
+    // 3) Charger les questions disponibles pour le projet.
+    const {
+      projectLinkedQuestions,
+      fallbackQuestions,
+      availableQuestions,
+    } = await getAvailableQuestionsForProject(projectId);
 
     console.log('[ideation-chatbot] projectId:', projectId);
     console.log('[ideation-chatbot] project-linked questions:', projectLinkedQuestions.length);
     console.log('[ideation-chatbot] fallback questions:', fallbackQuestions.length);
     console.log('[ideation-chatbot] availableQuestions used:', availableQuestions.length);
 
-    const prompt = [
-      'Tu es un assistant de projet.',
-      'Reponds en francais, de maniere claire et concise.',
-      'Retourne STRICTEMENT un objet JSON valide (sans markdown, sans texte autour).',
-      'Format JSON attendu:',
-      '{"response":"string","actions":[{"type":"GENERATE_NEW_IDEATION_RESPONSE","questionId":123,"answer":"string"}]}',
-      `Actions autorisees: ${ALLOWED_ACTION}.`,
-      'Regle action: si le message utilisateur demande une information metier qui peut etre obtenue ou mise a jour via une question du projet, tu DOIS remplir actions avec au moins une action.',
-      'Regle action: la questionId choisie doit provenir de la liste de questions disponible ci-dessous et etre semantiquement liee a la demande utilisateur. le champs "answer" doit résumer l\'information pertinente fournie par l\'utilisateur.',
-      'Exemple: si l\'utilisateur mentionne un projet terminé, ajoute une action liee a la question qui demande s\'il a déjà terminé un projet.',
-      'Si aucune action n\'est necessaire, retourne "actions": [].',
-      'Chaque action doit referencer une questionId existante dans la liste des questions ci-dessous.',
-      `Questions existantes pour ce projet (JSON): ${JSON.stringify(availableQuestions)}`,
-      `Historique de conversation (JSON): ${JSON.stringify(historyWithUser)}`,
-      `Dernier message utilisateur: ${message}`,
-    ].join('\n\n');
+    // 4) Construire le prompt, appeler le modele puis normaliser le payload.
+    const prompt = buildIdeationPrompt({
+      message,
+      historyWithUser,
+      availableQuestions,
+    });
 
     const modelRawResponse = await generateIdeationAnswer(prompt);
-    const assistantPayload = extractAssistantPayload(modelRawResponse);
+    const assistantPayload = extractIdeationAssistantPayload(modelRawResponse);
     const assistantText = assistantPayload.response || 'Je n\'ai pas de reponse pour le moment.';
 
+    // 5) Persister l'historique conversationnel mis a jour.
     const assistantMessage = {
       role: 'assistant',
       content: assistantText,
@@ -281,10 +167,19 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
       lastMessages: JSON.stringify(updatedMessages),
     });
 
+    // 6) Appliquer les actions metier proposees par l'IA (creation de reponses).
+    const actionExecution = await applyIdeationActions(
+      assistantPayload.actions,
+      projectId,
+      availableQuestions,
+    );
+
+    // 7) Retourner la reponse complete au frontend.
     return res.status(200).json({
       chatbotId: updatedChatbot.chatbotId,
       response: assistantText,
       actions: assistantPayload.actions,
+      actionExecution,
       availableQuestions,
       lastMessages: updatedMessages,
     });

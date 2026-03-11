@@ -10,6 +10,7 @@ import { Question } from "@/types/question";
 import api_backend from "@/api/axiosInstance";
 import { useRouter } from "next/navigation";
 import { Icons, FontAwesomeIcon } from "@/lib/icons";
+import { useLocalStorage } from "@/context/LocalStorageContext";
 import {
   ReponseUnique,
   ReponseSelect,
@@ -22,6 +23,7 @@ type Props = {
   questionOnglet?: "analyse_existant" | "ideation_projet";
   showSwotCard?: boolean;
   rootLabel?: string;
+  responsesRefreshTrigger?: number;
 };
 
 export default function StrategicAnalysisTab({
@@ -29,8 +31,11 @@ export default function StrategicAnalysisTab({
   projectId,
   questionOnglet = "analyse_existant",
   showSwotCard = true,
-  rootLabel = "La structure",
+  rootLabel,
+  responsesRefreshTrigger = 0,
 }: Props) {
+  const { data } = useLocalStorage();
+  const resolvedRootLabel = rootLabel ?? data?.clientName ?? "La structure";
   const router = useRouter();
   const { questions, loading } = useProjectQuestion(Number(projectId));
   const [nodesState, setNodesState] = useState<Node[]>([]);
@@ -80,7 +85,7 @@ export default function StrategicAnalysisTab({
     if (projectId) {
       fetchSwotProgress();
     }
-  }, [projectId]);
+  }, [projectId, responsesRefreshTrigger]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -282,10 +287,11 @@ export default function StrategicAnalysisTab({
         <div className="flex rounded-xl flex-col bg-white border border-dark/10 flex-1 items-center justify-center">
           <TreeView
             questions={treeQuestions}
-            rootLabel={rootLabel}
+            rootLabel={resolvedRootLabel}
             onNodesChange={setNodesState}
             fitViewTrigger={fitViewTrigger}
             onProjectResponsesChange={handleProjectResponsesChange}
+            responsesRefreshTrigger={responsesRefreshTrigger}
           />
         </div>
       </section>

@@ -34,6 +34,7 @@ interface TreeViewProps {
   fitViewTrigger?: number;
   onProjectResponsesChange?: (responses: any[]) => void;
   rootLabel?: string;
+  responsesRefreshTrigger?: number;
 }
 
 type TreeNodeKind = "theme" | "question" | "response";
@@ -69,6 +70,7 @@ export default function TreeView({
   fitViewTrigger,
   onProjectResponsesChange,
   rootLabel,
+  responsesRefreshTrigger = 0,
 }: TreeViewProps) {
   // Identifiant du projet récupéré depuis la route Next.js.
   const params = useParams();
@@ -190,7 +192,7 @@ export default function TreeView({
     if (!revealByResponses) {
       setProjectResponses([]);
     }
-  }, [projectId, revealByResponses]);
+  }, [projectId, revealByResponses, responsesRefreshTrigger]);
 
   // Construit le graphe brut (arbre hiérarchique + layout) depuis les questions.
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
