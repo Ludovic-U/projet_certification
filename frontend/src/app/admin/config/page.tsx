@@ -221,6 +221,31 @@ export default function AdminConfigPage() {
     }
   };
 
+  const addHelpEntry = (key: keyof HelpDictionary) => {
+    setHelpDict(prev => ({
+      ...prev,
+      [key]: [...prev[key], { term: '', definition: '' }]
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateHelpEntry = (key: keyof HelpDictionary, index: number, field: 'term' | 'definition', value: string) => {
+    setHelpDict(prev => {
+      const newEntries = [...prev[key]];
+      newEntries[index] = { ...newEntries[index], [field]: value };
+      return { ...prev, [key]: newEntries };
+    });
+    setHasUnsavedChanges(true);
+  };
+
+  const removeHelpEntry = (key: keyof HelpDictionary, index: number) => {
+    setHelpDict(prev => ({
+      ...prev,
+      [key]: prev[key].filter((_, i) => i !== index)
+    }));
+    setHasUnsavedChanges(true);
+  };
+
   if (loading || checkingAuth) {
     return (
       <div className="flex justify-center items-center h-screen">
