@@ -1,6 +1,6 @@
 const Router = require('express');
 const multer = require('multer');
-const { authorizeResource } = require('../middlewares/authorizationResource');
+const { authorizeResource } = require('../middlewares/authorizeResource');
 const { testMistral, generateMindmapFromResponses } = require('../controllers/mistralController');
 const { authenticateUser } = require('../middlewares/auth');
 

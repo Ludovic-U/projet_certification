@@ -1,11 +1,12 @@
 const mistralService = require("../services/mistralService");
 const fs = require('fs');
 
-const sanitizeInput = (input) => {
-  return input 
-    .slice(0,500)
-    .replace(/[\x00-\1F\x7F]/g, '')
-    .trim();
+// Use the service's sanitization function for better security
+const sanitizeUsrInput = (input) => {
+  if (!input || typeof input !== 'string') {
+    return '';
+  }
+  return mistralService.sanitizeUserInput(input);
 }
 
 const aiRateLimiter = (req, res, next) => {
