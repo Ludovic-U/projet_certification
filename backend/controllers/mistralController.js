@@ -1,6 +1,31 @@
 const mistralService = require("../services/mistralService");
 const fs = require('fs');
 
+// Use the service's sanitization function for better security
+const sanitizeUsrInput = (input) => {
+  if (!input || typeof input !== 'string') {
+    return '';
+  }
+  return mistralService.sanitizeUserInput(input);
+}
+
+const aiRateLimiter = (req, res, next) => {
+  const userId = req.user.userId;
+  const now = Date.now();
+  const key = `ai:${userId}`;
+
+  if (!aiRateStore.has(key)) {
+    aiRateStore.set(key, { count: 1, resetTime: now + 3600000 });
+    } else {
+      const data= aiRateStore.get(key);
+      if (data.count > 20) {
+        return res.status(429).json({ error: 'Requête IA limité à 20 par heure'});
+      }
+      data.count++;
+    }
+    next();
+  };
+
 exports.testMistral = async (req, res) => {
   try {
     // Vérifier la présence d'un fichier ou de texte

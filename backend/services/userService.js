@@ -166,20 +166,26 @@ module.exports.UsersByClientId = async (askingUser, clientId) => {
 // ask for a password reset
 module.exports.requestPasswordReset = async (email) => {
   // pas de check de permission car un utilisateur peut avoir oublié son mdp
-  const user = await prisma.user.findUnique({
-    where: { email }
-  });
-  if (!user) {
-    throw new Error("requestPasswordReset : Utilisateur introuvable");
-  }
   // generate a reset token
   const resetToken = crypto.randomBytes(32).toString('hex');
+  await prisma.passwordReset.create({
+    data: {
+      userId: user.userId, token: hashToken(resetToken) 
+    }
+  });
   const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now TODO: remove hardcoding
   createSession(user.userId, resetToken, null, resetTokenExpiry); // TOKEN A USAGE UNIQUE
 
   // send email with the reset link
   const { sendResetPasswordEmail } = require('../utils/mailer');
   sendResetPasswordEmail(user.email, resetToken, user.password === null); // if password is null, it's a first connection
+}
+
+module.exports.logout = async (req,res) => {
+  await prisma.userSession.deleteMany({
+    where: { userId: req.user.userId }
+  });
+  res.clearCookie('token');
 }
 
 // set or reset password
