@@ -5,6 +5,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 // Model configuration - using base model for better accuracy
 const MODEL_ID = "Xenova/whisper-base";
 const TASK = "automatic-speech-recognition";
+const TARGET_SR = 16000;
 
 export interface UseWhisperRecognitionProps {
   language?: string;
@@ -14,6 +15,7 @@ export interface UseWhisperRecognitionProps {
 export interface UseWhisperRecognitionReturn {
   isLoading: boolean;
   isListening: boolean;
+  isProcessing: boolean;
   transcript: string;
   error: string | null;
   startListening: () => Promise<void>;
@@ -48,14 +50,56 @@ async function loadTransformersModule(): Promise<TransformersModule> {
   return transformersModulePromise;
 }
 
+// Normalize audio amplitude
+function normalizeAudio(data: Float32Array): Float32Array {
+  let max = 0;
+  for (let i = 0; i < data.length; i++) {
+    const abs = Math.abs(data[i]);
+    if (abs > max) max = abs;
+  }
+  if (max === 0 || max >= 0.9) return data;
+  const gain = 0.9 / max;
+  const out = new Float32Array(data.length);
+  for (let i = 0; i < data.length; i++) out[i] = data[i] * gain;
+  return out;
+}
+
+// Voice Activity Detection
+function hasVoiceActivity(data: Float32Array, threshold = 0.01): boolean {
+  let sum = 0;
+  for (let i = 0; i < data.length; i++) sum += data[i] * data[i];
+  const rms = Math.sqrt(sum / data.length);
+  return rms > threshold;
+}
+
+// Hallucination detection patterns
+const HALLUCINATION_PATTERNS = [
+  /^\s*\[BLANK_AUDIO\]\s*$/i,
+  /^\s*\(Music\)\s*$/i,
+  /^\s*\[Music\]\s*$/i,
+  /^\s*Sous-titres\b.*/i,
+  /^\s*Sous titres\b.*/i,
+  /^\s*Merci d['']avoir regardé\b.*/i,
+  /^\s*Abonnez-vous\b.*/i,
+  /^\s*\[Silence\]\s*$/i,
+  /^\s*\[.*\]\s*$/i,
+  /^\s*\.\s*$/,
+  /^\s*$/,
+];
+
+function isHallucination(text: string): boolean {
+  return HALLUCINATION_PATTERNS.some((p) => p.test(text));
+}
+
 export function useWhisperRecognition(
   props: UseWhisperRecognitionProps
 ): UseWhisperRecognitionReturn {
-  const language = props.language || "fr"; // Use ISO 639-1 code
+  const language = props.language || "fr";
   const onTranscript = props.onTranscript;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState(true);
@@ -105,7 +149,9 @@ export function useWhisperRecognition(
   // Convert audio blob to transcript using Whisper
   const processAudio = useCallback(
     async (audioBlob: Blob): Promise<void> => {
-      console.log("Processing audio blob, size:", audioBlob.size);
+      console.log("Processing audio...");
+      setIsProcessing(true);
+      setError(null);
       
       const recognizer = await loadModel();
       if (!recognizer) {
@@ -120,7 +166,7 @@ export function useWhisperRecognition(
         
         const audioContext = new (window.AudioContext ||
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).webkitAudioContext)();
+          (window as any).webkitAudioContext)({ sampleRate: TARGET_SR });
         console.log("AudioContext sample rate:", audioContext.sampleRate);
         
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -128,35 +174,56 @@ export function useWhisperRecognition(
 
         // Convert AudioBuffer to Float32Array
         const channelData = audioBuffer.getChannelData(0);
-        const samplingRate = audioBuffer.sampleRate;
+        
+        // Voice Activity Detection
+        if (!hasVoiceActivity(channelData)) {
+          console.warn("No voice activity detected");
+          setError("Aucune voix détectée. Veuillez parler plus clairement.");
+          return;
+        }
 
-        // Run transcription
-        console.log("Running transcription with language:", language, "sampling rate:", samplingRate);
-        const result = await recognizer(channelData, {
-          sampling_rate: samplingRate,
+        // Normalize audio
+        const normalizedData = normalizeAudio(channelData);
+
+        // Run transcription with language
+        console.log("Running transcription with language:", language, "sampling rate:", TARGET_SR);
+        const result = await recognizer(normalizedData, {
+          language: language,
+          task: "transcribe",
+          sampling_rate: TARGET_SR,
+          num_beams: 3,
+          temperature: 0,
+          condition_on_previous_text: false,
+          return_timestamps: false,
         });
 
         console.log("Transcription result:", result);
 
-        if (result.text) {
-          const text = result.text.trim();
+        const rawText: string = result?.text?.trim() ?? "";
+
+        // Check for hallucinations
+        if (isHallucination(rawText)) {
+          console.warn("Hallucination detected");
+          setError("Aucun texte détecté. Veuillez parler plus clairement.");
+          return;
+        }
+
+        if (rawText && rawText.length > 0) {
+          const text = rawText.trim();
           console.log("Transcribed text:", text);
-          if (text && text.length > 0) {
-            setTranscript(text);
-            if (onTranscript) {
-              onTranscript(text);
-            }
-          } else {
-            console.warn("Empty transcription result");
-            setError("Aucun texte détecté. Veuillez parler plus clairement.");
+          setTranscript(text);
+          if (onTranscript) {
+            onTranscript(text);
           }
         } else {
-          console.warn("No text in result");
-          setError("Impossible de détecter la parole. Veuillez réessayer.");
+          console.warn("Empty transcription result");
+          setError("Aucun texte détecté. Veuillez parler plus clairement.");
         }
       } catch (err) {
         console.error("Transcription error:", err);
         setError("Erreur lors de la transcription audio.");
+      } finally {
+        setIsProcessing(false);
       }
     },
     [language, loadModel, onTranscript]
@@ -173,7 +240,7 @@ export function useWhisperRecognition(
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          sampleRate: 16000,
+          sampleRate: TARGET_SR,
         },
       });
       streamRef.current = stream;
@@ -199,6 +266,7 @@ export function useWhisperRecognition(
       // Start recording
       mediaRecorder.start(100); // Collect data every 100ms
       setIsListening(true);
+      setError(null);
     } catch (err) {
       console.error("Failed to start recording:", err);
       if (err instanceof Error) {
@@ -226,6 +294,7 @@ export function useWhisperRecognition(
     }
 
     setIsListening(false);
+    setIsProcessing(true); // Show processing state after stopping
   }, []);
 
   // Cleanup on unmount
@@ -239,6 +308,7 @@ export function useWhisperRecognition(
   return {
     isLoading,
     isListening,
+    isProcessing,
     transcript,
     error,
     startListening,
