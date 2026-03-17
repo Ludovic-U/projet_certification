@@ -172,7 +172,7 @@ export default function IdeationPage() {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="relative overflow-hidden flex items-center justify-between gap-4 rounded-xl mb-6">
-        <div className="relative z-10 flex-1">
+        <div className="flex-1">
           <PageHeader
             title={"Projet " + (data?.projectName ?? "") + " - IDEATION"}
             description={config?.subtitles.overview}
@@ -224,11 +224,14 @@ export default function IdeationPage() {
       {lastAssistantMessage && (
         <div className="fixed bottom-24 left-0 right-0 z-30 pointer-events-none">
           <div className="max-w-4xl mx-auto px-4">
-            <div className="rounded-lg border border-dark/10 bg-white/95 px-4 py-3 text-sm text-dark shadow-sm backdrop-blur-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-dark/60 mb-1">
-                Dernier message de l'IA
-              </p>
-              <p className="line-clamp-3">{lastAssistantMessage}</p>
+            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-white px-5 py-4 text-sm text-dark shadow-lg backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <p className="text-xs font-bold uppercase tracking-wide text-green-700">
+                  Assistant IA
+                </p>
+              </div>
+              <p className="leading-relaxed">{lastAssistantMessage}</p>
             </div>
           </div>
         </div>

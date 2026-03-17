@@ -85,14 +85,6 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
     }
   }, []);
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
-    }
-  }, [input]);
-
   // Hydrate chat history provided by the page (e.g. persisted DB conversation)
   useEffect(() => {
     setHistory(initialHistory);
@@ -294,7 +286,7 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
   };
 
   return (
-    <div className={cn("fixed bottom-0 left-0 right-0 bg-white border-t border-dark/10", className)}>
+    <div className={cn("fixed bottom-0 left-0 right-0 bg-white border-t border-dark/10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-2xl", className)}>
       {/* Main Input Row */}
       <div className="max-w-4xl mx-auto p-4">
         <div className="flex items-end gap-3">
@@ -302,10 +294,11 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
           <button
             onClick={toggleHistory}
             className={cn(
-              "p-2 rounded-lg transition-colors",
-              showHistory ? "bg-dark text-white" : "hover:bg-dark/5"
+              "p-2.5 rounded-lg transition-colors border border-dark/10",
+              showHistory ? "bg-dark text-white border-dark" : "hover:bg-dark/5 hover:border-dark/20"
             )}
             aria-label={showHistory ? "Fermer l'historique de la conversation" : "Ouvrir l'historique de la conversation"}
+            title="Historique de la conversation"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -320,7 +313,7 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Posez-moi des questions sur votre projet..."
-              className="w-full resize-none rounded-lg border border-dark/10 p-3 pr-12 focus:outline-none focus:ring-2 focus:ring-dark/20 min-h-[48px] max-h-[150px]"
+              className="w-full resize-none rounded-lg border border-dark/20 p-3 pr-12 focus:outline-none focus:ring-2 focus:ring-dark/30 focus:border-dark/30 h-12 overflow-y-auto bg-gray-50"
               rows={1}
               disabled={isLoading}
             />
@@ -355,8 +348,8 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
               onClick={toggleListening}
               disabled={whisperRecognition.isLoading}
               className={cn(
-                "p-3 rounded-lg transition-colors relative",
-                isListening ? "bg-red-500 text-white animate-pulse" : "hover:bg-dark/5",
+                "p-3 rounded-lg transition-colors relative border border-dark/10",
+                isListening ? "bg-red-500 text-white border-red-500 animate-pulse" : "hover:bg-dark/5 hover:border-dark/20",
                 whisperRecognition.isLoading && "opacity-50 cursor-not-allowed"
               )}
               aria-label={isListening ? "Arrêter l'écoute" : "Commencer la saisie vocale"}
@@ -391,8 +384,8 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
           <button
             onClick={toggleSettings}
             className={cn(
-              "p-3 rounded-lg transition-colors",
-              showSettings ? "bg-dark text-white" : "hover:bg-dark/5"
+              "p-3 rounded-lg transition-colors border border-dark/10",
+              showSettings ? "bg-dark text-white border-dark" : "hover:bg-dark/5 hover:border-dark/20"
             )}
             aria-label={showSettings ? "Fermer les paramètres" : "Ouvrir les paramètres"}
             title="Paramètres vocaux"
@@ -510,37 +503,63 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
 
       {/* History Overlay - full screen above the input when toggled */}
       {showHistory && (
-        <div className="fixed inset-0 bottom-24 z-40 bg-black/30 backdrop-blur-[1px]">
+        <div className="fixed inset-0 bottom-24 z-[1000] bg-black/50 backdrop-blur-sm">
           <div className="h-full overflow-y-auto">
             <div className="max-w-4xl mx-auto p-4 h-full">
-              <div className="h-full rounded-xl border border-dark/10 bg-light shadow-lg overflow-hidden flex flex-col">
+              <div className="h-full rounded-xl border border-dark/10 bg-light shadow-xl overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center p-4 border-b border-dark/10 bg-white sticky top-0 z-10">
                   <h3 className="font-semibold text-lg">Historique de la conversation</h3>
-                  <button
-                    onClick={toggleHistory}
-                    className="p-2 hover:bg-dark/5 rounded"
-                    aria-label="Fermer l'historique"
-                  >
-                    ✕
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setHistory([]);
+                        setShowHistory(false);
+                      }}
+                      className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Effacer l'historique"
+                    >
+                      Effacer l'historique
+                    </button>
+                    <button
+                      onClick={toggleHistory}
+                      className="p-2 hover:bg-dark/5 rounded"
+                      aria-label="Fermer l'historique"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
 
                 <div className="p-4 overflow-y-auto flex-1">
                   {history.length === 0 ? (
                     <p className="text-grey text-sm">Aucun historique de conversation.</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {history.map((msg) => (
                         <div
                           key={msg.id}
                           onClick={() => loadFromHistory(msg)}
-                          className="p-3 bg-white rounded-lg cursor-pointer hover:bg-dark/5 transition-colors border border-dark/10"
+                          className="p-4 bg-white rounded-lg cursor-pointer hover:bg-dark/5 transition-colors border border-dark/10 hover:border-dark/30"
                         >
-                          <p className="text-sm font-medium">{msg.role === "user" ? "Vous" : "IA"}</p>
-                          <p className="text-sm text-dark truncate">{msg.content}</p>
-                          <p className="text-xs text-grey mt-1">
-                            {msg.timestamp.toLocaleTimeString()}
-                          </p>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded ${
+                              msg.role === "user" 
+                                ? "bg-blue-100 text-blue-700" 
+                                : "bg-green-100 text-green-700"
+                            }`}>
+                              {msg.role === "user" ? "Vous" : "IA"}
+                            </span>
+                            <span className="text-xs text-grey">
+                              {msg.timestamp.toLocaleDateString("fr-FR", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}
+                            </span>
+                          </div>
+                          <p className="text-sm text-dark line-clamp-3">{msg.content}</p>
                         </div>
                       ))}
                     </div>
