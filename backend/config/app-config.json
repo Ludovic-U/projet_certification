@@ -101,6 +101,13 @@
       "ASSOCIATION"
     ]
   },
+  "rateLimits": {
+    "ai": {
+      "requestsPerHour": 20,
+      "enabled": true,
+      "description": "Limite du nombre de requêtes IA par utilisateur et par heure"
+    }
+  },
   "prompts": {
     "mindmap": {
       "name": "Génération de Mindmap",

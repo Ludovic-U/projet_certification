@@ -295,3 +295,12 @@ exports.testMistralAPI = async (testContent) => {
 
 // Export sanitization function for use in controllers
 exports.sanitizeUserInput = sanitizeUserInput;
+
+// Get rate limit settings from config
+function getRateLimitConfig() {
+    const config = loadConfig();
+    return config.rateLimits?.ai || { requestsPerHour: 20, enabled: true };
+}
+
+exports.getRateLimitConfig = getRateLimitConfig;
+exports.loadConfig = loadConfig;

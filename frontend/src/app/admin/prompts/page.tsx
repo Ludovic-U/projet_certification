@@ -139,6 +139,11 @@ export default function PromptsPage() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>("mindmap");
 
+  // Rate limit state
+  const [rateLimitEnabled, setRateLimitEnabled] = useState(true);
+  const [rateLimitRequests, setRateLimitRequests] = useState(20);
+  const [savingRateLimits, setSavingRateLimits] = useState(false);
+
   // Check authorization on mount - redirect if not super_admin
   useEffect(() => {
     if (user && !user.roles?.includes("super_admin")) {
@@ -148,6 +153,7 @@ export default function PromptsPage() {
 
   useEffect(() => {
     fetchPrompts();
+    fetchRateLimits();
   }, []);
 
   async function fetchPrompts() {
@@ -173,6 +179,39 @@ export default function PromptsPage() {
       });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchRateLimits() {
+    try {
+      const response = await api_backend.get("/config/rate-limits");
+      const rateLimits = response.data?.ai || { requestsPerHour: 20, enabled: true };
+      setRateLimitEnabled(rateLimits.enabled);
+      setRateLimitRequests(rateLimits.requestsPerHour);
+    } catch (error: any) {
+      console.error("Error fetching rate limits:", error);
+    }
+  }
+
+  async function saveRateLimits() {
+    try {
+      setSavingRateLimits(true);
+      await api_backend.put("/config/rate-limits", {
+        ai: {
+          requestsPerHour: rateLimitRequests,
+          enabled: rateLimitEnabled,
+          description: "Limite du nombre de requêtes IA par utilisateur et par heure"
+        }
+      });
+      setMessage({ type: "success", text: "Limites de requêtes enregistrées avec succès!" });
+    } catch (error: any) {
+      console.error("Error saving rate limits:", error);
+      setMessage({
+        type: "error",
+        text: error.response?.data?.message || "Erreur lors de l'enregistrement des limites",
+      });
+    } finally {
+      setSavingRateLimits(false);
     }
   }
 
@@ -266,6 +305,62 @@ export default function PromptsPage() {
           {message.text}
         </div>
       )}
+
+      {/* Rate Limits Section */}
+      <div className="mt-6 bg-slate-800 rounded-lg p-4 border border-purple-500/30">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Limites de Requêtes IA</h3>
+            <p className="text-sm text-gray-400">Contrôlez le nombre de requêtes autorisées par heure</p>
+          </div>
+          <label className="flex items-center cursor-pointer">
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={rateLimitEnabled}
+                onChange={(e) => setRateLimitEnabled(e.target.checked)}
+                className="sr-only"
+              />
+              <div className={`block w-14 h-8 rounded-full transition-colors ${rateLimitEnabled ? 'bg-purple-600' : 'bg-slate-600'}`}></div>
+              <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${rateLimitEnabled ? 'transform translate-x-6' : ''}`}></div>
+            </div>
+            <span className="ml-3 text-gray-300 text-sm">{rateLimitEnabled ? 'Activé' : 'Désactivé'}</span>
+          </label>
+        </div>
+
+        <div className={`space-y-4 ${!rateLimitEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm font-medium text-gray-300">
+                Nombre de requêtes par heure
+              </label>
+              <span className="text-sm font-bold text-purple-400">{rateLimitRequests} req/h</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="100"
+              value={rateLimitRequests}
+              onChange={(e) => setRateLimitRequests(parseInt(e.target.value))}
+              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>1</span>
+              <span>100</span>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              onClick={saveRateLimits}
+              disabled={savingRateLimits}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm disabled:opacity-50"
+            >
+              {savingRateLimits ? "Enregistrement..." : "Enregistrer la limite"}
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <div className="mt-6 flex justify-end">
         <Button

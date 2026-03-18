@@ -20,4 +20,10 @@ router.put("/prompts", authenticateUser, isSuperAdmin, configController.updatePr
 // POST /api/config/help-dictionary - Mettre à jour le dictionnaire d'aide
 router.post("/help-dictionary", authenticateUser, isSuperAdmin, configController.updateHelpDictionary);
 
+// GET /api/config/rate-limits - Lire les limites de requêtes
+router.get("/rate-limits", authenticateUser, isSuperAdmin, configController.getRateLimits);
+
+// PUT /api/config/rate-limits - Mettre à jour les limites de requêtes
+router.put("/rate-limits", authenticateUser, isSuperAdmin, configController.updateRateLimits);
+
 module.exports = router;

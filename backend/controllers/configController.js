@@ -151,3 +151,63 @@ exports.updateHelpDictionary = async (req, res) => {
     });
   }
 };
+
+// Get rate limits
+exports.getRateLimits = async (req, res) => {
+  try {
+    const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+    const config = JSON.parse(configData);
+    res.status(200).json(config.rateLimits || { ai: { requestsPerHour: 20, enabled: true } });
+  } catch (error) {
+    console.error('Erreur lors de la lecture des rate limits:', error);
+    res.status(500).json({
+      message: "Erreur lors de la lecture des rate limits",
+      error: error.message,
+    });
+  }
+};
+
+// Update rate limits
+exports.updateRateLimits = async (req, res) => {
+  try {
+    // Vérifier les permissions
+    checkPermission(
+      req.user,
+      "financeur:manage"
+    );
+
+    const newRateLimits = req.body;
+
+    // Validation basique
+    if (!newRateLimits || typeof newRateLimits !== 'object') {
+      return res.status(400).json({
+        message: "Rate limits invalide",
+      });
+    }
+
+    // Lire la config existante
+    const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+    const config = JSON.parse(configData);
+
+    // Mettre à jour les rate limits
+    config.rateLimits = newRateLimits;
+
+    // Écrire la nouvelle configuration
+    await fs.writeFile(
+      CONFIG_PATH,
+      JSON.stringify(config, null, 2),
+      'utf8'
+    );
+
+    res.status(200).json({
+      message: "Rate limits mis à jour avec succès",
+      rateLimits: newRateLimits,
+    });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des rate limits:', error);
+    res.status(500).json({
+      message: "Erreur lors de la mise à jour des rate limits",
+      error: error.message,
+    });
+  }
+};

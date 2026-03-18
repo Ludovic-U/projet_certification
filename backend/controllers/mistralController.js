@@ -44,16 +44,26 @@ const sanitizeUsrInput = (input) => {
 }
 
 const aiRateLimiter = (req, res, next) => {
+  // Get rate limit from config (allows admin to change it)
+  const rateLimitConfig = mistralService.getRateLimitConfig();
+  
+  // If rate limiting is disabled in config, allow all requests
+  if (!rateLimitConfig.enabled) {
+    return next();
+  }
+  
   const userId = req.user.userId;
   const now = Date.now();
   const key = `ai:${userId}`;
+  const limit = rateLimitConfig.requestsPerHour || 20;
+  const windowMs = 3600000; // 1 hour
 
   if (!aiRateStore.has(key)) {
-    aiRateStore.set(key, { count: 1, resetTime: now + 3600000 });
+    aiRateStore.set(key, { count: 1, resetTime: now + windowMs });
     } else {
-      const data= aiRateStore.get(key);
-      if (data.count > 20) {
-        return res.status(429).json({ error: 'Requête IA limité à 20 par heure'});
+      const data = aiRateStore.get(key);
+      if (data.count > limit) {
+        return res.status(429).json({ error: `Requête IA limité à ${limit} par heure`});
       }
       data.count++;
     }
