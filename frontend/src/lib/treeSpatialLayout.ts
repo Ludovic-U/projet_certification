@@ -60,6 +60,32 @@ export function buildTreeSpatialLayout({
   const baseNodes = initialNodes.map((node) => ({ ...node, data: { ...(node.data as any) } }));
   const baseEdges = [...initialEdges];
 
+  // Construction de la map des enfants pour chaque node
+  const childrenMap = new Map<string, string[]>();
+  baseEdges.forEach((edge) => {
+    const list = childrenMap.get(edge.source) || [];
+    list.push(edge.target);
+    childrenMap.set(edge.source, list);
+  });
+
+  // Fonction récursive pour vérifier si un node ou ses descendants ont une réponse
+  const hasResponseInSubtree = (nodeId: string): boolean => {
+    const node = baseNodes.find((n) => n.id === nodeId);
+    if (!node) return false;
+    const data = node.data as FlowNodeData;
+    // Si c'est une question (ou un thème qui est aussi une question), vérifier sa réponse
+    if (data.nodeKind === "question" || (data.nodeKind === "theme" && data.questionId !== undefined && data.questionId !== null)) {
+      const qid = Number(data.questionId || data.id);
+      if (responseMap.has(qid)) return true;
+    }
+    // Sinon, vérifier récursivement les enfants
+    const children = childrenMap.get(nodeId) || [];
+    for (const childId of children) {
+      if (hasResponseInSubtree(childId)) return true;
+    }
+    return false;
+  };
+
   // Structures auxiliaires pour:
   // - connaître la visibilité parent/enfant,
   // - connaître le type d'un node via son id,
@@ -90,7 +116,7 @@ export function buildTreeSpatialLayout({
     }
 
     // Calcul de visibilité des thèmes:
-    // un thème est visible si son parent est visible et non replié.
+    // un thème est visible si son parent est visible, non replié, et a des réponses dans le sous-arbre.
     if (data.nodeKind === "theme") {
       const parentNodeId = data.parentNodeId || null;
       const parentVisible = parentNodeId ? visibilityMap.get(parentNodeId) ?? true : true;
@@ -98,7 +124,8 @@ export function buildTreeSpatialLayout({
         parentNodeId ? nodeKindById.get(parentNodeId) === "theme" : false;
       const parentThemeCollapsed =
         parentIsTheme && parentNodeId ? collapsedNodeIds.has(parentNodeId) : false;
-      const isVisible = parentVisible && !parentThemeCollapsed;
+      const hasResponse = hasResponseInSubtree(node.id);
+      const isVisible = parentVisible && !parentThemeCollapsed && (!revealByResponses || hasResponse);
       const isCollapsed = collapsedNodeIds.has(node.id);
       node.hidden = !isVisible;
       // On expose l'état collapsed au composant de node (affichage +/−).
@@ -147,12 +174,14 @@ export function buildTreeSpatialLayout({
     const isCollapsed = collapsedNodeIds.has(node.id);
     const isCollapsible = parentNodeIdsWithChildren.has(node.id);
 
+    const hasSubtreeResponse = hasResponseInSubtree(node.id);
+
     const isVisible =
       !parentThemeCollapsed &&
       !parentQuestionCollapsed &&
       !themeCollapsed &&
       parentVisible &&
-      (!revealByResponses || !parentIsQuestion || parentHasResponse);
+      (!revealByResponses || hasSubtreeResponse);
 
     // Statut UI de la question d'après sa réponse projet.
     const responseData = responseMap.get(questionId);

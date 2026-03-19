@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const todoService = require('./todoService');
+const { createIdeationChatbot } = require('./IdeationMistralService');
 
 module.exports.createProject = async (data) => {
   try {
@@ -71,7 +72,11 @@ module.exports.createProject = async (data) => {
         create: {
           projectId: createdProject.projectId,
           chatSummary: null,
-          lastMessages: null,
+          lastMessages: JSON.stringify([{
+            role: 'assistant',
+            content: 'Bonjour, je suis votre assistant pour vous aider à convevoir votre projet. Avant tout, nous allons explorer la situation existante : Quels sont les secteurs d\'activité des formations que vous dispensez?',
+            timestamp: new Date().toISOString(),
+          }]),
         },
       });
 
@@ -402,6 +407,12 @@ module.exports.getProjectSwot = async (projectId) => {
     console.error("Erreur lors de la récupération SWOT :", error);
     throw error;
   }
+};
+
+module.exports.generateProjectSwot = async (projectId) => {
+  const { generateSwotAnalysis } = require('./swotService');
+  const swotData = await generateSwotAnalysis(projectId);
+  return await module.exports.updateProjectSwot(projectId, swotData);
 };
 
 module.exports.updateProjectGoNogo = async (projectId, goNogo) => {

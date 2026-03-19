@@ -11,6 +11,7 @@ import { Button, Modal, Tooltip } from "@/components/ui"; // Composant Tooltip p
 import { useLocalStorage } from "@/context/LocalStorageContext";
 import { useUser } from "@/context/UserContext";
 import { useModal } from "@/hooks";
+import api_backend from "@/api/axiosInstance";
 
 
 // ------------------------------------------------------------
@@ -74,7 +75,7 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
         feedbackModal.openModal();
     };
 
-    const handleSendFeedback = () => {
+    const handleSendFeedback = async () => {
         if (!feedbackMessage.trim()) {
             setFeedbackError("Merci de renseigner votre feedback.");
             return;
@@ -85,12 +86,20 @@ const SideNav = ({ isCollapsed, setIsCollapsed }: SideNavProps) => {
         }
 
         const currentUrl = window.location.href;
-        const body = `${currentUrl}\n\n${feedbackMessage.trim()}`;
-        const subject = `Feedback application - ${data?.projectName || "F2S"}`;
-        const mailtoLink = `mailto:${feedbackRecipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-        window.location.href = mailtoLink;
-        feedbackModal.closeModal();
+        try {
+            await api_backend.post('/feedback', {
+                url: currentUrl,
+                message: feedbackMessage.trim(),
+                projectName: data?.projectName || "F2S"
+            });
+            feedbackModal.closeModal();
+            // Optionally, show a success message
+            alert("Feedback envoyé avec succès !");
+        } catch (error) {
+            console.error("Erreur lors de l'envoi du feedback:", error);
+            setFeedbackError("Erreur lors de l'envoi du feedback. Veuillez réessayer.");
+        }
     };
 
     return (

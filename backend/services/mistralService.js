@@ -29,7 +29,7 @@ function getPromptConfig(promptType) {
 
 exports.CallMistralAPI = async (prompt) => {
     const chatResponse = await client.chat.complete({
-        model: "mistral-small-latest",
+        model: "mistral-large-latest",
         messages: [{ role: 'user', content: prompt }],
         responseFormat: { type: 'json_object' },
     });

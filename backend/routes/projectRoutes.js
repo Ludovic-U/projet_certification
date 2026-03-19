@@ -3,8 +3,10 @@ const {
   getProjectsByClientId, 
   createProjectPost,
   updateProjectPost,
+  deleteProjectPost,
   updateProjectSwotPost,
   getProjectSwotGet,
+  generateProjectSwotPost,
   updateProjectGoNogoPost,
   getProjectsByUserIdGet,
   getProjectDecisionsGet,
@@ -20,10 +22,12 @@ router.get('/getByClientId/:clientId', authenticateUser, getProjectsByClientId);
 router.get('/user/:userId', authenticateUser, getProjectsByUserIdGet);
 router.post('/create', authenticateUser, createProjectPost);
 router.put('/:projectId', authenticateUser, updateProjectPost);
+router.delete('/:projectId', authenticateUser, deleteProjectPost);
 
 // SWOT routes
 router.post('/:projectId/swot', authenticateUser, updateProjectSwotPost);
 router.get('/:projectId/swot', authenticateUser, getProjectSwotGet);
+router.post('/:projectId/swot/generate', authenticateUser, generateProjectSwotPost);
 
 // Go/NoGo route
 router.post('/:projectId/go-nogo', authenticateUser, updateProjectGoNogoPost);

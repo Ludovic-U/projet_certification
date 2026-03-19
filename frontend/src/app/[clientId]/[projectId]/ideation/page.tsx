@@ -191,7 +191,7 @@ export default function IdeationPage() {
             }`}
             onClick={() => handleTabChange("analyse")}
           >
-            Analyse strategique
+            Analyse de l'existant
           </button>
           <button
             type="button"

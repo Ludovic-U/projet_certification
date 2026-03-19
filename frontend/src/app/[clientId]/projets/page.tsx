@@ -124,6 +124,24 @@ export default function ProjectsPage() {
         }
     };
 
+    const handleDeleteProject = async () => {
+        if (!selectedProject) return;
+        
+        setApiError("");
+        setIsLoading(true);
+
+        try {
+            await api_backend.delete(`/project/${selectedProject.projectId}`);
+            handleModalClose();
+            fetchProjects();
+        } catch (error: any) {
+            setApiError(getApiErrorMessage(error));
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     
     const itemsPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
@@ -161,6 +179,7 @@ export default function ProjectsPage() {
                                 clientId={Number(params.clientId)}
                                 initialData={selectedProject}
                                 onSubmit={handleSubmitProject}
+                                onDelete={selectedProject ? handleDeleteProject : undefined}
                                 isLoading={isLoading}
                                 apiError={apiError}/>
                         </Modal>

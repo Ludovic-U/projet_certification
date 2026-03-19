@@ -1,6 +1,10 @@
 const { prisma } = require('../prisma/prismaClient');
 const mistralService = require('./mistralService');
 const { createResponse } = require('./responseService');
+const fs = require('fs').promises;
+const path = require('path');
+
+const CONFIG_PATH = path.join(__dirname, '../config/app-config.json');
 
 const ALLOWED_ACTIONS = {
 	GENERATE_NEW_IDEATION_RESPONSE: 'GENERATE_NEW_IDEATION_RESPONSE',
@@ -34,6 +38,42 @@ function parseQuestionIds(questionIds) {
 		.map((id) => Number(id))
 		.filter((id) => Number.isInteger(id) && id > 0);
 }
+
+async function loadAppConfig() {
+	try {
+		const raw = await fs.readFile(CONFIG_PATH, 'utf8');
+		return JSON.parse(raw);
+	} catch (error) {
+		console.warn(`Unable to load app config (${CONFIG_PATH}):`, error.message);
+		return null;
+	}
+}
+
+async function getIdeationPromptTemplate() {
+	const config = await loadAppConfig();
+	return config?.prompts?.ideation?.systemPrompt || null;
+}
+
+const DEFAULT_IDEATION_PROMPT = `
+Tu es un assistant de projet proactif et engageant.
+
+Reponds en francais, de manière claire, concise et naturelle.
+Retourne STRICTEMENT un objet JSON valide (sans markdown, sans texte autour).
+Format JSON attendu:
+{"response":"string","actions":[{"type":"GENERATE_NEW_IDEATION_RESPONSE","questionId":123,"answer":"string"},{"type":"GENERATE_NEW_CONTRIBUTOR","contributor":{"firstname":"string","lastname":"string","email":"string","position":"string"}}]}
+Actions autorisees: ${ALLOWED_ACTIONS.GENERATE_NEW_IDEATION_RESPONSE}, ${ALLOWED_ACTIONS.GENERATE_NEW_CONTRIBUTOR}.
+Regle generale: sois proactif pour recueillir des informations. Pose des questions pertinentes de la liste disponible de manière naturelle, en reagissant au dernier message utilisateur. TOUTES les questions de la liste de questions disponibles doivent être abordées.
+Regle historique: utilise l'historique de conversation pour eviter de reposer les memes questions ou de repeter des informations deja connues.
+Regle action: si le message utilisateur contient une information metier qui peut etre obtenue ou mise a jour via une question du projet, tu DOIS remplir actions avec au moins une action GENERATE_NEW_IDEATION_RESPONSE.
+Regle action contributeur: si l'utilisateur evoque une personne qui travaille au sein de la structure, ajoute une action GENERATE_NEW_CONTRIBUTOR.
+Regle action contributeur: pour GENERATE_NEW_CONTRIBUTOR, renseigne contributor.firstname, contributor.lastname, contributor.position et contributor.email (email est optionnel et peut etre une chaine vide si inconnu).
+Regle action: la questionId choisie doit provenir de la liste de questions disponible ci-dessous et etre semantiquement liee a la demande utilisateur. Le champs "answer" doit resumer l'information pertinente fournie par l'utilisateur.
+Regle proactivite: dans ta reponse, pose naturellement une question suivante pertinente si possible, pour approfondir la discussion sans etre repetitif.
+Exemple: si l'utilisateur mentionne un projet termine, ajoute une action liee a la question qui demande s'il a deja termine un projet, et dans la reponse, demande des details sur ce projet.
+Exemple contributeur: si l'utilisateur dit "Marie Dupont (marie.dupont@acme.fr) travaille sur la comptabilite", ajoute une action GENERATE_NEW_CONTRIBUTOR avec ces donnees.
+Si aucune action n'est necessaire, retourne "actions": [], mais reste engageant dans la reponse.
+Pour les actions de type GENERATE_NEW_IDEATION_RESPONSE uniquement, chaque action doit referencer une questionId existante dans la liste des questions ci-dessous.
+`.trim();
 
 module.exports.parseStoredMessages = (lastMessages) => {
 	if (!lastMessages) return [];
@@ -157,6 +197,9 @@ module.exports.getAvailableQuestionsForProject = async (projectId) => {
 					projectId,
 				},
 			},
+			category: {
+				not: 'Theme',
+			},
 		},
 		select: questionSelect,
 		orderBy: {
@@ -168,6 +211,11 @@ module.exports.getAvailableQuestionsForProject = async (projectId) => {
 		projectLinkedQuestions.length > 0
 			? []
 			: await prisma.question.findMany({
+					where: {
+						category: {
+							not: 'Theme',
+						},
+					},
 					select: questionSelect,
 					orderBy: {
 						questionId: 'asc',
@@ -466,30 +514,40 @@ module.exports.applyIdeationActions = async (actions, projectId, availableQuesti
 	return result;
 };
 
-module.exports.buildIdeationPrompt = ({
+module.exports.buildIdeationPrompt = async ({
 	message,
 	historyWithUser,
 	availableQuestions,
+	projectId,
 }) => {
-	return [
-		'Tu es un assistant de projet.',
-		'Reponds en francais, de manière claire et concise.',
-		'Retourne STRICTEMENT un objet JSON valide (sans markdown, sans texte autour).',
-		'Format JSON attendu:',
-		'{"response":"string","actions":[{"type":"GENERATE_NEW_IDEATION_RESPONSE","questionId":123,"answer":"string"},{"type":"GENERATE_NEW_CONTRIBUTOR","contributor":{"firstname":"string","lastname":"string","email":"string","position":"string"}}]}',
-		`Actions autorisees: ${ALLOWED_ACTIONS.GENERATE_NEW_IDEATION_RESPONSE}, ${ALLOWED_ACTIONS.GENERATE_NEW_CONTRIBUTOR}.`,
-		'Regle action: si le message utilisateur contient une information metier qui peut etre obtenue ou mise a jour via une question du projet, tu DOIS remplir actions avec au moins une action.',
-		'Regle action contributeur: si l\'utilisateur evoque une personne qui travaille au sein de la structure, ajoute une action GENERATE_NEW_CONTRIBUTOR.',
-		'Regle action contributeur: pour GENERATE_NEW_CONTRIBUTOR, renseigne contributor.firstname, contributor.lastname, contributor.position et contributor.email (email est optionnel et peut etre une chaine vide si inconnu).',
-		'Regle action: la questionId choisie doit provenir de la liste de questions disponible ci-dessous et etre semantiquement liee a la demande utilisateur. le champs "answer" doit résumer l\'information pertinente fournie par l\'utilisateur.',
-		'Exemple: si l\'utilisateur mentionne un projet terminé, ajoute une action liee a la question qui demande s\'il a déjà terminé un projet.',
-		'Exemple contributeur: si l\'utilisateur dit "Marie Dupont (marie.dupont@acme.fr) travaille sur la comptabilite", ajoute une action GENERATE_NEW_CONTRIBUTOR avec ces donnees.',
-		'Si aucune action n\'est necessaire, retourne "actions": [].',
-		'Pour les actions de type GENERATE_NEW_IDEATION_RESPONSE uniquement, chaque action doit referencer une questionId existante dans la liste des questions ci-dessous.',
+	// Fetch responses for the project to determine unanswered questions
+	const responses = await prisma.response.findMany({
+		where: {
+			projectId: Number(projectId),
+		},
+		select: {
+			questionId: true,
+		},
+	});
+
+	// Get unique questionIds that have responses
+	const answeredQuestionIds = new Set(responses.map(r => r.questionId));
+
+	// Filter questions without answers
+	const questionsWithoutAnswers = availableQuestions.filter(q => !answeredQuestionIds.has(q.questionId));
+	console.log(`Available questions: ${availableQuestions.length}, Answered: ${answeredQuestionIds.size}, Unanswered: ${questionsWithoutAnswers.length}`);
+	console.log( "questionsWithoutAnswers for prompt:", questionsWithoutAnswers.map(q => q.label).join(', '));
+
+	const basePrompt = (await getIdeationPromptTemplate())?.trim() || DEFAULT_IDEATION_PROMPT;
+
+	const dynamicParts = [
 		`Questions existantes pour ce projet (JSON): ${JSON.stringify(availableQuestions)}`,
+		`Questions qui n'ont pas encore été abordées : ${questionsWithoutAnswers.map(q => q.label).join(', ')}`,
 		`Historique de conversation (JSON): ${JSON.stringify(historyWithUser)}`,
 		`Dernier message utilisateur: ${message}`,
-	].join('\n\n');
+	];
+
+	return [basePrompt, ...dynamicParts].join('\n\n');
 };
 
 module.exports.createIdeationChatbot = async (data) => {

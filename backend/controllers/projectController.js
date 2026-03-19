@@ -11,6 +11,7 @@ const {
   ProjectsByClientId,
   updateProjectSwot,
   getProjectSwot,
+  generateProjectSwot,
   updateProjectGoNogo,
   getProjectDecisions,
   updateProjectDecision,
@@ -127,14 +128,13 @@ module.exports.deleteProjectPost = async (req, res) => {
   // Validate projectId
   if (!validateId(projectId, "projectId", res)) return;
   try {
-    const project = await Project.findByPk(projectId);
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
-    }
-    await project.destroy();
-    res.status(200).json(project);
+    const deletedProject = await deleteProject(projectId);
+    res.status(200).json(deletedProject);
   } catch (error) {
     console.error("Error deleting project:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -261,31 +261,6 @@ module.exports.getProjectsByName = async (req, res) => {
 };
 
 /**
- * Update SWOT analysis for a project
- * Expects projectId in req.params and SWOT data in req.body
- * Responds with the updated SWOT data
- */
-module.exports.updateProjectSwotPost = async (req, res) => {
-  const projectId = Number(req.params.projectId);
-  if (!validateId(projectId, "projectId", res)) return;
-  
-  try {
-    const swotData = {
-      SWOT_strength: req.body.SWOT_strength || req.body.strengths,
-      SWOT_weakness: req.body.SWOT_weakness || req.body.weaknesses,
-      SWOT_opportunity: req.body.SWOT_opportunity || req.body.opportunities,
-      SWOT_threat: req.body.SWOT_threat || req.body.threats,
-    };
-
-    const updatedProject = await updateProjectSwot(projectId, swotData);
-    res.status(200).json(updatedProject);
-  } catch (error) {
-    console.error("Error updating project SWOT:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-/**
  * Get SWOT analysis for a project
  * Expects projectId in req.params
  * Responds with the SWOT data
@@ -302,6 +277,48 @@ module.exports.getProjectSwotGet = async (req, res) => {
     if (error.message === "Project not found") {
       return res.status(404).json({ error: "Project not found" });
     }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Update SWOT analysis for a project
+ * Expects projectId in req.params and swotData in req.body
+ * Responds with the updated SWOT data
+ */
+module.exports.updateProjectSwotPost = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+
+  const { SWOT_strength, SWOT_weakness, SWOT_opportunity, SWOT_threat } = req.body;
+
+  try {
+    const swotData = { SWOT_strength, SWOT_weakness, SWOT_opportunity, SWOT_threat };
+    const updatedProject = await updateProjectSwot(projectId, swotData);
+    res.status(200).json(updatedProject);
+  } catch (error) {
+    console.error("Error updating project SWOT:", error);
+    if (error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Generate SWOT analysis for a project using AI
+ * Expects projectId in req.params
+ * Responds with the generated SWOT data
+ */
+module.exports.generateProjectSwotPost = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, "projectId", res)) return;
+  
+  try {
+    const swotData = await generateProjectSwot(projectId);
+    res.status(200).json(swotData);
+  } catch (error) {
+    console.error("Error generating project SWOT:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

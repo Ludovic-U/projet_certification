@@ -16,10 +16,18 @@ const MAX_STORED_MESSAGES = 50;
 
 module.exports.createIdeationChatbotPost = async (req, res) => {
   try {
+    const welcomeMessage = {
+      role: 'assistant',
+      content: 'Bonjour, je suis votre assistant pour vous aider à convevoir votre projet. Avant tout, nous allons explorer la situation existante : Quels sont les secteurs d\'activité des formations que vous dispensez?',
+      timestamp: new Date().toISOString(),
+    };
+
+    const initialMessages = req.body.lastMessages || JSON.stringify([welcomeMessage]);
+
     const data = {
       projectId: req.body.projectId,
       chatSummary: req.body.chatSummary,
-      lastMessages: req.body.lastMessages,
+      lastMessages: initialMessages,
       remainingQuestionIds: req.body.remainingQuestionIds,
     };
 
@@ -117,9 +125,15 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
     } catch (error) {
       if (error.message !== 'Chatbot not found') throw error;
 
+      const welcomeMessage = {
+        role: 'assistant',
+        content: 'Bonjour, je suis votre assistant pour vous aider à convevoir votre projet. Avant tout, nous allons explorer la situation existante : Quels sont les secteurs d\'activité des formations que vous dispensez?',
+        timestamp: new Date().toISOString(),
+      };
+
       chatbot = await createIdeationChatbot({
         projectId,
-        lastMessages: JSON.stringify([]),
+        lastMessages: JSON.stringify([welcomeMessage]),
       });
     }
 
@@ -145,10 +159,11 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
     console.log('[ideation-chatbot] availableQuestions used:', availableQuestions.length);
 
     // 4) Construire le prompt, appeler le modele puis normaliser le payload.
-    const prompt = buildIdeationPrompt({
+    const prompt = await buildIdeationPrompt({
       message,
       historyWithUser,
       availableQuestions,
+      projectId,
     });
 
     const modelRawResponse = await generateIdeationAnswer(prompt);

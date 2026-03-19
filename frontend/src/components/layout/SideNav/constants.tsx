@@ -28,6 +28,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
             { title: "Config Textes", path:"/admin/config", roles: ["super_admin"], icon: <FontAwesomeIcon icon={Icons.penRuler}/>},
             { title: "Mistral", path:"/admin/mistral", roles: ["super_admin"], icon: <FontAwesomeIcon icon={Icons.compass}/>},
             { title: "Prompts IA", path:"/admin/prompts", roles: ["super_admin"], icon: <FontAwesomeIcon icon={Icons.gear}/>},
+            { title: "Prompt IA (Idéation)", path:"/admin/prompt_ai", roles: ["super_admin"], icon: <FontAwesomeIcon icon={Icons.compass}/>},
         ],
     },
     {

@@ -18,6 +18,7 @@ export type CreateProjectInputs = {
 
 interface CreateProjectFormProps {
     onSubmit: (data: CreateProjectInputs) => void;
+    onDelete?: () => void;
     isLoading: boolean;
     apiError?: string;
     clientId: number;
@@ -36,7 +37,7 @@ interface User {
   username: string;
 }
 
-export default function CreateProjectForm({ onSubmit, isLoading, apiError, clientId, initialData }: CreateProjectFormProps) {
+export default function CreateProjectForm({ onSubmit, onDelete, isLoading, apiError, clientId, initialData }: CreateProjectFormProps) {
     const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateProjectInputs>();
     const [typesLabels, setTypesLabels] = useState<string[]>([]);
     const [selectedType, setSelectedType] = useState<string[]>([]);
@@ -167,9 +168,21 @@ export default function CreateProjectForm({ onSubmit, isLoading, apiError, clien
                                   options={typesLabels}
                                 />
                 </div>
-                <Button type="submit" disabled={isLoading}>
-                    {isLoading ? (initialData ? "Modification..." : "Création...") : (initialData ? "Modifier" : "Créer")}
-                </Button>
+                <div className="flex gap-4">
+                    {initialData && onDelete && (
+                        <Button 
+                            type="button" 
+                            variant="danger" 
+                            onClick={onDelete}
+                            disabled={isLoading}
+                        >
+                            Supprimer
+                        </Button>
+                    )}
+                    <Button type="submit" disabled={isLoading}>
+                        {isLoading ? (initialData ? "Modification..." : "Création...") : (initialData ? "Modifier" : "Créer")}
+                    </Button>
+                </div>
             </form>
         </>
     );
