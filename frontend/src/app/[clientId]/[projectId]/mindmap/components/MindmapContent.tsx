@@ -890,7 +890,8 @@ export const MindmapInner = () => {
         
       } catch (err: any) {
         console.error('Error generating mindmap:', err);
-        alert('Error generating mindmap: ' + (err.message || 'Unknown error'));
+        const errorMessage = err.response?.data?.error || err.message || 'Unknown error';
+        alert('Erreur: ' + JSON.stringify(errorMessage));
       } finally {
         setIsSaving(false);
       }

@@ -67,7 +67,9 @@ export const MistralModal: React.FC<MistralModalProps> = ({
       setResult(res.data);
     } catch (error: any) {
       console.error(error);
-      setResult({ error: error.message });
+      // Show the actual error message from backend as alert
+      const errorMessage = error.response?.data?.error || error.message;
+      alert('Erreur: ' + JSON.stringify(errorMessage));
     } finally {
       setLoading(false);
     }

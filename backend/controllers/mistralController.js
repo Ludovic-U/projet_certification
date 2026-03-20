@@ -63,7 +63,7 @@ const aiRateLimiter = (req, res, next) => {
     } else {
       const data = aiRateStore.get(key);
       if (data.count > limit) {
-        return res.status(429).json({ error: `Requête IA limité à ${limit} par heure`});
+        return res.status(429).json({ error: `Requête IA limité à ${limit} par heure. Veuillez patienter avant de réessayer.`});
       }
       data.count++;
     }
@@ -85,7 +85,7 @@ exports.testMistral = async (req, res) => {
     if (hasText && isPromptInjection(text)) {
       console.warn('[SECURITY] Prompt injection attempt blocked:', text.substring(0, 100));
       return res.status(400).json({ 
-        error: 'Invalid input. This AI is only for generating Gantt charts.' 
+        error: 'Entrée invalide. Cette IA est uniquement destinée à générer des diagrammes de Gantt. Votre demande contient du contenu non lié à la gestion de projet.' 
       });
     }
 

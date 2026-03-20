@@ -103,7 +103,7 @@
   },
   "rateLimits": {
     "ai": {
-      "requestsPerHour": 20,
+      "requestsPerHour": 9,
       "enabled": true,
       "description": "Limite du nombre de requêtes IA par utilisateur et par heure"
     }
