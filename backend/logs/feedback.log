@@ -6,3 +6,39 @@ Message: feedbacktest
 URL: http://localhost:3000/10/30/vue_ensemble
 Message: feedbacktest 2
 
+[2026-03-23T12:17:37.358Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/ideation
+Message: configurtion de question : Nombre d'apprennant + status 1 seule branche
+
+[2026-03-23T12:18:31.172Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/ideation
+Message: Question doit être plus grosse visuellement
+
+[2026-03-23T12:32:04.052Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/ideation
+Message: bouton passer la question
+
+[2026-03-23T12:33:54.698Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/ideation
+Message: prompt : guider vers le swot quand il n'y a plus de questions
+
+[2026-03-23T12:36:26.353Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/swot
+Message: prompt SWOT : demander à ce qu'il fasse des puces
+
+[2026-03-23T12:39:15.577Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/swot
+Message: se renseigner sur le Fine Tunning
+
+[2026-03-23T12:40:41.570Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/swot
+Message: ajouter un bouton pour télécharger swot, cartes mentales.
+
+[2026-03-23T12:41:40.552Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/ideation?tab=idee-projet
+Message: ajouter des messages pour passer aux étapes suivantes (toutes les pages)
+
+[2026-03-23T12:54:15.145Z] Project: Projet Extension
+URL: http://localhost:3000/11/36/conception
+Message: améliorer le prompt pré-projet
+
