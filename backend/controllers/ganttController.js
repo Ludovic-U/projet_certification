@@ -31,10 +31,23 @@ const { validateId } = require('../middlewares/validateId');
  */
 module.exports.getGanttData = async (req, res) => {
   const projectId = Number(req.params.projectId);
+  const userId = req.user.userId;
   const versionId = req.query.versionId ? Number(req.query.versionId) : null;
-  
+  const hasAccess = await prisma.projectUser.findFirst({
+    where:  {
+      projectId,
+      userId,
+      OR: [
+        { role: 'chef_de_projet'},
+        { isManager: true }
+      ]
+    }
+  });
   if (!validateId(projectId, 'projectId', res)) return;
   
+  if (!hasAccess) {
+    return res.status(403).json({ error: 'Accès refusé'});
+  }  
   try {
     const data = await getGanttData(projectId, versionId);
     res.status(200).json(data);

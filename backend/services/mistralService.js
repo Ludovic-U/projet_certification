@@ -3,6 +3,31 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 
+const systemPrompt = "Tu es un assistant de gestion de projet expert en création de diagrammes de Gantt. À partir d'informations textuelles sur les tâches, leurs durées, leurs dépendances et les ressources associées, tu génères une structure JSON détaillée qui peut être utilisée pour construire un diagramme de Gantt complet. Assure-toi que le JSON est valide et respecte le format attendu.";
+
+// Input sanitization function - prevents prompt injection
+function sanitizeUserInput(input) {
+    if (!input || typeof input !== 'string') {
+        return '';
+    }
+    
+    // Remove potential prompt injection patterns
+    let sanitized = input
+        .replace(/^\/system\s*/i, '')
+        .replace(/^ignore\s+previous/i, '')
+        .replace(/^you\s+are/i, '')
+        .replace(/^as\s+a\s+/i, '')
+        .replace(/\b(jailbreak|bypass|override|ignore all)\b/gi, '');
+    
+    // Limit length to prevent DoS
+    const MAX_LENGTH = 2000;
+    if (sanitized.length > MAX_LENGTH) {
+        sanitized = sanitized.substring(0, MAX_LENGTH);
+    }
+    
+    return sanitized.trim();
+}
+
 dotenv.config();
 
 const apiKey = process.env.MISTRAL_API_KEY;
@@ -268,3 +293,14 @@ exports.testMistralAPI = async (testContent) => {
     return exports.GenerateGanttMistralAPI(testContent);
 };
 
+// Export sanitization function for use in controllers
+exports.sanitizeUserInput = sanitizeUserInput;
+
+// Get rate limit settings from config
+function getRateLimitConfig() {
+    const config = loadConfig();
+    return config.rateLimits?.ai || { requestsPerHour: 20, enabled: true };
+}
+
+exports.getRateLimitConfig = getRateLimitConfig;
+exports.loadConfig = loadConfig;

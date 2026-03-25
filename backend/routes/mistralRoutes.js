@@ -1,5 +1,6 @@
 const Router = require('express');
 const multer = require('multer');
+const { authorizeResource } = require('../middlewares/authorizeResource');
 const { testMistral, generateMindmapFromResponses } = require('../controllers/mistralController');
 const { authenticateUser } = require('../middlewares/auth');
 
@@ -7,8 +8,8 @@ const { authenticateUser } = require('../middlewares/auth');
 const router = Router();
 const upload = multer({ dest: 'uploads/' });
 
-// Mistral AI routes require authentication
+// Mistral AI routes require authentication and authorization
 router.post('/generateGanttviaMistral', authenticateUser, upload.single('file'), testMistral);
-router.get('/generateMindmapFromResponses/:projectId', authenticateUser, generateMindmapFromResponses);
+router.get('/generateMindmapFromResponses/:projectId', authenticateUser, authorizeResource('project'), generateMindmapFromResponses);
 
 module.exports = router;

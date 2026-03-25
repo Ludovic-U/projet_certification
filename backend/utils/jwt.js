@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const cryto = require('crypto');
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
 const JWT_EXPIRATION= process.env.JWT_EXPIRATION ;
 
 module.exports.createJWT = (payload) => {

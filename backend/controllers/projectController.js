@@ -179,11 +179,30 @@ module.exports.getAllProjects = async (req, res) => {
  * Responds with an array of project objects.
  * If user doesn't have project:read:any or project:read:org permission,
  * only returns projects where user is manager, assigned to tasks, or client manager.
+ * 
+ * SECURITY: Users can only access their own client's projects.
  * */
 module.exports.getProjectsByClientId = async (req, res) => {
   const clientId = Number(req.params.clientId);
+  const currentUserId = req.user.userId;
+  const userRoles = req.user.roles || [];
+  const userPermissions = req.user.permissions || [];
+  
   // Validate clientId
   if (!validateId(clientId, "clientId", res)) return;
+  
+  // SECURITY: Check if user belongs to this client
+  const userClientId = req.user.clientId;
+  const isAdmin = userRoles.includes('super_admin') || 
+                  userRoles.includes('admin_client') ||
+                  userPermissions.includes('project:read:any');
+  
+  // Non-admin users can only access their own client's projects
+  if (!isAdmin && userClientId !== clientId) {
+    return res.status(403).json({ 
+      error: 'Vous ne pouvez accéder qu\'aux projets de votre propre client' 
+    });
+  }
   
   try {
     const user = req.user;
@@ -220,14 +239,31 @@ module.exports.getProjectsByClientId = async (req, res) => {
  * Get projects by user ID (accessible projects).
  * Returns projects where user is manager, assigned to tasks, or client manager.
  * GET /api/project/user/:userId
+ * 
+ * SECURITY: Users can only view their own projects unless they have admin permissions.
  */
 module.exports.getProjectsByUserIdGet = async (req, res) => {
-  const userId = Number(req.params.userId);
+  const requestedUserId = Number(req.params.userId);
+  const currentUserId = req.user.userId;
+  const userRoles = req.user.roles || [];
+  const userPermissions = req.user.permissions || [];
   
-  if (!validateId(userId, "userId", res)) return;
+  if (!validateId(requestedUserId, "userId", res)) return;
+  
+  // SECURITY: Check if user can view other users' projects
+  const isAdmin = userRoles.includes('super_admin') || 
+                  userRoles.includes('admin_client') ||
+                  userPermissions.includes('project:read:any');
+  
+  // If not admin, can only view own projects
+  if (!isAdmin && requestedUserId !== currentUserId) {
+    return res.status(403).json({ 
+      error: 'Vous ne pouvez voir que vos propres projets' 
+    });
+  }
   
   try {
-    const projects = await getProjectsByUserId(userId);
+    const projects = await getProjectsByUserId(requestedUserId);
     res.status(200).json(projects);
   } catch (error) {
     console.error('Error fetching projects by userId:', error);
