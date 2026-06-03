@@ -216,16 +216,6 @@ export default function QuestionsPage() {
 
   return (
     <div className="h-full">
-      {checkingAuth && (
-        <div className="flex justify-center items-center h-64">
-          <p>Vérification des droits...</p>
-        </div>
-      )}
-      {!checkingAuth && !isAuthorized && (
-        <div className="flex justify-center items-center h-64">
-          <p>Accès refusé</p>
-        </div>
-      )}
       <PageHeader
         title="Liste des questions"
         description="Consultez la liste des questions et accèdez aux détails"

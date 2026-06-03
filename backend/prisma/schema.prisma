@@ -23,6 +23,7 @@ model User {
   todos               Todo[]               @relation("TodoAssignments")
   roles               UserRole[]
   userSessions        UserSession[]
+  tutorialViews       UserTutorialView[]
 }
 
 model UserSession {
@@ -487,4 +488,31 @@ model IdeationChatBotMistral {
   lastMessages            String? // JSON
   project                 Project    @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   remainingQuestionsToAsk Question[] @relation("IdeationRemainingQuestions")
+}
+
+// TUTORIAL SYSTEM
+model TutorialPage {
+  tutorialId    Int                 @id @default(autoincrement())
+  pageName      String              @unique  // ex: "ideation", "gantt", "mindmap"
+  title         String
+  description   String?
+  content       String              // HTML or JSON with steps
+  order         Int                 @default(0)
+  isActive      Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  userViewings  UserTutorialView[]
+}
+
+model UserTutorialView {
+  viewId      Int           @id @default(autoincrement())
+  userId      Int
+  tutorialId  Int
+  viewedAt    DateTime      @default(now())
+  completed   Boolean       @default(false)
+  user        User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  tutorial    TutorialPage  @relation(fields: [tutorialId], references: [tutorialId], onDelete: Cascade)
+
+  @@unique([userId, tutorialId])
+  @@index([userId])
 }

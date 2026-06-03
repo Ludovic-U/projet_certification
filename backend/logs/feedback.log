@@ -1,22 +1,7 @@
-[2026-03-16T07:06:02.924Z] Project: INNOPIA 3
-URL: http://localhost:3000/10/projets
-Message: feedbacktest
-
-[2026-03-16T07:06:36.995Z] Project: INNOPIA 3
-URL: http://localhost:3000/10/30/vue_ensemble
-Message: feedbacktest 2
 
 [2026-03-23T12:17:37.358Z] Project: Projet Extension
 URL: http://localhost:3000/11/36/ideation
 Message: configurtion de question : Nombre d'apprennant + status 1 seule branche
-
-[2026-03-23T12:18:31.172Z] Project: Projet Extension
-URL: http://localhost:3000/11/36/ideation
-Message: Question doit être plus grosse visuellement
-
-[2026-03-23T12:32:04.052Z] Project: Projet Extension
-URL: http://localhost:3000/11/36/ideation
-Message: bouton passer la question
 
 [2026-03-23T12:33:54.698Z] Project: Projet Extension
 URL: http://localhost:3000/11/36/ideation
@@ -42,3 +27,7 @@ Message: ajouter des messages pour passer aux étapes suivantes (toutes les page
 URL: http://localhost:3000/11/36/conception
 Message: améliorer le prompt pré-projet
 
+
+quel est votre opco majoritaire?
+qui sont vos partenaires?
+quels outils de gestion utilisez vous?

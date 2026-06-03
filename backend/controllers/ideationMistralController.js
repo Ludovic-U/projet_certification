@@ -9,20 +9,16 @@ const {
   getAvailableQuestionsForProject,
   applyIdeationActions,
   buildIdeationPrompt,
+  getQuestionsWithoutAnswersForTab,
 } = require('../services/IdeationMistralService');
+const { createResponse } = require('../services/responseService');
 const { validateId } = require('../middlewares/validateId');
 
 const MAX_STORED_MESSAGES = 50;
 
 module.exports.createIdeationChatbotPost = async (req, res) => {
   try {
-    const welcomeMessage = {
-      role: 'assistant',
-      content: 'Bonjour, je suis votre assistant pour vous aider à convevoir votre projet. Avant tout, nous allons explorer la situation existante : Quels sont les secteurs d\'activité des formations que vous dispensez?',
-      timestamp: new Date().toISOString(),
-    };
-
-    const initialMessages = req.body.lastMessages || JSON.stringify([welcomeMessage]);
+    const initialMessages = req.body.lastMessages || JSON.stringify([]);
 
     const data = {
       projectId: req.body.projectId,
@@ -52,9 +48,36 @@ module.exports.getIdeationChatbotByProjectIdGet = async (req, res) => {
   const projectId = Number(req.params.projectId);
   if (!validateId(projectId, 'projectId', res)) return;
 
+  const activeTab = typeof req.query.tab === 'string' ? req.query.tab : 'strategic-analysis';
+
   try {
-    const chatbot = await getIdeationChatbotByProjectId(projectId);
-    return res.status(200).json(chatbot);
+    const { availableQuestions } = await getAvailableQuestionsForProject(projectId);
+    const questionsWithoutAnswers = await getQuestionsWithoutAnswersForTab({
+      availableQuestions,
+      projectId,
+      activeTab,
+    });
+
+    let chatbot;
+    try {
+      chatbot = await getIdeationChatbotByProjectId(projectId);
+    } catch (error) {
+      if (error.message !== 'Chatbot not found') throw error;
+      chatbot = await createIdeationChatbot({
+        projectId,
+        lastMessages: JSON.stringify([]),
+      });
+    }
+
+    const nextPendingQuestion =
+      questionsWithoutAnswers.length > 0
+        ? { questionId: questionsWithoutAnswers[0].questionId, label: questionsWithoutAnswers[0].label }
+        : null;
+
+    return res.status(200).json({
+      ...chatbot,
+      nextPendingQuestion,
+    });
   } catch (error) {
     console.error('Error fetching ideation chatbot by project id:', error);
 
@@ -117,6 +140,9 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
     return res.status(400).json({ error: 'message is required' });
   }
 
+  // Extract activeTab from request body (defaults to 'strategic-analysis')
+  const activeTab = typeof req.body.activeTab === 'string' ? req.body.activeTab : 'strategic-analysis';
+
   // Block prompt injection attempts
   const injectionPatterns = [
   // System prompt bypass
@@ -164,15 +190,9 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
     } catch (error) {
       if (error.message !== 'Chatbot not found') throw error;
 
-      const welcomeMessage = {
-        role: 'assistant',
-        content: 'Bonjour, je suis votre assistant pour vous aider à convevoir votre projet. Avant tout, nous allons explorer la situation existante : Quels sont les secteurs d\'activité des formations que vous dispensez?',
-        timestamp: new Date().toISOString(),
-      };
-
       chatbot = await createIdeationChatbot({
         projectId,
-        lastMessages: JSON.stringify([welcomeMessage]),
+        lastMessages: JSON.stringify([]),
       });
     }
 
@@ -203,6 +223,7 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
       historyWithUser,
       availableQuestions,
       projectId,
+      activeTab,
     });
 
     const modelRawResponse = await generateIdeationAnswer(prompt);
@@ -228,7 +249,15 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
       availableQuestions,
     );
 
-    // 7) Retourner la reponse complete au frontend.
+    // 7) Calculer la prochaine question à poser (première question sans réponse)
+    const questionsWithoutAnswers = await getQuestionsWithoutAnswersForTab({
+      availableQuestions,
+      projectId,
+      activeTab,
+    });
+    const nextPendingQuestion = questionsWithoutAnswers.length > 0 ? questionsWithoutAnswers[0] : null;
+
+    // 8) Retourner la reponse complete au frontend.
     return res.status(200).json({
       chatbotId: updatedChatbot.chatbotId,
       response: assistantText,
@@ -236,9 +265,47 @@ module.exports.chatWithIdeationMistralPost = async (req, res) => {
       actionExecution,
       availableQuestions,
       lastMessages: updatedMessages,
+      nextPendingQuestion,
     });
   } catch (error) {
     console.error('Error chatting with ideation mistral:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+module.exports.skipQuestionPost = async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  if (!validateId(projectId, 'projectId', res)) return;
+
+  const questionId = Number(req.body.questionId);
+  if (!Number.isInteger(questionId) || questionId <= 0) {
+    return res.status(400).json({ error: 'Invalid questionId' });
+  }
+
+  try {
+    // Crée une réponse vide (label: null) pour marquer la question comme traitée
+    await createResponse({
+      label: null,
+      projectId,
+      questionId,
+    });
+
+    return res.status(201).json({
+      message: 'Question skipped successfully',
+      projectId,
+      questionId,
+    });
+  } catch (error) {
+    console.error('Error skipping question:', error);
+    
+    if (error.message === 'Project not found') {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    if (error.message === 'Question not found') {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

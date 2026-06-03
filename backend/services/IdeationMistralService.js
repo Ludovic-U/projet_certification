@@ -54,26 +54,46 @@ async function getIdeationPromptTemplate() {
 	return config?.prompts?.ideation?.systemPrompt || null;
 }
 
-const DEFAULT_IDEATION_PROMPT = `
-Tu es un assistant de projet proactif et engageant.
+const DEFAULT_IDEATION_PROMPT = 
+'ROLE: Tu es un assistant de projet proactif, orienté collecte d’informations métier et structuration de données.' +
 
-Reponds en francais, de manière claire, concise et naturelle.
-Retourne STRICTEMENT un objet JSON valide (sans markdown, sans texte autour).
-Format JSON attendu:
-{"response":"string","actions":[{"type":"GENERATE_NEW_IDEATION_RESPONSE","questionId":123,"answer":"string"},{"type":"GENERATE_NEW_CONTRIBUTOR","contributor":{"firstname":"string","lastname":"string","email":"string","position":"string"}}]}
-Actions autorisees: ${ALLOWED_ACTIONS.GENERATE_NEW_IDEATION_RESPONSE}, ${ALLOWED_ACTIONS.GENERATE_NEW_CONTRIBUTOR}.
-Regle generale: sois proactif pour recueillir des informations. Pose des questions pertinentes de la liste disponible de manière naturelle, en reagissant au dernier message utilisateur. TOUTES les questions de la liste de questions disponibles doivent être abordées.
-Regle historique: utilise l'historique de conversation pour eviter de reposer les memes questions ou de repeter des informations deja connues.
-Regle action: si le message utilisateur contient une information metier qui peut etre obtenue ou mise a jour via une question du projet, tu DOIS remplir actions avec au moins une action GENERATE_NEW_IDEATION_RESPONSE.
-Regle action contributeur: si l'utilisateur evoque une personne qui travaille au sein de la structure, ajoute une action GENERATE_NEW_CONTRIBUTOR.
-Regle action contributeur: pour GENERATE_NEW_CONTRIBUTOR, renseigne contributor.firstname, contributor.lastname, contributor.position et contributor.email (email est optionnel et peut etre une chaine vide si inconnu).
-Regle action: la questionId choisie doit provenir de la liste de questions disponible ci-dessous et etre semantiquement liee a la demande utilisateur. Le champs "answer" doit resumer l'information pertinente fournie par l'utilisateur.
-Regle proactivite: dans ta reponse, pose naturellement une question suivante pertinente si possible, pour approfondir la discussion sans etre repetitif.
-Exemple: si l'utilisateur mentionne un projet termine, ajoute une action liee a la question qui demande s'il a deja termine un projet, et dans la reponse, demande des details sur ce projet.
-Exemple contributeur: si l'utilisateur dit "Marie Dupont (marie.dupont@acme.fr) travaille sur la comptabilite", ajoute une action GENERATE_NEW_CONTRIBUTOR avec ces donnees.
-Si aucune action n'est necessaire, retourne "actions": [], mais reste engageant dans la reponse.
-Pour les actions de type GENERATE_NEW_IDEATION_RESPONSE uniquement, chaque action doit referencer une questionId existante dans la liste des questions ci-dessous.
-`.trim();
+  'LANGUE: Réponds exclusivement en français, de manière claire, concise et naturelle.' +
+	'FORMAT DE SORTIE (OBLIGATOIRE):' +
+  '- Retourne STRICTEMENT un objet JSON valide.' +
+  '- AUCUN texte en dehors du JSON.' +
+  '- PAS de markdown.' +
+  '- Le JSON doit être parsable directement (respect strict des guillemets, virgules, etc.).' +
+
+  'REGLES GENERALES:' +
+  '- NE POSE PAS DE QUESTION DIRECTE. La question suivante est gérée par l’interface et ne doit pas être formulée par l’IA.' +
+  '- Évite toute répétition inutile.' +
+
+  'REGLES ACTIONS (IMPORTANT):' +
+  '- Si le message utilisateur contient une information correspondant à une question du projet, tu DOIS créer au moins une action GENERATE_NEW_IDEATION_RESPONSE, ' +
+  '- Une action = une information exploitable liée à une question précise.' +
+  '- Le champ "answer" doit être une synthèse claire, courte et exploitable de l’information utilisateur.' +
+  '- Le questionId DOIT exister dans la liste des questions.' +
+
+  'REGLES ACTIONS CONTRIBUTEUR:' +
+  '- Si une personne est mentionnée comme participant au projet, tu DOIS ajouter une action GENERATE_NEW_CONTRIBUTOR. Si le message utilisateur contient des informations qui peuvent être affichées en tant que liste, alors une action GENERATE_NEW_IDEATION_RESPONSE DOIT être créée pour chaque éléments de la liste, avec une réponse synthétique pour chaque élément. Par exemple, si l’utilisateur dit "Nous avons 3 produits : A, B et C", alors 3 actions doivent être créées, chacune liée à la question correspondante, avec comme réponse "Produit A : description synthétique", "Produit B : description synthétique"' +
+  '- Remplis: firstname, lastname, position.' +
+  '- email est optionnel (mettre "" si inconnu).' +
+  '- Ne duplique pas un contributeur déjà connu dans l’historique.' +
+
+  'REGLES DE PERTINENCE:' +
+  '- Ne crée PAS d’action si aucune information exploitable n’est fournie.' +
+  '- Dans ce cas, retourne "actions": [].' +
+
+  'REGLES ANTI-ERREURS:' +
+  '- Ne jamais inventer d’informations.' +
+  '- Ne jamais inventer de questionId.' +
+  '- Ne jamais produire de JSON invalide.' +
+  '- Ne jamais inclure de texte hors JSON.' +
+
+  'EXEMPLES:' +
+  '- Si l’utilisateur donne une info métier → créer une action liée.' +
+  '- Si l’utilisateur mentionne une personne → créer une action contributeur.' +
+  '- Si aucune info exploitable → actions vide mais réponse engageante.';
 
 module.exports.parseStoredMessages = (lastMessages) => {
 	if (!lastMessages) return [];
@@ -514,11 +534,10 @@ module.exports.applyIdeationActions = async (actions, projectId, availableQuesti
 	return result;
 };
 
-module.exports.buildIdeationPrompt = async ({
-	message,
-	historyWithUser,
+module.exports.getQuestionsWithoutAnswersForTab = async ({
 	availableQuestions,
 	projectId,
+	activeTab,
 }) => {
 	// Fetch responses for the project to determine unanswered questions
 	const responses = await prisma.response.findMany({
@@ -533,18 +552,53 @@ module.exports.buildIdeationPrompt = async ({
 	// Get unique questionIds that have responses
 	const answeredQuestionIds = new Set(responses.map(r => r.questionId));
 
-	// Filter questions without answers
-	const questionsWithoutAnswers = availableQuestions.filter(q => !answeredQuestionIds.has(q.questionId));
-	console.log(`Available questions: ${availableQuestions.length}, Answered: ${answeredQuestionIds.size}, Unanswered: ${questionsWithoutAnswers.length}`);
-	console.log( "questionsWithoutAnswers for prompt:", questionsWithoutAnswers.map(q => q.label).join(', '));
+	// Filter questions by active tab and unanswered status
+	const targetOnglet = activeTab === 'strategic-analysis' ? 'analyse_existant' : 'ideation_projet';
+	const questionsWithoutAnswers = availableQuestions
+		.filter(q => !answeredQuestionIds.has(q.questionId))
+		.filter(q => (typeof q.onglet === 'string' ? q.onglet : 'analyse_existant') === targetOnglet);
 
-	const basePrompt = (await getIdeationPromptTemplate())?.trim() || DEFAULT_IDEATION_PROMPT;
+	return questionsWithoutAnswers;
+};
+
+module.exports.buildIdeationPrompt = async ({
+	message,
+	historyWithUser,
+	availableQuestions,
+	projectId,
+	activeTab, // Nouveau paramètre pour filtrer par onglet
+}) => {
+	// Fetch responses for the project to determine unanswered questions
+	const responses = await prisma.response.findMany({
+		where: {
+			projectId: Number(projectId),
+		},
+		select: {
+			questionId: true,
+		},
+	});
+
+	// Get unique questionIds that have responses
+	const answeredQuestionIds = new Set(responses.map(r => r.questionId));
+
+	// Filter questions by active tab and unanswered status
+	const targetOnglet = activeTab === 'strategic-analysis' ? 'analyse_existant' : 'ideation_projet';
+	const questionsWithoutAnswers = availableQuestions
+		.filter(q => !answeredQuestionIds.has(q.questionId))
+		.filter(q => (typeof q.onglet === 'string' ? q.onglet : 'analyse_existant') === targetOnglet);
+
+	
+	const basePrompt =  DEFAULT_IDEATION_PROMPT;
+// (await getIdeationPromptTemplate())?.trim() ||
 
 	const dynamicParts = [
 		`Questions existantes pour ce projet (JSON): ${JSON.stringify(availableQuestions)}`,
 		`Questions qui n'ont pas encore été abordées : ${questionsWithoutAnswers.map(q => q.label).join(', ')}`,
 		`Historique de conversation (JSON): ${JSON.stringify(historyWithUser)}`,
 		`Dernier message utilisateur: ${message}`,
+		'IMPORTANT: NE POSEZ PAS DE NOUVELLE QUESTION. TRAITEZ UNIQUEMENT LA RÉPONSE DE L’UTILISATEUR. LA QUESTION SUIVANTE SERA AFFICHÉE PAR L’INTERFACE, PAS PAR VOUS.',
+		'IMPORTANT: Si le message utilisateur contient des informations qui peuvent être affichées en tant que liste, alors une action GENERATE_NEW_IDEATION_RESPONSE DOIT être créée pour chaque éléments de la liste, avec une réponse synthétique pour chaque élément. Par exemple, si l’utilisateur dit "Nous avons 3 produits : A, B et C", alors 3 actions doivent être créées, chacune liée à la question correspondante, avec comme réponse "Produit A : description synthétique", "Produit B : description synthétique", etc.',
+		'SCHEMA JSON ATTENDU: {"response":"string","actions":[{"type":"GENERATE_NEW_IDEATION_RESPONSE","questionId":number,"answer":"string"},{"type":"GENERATE_NEW_CONTRIBUTOR","contributor":{"firstname":"string","lastname":"string","email":"string","position":"string"}}]}'
 	];
 
 	return [basePrompt, ...dynamicParts].join('\n\n');

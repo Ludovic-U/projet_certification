@@ -17,6 +17,8 @@ export interface ChatInputProps {
   initialHistory?: Message[];
   isLoading?: boolean;
   className?: string;
+  lastAssistantMessage?: string | null;
+  onFullScreenModeChange?: (isFullScreen: boolean) => void;
 }
 
 interface VoiceSettings {
@@ -25,12 +27,13 @@ interface VoiceSettings {
   pitch: number;
 }
 
-export function ChatInput({ onSendMessage, initialHistory = [], isLoading = false, className }: ChatInputProps) {
+export function ChatInput({ onSendMessage, initialHistory = [], isLoading = false, className, lastAssistantMessage = null, onFullScreenModeChange }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [isFullScreenMode, setIsFullScreenMode] = useState(true);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [history, setHistory] = useState<Message[]>([]);
   const [speechSupported, setSpeechSupported] = useState(true);
@@ -89,6 +92,11 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
   useEffect(() => {
     setHistory(initialHistory);
   }, [initialHistory]);
+
+  // Notify parent when fullscreen mode changes
+  useEffect(() => {
+    onFullScreenModeChange?.(isFullScreenMode);
+  }, [isFullScreenMode, onFullScreenModeChange]);
 
   // Initialize speech recognition - DISABLED for now, using Whisper only
   // Web Speech API can be re-enabled later
@@ -285,8 +293,62 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
     handleTextToSpeech("Ceci est un test de la synthèse vocale.");
   };
 
+  // Fullscreen Chat Mode
+  if (isFullScreenMode) {
+    return (
+      <div className="fixed inset-0 z-[1010] bg-gradient-to-br from-dark/5 to-light/50 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-2xl flex flex-col gap-6">
+          {/* Last Assistant Message */}
+          {lastAssistantMessage && (
+            <div className="bg-white rounded-2xl border border-green-200 p-8 shadow-xl">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <p className="text-sm font-bold uppercase tracking-wide text-green-700">
+                  Assistant IA
+                </p>
+              </div>
+              <p className="text-lg leading-relaxed text-dark">{lastAssistantMessage}</p>
+            </div>
+          )}
+
+          {/* Input Section */}
+          <div className="bg-white rounded-2xl border border-dark/10 p-6 shadow-xl">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Posez-moi vos questions..."
+              className="w-full resize-none rounded-lg border border-dark/10 p-4 focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 text-base min-h-20"
+              disabled={isLoading}
+            />
+            <div className="flex gap-3 mt-4">
+              <Button
+                onClick={() => {
+                  void handleSend();
+                }}
+                disabled={!input.trim() || isLoading}
+                loading={isLoading}
+                className="flex-1"
+              >
+                Envoyer
+              </Button>
+              <button
+                onClick={() => setIsFullScreenMode(false)}
+                className="px-4 py-2 rounded-lg border border-dark/10 hover:bg-dark/5 transition-colors text-sm font-medium"
+                title="Réduire le chat"
+              >
+                ↙ Réduire
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("fixed bottom-0 left-0 right-0 bg-white border-t border-dark/10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-2xl", className)}>
+    <div className={cn("fixed bottom-0 left-0 right-0 z-[1010] bg-white border-t border-dark/10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-2xl", className)}>
       {/* Main Input Row */}
       <div className="max-w-4xl mx-auto p-4">
         <div className="flex items-end gap-3">
@@ -393,6 +455,18 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+
+          {/* Fullscreen Button */}
+          <button
+            onClick={() => setIsFullScreenMode(true)}
+            className="p-3 rounded-lg transition-colors border border-dark/10 hover:bg-dark/5 hover:border-dark/20"
+            aria-label="Mode conversation agrandi"
+            title="Agrandir la conversation"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6v4m12 0h4V6m0 12h-4v4m-8 0h4v-4M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
             </svg>
           </button>
 
@@ -503,9 +577,9 @@ export function ChatInput({ onSendMessage, initialHistory = [], isLoading = fals
 
       {/* History Overlay - full screen above the input when toggled */}
       {showHistory && (
-        <div className="fixed inset-0 bottom-24 z-[1000] bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[1000] bg-black/30 pointer-events-none">
           <div className="h-full overflow-y-auto">
-            <div className="max-w-4xl mx-auto p-4 h-full">
+            <div className="max-w-4xl mx-auto p-4 h-full pb-28 pointer-events-auto">
               <div className="h-full rounded-xl border border-dark/10 bg-light shadow-xl overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center p-4 border-b border-dark/10 bg-white sticky top-0 z-10">
                   <h3 className="font-semibold text-lg">Historique de la conversation</h3>

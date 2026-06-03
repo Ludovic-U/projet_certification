@@ -15,6 +15,7 @@ const mistralRoutes = require('./routes/mistralRoutes');
 const ideationMistralRoutes = require('./routes/ideationMistralRoutes');
 const mindmapRoutes = require('./routes/mindmapRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const tutorialRoutes = require('./routes/tutorialRoutes');
 const cookieParser = require("cookie-parser");
 const { authenticateUser } = require("./middlewares/auth");
 const multer = require('multer');
@@ -196,6 +197,7 @@ app.use('/api/ideation-chatbot', authenticateUser, ideationMistralRoutes);
 app.use('/api/todo', todoRoutes);
 app.use('/api/mindmap', authenticateUser, mindmapRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/tutorial', authenticateUser, tutorialRoutes);
 
 
 // File upload endpoint
