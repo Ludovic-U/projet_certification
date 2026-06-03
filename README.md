@@ -128,92 +128,330 @@ F2S_Application/
 
 ## Getting Started
 
+This guide covers installing the application on a local machine for development.  
+The project uses a **monorepo** layout with a separate `frontend/` and `backend/` folder under a shared root.
+
+---
+
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL 14+
-- Docker & Docker Compose (optional)
+| Tool | Version | Notes |
+|------|---------|-------|
+| Node.js | >= 18.x | LTS recommended |
+| npm | >= 9.x | Comes with Node.js |
+| PostgreSQL | >= 14.x | Required for local (non-Docker) installs |
+| Docker & Docker Compose | latest | Optional – used to run the full stack |
+| Git | any | To clone the repository |
 
-### Environment Variables
+---
 
-Create a `.env` file in the backend directory:
+### Project Structure
 
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/f2s_db"
-
-# Server
-PORT=4000
-
-# JWT Secret
-JWT_SECRET=your-secret-key
-
-# Email (for password reset)
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=user@example.com
-SMTP_PASS=password
-
-# Mistral AI
-MISTRAL_API_KEY=your-mistral-api-key
+```
+F2S_Application/
+├── backend/                    # Express.js API server
+│   ├── controllers/
+│   ├── services/
+│   ├── routes/
+│   ├── middlewares/
+│   ├── prisma/                 # Schema, migrations, seed
+│   ├── config/                 # App configuration (app-config.json)
+│   ├── index.js                # Server entry point
+│   └── .env.example            # <-- copy to .env and fill in values
+│
+├── frontend/                   # Next.js 15 (App Router)
+│   ├── src/
+│   │   ├── app/                # Pages & layouts
+│   │   ├── api/                # API client helpers
+│   │   ├── hooks/
+│   │   └── components/
+│   └── .env.local.example      # <-- copy to .env.local and fill in values
+│
+├── compose.yaml                # Docker Compose (full stack)
+├── docker-compose.test.yml     # Docker Compose for tests
+├── .env                        # Root env – used by Docker Compose
+└── backup.sql                  # Sample database backup (optional)
 ```
 
-### Installation
+---
 
-1. **Clone the repository**
-   ```bash
-   cd F2S_Application
-   ```
+### Installation Steps
 
-2. **Install backend dependencies**
-   ```bash
-   cd backend
-   npm install
-   ```
+#### 1. Clone the repository
 
-3. **Install frontend dependencies**
-   ```bash
-   cd frontend
-   npm install
-   ```
+```bash
+git clone <repository-url>
+cd F2S_Application
+```
 
-4. **Set up the database**
-   ```bash
-   cd backend
-   npx prisma migrate dev
-   npx prisma db seed
-   ```
+#### 2. Install root / workspace dependencies
 
-5. **Start development servers**
+```bash
+npm install
+```
 
-   Backend:
-   ```bash
-   cd backend
-   npm run dev
-   ```
+#### 3. Configure environment variables
 
-   Frontend:
-   ```bash
-   cd frontend
-   npm run dev
-   ```
+**Step A – Backend** (`backend/.env`)
 
-### Using Docker Compose
+Create `backend/.env` from the existing `backend/.env` file (it is already present in the repo).  
+Key variables:
+
+| Variable | Example / Notes |
+|----------|-----------------|
+| `DATABASE_URL` | PostgreSQL connection string (see below) |
+| `PORT` | `4000` (default) |
+| `JWT_SECRET` | Random secret for token signing |
+| `JWT_EXPIRATION` | `1d` |
+| `MISTRAL_API_KEY` | Get yours at https://console.mistral.ai/ |
+| `BCRYPT_SALT_ROUNDS` | `10` |
+
+Example `backend/.env` content:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/f2s_db?schema=public"
+PORT=4000
+JWT_SECRET="change-me-to-a-secure-random-string"
+JWT_EXPIRATION="1d"
+MISTRAL_API_KEY="your-mistral-api-key"
+BCRYPT_SALT_ROUNDS=10
+```
+
+> ⚠️ **Never commit `.env` or `.env.local` files.** Add them to `.gitignore`.
+
+**Step B – Root `.env` (Docker Compose only)**
+
+The root `.env` is consumed by `compose.yaml`:
+
+```env
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=f2s_db
+```
+
+> The file `f2s_app/.env` (containing `NEXT_PUBLIC_CLERK_*` keys) is **not used by this project** and can be deleted.
+
+#### 4. Install backend dependencies
+
+```bash
+cd backend
+npm install
+```
+
+#### 5. Install frontend dependencies
+
+```bash
+cd ../frontend
+npm install
+```
+
+#### 6. Run database migrations
+
+From the `backend/` directory:
+
+```bash
+cd ../backend
+npx prisma migrate deploy
+```
+
+Create and seed the database (permissions, roles, tutorials, etc.):
+
+```bash
+npx prisma db seed
+```
+
+To create a new migration after a schema change:
+
+```bash
+npx prisma migrate dev --name <migration_name>
+```
+
+#### 7. Start the application
+
+**Backend** (runs on http://localhost:4000):
+
+```bash
+cd backend
+npm run dev
+```
+
+**Frontend** (runs on http://localhost:3000):
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open http://localhost:3000 in your browser.
+
+---
+
+### Alternative: Docker Compose (Full Stack)
+
+Docker Compose orchestrates frontend, backend, and PostgreSQL together.
 
 ```bash
 docker compose up --build -d
 ```
 
-This will start:
-- Frontend on http://localhost:3000
-- Backend on http://localhost:4000
-- PostgreSQL on http://localhost:5432
+Services exposed:
+
+| Service | Port | URL |
+|---------|------|-----|
+| Frontend | 3000 | http://localhost:3000 |
+| Backend | 4000 | http://localhost:4000 |
+| PostgreSQL | 5432 | localhost:5432 |
+
+Volumes:
+- `./backend/uploads` → uploads directory
+- `./backend/config` → app config
+- `pgdata` → PostgreSQL data directory
+
+Stop the stack:
+
+```bash
+docker compose down
+```
 
 ---
 
 ## Database
 
-### Schema Overview
+### Backup
+
+```bash
+# Export to a .sql file
+pg_dump -U postgres -d f2s_db > backup.sql
+
+# Import from a .sql file
+psql -U postgres -d f2s_db < backup.sql
+```
+
+When using Docker, replace `localhost` with the container name or published port:
+
+```bash
+pg_dump -U postgres -h localhost -p 5432 -d f2s_db > backup.sql
+psql -U postgres -h localhost -p 5432 -d f2s_db < backup.sql
+```
+
+### Prisma Studio (visual database browser)
+
+```bash
+cd backend
+npx prisma studio
+# Opens at http://localhost:5555
+```
+
+---
+
+## Environment Variables Reference
+
+### Backend (`backend/.env`)
+
+```env
+# Database – matches your local/remote PostgreSQL instance
+DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<db>?schema=public"
+
+# Server
+PORT=4000
+
+# Authentication
+JWT_SECRET="<long-random-string>"
+JWT_EXPIRATION="1d"
+BCRYPT_SALT_ROUNDS=10
+
+# Mistral AI (optional – AI features will be disabled without a key)
+MISTRAL_API_KEY="<your-mistral-key>"
+```
+
+### Root `.env` (Docker only)
+
+```env
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=f2s_db
+```
+
+### Frontend (`frontend/.env.local`)
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+> The frontend communicates with the backend via this URL. In Docker (production) this is set to the internal service URL.
+
+---
+
+## Common Issues
+
+### CORS Errors
+Ensure the frontend URL is allowed in the backend's CORS configuration.
+
+### Database Connection Refused
+- Verify PostgreSQL is running (`pg_ctl status` or `docker compose ps db`)
+- Check that `DATABASE_URL` in `backend/.env` matches your database credentials and host
+
+### Port Already in Use
+Change `PORT` in `backend/.env` or free port `3000`/`4000`/`5432`.
+
+### File Upload Permission Errors
+Ensure the `backend/uploads/` directory exists and is writable.
+
+### Migration Already Applied Error
+Use `npx prisma migrate deploy` in production/CI instead of `migrate dev`.
+
+---
+
+## Running Tests
+
+```bash
+# Run all backend tests
+cd backend && npm run test:all
+
+# Run specific suites
+npm run test:controllers
+npm run test:services
+npm run test:integration
+npm run test:userflow
+
+# Run frontend tests
+cd frontend && npm test
+```
+
+---
+
+## Deployment
+
+### Production Build – Frontend
+
+```bash
+cd frontend
+npm run build
+npm start
+```
+
+### Production Build – Backend
+
+```bash
+cd backend
+npm start
+```
+
+### Docker Production
+
+```bash
+docker compose -f compose.yaml up --build -d
+```
+
+---
+
+## License
+
+ISC
+
+---
+
+## Database Schema Overview
 
 The database uses Prisma ORM with the following main entities:
 
@@ -248,14 +486,9 @@ The database uses Prisma ORM with the following main entities:
 - **ProjectDecision**: Decision tracking
 - **ProjectImpact**: Impact analysis
 
-### Migrations
-
-New migrations are created when the schema changes:
-
-```bash
-cd backend
-npx prisma migrate dev --name migration_name
-```
+#### Tutorial System
+- **TutorialPage**: Tutorial steps per feature
+- **UserTutorialView**: Per-user tutorial progress
 
 ---
 
@@ -334,6 +567,22 @@ npx prisma migrate dev --name migration_name
 | PATCH | `/api/todo/:id` | Update todo |
 | DELETE | `/api/todo/:id` | Delete todo |
 
+### Config
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/config` | Get app configuration |
+| GET | `/api/config/rate-limits` | Get AI rate limits |
+
+### Tutorials
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/tutorial/:page` | Get tutorial by page name |
+
+### Feedback
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/feedback` | Submit user feedback |
+
 ---
 
 ## Authentication
@@ -353,48 +602,6 @@ npx prisma migrate dev --name migration_name
 ### Role-Based Access Control (RBAC)
 
 Users have roles assigned through the `UserRole` table. Roles have permissions through the `RolePermission` table.
-
----
-
-## Deployment
-
-### Development
-```bash
-# Backend
-cd backend && npm run dev
-
-# Frontend
-cd frontend && npm run dev
-```
-
-### Production Build
-
-```bash
-# Frontend build
-cd frontend
-npm run build
-npm start
-
-# Backend (production)
-cd backend
-npm start
-```
-
-### Docker Production
-
-```bash
-docker compose -f compose.yaml up --build -d
-```
-
-### Database Backup
-
-```bash
-# Export database
-pg_dump -U user -d f2s_db > backup.sql
-
-# Import database
-psql -U user -d f2s_db < backup.sql
-```
 
 ---
 
@@ -429,42 +636,14 @@ psql -U user -d f2s_db < backup.sql
 
 ---
 
-## Testing
+## Migrations
 
-### Backend Tests
+New migrations are created when the schema changes:
 
 ```bash
-# Run all tests
-cd backend && npm run test:all
-
-# Run controller tests
-npm run test:controllers
-
-# Run service tests
-npm run test:services
-
-# Run integration tests
-npm run test:integration
+cd backend
+npx prisma migrate dev --name migration_name
 ```
-
----
-
-## Common Issues & Solutions
-
-### CORS Errors
-- Ensure frontend URL is in the CORS whitelist in `backend/index.js`
-
-### Database Connection
-- Verify `DATABASE_URL` in environment variables
-- Ensure PostgreSQL is running
-
-### Session Expiry
-- JWT tokens expire based on session settings
-- User needs to re-login
-
-### File Uploads
-- Check `uploads` directory permissions
-- Verify file size limits in multer config
 
 ---
 
